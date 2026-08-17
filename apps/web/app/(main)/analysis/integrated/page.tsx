@@ -8,7 +8,7 @@
  * @see docs/specs/SDD-INTEGRATED-RESULT-UI.md §2
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { track } from '@vercel/analytics';
 import { measureBodyClient } from '@/lib/analysis/body-v2';
@@ -23,6 +23,55 @@ import { ImageUploadSection } from './_components/ImageUploadSection';
 import { QuestionnaireForm, type QuestionnaireData } from './_components/QuestionnaireForm';
 import { IntegratedLoadingUI } from './_components/IntegratedLoadingUI';
 import { OnboardingHeader } from './_components/OnboardingHeader';
+import { PendingAnalysisBanner } from './_components/PendingAnalysisBanner';
+
+/** 이탈 복구 마커 — 제출 시각(epoch ms)을 담는다 (탭 세션 한정) */
+const PENDING_ANALYSIS_KEY = 'yiroom:integrated:pending';
+
+/** 게이트웨이 타임아웃 계열 — 서버 상한(maxDuration=60s) 초과를 네트워크 오류로 오귀인하지 않는다 */
+const TIMEOUT_STATUSES = [408, 502, 504, 524];
+const TIMEOUT_MESSAGE = '분석 시간이 초과됐어요 — 다시 시도해주세요.';
+
+/**
+ * 서버 에러 본문 → 사용자 문구
+ * 429 레이트리밋은 표준 봉투가 아닌 `{ error: string }` 평면 형태 — 문자열이면 그대로 노출한다.
+ */
+function resolveErrorMessage(
+  error: string | { userMessage?: string; message?: string } | undefined
+): string {
+  if (typeof error === 'string') return error;
+  return (
+    error?.userMessage ?? error?.message ?? '분석 요청에 실패했어요. 잠시 후 다시 시도해주세요.'
+  );
+}
+
+function readPendingMarker(): number | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_ANALYSIS_KEY);
+    if (raw === null) return null;
+    const startedAt = Number(raw);
+    return Number.isFinite(startedAt) && startedAt > 0 ? startedAt : null;
+  } catch {
+    // 스토리지 접근 차단(프라이빗 모드 등) — 복구 배너만 포기, 분석 흐름엔 영향 없음
+    return null;
+  }
+}
+
+function writePendingMarker(startedAt: number): void {
+  try {
+    sessionStorage.setItem(PENDING_ANALYSIS_KEY, String(startedAt));
+  } catch {
+    /* 스토리지 사용 불가 — 무시 */
+  }
+}
+
+function clearPendingMarker(): void {
+  try {
+    sessionStorage.removeItem(PENDING_ANALYSIS_KEY);
+  } catch {
+    /* 스토리지 사용 불가 — 무시 */
+  }
+}
 
 // 선택 재분석용 축 옵션 (ADR-109 cadence locking)
 const AXIS_OPTIONS: { code: AxisCode; label: string }[] = [
@@ -48,6 +97,30 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
   const [selectedAxes, setSelectedAxes] = useState<AxisCode[]>(ALL_AXES);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 분석 도중 이탈했다가 돌아온 경우 (마커가 남아 있음)
+  const [pendingStartedAt, setPendingStartedAt] = useState<number | null>(null);
+
+  // 재진입 시 1회 확인 — 마커가 있으면 복구 배너를 띄운다
+  useEffect(() => {
+    setPendingStartedAt(readPendingMarker());
+  }, []);
+
+  // 분석 중 새로고침·탭 닫기 경고 — 응답을 못 받으면 결과 링크를 잃는다
+  useEffect(() => {
+    if (!isSubmitting) return;
+    const handler = (e: BeforeUnloadEvent): void => {
+      e.preventDefault();
+      // 레거시 브라우저 호환 (문구는 브라우저가 자체 문구로 대체)
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isSubmitting]);
+
+  const dismissPending = useCallback(() => {
+    clearPendingMarker();
+    setPendingStartedAt(null);
+  }, []);
 
   // 이미 분석 이력이 있는 복귀 사용자에게만 "축 선택" 노출 (신규는 전체 분석)
   const isReturning = analysisCount > 0;
@@ -59,6 +132,14 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
   // 되므로 0축 제출을 차단한다.
   const canSubmit =
     faceImage !== null && (!isReturning || selectedAxes.length > 0) && !isSubmitting;
+
+  // 체형 축은 전신 사진이 있을 때만 실제로 판정된다 (자가입력은 판정에 쓰이지 않음 —
+  // axis-adapters bodyFallback). 이번 분석에 체형이 포함되는데 신호가 하나도 없으면 미리 알린다.
+  const bodyAxisIncluded = !isReturning || selectedAxes.includes('body');
+  const hasSelfReportedBody = Object.values(questionnaire?.body ?? {}).some(
+    (v) => typeof v === 'number'
+  );
+  const willSkipBody = bodyAxisIncluded && bodyImage === null && !hasSelfReportedBody;
 
   const toggleAxis = useCallback((code: AxisCode) => {
     setSelectedAxes((prev) =>
@@ -78,6 +159,9 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
     }
     setError(null);
     setIsSubmitting(true);
+    // 이탈 복구 마커 — 응답 전에 화면을 벗어나도 돌아왔을 때 결과를 되찾을 수 있게 한다
+    writePendingMarker(Date.now());
+    setPendingStartedAt(null);
 
     try {
       // 전신 사진이 있으면 제출 직전 클라이언트 MediaPipe 측정 1회 (A1) →
@@ -118,18 +202,26 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         }),
       });
 
-      const json = await res.json();
+      // 게이트웨이 타임아웃(504 등)은 본문이 JSON이 아닌 HTML/빈 응답 — 파싱 실패를
+      // 그대로 catch로 흘리면 "네트워크 오류"로 오귀인된다. 여기서 분리해 판정한다.
+      let json: {
+        success?: boolean;
+        error?: string | { userMessage?: string; message?: string };
+        result?: { sessionId?: string };
+      } | null = null;
+      let parseFailed = false;
+      try {
+        json = await res.json();
+      } catch {
+        parseFailed = true;
+      }
 
-      if (!res.ok || !json.success) {
-        // 429 레이트리밋은 표준 봉투가 아닌 { error: string } 평면 형태 — 문자열이면 그대로 노출
-        const message =
-          typeof json?.error === 'string'
-            ? json.error
-            : (json?.error?.userMessage ??
-              json?.error?.message ??
-              '분석 요청에 실패했어요. 잠시 후 다시 시도해주세요.');
-        setError(message);
+      const isTimeout = TIMEOUT_STATUSES.includes(res.status) || parseFailed;
+
+      if (isTimeout || !res.ok || json?.success !== true) {
+        setError(isTimeout ? TIMEOUT_MESSAGE : resolveErrorMessage(json?.error));
         setIsSubmitting(false);
+        clearPendingMarker();
         return;
       }
 
@@ -137,6 +229,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
       if (!sessionId) {
         setError('세션 생성에 실패했어요.');
         setIsSubmitting(false);
+        clearPendingMarker();
         return;
       }
 
@@ -148,11 +241,14 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
 
       // 분석 완료 → 홈/[나] 탭 5분 캐시 즉시 무효화 (신규 사용자가 "분석 0개"로 남지 않도록)
       invalidateAnalysisCache();
+      // 결과 화면으로 이동 = 복구 대상 아님
+      clearPendingMarker();
       router.push(`/analysis/integrated/result/${sessionId}`);
     } catch (err) {
       console.error('[IntegratedInput] submit error:', err);
-      setError('네트워크 오류가 발생했어요.');
+      setError('연결이 끊겼어요. 네트워크를 확인하고 다시 시도해주세요.');
       setIsSubmitting(false);
+      clearPendingMarker();
     }
   }, [
     faceImage,
@@ -185,6 +281,11 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         {/* 온보딩 모드(가입=첫 미팅) 진입 시에만 렌더 — ADR-114 */}
         <OnboardingHeader />
 
+        {/* 분석 도중 이탈 → 재진입 복구 (마커가 있을 때만 조회) */}
+        {pendingStartedAt !== null && (
+          <PendingAnalysisBanner startedAt={pendingStartedAt} onDismiss={dismissPending} />
+        )}
+
         {/* 헤더 */}
         <header className="space-y-2 text-center">
           <p className="text-xs text-muted-foreground">셀카 한 장 · 통합 분석</p>
@@ -193,8 +294,9 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
             <br />
             색·피부·헤어·메이크업 한 번에
           </h1>
+          {/* 소요 시간은 서버 상한(maxDuration=60s) 하나만 근거로 삼는다 (로딩 UI·온보딩 헤더와 동일 문구) */}
           <p className="text-sm text-muted-foreground">
-            약 2분이면 완료돼요. 자연광에서 찍은 정면 사진이 가장 정확해요.
+            분석은 1분이면 끝나요. 자연광에서 찍은 정면 사진이 가장 정확해요.
           </p>
         </header>
 
@@ -258,10 +360,18 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         {error && (
           <div
             role="alert"
+            data-testid="integrated-submit-error"
             className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
           >
             {error}
           </div>
+        )}
+
+        {/* 체형 축 사전 고지 — 제출 후 결과에서 처음 알게 되지 않도록 (전신 사진이 유일한 신호) */}
+        {willSkipBody && (
+          <p className="text-center text-xs text-muted-foreground" data-testid="body-skip-notice">
+            체형 분석은 이번에 건너뛰어요 (전신 사진 필요) — 결과엔 예시 값이 들어가요
+          </p>
         )}
 
         {/* 제출 버튼 */}

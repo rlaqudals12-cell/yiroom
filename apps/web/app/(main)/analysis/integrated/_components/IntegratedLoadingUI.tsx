@@ -1,29 +1,32 @@
 'use client';
 
 /**
- * 통합 분석 로딩 UI (5축 진행 체크리스트)
+ * 통합 분석 로딩 UI
  *
  * @see docs/specs/SDD-INTEGRATED-RESULT-UI.md §2.6, §4.5
  *
- * 주의: v1은 백엔드가 단발 응답이라 실제 축별 진행 상태를 알 수 없음.
- *       경과 시간 기반 추정 타이머로 체감 진행만 보여주되, 실제 소요(대체로 1분 안팎,
- *       최대 2분)에 맞춰 천천히 진행한다. 완료 위장 금지 원칙:
- *       - 체크는 60초 이상에 걸쳐 순차로만 채운다 (9초에 전부 완료 X).
- *       - 마지막 축(메이크업)은 타이머로 완료 처리하지 않는다 — 실제 응답이 도착해
- *         부모가 이 UI를 언마운트할 때까지 스피너를 유지한다.
+ * 정직성 계약(가짜 진행률 금지): 백엔드는 단발 응답이라 축별 진행/완료를 알 수 없다.
+ * 따라서 축별 체크마크·퍼센트 같은 "완료 단언"은 만들지 않는다.
+ * 실패한 축까지 ✓로 표시되던 경과시간 기반 체크리스트를 폐지하고,
+ * 단일 스피너 + 분석 범위(5축) 라벨만 보여준다. 라벨 강조는 순수 시각 효과이며
+ * 특정 축이 진행/완료됐다는 뜻이 아니다(텍스트로 상태를 단언하지 않음).
  */
 
 import { useEffect, useState } from 'react';
-import { Check, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
-// estimatedSec = null 이면 타이머로 절대 완료되지 않음(응답 도착 = 언마운트까지 스피너 유지)
 const AXES = [
-  { code: 'personal_color', label: '퍼스널컬러', estimatedSec: 14 },
-  { code: 'skin', label: '피부', estimatedSec: 30 },
-  { code: 'body', label: '체형', estimatedSec: 46 },
-  { code: 'hair', label: '헤어', estimatedSec: 62 },
-  { code: 'makeup', label: '메이크업', estimatedSec: null },
+  { code: 'personal_color', label: '퍼스널컬러' },
+  { code: 'skin', label: '피부' },
+  { code: 'body', label: '체형' },
+  { code: 'hair', label: '헤어' },
+  { code: 'makeup', label: '메이크업' },
 ] as const;
+
+// 강조 라벨 순회 주기(초) — 대기 화면이 멈춘 것처럼 보이지 않게 하는 시각 효과
+const HIGHLIGHT_CYCLE_SEC = 3;
+// 서버 상한(maxDuration=60s)에 근접하면 안내 문구를 바꾼다
+const SLOW_WARNING_SEC = 45;
 
 export function IntegratedLoadingUI(): React.JSX.Element {
   const [elapsedSec, setElapsedSec] = useState(0);
@@ -36,46 +39,43 @@ export function IntegratedLoadingUI(): React.JSX.Element {
     return () => clearInterval(interval);
   }, []);
 
-  const showSlowWarning = elapsedSec > 75;
+  const showSlowWarning = elapsedSec > SLOW_WARNING_SEC;
+  const highlightIndex = Math.floor(elapsedSec / HIGHLIGHT_CYCLE_SEC) % AXES.length;
 
   return (
     <div
-      className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6"
+      className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6 text-center"
       data-testid="integrated-loading"
+      aria-busy="true"
     >
-      <h2 className="mb-4 text-lg font-bold text-foreground">다섯 가지를 분석하고 있어요...</h2>
+      <Loader2
+        className="mx-auto mb-4 h-8 w-8 animate-spin text-primary"
+        aria-hidden="true"
+        data-testid="integrated-loading-spinner"
+      />
 
-      <ul className="space-y-3">
-        {AXES.map((axis) => {
-          const isDone = axis.estimatedSec !== null && elapsedSec >= axis.estimatedSec;
-          return (
-            <li
-              key={axis.code}
-              className="flex items-center justify-between gap-3"
-              data-testid={`loading-axis-${axis.code}`}
-            >
-              <span
-                className={`text-sm transition-colors ${isDone ? 'text-foreground' : 'text-muted-foreground'}`}
-              >
-                {axis.label}
-              </span>
-              {isDone ? (
-                <Check className="h-4 w-4 text-primary" aria-label="완료" />
-              ) : (
-                <Loader2
-                  className="h-4 w-4 animate-spin text-muted-foreground"
-                  aria-label="진행 중"
-                />
-              )}
-            </li>
-          );
-        })}
+      <h2 className="text-lg font-bold text-foreground">다섯 가지를 한 번에 분석하고 있어요</h2>
+
+      <ul className="mt-4 flex flex-wrap justify-center gap-2">
+        {AXES.map((axis, i) => (
+          <li
+            key={axis.code}
+            data-testid={`loading-axis-${axis.code}`}
+            className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+              i === highlightIndex
+                ? 'border-primary/40 bg-primary/10 text-primary'
+                : 'border-border text-muted-foreground'
+            }`}
+          >
+            {axis.label}
+          </li>
+        ))}
       </ul>
 
-      <p className="mt-5 text-center text-xs text-muted-foreground">
+      <p className="mt-5 text-xs text-muted-foreground" role="status" data-testid="loading-hint">
         {showSlowWarning
           ? '거의 다 됐어요. 조금만 더 기다려주세요...'
-          : '최대 1~2분 걸릴 수 있어요'}
+          : '최대 1분 정도 걸려요. 창을 닫지 말고 기다려주세요.'}
       </p>
     </div>
   );

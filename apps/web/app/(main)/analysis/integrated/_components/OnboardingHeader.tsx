@@ -25,9 +25,10 @@ export function OnboardingHeader(): React.JSX.Element | null {
       data-testid="onboarding-header"
     >
       <p className="text-base font-semibold text-foreground">첫 미팅이에요 👋</p>
+      {/* 소요 시간은 서버 상한(maxDuration=60s) 기준으로 페이지·로딩 UI와 동일하게 유지 */}
       <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-        사진 한 번이면 전속 뷰티팀(스타일리스트·컨설턴트·피부 관리사)이 당신을 파악해요. 5분이면
-        충분해요.
+        사진 한 번이면 전속 뷰티팀(스타일리스트·컨설턴트·피부 관리사)이 당신을 파악해요. 분석은
+        1분이면 끝나요.
       </p>
       <Link
         href="/home"

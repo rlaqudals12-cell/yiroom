@@ -8,8 +8,8 @@
 
 import { useCallback, useState } from 'react';
 import Image from 'next/image';
-import { Camera, X, Upload } from 'lucide-react';
-import { compressFileToBase64 } from '@/lib/utils/image-compression';
+import { Camera, X, Upload, Loader2 } from 'lucide-react';
+import { compressFileToBase64, ImageProcessingError } from '@/lib/utils/image-compression';
 
 export interface ImageUploadSectionProps {
   onFaceImageChange: (base64: string | null) => void;
@@ -50,7 +50,15 @@ export function ImageUploadSection({
         onChange(base64);
       } catch (err) {
         console.error('[ImageUpload] compression failed:', err);
-        setUploadError({ kind, message: '이미지 처리에 실패했어요. 다른 사진을 선택해주세요.' });
+        // 원인별 안내(용량 초과·비이미지·디코드 실패)를 그대로 노출 — 뭉뚱그린 문구는 재시도 방향을 못 준다
+        const message =
+          err instanceof ImageProcessingError
+            ? err.userMessage
+            : '이미지 처리에 실패했어요. 다른 사진을 선택해주세요.';
+        setUploadError({ kind, message });
+        // 실패한 슬롯은 이전 선택도 비워 "성공한 것처럼" 남지 않게 한다
+        setPreview(null);
+        onChange(null);
       } finally {
         setIsProcessing(null);
       }
@@ -58,13 +66,16 @@ export function ImageUploadSection({
     []
   );
 
+  // 사진을 지우면 그 슬롯의 에러도 함께 사라져야 한다 (해소된 에러가 남는 문제)
   const clearFace = () => {
     setFacePreview(null);
     onFaceImageChange(null);
+    setUploadError((prev) => (prev?.kind === 'face' ? null : prev));
   };
   const clearBody = () => {
     setBodyPreview(null);
     onBodyImageChange(null);
+    setUploadError((prev) => (prev?.kind === 'body' ? null : prev));
   };
 
   return (
@@ -98,8 +109,18 @@ export function ImageUploadSection({
             </button>
           </div>
         ) : (
-          <label className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary">
-            <Upload className="mb-2 h-6 w-6" />
+          <label
+            aria-busy={isProcessing === 'face'}
+            className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary"
+          >
+            {isProcessing === 'face' ? (
+              <Loader2
+                className="mb-2 h-6 w-6 animate-spin text-primary"
+                data-testid="face-upload-spinner"
+              />
+            ) : (
+              <Upload className="mb-2 h-6 w-6" />
+            )}
             <span className="text-sm">{isProcessing === 'face' ? '처리 중...' : '사진 선택'}</span>
             <input
               type="file"
@@ -132,8 +153,14 @@ export function ImageUploadSection({
             전신 사진 <span className="text-muted-foreground">(선택)</span>
           </p>
         </div>
+        {/*
+          정직성: 전신 사진이 없으면 체형 축은 자가입력(키·몸무게)을 쓰지 않고
+          시드 기반 예시 결과로 채워진다 (lib/analysis/integrated/internal/axis-adapters.ts,
+          bodyFallback). 자가입력을 실제 추정에 쓰는 구현(b안)은 제품 결정 D-d 대기 중이므로,
+          그 전까지 문구가 구현을 앞서가지 않도록 한다.
+        */}
         <p className="mb-3 text-xs text-muted-foreground">
-          없으면 자가입력으로 체형을 추정해드려요
+          전신 사진이 없으면 체형은 예시 결과로 대체돼요
         </p>
         {bodyPreview ? (
           <div className="relative">
@@ -155,8 +182,18 @@ export function ImageUploadSection({
             </button>
           </div>
         ) : (
-          <label className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary">
-            <Upload className="mb-2 h-6 w-6" />
+          <label
+            aria-busy={isProcessing === 'body'}
+            className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary"
+          >
+            {isProcessing === 'body' ? (
+              <Loader2
+                className="mb-2 h-6 w-6 animate-spin text-primary"
+                data-testid="body-upload-spinner"
+              />
+            ) : (
+              <Upload className="mb-2 h-6 w-6" />
+            )}
             <span className="text-sm">{isProcessing === 'body' ? '처리 중...' : '사진 선택'}</span>
             <input
               type="file"
