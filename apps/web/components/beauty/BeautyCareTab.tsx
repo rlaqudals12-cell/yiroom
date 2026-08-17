@@ -1,13 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import { Sparkles, Pill, AlertTriangle } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { InnerBeautySupplements } from '@/components/beauty/InnerBeautySupplements';
 import { SkinAgeCalculator, type SkinAgeMetrics } from '@/components/beauty/SkinAgeCalculator';
 import { SkincareRoutineCard } from '@/components/beauty/SkincareRoutineCard';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import type { RoutineItem } from '@/types/hybrid';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
@@ -18,13 +15,13 @@ interface BeautyCareTabProps {
   eveningRoutine: RoutineItem[];
   /** 최신 피부 분석 실지표 (없으면 overall_score 기반 추정 또는 분석 안내) */
   skinMetrics: SkinAgeMetrics | null;
-  /** 최신 피부 분석 종합 점수 — 세부 지표가 없어도 이 값으로 피부나이 추정 가능 */
+  /** 최신 피부 분석 종합 점수 — 세부 지표가 없어도 이 값으로 컨디션 표기 가능 */
   skinOverallScore?: number | null;
   /** 최신 피부 분석 id — 주의 성분 알림에서 해당 결과로 딥링크 */
   skinAnalysisId?: string | null;
 }
 
-// 케어 탭 — 스킨케어 루틴, 피부나이, 영양제, 주의 성분
+// 케어 탭 — 스킨케어 루틴, 피부 컨디션, 영양제, 주의 성분
 export default function BeautyCareTab({
   hasAnalysis,
   router,
@@ -34,13 +31,6 @@ export default function BeautyCareTab({
   skinOverallScore = null,
   skinAnalysisId = null,
 }: BeautyCareTabProps) {
-  // 실제 나이는 DB에 저장하지 않는 정보 — 사용자가 직접 입력한 값으로만 계산 (정직 원칙)
-  const [ageInput, setAgeInput] = useState('');
-  const actualAge = useMemo(() => {
-    const parsed = parseInt(ageInput, 10);
-    return Number.isInteger(parsed) && parsed >= 10 && parsed <= 99 ? parsed : null;
-  }, [ageInput]);
-
   return (
     <div className="space-y-4 p-4" data-testid="beauty-care-tab">
       {/* 분석 미완료 시 탭 상단 1개 통합 안내 (F2: CTA 중복 제거) */}
@@ -79,58 +69,26 @@ export default function BeautyCareTab({
         )}
       </FadeInUp>
 
-      {/* 피부나이 계산기 — 실제 분석 데이터(세부 지표 또는 종합 점수)가 있을 때만 (하드코딩 지표 금지) */}
+      {/* 피부 컨디션 — 실제 분석 데이터(세부 지표 또는 종합 점수)가 있을 때만 (하드코딩 지표 금지).
+          합성 "피부나이"·실제나이 입력은 폐지(2026-08): 분석이 측정한 적 없는 값을 만들어
+          외모를 채점하던 표면이었다. 이제 실측 컨디션 점수와 근거 지표만 렌더한다. */}
       <FadeInUp delay={2}>
         {hasAnalysis && (skinMetrics || skinOverallScore != null) ? (
-          <div data-testid="beauty-skin-age" className="space-y-3">
-            <section className="bg-card rounded-2xl border p-4">
-              <h2 className="font-semibold mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
-                피부나이 측정
-              </h2>
-              <p className="text-sm text-muted-foreground mb-3">
-                실제 나이를 입력하면 최근 피부 분석 결과로 피부나이를 계산해 드려요. 입력한 나이는
-                저장되지 않아요.
-              </p>
-              <div className="flex items-center gap-3">
-                <Label htmlFor="skin-age-input" className="text-sm shrink-0">
-                  실제 나이
-                </Label>
-                <Input
-                  id="skin-age-input"
-                  data-testid="skin-age-input"
-                  type="number"
-                  inputMode="numeric"
-                  min={10}
-                  max={99}
-                  placeholder="예: 28"
-                  value={ageInput}
-                  onChange={(e) => setAgeInput(e.target.value)}
-                  className="w-28"
-                />
-                <span className="text-sm text-muted-foreground">세</span>
-              </div>
-            </section>
-            {actualAge !== null && (
-              <SkinAgeCalculator
-                actualAge={actualAge}
-                skinMetrics={skinMetrics}
-                overallScore={skinOverallScore}
-              />
-            )}
+          <div data-testid="beauty-skin-age">
+            <SkinAgeCalculator skinMetrics={skinMetrics} overallScore={skinOverallScore} />
           </div>
         ) : (
           <section className="bg-card rounded-2xl border p-4" data-testid="beauty-skin-age">
             <h2 className="font-semibold mb-2 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
-              피부나이 측정
+              피부 컨디션
             </h2>
             <p className="text-sm text-muted-foreground">
               {/* "새로 하면"은 이미 피부 분석을 한 사람에게만 맞는 말 — 분석 유무는 hasAnalysis(5축)가
                   아니라 피부 분석 id 유무로 판단한다 (퍼컬만 분석한 사용자 오인 방지) */}
               {skinAnalysisId
-                ? '피부 분석을 새로 하면 수분·유분 등 세부 지표로 피부나이를 알려드려요'
-                : '피부 분석 후 수분·유분·주름 지표로 피부나이를 알려드려요'}
+                ? '피부 분석을 새로 하면 수분·유분 등 세부 지표로 컨디션을 알려드려요'
+                : '피부 분석 후 수분·유분·주름 지표로 컨디션을 알려드려요'}
             </p>
           </section>
         )}

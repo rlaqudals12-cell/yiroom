@@ -16,6 +16,17 @@ export interface ImageUploadSectionProps {
   onBodyImageChange: (base64: string | null) => void;
 }
 
+// label htmlFor ↔ input id 연결용 — 접근 가능한 이름과 클릭 타깃을 동시에 보장한다
+const FACE_INPUT_ID = 'integrated-face-upload';
+const BODY_INPUT_ID = 'integrated-body-upload';
+
+/**
+ * 드롭존(라벨) 스타일 — 파일 input이 sr-only라 포커스 링을 그릴 수 없으므로
+ * peer-focus-visible로 라벨이 대신 그린다 (키보드 사용자가 지금 어디에 있는지 보이게).
+ */
+const DROPZONE_CLASS =
+  'flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary peer-focus-visible:border-primary peer-focus-visible:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40';
+
 export function ImageUploadSection({
   onFaceImageChange,
   onBodyImageChange,
@@ -109,23 +120,17 @@ export function ImageUploadSection({
             </button>
           </div>
         ) : (
-          <label
-            aria-busy={isProcessing === 'face'}
-            className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary"
-          >
-            {isProcessing === 'face' ? (
-              <Loader2
-                className="mb-2 h-6 w-6 animate-spin text-primary"
-                data-testid="face-upload-spinner"
-              />
-            ) : (
-              <Upload className="mb-2 h-6 w-6" />
-            )}
-            <span className="text-sm">{isProcessing === 'face' ? '처리 중...' : '사진 선택'}</span>
+          // 접근성: display:none(hidden) input은 포커스를 받지 못해 키보드만 쓰는 사용자가
+          // "필수" 항목인 얼굴 사진에 아예 도달할 수 없었다. sr-only로 화면에서만 감춰
+          // 탭 순서를 유지하고, 드롭존(label)이 peer-focus-visible로 포커스 링을 대신 그린다.
+          <>
             <input
+              id={FACE_INPUT_ID}
+              data-testid="face-upload-input"
               type="file"
               accept="image/*"
-              className="hidden"
+              aria-label="얼굴 셀카 사진 선택"
+              className="peer sr-only"
               disabled={isProcessing !== null}
               onChange={(e) =>
                 handleImageChange(
@@ -136,7 +141,24 @@ export function ImageUploadSection({
                 )
               }
             />
-          </label>
+            <label
+              htmlFor={FACE_INPUT_ID}
+              aria-busy={isProcessing === 'face'}
+              className={DROPZONE_CLASS}
+            >
+              {isProcessing === 'face' ? (
+                <Loader2
+                  className="mb-2 h-6 w-6 animate-spin text-primary"
+                  data-testid="face-upload-spinner"
+                />
+              ) : (
+                <Upload className="mb-2 h-6 w-6" />
+              )}
+              <span className="text-sm">
+                {isProcessing === 'face' ? '처리 중...' : '사진 선택'}
+              </span>
+            </label>
+          </>
         )}
         {uploadError?.kind === 'face' && (
           <p role="alert" className="mt-2 text-xs text-destructive" data-testid="face-upload-error">
@@ -182,23 +204,15 @@ export function ImageUploadSection({
             </button>
           </div>
         ) : (
-          <label
-            aria-busy={isProcessing === 'body'}
-            className="flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary"
-          >
-            {isProcessing === 'body' ? (
-              <Loader2
-                className="mb-2 h-6 w-6 animate-spin text-primary"
-                data-testid="body-upload-spinner"
-              />
-            ) : (
-              <Upload className="mb-2 h-6 w-6" />
-            )}
-            <span className="text-sm">{isProcessing === 'body' ? '처리 중...' : '사진 선택'}</span>
+          // 얼굴 슬롯과 동일 — sr-only input으로 키보드 진입 보장 (위 주석 참조)
+          <>
             <input
+              id={BODY_INPUT_ID}
+              data-testid="body-upload-input"
               type="file"
               accept="image/*"
-              className="hidden"
+              aria-label="전신 사진 선택"
+              className="peer sr-only"
               disabled={isProcessing !== null}
               onChange={(e) =>
                 handleImageChange(
@@ -209,7 +223,24 @@ export function ImageUploadSection({
                 )
               }
             />
-          </label>
+            <label
+              htmlFor={BODY_INPUT_ID}
+              aria-busy={isProcessing === 'body'}
+              className={DROPZONE_CLASS}
+            >
+              {isProcessing === 'body' ? (
+                <Loader2
+                  className="mb-2 h-6 w-6 animate-spin text-primary"
+                  data-testid="body-upload-spinner"
+                />
+              ) : (
+                <Upload className="mb-2 h-6 w-6" />
+              )}
+              <span className="text-sm">
+                {isProcessing === 'body' ? '처리 중...' : '사진 선택'}
+              </span>
+            </label>
+          </>
         )}
         {uploadError?.kind === 'body' && (
           <p role="alert" className="mt-2 text-xs text-destructive" data-testid="body-upload-error">

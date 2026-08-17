@@ -9,6 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ImageProcessingError } from '@/lib/utils/image-compression';
 import { ImageUploadSection } from '@/app/(main)/analysis/integrated/_components/ImageUploadSection';
 
@@ -128,5 +129,62 @@ describe('ImageUploadSection', () => {
 
     expect(onFace).toHaveBeenLastCalledWith(null);
     expect(screen.getByTestId('body-upload-error')).toBeInTheDocument();
+  });
+});
+
+/**
+ * 회귀 방지(2026-08, a11y): 파일 input이 `display:none`(Tailwind `hidden`)이라
+ * 포커스를 받지 못해, 키보드만 쓰는 사용자가 **필수** 항목인 얼굴 사진에 도달할 수 없었다.
+ * (드롭존은 label이라 그 자체로는 포커스 대상이 아니다.)
+ */
+describe('ImageUploadSection 키보드 접근성', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('탭 키만으로 얼굴·전신 사진 입력에 차례로 도달한다', async () => {
+    const user = userEvent.setup();
+    renderSection();
+
+    const faceInput = screen.getByTestId('face-upload-input');
+    const bodyInput = screen.getByTestId('body-upload-input');
+
+    await user.tab();
+    expect(faceInput).toHaveFocus();
+
+    await user.tab();
+    expect(bodyInput).toHaveFocus();
+  });
+
+  it('파일 input을 display:none으로 감추지 않는다 (sr-only로 포커스 유지)', () => {
+    const { container } = renderSection();
+
+    // jsdom에는 Tailwind CSS가 로드되지 않아 계산된 visibility로는 검증할 수 없다.
+    // 포커스를 죽이는 클래스(hidden)의 부재 + sr-only 채택 여부를 클래스로 검사한다.
+    for (const input of fileInputs(container)) {
+      expect(input.className).not.toMatch(/(^|\s)hidden(\s|$)/);
+      expect(input).toHaveClass('sr-only');
+    }
+  });
+
+  it('두 파일 input 모두 접근 가능한 이름을 가진다', () => {
+    renderSection();
+
+    expect(screen.getByLabelText('얼굴 셀카 사진 선택')).toBe(
+      screen.getByTestId('face-upload-input')
+    );
+    expect(screen.getByLabelText('전신 사진 선택')).toBe(screen.getByTestId('body-upload-input'));
+  });
+
+  it('드롭존 라벨이 htmlFor로 input과 연결돼 클릭 타깃을 유지한다', () => {
+    const { container } = renderSection();
+
+    const labels = Array.from(container.querySelectorAll('label'));
+    expect(labels.map((l) => l.getAttribute('for'))).toEqual([
+      'integrated-face-upload',
+      'integrated-body-upload',
+    ]);
+    expect(screen.getByTestId('face-upload-input').id).toBe('integrated-face-upload');
+    expect(screen.getByTestId('body-upload-input').id).toBe('integrated-body-upload');
   });
 });

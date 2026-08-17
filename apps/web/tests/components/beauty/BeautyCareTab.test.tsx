@@ -2,6 +2,7 @@
  * BeautyCareTab 테스트
  * WS-3: 케어 탭 렌더링 검증
  * 감사 수리(2026-07-08): 피부나이 계산기 = 실지표(skinMetrics) + 사용자 입력 나이 기반으로 변경
+ * 수리(2026-08): 합성 피부나이 폐지 → "피부 컨디션" 섹션(실측 지표만). 나이 입력·게이팅 제거.
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -81,36 +82,37 @@ describe('BeautyCareTab', () => {
     expect(screen.getByTestId('skincare-routine-card')).toBeInTheDocument();
   });
 
-  it('실지표가 있으면 나이 입력 필드가 표시되고, 나이 입력 시 계산기가 렌더링된다', async () => {
-    const user = userEvent.setup();
+  it('실지표가 있으면 나이 입력 없이 컨디션 카드를 바로 렌더한다', () => {
     renderTab();
 
-    // 나이 입력 전에는 계산기 미표시 (가짜 기본 나이 없음)
-    expect(screen.queryByTestId('skin-age-calculator')).not.toBeInTheDocument();
-
-    const ageInput = screen.getByTestId('skin-age-input');
-    await user.type(ageInput, '28');
-
     expect(screen.getByTestId('skin-age-calculator')).toBeInTheDocument();
+    // 실제나이 입력은 폐지 — 합성 피부나이를 만들지 않으므로 물어볼 이유가 없다
+    expect(screen.queryByTestId('skin-age-input')).not.toBeInTheDocument();
   });
 
-  it('실지표·종합점수 둘 다 없으면 계산기 대신 안내가 표시된다', () => {
+  it('실지표·종합점수 둘 다 없으면 컨디션 카드 대신 안내가 표시된다', () => {
     renderTab({ skinMetrics: null, skinOverallScore: null });
 
     expect(screen.queryByTestId('skin-age-input')).not.toBeInTheDocument();
     expect(screen.queryByTestId('skin-age-calculator')).not.toBeInTheDocument();
     expect(screen.getByTestId('beauty-skin-age')).toBeInTheDocument();
-    expect(screen.getByText(/피부나이를 알려드려요/)).toBeInTheDocument();
+    expect(screen.getByText(/컨디션을 알려드려요/)).toBeInTheDocument();
   });
 
-  it('세부 지표가 없어도 종합 점수가 있으면 계산기를 제공한다 (통합 분석 경로 대응)', async () => {
-    const user = userEvent.setup();
+  it('세부 지표가 없어도 종합 점수가 있으면 컨디션 카드를 제공한다 (통합 분석 경로 대응)', () => {
     renderTab({ skinMetrics: null, skinOverallScore: 70 });
 
-    const ageInput = screen.getByTestId('skin-age-input');
-    await user.type(ageInput, '28');
-
     expect(screen.getByTestId('skin-age-calculator')).toBeInTheDocument();
+  });
+
+  // 재발 방지(2026-08): 합성 "피부나이" 약속이 소비처 카피로 되살아나지 않게 한다
+  it('피부나이·실제나이를 약속하는 카피를 렌더하지 않는다', () => {
+    const withData = renderTab();
+    expect(withData.container.textContent ?? '').not.toMatch(/피부나이|실제 나이/);
+    withData.unmount();
+
+    const withoutData = renderTab({ skinMetrics: null, skinOverallScore: null });
+    expect(withoutData.container.textContent ?? '').not.toMatch(/피부나이|실제 나이/);
   });
 
   it('hasAnalysis=false일 때 분석 CTA가 표시된다', () => {
@@ -204,7 +206,7 @@ describe('BeautyCareTab 주의 성분 카피 정직화', () => {
     renderTab({ hasAnalysis: false, skinMetrics: null, skinAnalysisId: null });
 
     // 주의 성분 섹션 안에서 "알려드려요/걸러줘요" 류의 약속을 하지 않는다
-    // (피부나이 섹션의 "알려드려요"는 실제로 계산해 주는 값이라 대상 아님)
+    // (피부 컨디션 섹션의 "알려드려요"는 실제로 계산해 주는 값이라 대상 아님)
     const warnings = screen.getByTestId('beauty-warnings');
     expect(warnings.textContent ?? '').not.toMatch(/알려드려요|걸러줘요/);
     expect(
