@@ -30,20 +30,20 @@ export interface UserRowsPurgeResult {
  *
  * prod 스키마는 마이그레이션 수동 gap-apply 이력 탓에 편차가 있고, 목록에는
  * 옛 이름도 안전하게 남겨두기 때문에 "없는 테이블" 응답이 정상적으로 발생한다.
- * PostgREST는 스키마 캐시 미스를 PGRST205로 돌려주므로 코드까지 함께 본다
- * (메시지만 보면 실패로 잘못 집계돼 진짜 실패가 묻힌다).
+ *
+ * **확정 오류 코드로만 판별한다.** 예전엔 메시지 부분일치도 함께 봤는데,
+ * `message.includes('column')`이 `permission denied for column ...`(42501)·
+ * RLS 거부 메시지까지 "부재"로 삼켜, **행이 남았는데 파기 성공으로 집계**됐다.
+ * 계정 삭제는 이 집계를 근거로 되돌릴 수 없는 처분(Clerk 삭제)을 하므로
+ * 오분류 하나가 곧 "사진·개인정보 잔존"이 된다. 애매하면 실패로 본다.
  */
 function isMissingRelation(error: { message?: string; code?: string } | null): boolean {
   if (!error) return false;
-  const message = error.message ?? '';
   return (
     error.code === 'PGRST205' || // 스키마 캐시에 테이블 없음
-    error.code === 'PGRST204' || // 컬럼 없음
+    error.code === 'PGRST204' || // 스키마 캐시에 컬럼 없음
     error.code === '42P01' || // undefined_table
-    error.code === '42703' || // undefined_column
-    message.includes('does not exist') ||
-    message.includes('Could not find the table') ||
-    message.includes('column')
+    error.code === '42703' // undefined_column
   );
 }
 

@@ -8,6 +8,7 @@ export {
   shareText,
   copyToClipboard,
   SHARE_LANDING_URL,
+  type ShareOutcome,
 } from './shareUtils';
 
 // 소셜 공유 (X, 카카오톡)

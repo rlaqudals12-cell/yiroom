@@ -122,6 +122,76 @@ describe('DELETE /api/user/account', () => {
     expect(deleteUser).toHaveBeenCalledWith('user-123');
   });
 
+  // 회귀: 파기 실패를 console.warn만 남기고 Clerk 계정을 지운 뒤 200을 돌려주던 결함.
+  // 계정이 사라지면 사용자는 다시 로그인할 수도, 남은 행·이미지를 지울 수도 없다
+  // ("사진·개인정보는 남았는데 재시도 불가" = GDPR Art.17·PIPA 위반 상태).
+  it('DB 파기가 실패하면 Clerk 계정을 삭제하지 않고 실패를 반환한다', async () => {
+    const { auth, clerkClient } = await import('@clerk/nextjs/server');
+    vi.mocked(auth).mockResolvedValue({ userId: 'user-123' } as never);
+    const deleteUser = vi.fn().mockResolvedValue({});
+    vi.mocked(clerkClient).mockResolvedValue(
+      mockClerkUser('test@example.com', deleteUser) as never
+    );
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // skin_analyses만 권한 오류로 실패 (부재 코드가 아니므로 진짜 실패)
+    mockFrom.mockImplementation((table: string) => ({
+      delete: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({
+          error:
+            table === 'skin_analyses'
+              ? { code: '42501', message: 'permission denied for column clerk_user_id' }
+              : null,
+        }),
+      }),
+    }));
+    mockStorageFrom.mockReturnValue({
+      list: vi.fn().mockResolvedValue({ data: [], error: null }),
+      remove: vi.fn().mockResolvedValue({ error: null }),
+    });
+
+    const { DELETE } = await import('@/app/api/user/account/route');
+    const response = await DELETE(createDeleteRequest({ confirmation: 'test@example.com' }));
+    const json = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(json.success).toBe(false);
+    expect(json.error).toBe('DELETION_FAILED');
+    // 핵심: 계정이 남아야 재시도할 수 있다
+    expect(deleteUser).not.toHaveBeenCalled();
+    // 사용자에게 재시도 가능함을 알린다
+    expect(json.message).toContain('다시 시도');
+    consoleError.mockRestore();
+  });
+
+  it('스토리지 파기가 실패해도 Clerk 계정을 삭제하지 않는다 (이미지 잔존 차단)', async () => {
+    const { auth, clerkClient } = await import('@clerk/nextjs/server');
+    vi.mocked(auth).mockResolvedValue({ userId: 'user-123' } as never);
+    const deleteUser = vi.fn().mockResolvedValue({});
+    vi.mocked(clerkClient).mockResolvedValue(
+      mockClerkUser('test@example.com', deleteUser) as never
+    );
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // DB는 모두 성공, 스토리지에 파일은 있는데 삭제가 실패 → failedBuckets 발생
+    mockFrom.mockImplementation(() => ({
+      delete: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
+    }));
+    mockStorageFrom.mockReturnValue({
+      list: vi.fn().mockResolvedValue({ data: [{ name: 'face.jpg', id: 'file-1' }], error: null }),
+      remove: vi.fn().mockResolvedValue({ error: { message: 'storage unavailable' } }),
+    });
+
+    const { DELETE } = await import('@/app/api/user/account/route');
+    const response = await DELETE(createDeleteRequest({ confirmation: 'test@example.com' }));
+    const json = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(json.success).toBe(false);
+    expect(deleteUser).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
   it('누락되어 있던 5축·트윈 테이블(hair/makeup/integrated/twins)을 파기한다', async () => {
     const { auth, clerkClient } = await import('@clerk/nextjs/server');
     vi.mocked(auth).mockResolvedValue({ userId: 'user-123' } as never);

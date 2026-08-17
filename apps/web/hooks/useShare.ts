@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { captureElementAsImage, shareImage } from '@/lib/share';
+import { captureElementAsImage, shareImage, SHARE_LANDING_URL } from '@/lib/share';
 import { toast } from 'sonner';
 
 interface UseShareOptions {
@@ -66,12 +66,20 @@ export function useShare(title: string, options?: UseShareOptions): UseShareRetu
         return;
       }
 
-      const success = await shareImage(blob, title, t('checkOnYiroom', { title }));
+      // 돌아올 링크 동반 — 파일 공유 미지원(데스크톱)에서도 유입 경로가 남는다
+      const outcome = await shareImage(
+        blob,
+        title,
+        t('checkOnYiroom', { title }),
+        SHARE_LANDING_URL
+      );
 
-      if (success) {
-        if (!navigator.share) {
-          toast.success(t('imageSaved'));
-        }
+      // 저장 폴백은 사용자에게 보이는 피드백이 없다 — 무엇이 일어났는지 명시한다
+      // (클립보드를 덮었다면 반드시 알린다)
+      if (outcome.method === 'download') {
+        toast.success(outcome.linkCopied ? t('imageSavedLinkCopied') : t('imageSaved'), {
+          description: outcome.link,
+        });
       }
     } catch (error) {
       console.error('[이룸] 공유 오류:', error);

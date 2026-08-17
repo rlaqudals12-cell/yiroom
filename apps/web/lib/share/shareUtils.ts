@@ -11,20 +11,43 @@ import { shareLogger } from '@/lib/utils/logger';
  */
 export const SHARE_LANDING_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app'}/?ref=card`;
 
+/** 공유가 실제로 어떤 경로로 끝났는지 — 호출부가 정확히 고지하기 위한 결과 */
+export interface ShareOutcome {
+  /** 사용자에게 결과물이 전달됐는가 (공유 시트 완료 또는 파일 저장) */
+  ok: boolean;
+  /**
+   * - `web-share`: OS 공유 시트로 넘어감 (고지 불필요 — 시트가 곧 피드백)
+   * - `download`: 파일 저장 폴백 (데스크톱 등) — **반드시 고지 필요**
+   * - `cancelled`: 사용자가 공유 시트를 닫음
+   * - `failed`: 공유 실패
+   */
+  method: 'web-share' | 'download' | 'cancelled' | 'failed';
+  /** 폴백에서 링크를 클립보드에 복사했는가 (복사했으면 반드시 알려야 한다) */
+  linkCopied: boolean;
+  /** 폴백에서 사용자에게 보여줄 링크 (복사 실패 시 수동 복사용) */
+  link?: string;
+}
+
 /**
- * 이미지를 Web Share API로 공유하거나 다운로드
+ * 이미지를 Web Share API로 공유하거나, 미지원 시 저장 + 링크 복사로 폴백한다.
+ *
+ * 왜 폴백에도 링크가 필요한가: 데스크톱 브라우저는 대부분 파일 공유(canShare({files}))를
+ * 지원하지 않아 저장만 됐다. 그러면 카드에 클릭 가능한 링크가 없어 **공유 100건 = 유입 0건**
+ * (SHARE_LANDING_URL 도입 취지가 데스크톱에서만 통째로 빠져 있었다).
+ * 단, 클립보드는 사용자의 것이다 — 조용히 덮지 않고 호출부가 고지하도록 결과로 알린다.
+ *
  * @param blob 공유할 이미지 Blob
  * @param title 공유 제목
  * @param text 공유 텍스트 (선택)
  * @param url 돌아올 링크 (선택) — 공유 시트의 url + text 양쪽에 실린다
- * @returns 공유 성공 여부
+ * @returns 공유 경로와 클립보드 복사 여부
  */
 export async function shareImage(
   blob: Blob,
   title: string,
   text?: string,
   url?: string
-): Promise<boolean> {
+): Promise<ShareOutcome> {
   const file = new File([blob], `${title}.png`, { type: 'image/png' });
 
   // Web Share API 지원 확인 (파일 공유 가능 여부)
@@ -43,19 +66,30 @@ export async function shareImage(
         ...(url ? { url } : {}),
         files: [file],
       });
-      return true;
+      return { ok: true, method: 'web-share', linkCopied: false };
     } catch (error) {
       // 사용자가 취소한 경우는 에러로 처리하지 않음
-      if ((error as Error).name !== 'AbortError') {
+      const aborted = (error as Error).name === 'AbortError';
+      if (!aborted) {
         shareLogger.error('공유 실패:', error);
       }
-      return false;
+      return { ok: false, method: aborted ? 'cancelled' : 'failed', linkCopied: false };
     }
   }
 
-  // 폴백: 이미지 다운로드
+  // 폴백(파일 공유 미지원 — 데스크톱 대부분): 이미지 저장 + 돌아올 링크 복사
+  return saveWithLink(blob, title, url);
+}
+
+/**
+ * 파일 공유가 불가능할 때의 폴백 — 이미지를 저장하고 돌아올 링크를 클립보드에 복사한다.
+ * 복사 성공 여부를 그대로 돌려줘, 호출부가 "링크도 복사했어요"라고 고지하거나
+ * (복사 실패 시) 링크를 화면에 보여줄 수 있게 한다 — 조용한 클립보드 덮어쓰기 금지.
+ */
+async function saveWithLink(blob: Blob, title: string, url?: string): Promise<ShareOutcome> {
   downloadImage(blob, title);
-  return true;
+  const linkCopied = url ? await copyToClipboard(url) : false;
+  return { ok: true, method: 'download', linkCopied, ...(url ? { link: url } : {}) };
 }
 
 /**

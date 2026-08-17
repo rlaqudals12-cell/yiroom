@@ -373,15 +373,19 @@ export function useAnalysisShare(data: ShareCardData, title: string): UseAnalysi
       }
 
       // 공유 — 돌아올 링크(SHARE_LANDING_URL) 동반. 이미지만 공유하면 유입 경로가 없다
-      const success = await shareImage(
+      const outcome = await shareImage(
         blob,
         title,
         t('checkOnYiroom', { title }),
         SHARE_LANDING_URL
       );
 
-      if (success && !navigator.share) {
-        toast.success(t('imageSaved'));
+      // 파일 공유 미지원(데스크톱 대부분) → 저장 + 링크 복사. 조용히 끝내지 않고 고지한다
+      // (예전 조건 `!navigator.share`는 share는 있고 파일만 못 쓰는 브라우저를 놓쳐 무음이었다)
+      if (outcome.method === 'download') {
+        toast.success(outcome.linkCopied ? t('imageSavedLinkCopied') : t('imageSaved'), {
+          description: outcome.link,
+        });
       }
     } catch (error) {
       console.error('[이룸] 공유 오류:', error);

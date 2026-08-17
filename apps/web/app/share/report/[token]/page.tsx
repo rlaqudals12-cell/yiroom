@@ -8,7 +8,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getSharedReport } from '@/lib/share/report';
+import { AlertTriangle } from 'lucide-react';
+import { getSharedReport, type PublicAxisCode } from '@/lib/share/report';
 import { LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
 
 interface PageProps {
@@ -41,6 +42,18 @@ const HAIR_TYPE_LABELS: Record<string, string> = {
   wavy: '반곱슬',
   curly: '곱슬',
   coily: '강한 곱슬',
+};
+
+/**
+ * 축 코드 → 한국어 라벨. 소유자 화면(AxisFallbackNotice)의 `axes.*` 번역과 같은 문구.
+ * 이 페이지는 비로그인 공개 라우트라 하드코딩 한국어 문법을 유지한다(ko 단독 선공개).
+ */
+const AXIS_LABELS: Record<PublicAxisCode, string> = {
+  personal_color: '퍼스널컬러',
+  skin: '피부',
+  body: '체형',
+  hair: '헤어',
+  makeup: '메이크업',
 };
 
 function seasonLabel(season: string | undefined): string {
@@ -86,6 +99,8 @@ export default async function SharedReportPage({ params }: PageProps) {
     month: 'long',
     day: 'numeric',
   });
+  // 링크를 받은 사람은 소유자보다 맥락이 없다 — 샘플 대체를 숨기면 그대로 개인 진단으로 읽힌다
+  const fallbackLabels = report.fallbackAxes.map((axis) => AXIS_LABELS[axis]);
 
   return (
     <div data-testid="shared-report-page" className="min-h-screen bg-background">
@@ -98,8 +113,33 @@ export default async function SharedReportPage({ params }: PageProps) {
               ? `${seasonLabel(report.personalColor.season)} 스타일 리포트`
               : '나만의 스타일 리포트'}
           </h1>
-          <p className="text-xs text-muted-foreground">{date} · AI 분석 기반</p>
+          {/* 전 축이 샘플이면 "AI 분석 기반"은 거짓 — 고지 배너가 실제 상태를 말한다 */}
+          <p className="text-xs text-muted-foreground">
+            {date}
+            {fallbackLabels.length === 0 && ' · AI 분석 기반'}
+          </p>
         </header>
+
+        {/* 샘플(Mock) 대체 고지 — 소유자 화면(AxisFallbackNotice)과 동일 문구 */}
+        {fallbackLabels.length > 0 && (
+          <div
+            className="rounded-2xl border bg-card p-4"
+            data-testid="shared-report-fallback-notice"
+            role="alert"
+          >
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+              <div className="flex-1 space-y-1.5">
+                <p className="text-sm font-semibold text-foreground">일부 축은 샘플 결과예요</p>
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium">{fallbackLabels.join(', ')}</span> 축은 AI 분석
+                  서비스를 일시적으로 이용할 수 없어 샘플(예시) 결과를 표시하고 있어요. 실제 분석
+                  결과가 아니므로 참고용으로만 봐주세요.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 페르소나 한 줄 */}
         {report.persona && (
@@ -265,7 +305,9 @@ export default async function SharedReportPage({ params }: PageProps) {
         </section>
 
         <p className="text-center text-[10px] text-muted-foreground">
-          이 리포트는 AI 분석 결과이며 사진 등 개인 정보는 포함되지 않아요 · yiroom
+          {fallbackLabels.length > 0
+            ? '이 리포트에는 샘플(예시)로 대체된 축이 포함돼 있어요 · 사진 등 개인 정보는 포함되지 않아요 · yiroom'
+            : '이 리포트는 AI 분석 결과이며 사진 등 개인 정보는 포함되지 않아요 · yiroom'}
         </p>
       </div>
     </div>
