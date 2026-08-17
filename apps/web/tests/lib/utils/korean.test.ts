@@ -11,6 +11,7 @@ import {
   topicParticle,
   withSubjectParticle,
   withTopicParticle,
+  objectParticle,
 } from '@/lib/utils/korean';
 
 describe('hasBatchim', () => {
@@ -51,5 +52,24 @@ describe('조사 선택', () => {
   it('쉼표로 이어붙인 목록은 마지막 이름의 받침을 따른다', () => {
     expect(withSubjectParticle('아우터, 신발')).toBe('아우터, 신발이');
     expect(withTopicParticle('신발, 상의')).toBe('신발, 상의는');
+  });
+});
+
+describe('objectParticle (을/를)', () => {
+  it('받침에 따라 을/를을 고른다', () => {
+    expect(objectParticle('신발')).toBe('을');
+    expect(objectParticle('상의')).toBe('를');
+  });
+
+  it('괄호·숫자로 끝나면 마지막 한글 음절로 판정한다 — 문장 조립 케이스', () => {
+    // "…72점)" → "점"(받침 ㅁ) → 을
+    expect(objectParticle('복합성 피부 (피부 컨디션 점수 72점)')).toBe('을');
+    // "…체형" → 받침 ㅇ → 을
+    expect(objectParticle('따뜻한 톤, 스트레이트 체형')).toBe('을');
+  });
+
+  it('한글이 없으면 기본값 를', () => {
+    expect(objectParticle('ZARA')).toBe('를');
+    expect(objectParticle('')).toBe('를');
   });
 });

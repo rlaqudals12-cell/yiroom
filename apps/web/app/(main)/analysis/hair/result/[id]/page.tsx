@@ -73,6 +73,14 @@ function getDescription(name: string, value: number): string {
   return `${name} 수치가 낮은 편이라 집중 케어하면 개선될 수 있어요`;
 }
 
+// 손상도(damage) 전용 설명 — 값은 높을수록 손상이 적다(정본: AI 프롬프트 손상도 정의).
+// 범용 문구를 쓰면 "손상 수치가 낮아 집중 케어 필요"처럼 방향이 뒤집혀 읽힌다
+function getDamageDescription(value: number): string {
+  if (value >= 71) return '손상이 거의 없어요 — 현재 루틴을 유지하면 돼요';
+  if (value >= 41) return '가벼운 손상이 있어 트리트먼트로 관리하면 좋아져요';
+  return '손상이 큰 편이라 집중 케어가 필요해요';
+}
+
 // DB 타입 정의
 interface DbHairAnalysis {
   id: string;
@@ -146,7 +154,15 @@ function transformDbToResult(dbData: DbHairAnalysis): HairAnalysisResultView {
     metrics: [
       createMetric('hydration', '수분도', dbData.hydration),
       createMetric('scalp', '두피 건강', dbData.scalp_health),
-      createMetric('damage', '손상도', dbData.damage_level),
+      // 손상도 점수는 "높을수록 건강" — "손상도 85점·좋음"으로 읽히는 방향 오독을 막기 위해
+      // 값 방향과 일치하는 이름(모발 건강) + 손상 맥락 전용 설명을 쓴다
+      {
+        id: 'damage',
+        name: '모발 건강',
+        value: dbData.damage_level ?? 50,
+        status: getStatus(dbData.damage_level ?? 50),
+        description: getDamageDescription(dbData.damage_level ?? 50),
+      },
       createMetric('density', '모발 밀도', dbData.density),
       createMetric('elasticity', '탄력', dbData.elasticity),
       createMetric('shine', '윤기', dbData.shine),

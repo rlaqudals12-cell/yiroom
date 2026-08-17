@@ -181,8 +181,9 @@ describe('알림 생성 함수', () => {
       expect(alert.targetModule).toBe('nutrition');
     });
 
-    it('손상도가 높으면 회복 메시지를 표시한다', () => {
-      const alert = createHairShineBoostAlert(60);
+    it('모발 건강 점수가 낮으면(손상 큼) 회복 메시지를 표시한다', () => {
+      // damageLevel = 높을수록 건강(AI 프롬프트 정본) — 50 미만이 손상 상태
+      const alert = createHairShineBoostAlert(40);
 
       expect(alert.message).toContain('손상된 모발 회복');
     });

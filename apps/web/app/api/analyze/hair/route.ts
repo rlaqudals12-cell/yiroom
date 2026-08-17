@@ -224,9 +224,10 @@ export async function POST(req: NextRequest) {
         alerts.push(createHairLossPreventionAlert(densityScore, riskLevel));
       }
 
-      // 모발 손상도 기반 윤기 알림
-      const damageLevel = getMetricValue('damage') ?? 30;
-      if (damageLevel > 40) {
+      // 모발 손상도 기반 윤기 알림 — damage 점수는 높을수록 건강(AI 프롬프트 정본)이라
+      // 낮을 때가 손상 상태다. 기본값 70 = 지표 부재 시 알림 미발송(중립).
+      const damageLevel = getMetricValue('damage') ?? 70;
+      if (damageLevel < 60) {
         alerts.push(createHairShineBoostAlert(damageLevel));
       }
 

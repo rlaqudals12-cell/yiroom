@@ -428,7 +428,7 @@ export function ChatInterface({
                 data-testid="coach-photo-hint"
               >
                 <ImagePlus className="h-3.5 w-3.5" aria-hidden="true" />
-                사진을 보내면 나에게 어울리는지 판정해드려요
+                사진을 보내면 잘 어울리는지 판정해드려요
               </p>
 
               {/* 카테고리 탭 (부차 위계 — 주제별로 더 물어보기) */}
@@ -549,7 +549,7 @@ export function ChatInterface({
                 className="h-14 w-14 rounded-lg object-cover border"
               />
               <span className="text-xs text-muted-foreground flex-1">
-                사진과 함께 질문해요 — 비워두면 &quot;어울릴까요?&quot;로 물어볼게요
+                사진이 질문과 함께 전송돼요 — 비워두면 &quot;어울릴까요?&quot;로 물어볼게요
               </span>
               <button
                 type="button"

@@ -158,8 +158,10 @@ export async function POST(req: NextRequest) {
         avoidStyles: mockResult.avoidStyles,
         insight: mockResult.insight,
         styleRecommendations: mockResult.styleRecommendations,
-        confidence: 85,
-        matchedFeatures: 4,
+        // 위장 수치 금지: Mock은 특징 대조를 하지 않았으므로 지어낸 85%·4개 일치를 저장하지
+        // 않는다. 0은 falsy → DB엔 null 저장, 근거 카드 결론·신뢰 푸터는 자동 미표시.
+        confidence: 0,
+        matchedFeatures: 0,
         // 분석 근거 데이터 (Mock)
         analysisEvidence: {
           shoulderLine: selectByKey(
@@ -214,8 +216,9 @@ export async function POST(req: NextRequest) {
           avoidStyles: mockResult.avoidStyles,
           insight: mockResult.insight,
           styleRecommendations: mockResult.styleRecommendations,
-          confidence: 85,
-          matchedFeatures: 4,
+          // 위장 수치 금지 — 위 Mock 경로와 동일 근거
+          confidence: 0,
+          matchedFeatures: 0,
           // 분석 근거 데이터 (Mock)
           analysisEvidence: {
             shoulderLine: selectByKey(

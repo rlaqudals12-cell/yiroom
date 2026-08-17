@@ -93,7 +93,9 @@ async function reachResultViaPhoto(user: ReturnType<typeof userEvent.setup>) {
           careTips: ['관리 잘 하고 계세요'],
           analyzedAt: new Date().toISOString(),
         },
-        data: { id: 'photo-result-1' },
+        // id 없음 = 정본 리포트로 리다이렉트하지 않는 인라인 폴백 경로를 검증
+        // (id가 있으면 /analysis/hair/result/[id]로 이동 — 별도 테스트)
+        data: {},
       }),
   });
 
@@ -574,7 +576,7 @@ describe('HairAnalysisPage 엣지 케이스', () => {
   });
 
   describe('API 호출 성공 시 결과 표시', () => {
-    it('분석 API 성공 시 결과 단계로 전환된다', async () => {
+    it('분석 API 성공 시(id 존재) 정본 결과 페이지로 이동한다', async () => {
       const user = userEvent.setup();
 
       mockFetch.mockResolvedValue({
@@ -612,8 +614,9 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       const analyzeButton = screen.getByLabelText('hair.startAnalysisAria');
       await user.click(analyzeButton);
 
+      // 피부 축과 동일 플로우 — 공유·제품 매칭이 있는 result/[id]가 결과의 정본
       await waitFor(() => {
-        expect(screen.getByTestId('hair-analysis-result')).toBeInTheDocument();
+        expect(mockPush).toHaveBeenCalledWith('/analysis/hair/result/new-result-123');
       });
     });
   });

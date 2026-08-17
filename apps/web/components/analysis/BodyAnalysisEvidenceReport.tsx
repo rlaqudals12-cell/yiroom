@@ -153,12 +153,18 @@ export default function BodyAnalysisEvidenceReport({
             >
               <ReliabilityIcon className={cn('w-4 h-4', reliabilityStyle.text)} />
               <span className={cn('text-sm font-medium', reliabilityStyle.text)}>
-                신뢰도:{' '}
-                {selectByKey(imageQuality.analysisReliability, {
-                  high: '높음',
-                  medium: '중간',
-                  low: '낮음',
-                }, '중간')}
+                {/* "촬영" 접두 — 하단 결론의 판정 신뢰도(confidence%)와 다른 지표(촬영 조건 기반)라
+                    같은 "신뢰도" 라벨이면 한 화면에서 모순 표기로 읽힌다 */}
+                촬영 신뢰도:{' '}
+                {selectByKey(
+                  imageQuality.analysisReliability,
+                  {
+                    high: '높음',
+                    medium: '중간',
+                    low: '낮음',
+                  },
+                  '중간'
+                )}
               </span>
             </div>
           )}
@@ -268,11 +274,15 @@ export default function BodyAnalysisEvidenceReport({
             <div className="flex flex-wrap gap-2">
               {/* 촬영 각도 */}
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-xs">
-                {selectByKey(imageQuality.angle, {
-                  front: '정면',
-                  side: '측면',
-                  angled: '비스듬',
-                }, '비스듬')}
+                {selectByKey(
+                  imageQuality.angle,
+                  {
+                    front: '정면',
+                    side: '측면',
+                    angled: '사선',
+                  },
+                  '사선'
+                )}
               </span>
               {/* 자세 */}
               <span
@@ -283,7 +293,7 @@ export default function BodyAnalysisEvidenceReport({
                     : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
                 )}
               >
-                {imageQuality.poseNatural ? '자연스러운 포즈' : '비자연스러운 포즈'}
+                {imageQuality.poseNatural ? '자연스러운 포즈' : '부자연스러운 포즈'}
               </span>
               {/* 의류 핏 */}
               <span
@@ -294,11 +304,15 @@ export default function BodyAnalysisEvidenceReport({
                     : 'bg-muted'
                 )}
               >
-                {selectByKey(imageQuality.clothingFit, {
-                  fitted: '핏한 의류',
-                  loose: '루즈핏',
-                  oversized: '오버사이즈',
-                }, '오버사이즈')}
+                {selectByKey(
+                  imageQuality.clothingFit,
+                  {
+                    fitted: '핏한 의류',
+                    loose: '루즈핏',
+                    oversized: '오버사이즈',
+                  },
+                  '오버사이즈'
+                )}
               </span>
             </div>
           </div>
@@ -314,7 +328,7 @@ export default function BodyAnalysisEvidenceReport({
                   <span className={cn('font-bold', theme.primary)}>
                     {selectByKey(bodyType, { S: '스트레이트', W: '웨이브', N: '내추럴' }, '내추럴')}
                   </span>{' '}
-                  체형으로 판정되었어요. (신뢰도: {confidence}%)
+                  체형으로 판정되었어요. (판정 신뢰도: {confidence}%)
                 </>
               ) : (
                 <>

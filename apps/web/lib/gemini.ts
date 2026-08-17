@@ -3755,7 +3755,7 @@ const HAIR_ANALYSIS_PROMPT = `당신은 전문 트리콜로지스트(모발/두�
   "metrics": [
     {"id": "hydration", "label": "수분도", "value": [0-100], "status": "[good|normal|warning]", "description": "[모발 수분 상태 설명]"},
     {"id": "scalp", "label": "두피 건강", "value": [0-100], "status": "[good|normal|warning]", "description": "[두피 상태 설명]"},
-    {"id": "damage", "label": "손상도", "value": [0-100], "status": "[good|normal|warning]", "description": "[손상 정도 설명 - 높을수록 건강]"},
+    {"id": "damage", "label": "모발 건강", "value": [0-100], "status": "[good|normal|warning]", "description": "[손상 정도 설명 - 높을수록 건강]"},
     {"id": "density", "label": "모발 밀도", "value": [0-100], "status": "[good|normal|warning]", "description": "[모발 밀도 설명]"},
     {"id": "elasticity", "label": "탄력", "value": [0-100], "status": "[good|normal|warning]", "description": "[탄력 상태 설명]"},
     {"id": "shine", "label": "윤기", "value": [0-100], "status": "[good|normal|warning]", "description": "[윤기 상태 설명]"}

@@ -22,6 +22,7 @@ import {
   outputLanguageDirective,
   type OutputLocale,
 } from '@/lib/gemini/client';
+import { objectParticle } from '@/lib/utils/korean';
 import { getBodyShapeLabel } from '@/lib/body';
 import { skinTypeKo, faceShapeKo, bodyDescKo, seasonKo, toneKo, undertoneKo } from '../labels';
 import type {
@@ -245,9 +246,11 @@ function generateMockPersona(summary: AxisSummary): PersonaProfile {
       : '차분한 빛을 품은 사람'
     : '당신만의 색을 가진 사람';
 
+  // "을(를)" 병기 금지 — 마지막 한글 받침으로 조사를 확정한다(괄호 병기 끝 대응)
+  const joinedParts = parts.join(', ');
   const narrative =
     parts.length > 0
-      ? `당신은 ${parts.join(', ')}을(를) 가진 사람이에요. 분석 결과가 말하는 당신은 하나의 인상으로 엮일 수 있어요.`
+      ? `당신은 ${joinedParts}${objectParticle(joinedParts)} 가진 사람이에요. 분석 결과가 말하는 당신은 하나의 인상으로 엮일 수 있어요.`
       : '분석 결과가 준비되면 당신만의 프로필을 그려드릴게요.';
 
   return {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
@@ -47,6 +48,7 @@ interface ExistingAnalysis {
 }
 
 export default function HairAnalysisPage() {
+  const router = useRouter();
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   const locale = useLocale();
@@ -148,7 +150,15 @@ export default function HairAnalysisPage() {
 
       // 분석 완료 → 홈/[나] 탭 5분 캐시 즉시 무효화 (stale "분석 0개" 방지)
       invalidateAnalysisCache();
-      setStep('result');
+
+      // 정본 리포트 페이지로 이동(피부 축과 동일 플로우) — 인라인 요약은 얇은 중복 표면이라
+      // 공유·제품 매칭·염색 처방이 있는 result/[id]가 결과의 정본(One Canon).
+      // id가 없을 때만 인라인 결과로 폴백(우아한 실패).
+      if (data.data?.id) {
+        router.push(`/analysis/hair/result/${data.data.id}`);
+      } else {
+        setStep('result');
+      }
     } catch (err) {
       console.error('[H-1] Analysis error:', err);
       setError(t('error.analysisProblem'));
@@ -156,7 +166,7 @@ export default function HairAnalysisPage() {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [imageFile, isSignedIn]);
+  }, [imageFile, isSignedIn, router, t]);
 
   // 다시 분석하기
   const handleRetry = useCallback(() => {

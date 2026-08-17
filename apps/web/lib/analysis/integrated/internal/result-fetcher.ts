@@ -75,3 +75,26 @@ export async function fetchIntegratedResult(sessionId: string): Promise<ResultPa
     },
   };
 }
+
+/**
+ * 세션에 퍼스널컬러 축이 없을 때의 프로필 폴백 — 사용자의 최신 퍼컬 진단 레코드.
+ *
+ * 왜: 축 결과는 session_id FK로만 조회되므로, 단독 퍼컬 진단을 이미 마친 사용자도
+ * 해당 세션에 퍼컬이 없으면 리포트·공유카드가 "퍼컬 없음"으로 퇴화(빈 카드)했다.
+ * 실측된 본인 진단만 반영한다(지어내지 않음). RLS로 본인 행만 반환.
+ */
+export async function fetchLatestPersonalColor(): Promise<AxisDbRecord | null> {
+  const supabase = await createClerkSupabaseClient();
+  const { data, error } = await supabase
+    .from('personal_color_assessments')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[ResultFetcher] pc profile fallback fetch error:', error.message);
+    return null;
+  }
+  return (data as AxisDbRecord | null) ?? null;
+}

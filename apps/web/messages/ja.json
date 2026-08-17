@@ -559,6 +559,7 @@
         "retryHint": "失敗した軸は個別分析で再度お試しください。",
         "reanalyzeAxis": "{axis}を再分析"
       },
+      "pcProfileFallback": "今回のセッションではパーソナルカラーが分析されなかったため、直近のパーソナルカラー診断結果を反映しています。",
       "persona": {
         "ariaLabel": "マイプロフィール",
         "badge": "マイプロフィール",
@@ -582,7 +583,9 @@
         "finishLabel": "カード仕上げ",
         "finishMatte": "マット",
         "finishFoil": "ホイル",
-        "invite": "あなたの季節は？"
+        "invite": "あなたの季節は？",
+        "paletteEmptyNotice": "パーソナルカラー分析を完了すると、カードにあなたのパレットが表示されます。",
+        "paletteEmptyCta": "パーソナルカラーを分析する"
       },
       "draping": {
         "heading": "ドレーピング比較",

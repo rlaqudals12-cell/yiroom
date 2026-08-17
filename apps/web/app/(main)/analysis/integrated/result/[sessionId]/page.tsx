@@ -12,7 +12,13 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { CalendarCheck, ChevronRight } from 'lucide-react';
-import { fetchIntegratedResult } from '@/lib/analysis/integrated/internal/result-fetcher';
+import {
+  fetchIntegratedResult,
+  fetchLatestPersonalColor,
+} from '@/lib/analysis/integrated/internal/result-fetcher';
+// internal 소비 관행(result-fetcher와 동일) — 구버전 세션에 저장된 페르소나 문구
+// (원시 영문 피부타입·"바이탈리티"·"을(를)" 병기)를 표시 시점에 정본 라벨로 교정.
+import { repairLegacyPersona } from '@/lib/analysis/integrated/internal/persona-repair';
 import type { AxisDbRecord } from '@/lib/analysis/integrated/internal/result-fetcher';
 import { hasAnyClosetItems } from '@/lib/analysis/integrated/internal/closet-check';
 // internal 소비 관행(result-fetcher·closet-check와 동일) — 세션 얼굴 사진의 서명 URL 발급.
@@ -397,6 +403,20 @@ function buildAxisSummaries(
   };
 }
 
+/**
+ * 퍼컬 축 레코드 해석 — 프로필 폴백(ADR-109 프로필 중심).
+ * 이 세션에 퍼컬 축이 없으면 사용자의 최신 단독 진단을 반영한다 — 단독 퍼컬을 마친
+ * 사용자의 공유카드·리포트가 빈 껍데기로 퇴화하던 결함 수리(2026-08-17).
+ * 실측된 본인 진단만 사용(지어내지 않음), 반영 시 페이지 고지로 정직하게 표시.
+ */
+async function resolvePcRecord(
+  sessionPc: AxisDbRecord | null
+): Promise<{ pcRecord: AxisDbRecord | null; pcFromProfile: boolean }> {
+  if (sessionPc) return { pcRecord: sessionPc, pcFromProfile: false };
+  const profileRecord = await fetchLatestPersonalColor();
+  return { pcRecord: profileRecord, pcFromProfile: profileRecord !== null };
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('analysis.integratedResult');
   return {
@@ -452,6 +472,10 @@ export default async function IntegratedResultPage({
   }
 
   const { session, axes } = data;
+  const { pcRecord, pcFromProfile } = await resolvePcRecord(axes.personalColor);
+  // 저장된 persona는 생성 시점 문자열 — 구버전 Mock 템플릿의 원시값·조사 병기를 표시 시점 교정
+  const persona = repairLegacyPersona(session.persona ?? null);
+
   const axesCompleted = (session.axes_completed ?? []) as AxisCode[];
   const axesFailed = (session.axes_failed ?? []) as AxisCode[];
   // Mock Fallback으로 대체된 축 — 정직성 고지(AxisFallbackNotice)와 축별 usedFallback에 사용
@@ -466,7 +490,7 @@ export default async function IntegratedResultPage({
   // 왜: action-plan + cross-insights가 같은 AxisResult 입력을 받음 → 변환 1회로 공유
   const axisResults = {
     personalColor: toAxisResult<PersonalColorAxisData>(
-      axes.personalColor,
+      pcRecord,
       (r) => ({
         season: String(r.season ?? ''),
         tone: extractNested(r, 'image_analysis', 'tone') || String(r.season ?? ''),
@@ -532,7 +556,7 @@ export default async function IntegratedResultPage({
     avoid: personaWorst,
     accent: personaAccents,
     metals: personaMetals,
-  } = resolveCardPalettes(axes.personalColor, pcData, uiLocale);
+  } = resolveCardPalettes(pcRecord, pcData, uiLocale);
 
   // 서명 뱃지 — 퍼컬 외 성공 축만(퍼컬은 히어로가 담당, 중복 금지). 실패 축 지어내지 않음.
   const personaBadges: PersonaBadge[] = [
@@ -559,7 +583,7 @@ export default async function IntegratedResultPage({
   });
 
   // 축별 심화 링크 요약 (원시 영문값 노출 방지 — 공용 라벨 헬퍼 사용, 새 fetch 없음)
-  const axisSummaries = buildAxisSummaries(axes, uiLocale);
+  const axisSummaries = buildAxisSummaries({ ...axes, personalColor: pcRecord }, uiLocale);
 
   // 진단지 리포트(공유 3번째 포맷, 2026-07-16) — 채점표(종합점수·매력도·레이더) 없이
   // 속성표 + 5축 요약 + 신뢰도 + 재현성으로 신뢰를 만든다(외모 점수화 금지 원칙).
@@ -581,13 +605,11 @@ export default async function IntegratedResultPage({
   };
   // 계절 인장 — 리포트당 1개 절제(패널 합의)
   const reportSeal = sealTextFor(pcData, pcToneName, uiLocale);
-  const pcSubtype = axes.personalColor
-    ? extractNested(axes.personalColor, 'image_analysis', 'subtype')
-    : '';
+  const pcSubtype = pcRecord ? extractNested(pcRecord, 'image_analysis', 'subtype') : '';
   const reportAttrs = buildReportAttrs(
     pcData,
     pcSubtype,
-    axes.personalColor ? extractNested(axes.personalColor, 'image_analysis', 'contrastLevel') : '',
+    pcRecord ? extractNested(pcRecord, 'image_analysis', 'contrastLevel') : '',
     uiLocale,
     reportAttrLabels,
     Boolean(reportSeal)
@@ -621,7 +643,7 @@ export default async function IntegratedResultPage({
   );
   const reportData: PersonaReportData = {
     attrs: reportAttrs,
-    checklist: session.persona?.keyInsights,
+    checklist: persona?.keyInsights,
     accents: personaAccents,
     metals: personaMetals,
     axisRows: reportAxisRows,
@@ -630,7 +652,7 @@ export default async function IntegratedResultPage({
     sealText: reportSeal,
     avoidNote: reportAvoidNote,
     actionItems: actionPlan.items.map(({ title, why }) => ({ title, why })),
-    note: session.persona?.narrative,
+    note: persona?.narrative,
     confidenceText: confidenceLabelFor(pcData, usedFallbackSet.has('personal_color'), (value) =>
       t('reportCard.confidence', { value })
     ),
@@ -659,7 +681,7 @@ export default async function IntegratedResultPage({
             왜 최상단: 첫 미팅 산출물은 verdict가 먼저다 — 경고 2종이 히어로보다 먼저
             렌더되던 에러-퍼스트 위계를 교정(2026-08 배치 D). 정직성 계약(문구·
             usedFallback 노출·재분석 링크)은 아래 배너 2종에 전량 보존, 순서만 조정 */}
-        <PersonaNarrativeCard persona={session.persona} />
+        <PersonaNarrativeCard persona={persona} />
 
         {/* Partial Success 안내 — 히어로 바로 아래(정직성 유지, 위계만 격하) */}
         <PartialSuccessBanner axesCompleted={axesCompleted} axesFailed={axesFailed} />
@@ -667,11 +689,21 @@ export default async function IntegratedResultPage({
         {/* 정직성: Mock Fallback으로 대체된 축을 샘플 결과로 명시 (감사 B7) */}
         <AxisFallbackNotice usedFallback={usedFallbackAxes} />
 
+        {/* 프로필 폴백 고지 — 이 세션엔 퍼컬 축이 없어 최신 단독 진단을 반영했음을 정직하게 표시 */}
+        {pcFromProfile && (
+          <p
+            className="rounded-2xl border bg-card px-4 py-3 text-xs text-muted-foreground"
+            data-testid="pc-profile-fallback-notice"
+          >
+            {t('pcProfileFallback')}
+          </p>
+        )}
+
         {/* 정체성 공유 카드 — "뽐내기" 정서(2026-07-12 인사이트): 페르소나를 자랑 가능한
             이미지 배지로. 사진 미포함(생체정보), 성공 축 뱃지만 표시 */}
-        {session.persona?.oneLine && (
+        {persona?.oneLine && (
           <PersonaShareSection
-            oneLine={session.persona.oneLine}
+            oneLine={persona.oneLine}
             toneName={pcToneName}
             badges={personaBadges}
             palette={personaPalette}

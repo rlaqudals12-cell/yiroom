@@ -559,6 +559,7 @@
         "retryHint": "실패한 축은 개별 분석으로 다시 시도해주세요.",
         "reanalyzeAxis": "{axis} 다시 분석"
       },
+      "pcProfileFallback": "이번 세션에서는 퍼스널컬러가 분석되지 않아, 회원님의 최근 퍼스널컬러 진단 결과를 반영했어요.",
       "persona": {
         "ariaLabel": "내 프로필",
         "badge": "내 프로필",
@@ -582,7 +583,9 @@
         "finishLabel": "카드 마감 선택",
         "finishMatte": "매트",
         "finishFoil": "포일",
-        "invite": "너의 계절은?"
+        "invite": "너의 계절은?",
+        "paletteEmptyNotice": "퍼스널컬러 분석을 완료하면 카드에 나만의 팔레트가 채워져요.",
+        "paletteEmptyCta": "퍼스널컬러 분석하러 가기"
       },
       "draping": {
         "heading": "드레이핑 비교",
@@ -1437,7 +1440,7 @@
     "quickQuestionsHide": "빠른 질문 숨기기",
     "quickQuestionsShow": "빠른 질문 보기",
     "inputPlaceholder": "질문을 입력하세요...",
-    "disclaimer": "AI 답변은 참고용이며, 의료·영양·운동 전문가의 진료를 대체하지 않아요. 증상이 있으면 병원을 방문하세요.",
+    "disclaimer": "AI 답변은 참고용이며, 의료 전문가의 진료나 영양·운동 전문가의 상담을 대체하지 않아요. 증상이 있으면 병원을 방문하세요.",
     "category": {
       "general": "일반",
       "workout": "운동",
@@ -1460,7 +1463,7 @@
       "emptyHint": "새 대화를 시작해보세요",
       "messageCount": "{count}개 메시지",
       "deleteAria": "대화 삭제",
-      "recentLimit": "최근 20개의 대화가 표시됩니다"
+      "recentLimit": "최근 20개의 대화가 표시돼요"
     }
   },
   "nutritionUI": {

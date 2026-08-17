@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import { resolveSignedImageUrl } from '@/lib/storage';
 import {
   ArrowLeft,
   RefreshCw,
@@ -635,34 +636,15 @@ export default function SkinAnalysisResultPage() {
       setResult(transformedResult);
       setSkinType(dbData.skin_type);
 
-      // 이미지 URL 처리 (private bucket이므로 API로 signed URL 생성)
+      // 이미지 URL 처리 (private bucket이므로 signed URL로 해석).
+      // 레거시 레코드는 만료형 전체 URL이 저장돼 있어 그대로 쓰면 영구 "이미지 로드 실패"
+      // — 경로 추출 후 재서명한다 (lib/storage/resolve-image-url).
       if (dbData.image_url && dbData.image_url.length > 0) {
-        // 이미 전체 URL인지 확인 (구버전 호환)
-        if (dbData.image_url.startsWith('http')) {
-          setImageUrl(dbData.image_url);
+        const resolvedUrl = await resolveSignedImageUrl(dbData.image_url, 'skin-images');
+        if (resolvedUrl) {
+          setImageUrl(resolvedUrl);
         } else {
-          // API를 통해 signed URL 생성 (서버에서 service role 사용)
-          try {
-            const response = await fetch('/api/storage/signed-url', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                bucket: 'skin-images',
-                path: dbData.image_url,
-                expiresIn: 3600,
-              }),
-            });
-
-            if (response.ok) {
-              const { signedUrl } = await response.json();
-              setImageUrl(signedUrl);
-            } else {
-              const errorText = await response.text();
-              console.error('[S-1] Signed URL API 실패:', response.status, errorText);
-            }
-          } catch (urlError) {
-            console.error('[S-1] Signed URL 요청 실패:', urlError);
-          }
+          console.error('[S-1] Signed URL 해석 실패 — 시각화는 이미지 없음 안내로 폴백');
         }
       } else {
         console.warn('[S-1] DB에 image_url이 없습니다');
@@ -739,7 +721,15 @@ export default function SkinAnalysisResultPage() {
         .single();
 
       if (pcData?.face_image_url) {
-        setPcImageUrl(pcData.face_image_url);
+        // PC 레코드는 경로만 저장(신규) 또는 만료 전체 URL(구) — 둘 다 재서명 필요.
+        // 원값을 그대로 쓰면 경로가 상대 URL로 해석돼 404 → "이미지 로드 실패"였다.
+        const resolvedPcUrl = await resolveSignedImageUrl(
+          pcData.face_image_url,
+          'personal-color-images'
+        );
+        if (resolvedPcUrl) {
+          setPcImageUrl(resolvedPcUrl);
+        }
       }
       if (pcData?.season) {
         setPcSeason(pcData.season);

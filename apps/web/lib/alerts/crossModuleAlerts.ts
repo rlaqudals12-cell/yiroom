@@ -240,6 +240,9 @@ export function createHairLossPreventionAlert(
 
 /**
  * 모발 윤기 영양 추천 알림 생성 (H-1 → N-1)
+ *
+ * damageLevel은 AI 프롬프트 정본 기준 "높을수록 건강"(71-100=낮은 손상) 점수 —
+ * 낮을수록 손상이 크므로 50 미만이면 회복 메시지를 쓴다.
  */
 export function createHairShineBoostAlert(damageLevel: number): CrossModuleAlertData {
   const config = ALERT_TYPE_CONFIG.hair_shine_boost;
@@ -251,7 +254,7 @@ export function createHairShineBoostAlert(damageLevel: number): CrossModuleAlert
     targetModule: config.targetModule,
     title: '모발 윤기 영양 추천',
     message:
-      damageLevel > 50
+      damageLevel < 50
         ? '손상된 모발 회복을 위해 오메가-3, 비타민E를 추천해요'
         : '건강한 모발 윤기를 위해 영양 보충을 추천해요',
     priority: config.priority,

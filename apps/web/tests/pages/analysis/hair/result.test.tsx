@@ -244,11 +244,11 @@ describe('HairAnalysisResultPage', () => {
       });
     });
 
-    it('손상도 지표가 표시된다', async () => {
+    it('모발 건강(손상도) 지표가 표시된다', async () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('손상도')).toBeInTheDocument();
+        expect(screen.getByText('모발 건강')).toBeInTheDocument();
       });
     });
 
@@ -275,7 +275,7 @@ describe('HairAnalysisResultPage', () => {
       await waitFor(() => {
         expect(screen.getByText('수분도')).toBeInTheDocument();
         expect(screen.getByText('두피 건강')).toBeInTheDocument();
-        expect(screen.getByText('손상도')).toBeInTheDocument();
+        expect(screen.getByText('모발 건강')).toBeInTheDocument();
         expect(screen.getByText('모발 밀도')).toBeInTheDocument();
         expect(screen.getByText('탄력')).toBeInTheDocument();
         expect(screen.getByText('윤기')).toBeInTheDocument();

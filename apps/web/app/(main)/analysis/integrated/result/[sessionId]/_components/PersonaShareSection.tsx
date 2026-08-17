@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { track } from '@vercel/analytics';
 import { Download, Share2 } from 'lucide-react';
@@ -347,6 +348,20 @@ export function PersonaShareSection({
           )}
         </div>
       </div>
+
+      {/* 퍼컬 미진단(팔레트·진단명 모두 없음) — 카드가 "깨진 렌더"로 읽히지 않게 정직한
+          안내 + 완성 경로를 제시한다. 지어낸 팔레트로 채우는 것은 금지(정직성 계약) */}
+      {!toneName && palette.length === 0 && (
+        <div className="mt-3 text-center" data-testid="persona-share-palette-cta">
+          <p className="text-xs text-muted-foreground">{t('shareCard.paletteEmptyNotice')}</p>
+          <Link
+            href="/analysis/personal-color"
+            className="mt-1 inline-block text-xs font-medium text-primary hover:underline"
+          >
+            {t('shareCard.paletteEmptyCta')}
+          </Link>
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         <button

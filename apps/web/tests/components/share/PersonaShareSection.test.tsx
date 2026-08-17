@@ -141,6 +141,18 @@ describe('PersonaShareSection — 저장/공유 동작', () => {
     expect(screen.queryByTestId('report-photo')).toBeNull();
   });
 
+  it('퍼컬 미진단(팔레트·진단명 없음)이면 정직한 안내 + 퍼컬 분석 CTA를 보여준다', () => {
+    render(<PersonaShareSection oneLine="당신만의 색을 가진 사람" badges={[]} />);
+    const cta = screen.getByTestId('persona-share-palette-cta');
+    expect(cta).toBeInTheDocument();
+    expect(cta.querySelector('a')).toHaveAttribute('href', '/analysis/personal-color');
+  });
+
+  it('진단명이 있으면 팔레트 CTA를 노출하지 않는다', () => {
+    render(<PersonaShareSection oneLine="한 줄" badges={BADGES} toneName="뮤티드 서머" />);
+    expect(screen.queryByTestId('persona-share-palette-cta')).toBeNull();
+  });
+
   it('퍼스널컬러 팔레트를 카드에 전달해 스와치로 노출한다', () => {
     render(
       <PersonaShareSection

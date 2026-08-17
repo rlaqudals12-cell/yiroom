@@ -45,3 +45,20 @@ export function withSubjectParticle(word: string): string {
 export function withTopicParticle(word: string): string {
   return `${word}${topicParticle(word)}`;
 }
+
+/**
+ * 목적격 조사(을/를) — 끝의 괄호·숫자·기호를 건너뛰고 마지막 한글 음절의 받침으로 판정한다.
+ *
+ * 왜 스캔하는가: 목적격은 "복합성 피부 (컨디션 72점)"처럼 괄호 병기로 끝나는 문구 뒤에
+ * 붙는 문장 조립에 쓰여, 마지막 문자만 보는 hasBatchim으로는 오판한다("…점)를" 비문).
+ * 한글 음절이 아예 없으면 '를'(기본값).
+ */
+export function objectParticle(word: string): '을' | '를' {
+  for (let i = word.length - 1; i >= 0; i--) {
+    const code = word.charCodeAt(i);
+    if (code >= HANGUL_SYLLABLE_START && code <= HANGUL_SYLLABLE_END) {
+      return (code - HANGUL_SYLLABLE_START) % 28 !== 0 ? '을' : '를';
+    }
+  }
+  return '를';
+}

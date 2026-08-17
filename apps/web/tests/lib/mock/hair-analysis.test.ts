@@ -274,7 +274,7 @@ describe('generateMockHairAnalysisResult', () => {
 
     it('metric label이 한국어로 되어있다', () => {
       const result = generateMockHairAnalysisResult();
-      const expectedLabels = ['수분도', '두피 건강', '손상도', '모발 밀도', '탄력', '윤기'];
+      const expectedLabels = ['수분도', '두피 건강', '모발 건강', '모발 밀도', '탄력', '윤기'];
 
       result.metrics.forEach((metric) => {
         expect(expectedLabels).toContain(metric.label);
@@ -433,8 +433,8 @@ describe('generateMockHairAnalysisResult', () => {
         const damage = result.metrics.find((m) => m.id === 'damage')!.value;
         const density = result.metrics.find((m) => m.id === 'density')!.value;
 
-        // 손상도 metric value = 100 - damage, 따라서 원본 damage = 100 - value
-        const originalDamage = 100 - damage;
+        // damage metric value = 원본 damage 그대로 (높을수록 건강 — AI 프롬프트 정본과 일치)
+        const originalDamage = damage;
 
         if (hydration >= 50 && scalp >= 50 && originalDamage >= 50 && density >= 50) {
           expect(result.concerns).toContain('split-ends');

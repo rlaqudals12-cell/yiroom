@@ -237,9 +237,11 @@ export function generateMockHairAnalysisResult(): HairAnalysisResult {
     },
     {
       id: 'damage',
-      label: '손상도',
-      value: 100 - damage,
-      status: getStatus(100 - damage),
+      // 정본 = AI 프롬프트 손상도 정의(높을수록 건강, 71-100=낮은 손상).
+      // 과거 100-damage 반전 저장은 정본과 반대라 상태 배지·종합 점수가 뒤집혔다.
+      label: '모발 건강',
+      value: damage,
+      status: getStatus(damage),
       description: '모발 손상 정도 (높을수록 건강)',
     },
     {
