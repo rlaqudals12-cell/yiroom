@@ -48,12 +48,7 @@ import { BadgeCard } from '@/components/gamification';
 import { QRCodeDisplay } from '@/components/common/QRCodeDisplay';
 import { LevelBadgeFilled, LevelProgress as NewLevelProgress } from '@/components/common';
 import { getUserLevel, calculateUserLevelState, type UserLevelState } from '@/lib/levels';
-import {
-  getUserLevelInfo,
-  getUserBadges,
-  type LevelInfo,
-  type UserBadge,
-} from '@/lib/gamification';
+import { getAllBadges, getUserBadges, type UserBadge } from '@/lib/gamification';
 import { getUserChallengeStats, type ChallengeStats } from '@/lib/challenges';
 import { WellnessScoreRing, MyInfoSummaryCard, ProfileCardGrid } from '@/components/profile';
 import { IntegratedSessionPromptCard } from '@/app/(main)/home/_components/IntegratedSessionPromptCard';
@@ -65,10 +60,9 @@ import { useProfilePersona } from '@/hooks/useProfilePersona';
 
 // 프로필 데이터 타입
 interface ProfileData {
-  levelInfo: LevelInfo | null;
   recentBadges: UserBadge[];
   badgeStats: { total: number; earned: number; progress: number };
-  challengeStats: ChallengeStats;
+  challengeStats: ChallengeStats | null;
   workoutStreak: { current: number; longest: number } | null;
   nutritionStreak: { current: number; longest: number } | null;
   // 분석 결과 (5축 요약은 ProfileCardGrid가 useAnalysisStatus로 자체 조회 — ADR-111)
@@ -80,6 +74,155 @@ interface ProfileData {
   rankChange: number;
   // 새 등급 시스템
   userLevelState: UserLevelState | null;
+}
+
+type SupabaseClientLike = ReturnType<typeof useClerkSupabaseClient>;
+
+/**
+ * 배지 통계 — 전체 개수는 badges 테이블 실카운트.
+ *
+ * 예전엔 total이 23으로 하드코딩돼 배지를 추가/삭제하면 "N/23개"와 진행률이 즉시 거짓이 됐다.
+ * BADGES 플래그가 꺼진 동안은 호출 자체를 건너뛰므로 왕복 비용도 0이다.
+ */
+async function fetchBadgeSummary(
+  supabase: SupabaseClientLike,
+  userId: string
+): Promise<Pick<ProfileData, 'recentBadges' | 'badgeStats'>> {
+  const [userBadges, allBadges] = await Promise.all([
+    getUserBadges(supabase, userId),
+    getAllBadges(supabase),
+  ]);
+
+  const total = allBadges.length;
+  const earned = userBadges.length;
+
+  return {
+    // 최근 획득 배지 3개
+    recentBadges: [...userBadges]
+      .sort((a, b) => new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime())
+      .slice(0, 3),
+    badgeStats: {
+      total,
+      earned,
+      progress: total > 0 ? Math.round((earned / total) * 100) : 0,
+    },
+  };
+}
+
+/** 운동·식단 연속 기록 (WELLNESS_PHASE2 게이팅 시 미조회) */
+async function fetchStreaks(
+  supabase: SupabaseClientLike,
+  userId: string
+): Promise<Pick<ProfileData, 'workoutStreak' | 'nutritionStreak'>> {
+  const [workoutResult, nutritionResult] = await Promise.all([
+    supabase
+      .from('workout_streaks')
+      .select('current_streak, longest_streak')
+      .eq('user_id', userId)
+      .single(),
+    supabase
+      .from('nutrition_streaks')
+      .select('current_streak, longest_streak')
+      .eq('clerk_user_id', userId)
+      .single(),
+  ]);
+
+  return {
+    workoutStreak: workoutResult.data
+      ? { current: workoutResult.data.current_streak, longest: workoutResult.data.longest_streak }
+      : null,
+    nutritionStreak: nutritionResult.data
+      ? {
+          current: nutritionResult.data.current_streak,
+          longest: nutritionResult.data.longest_streak,
+        }
+      : null,
+  };
+}
+
+/** 웰니스 스코어 (WELLNESS_PHASE2 게이팅 시 미조회) */
+async function fetchWellnessScore(supabase: SupabaseClientLike, userId: string): Promise<number> {
+  const { data } = await supabase
+    .from('wellness_scores')
+    .select('total_score')
+    .eq('clerk_user_id', userId)
+    .order('calculated_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  return data?.total_score ?? 0;
+}
+
+/**
+ * 프로필 화면 데이터 일괄 조회.
+ *
+ * 게이팅된 섹션(배지·챌린지·연속기록·웰니스 스코어)은 렌더되지 않으므로 조회 자체를 건너뛴다 —
+ * 플래그 OFF 상태에서 매 진입마다 왕복 5건이 "결과를 버릴 목적으로" 실행되고 있었다.
+ */
+async function loadProfileData(supabase: SupabaseClientLike, userId: string): Promise<ProfileData> {
+  const wellnessEnabled = FEATURE_FLAGS.WELLNESS_PHASE2;
+  const badgesEnabled = FEATURE_FLAGS.BADGES;
+
+  // 병렬로 데이터 조회
+  const [
+    badgeSummary,
+    challengeStats,
+    friendsResult,
+    friendRequestsResult,
+    leaderboardResult,
+    wellnessScore,
+    streaks,
+    userLevelData,
+  ] = await Promise.all([
+    badgesEnabled ? fetchBadgeSummary(supabase, userId) : null,
+    wellnessEnabled ? getUserChallengeStats(supabase, userId) : null,
+    // 5축 분석 요약(퍼스널컬러·피부·체형 등)은 ProfileCardGrid가 useAnalysisStatus로 자체 조회 (ADR-111)
+    // 친구 수 (accepted 상태)
+    supabase
+      .from('friendships')
+      .select('id', { count: 'exact', head: true })
+      .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
+      .eq('status', 'accepted'),
+    // 친구 요청 수 (pending 상태, 내가 받은 요청)
+    supabase
+      .from('friendships')
+      .select('id', { count: 'exact', head: true })
+      .eq('addressee_id', userId)
+      .eq('status', 'pending'),
+    // 리더보드 순위
+    supabase
+      .from('leaderboard_cache')
+      .select('rank, previous_rank')
+      .eq('clerk_user_id', userId)
+      .eq('period', 'weekly')
+      .single(),
+    wellnessEnabled ? fetchWellnessScore(supabase, userId) : 0,
+    wellnessEnabled ? fetchStreaks(supabase, userId) : null,
+    // 새 등급 시스템 (분석·루틴 체크가 쌓는 활동 카운트)
+    getUserLevel(supabase, userId),
+  ]);
+
+  // 리더보드 순위 변화
+  const leaderData = leaderboardResult.data;
+
+  return {
+    recentBadges: badgeSummary?.recentBadges ?? [],
+    badgeStats: badgeSummary?.badgeStats ?? { total: 0, earned: 0, progress: 0 },
+    challengeStats,
+    workoutStreak: streaks?.workoutStreak ?? null,
+    nutritionStreak: streaks?.nutritionStreak ?? null,
+    // 분석 결과
+    wellnessScore,
+    // 소셜
+    friendCount: friendsResult.count ?? 0,
+    friendRequests: friendRequestsResult.count ?? 0,
+    weeklyRank: leaderData?.rank ?? null,
+    rankChange: leaderData ? (leaderData.previous_rank ?? leaderData.rank) - leaderData.rank : 0,
+    // 새 등급 시스템
+    userLevelState: userLevelData
+      ? calculateUserLevelState(userLevelData.totalActivityCount)
+      : null,
+  };
 }
 
 export default function ProfilePage() {
@@ -103,115 +246,7 @@ export default function ProfilePage() {
       }
 
       try {
-        // 병렬로 데이터 조회
-        const [
-          levelInfo,
-          userBadges,
-          challengeStats,
-          friendsResult,
-          friendRequestsResult,
-          leaderboardResult,
-          wellnessResult,
-        ] = await Promise.all([
-          getUserLevelInfo(supabase, user.id),
-          getUserBadges(supabase, user.id),
-          getUserChallengeStats(supabase, user.id),
-          // 5축 분석 요약(퍼스널컬러·피부·체형 등)은 ProfileCardGrid가 useAnalysisStatus로 자체 조회 (ADR-111)
-          // 친구 수 (accepted 상태)
-          supabase
-            .from('friendships')
-            .select('id', { count: 'exact', head: true })
-            .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
-            .eq('status', 'accepted'),
-          // 친구 요청 수 (pending 상태, 내가 받은 요청)
-          supabase
-            .from('friendships')
-            .select('id', { count: 'exact', head: true })
-            .eq('addressee_id', user.id)
-            .eq('status', 'pending'),
-          // 리더보드 순위
-          supabase
-            .from('leaderboard_cache')
-            .select('rank, previous_rank')
-            .eq('clerk_user_id', user.id)
-            .eq('period', 'weekly')
-            .single(),
-          // 웰니스 스코어
-          supabase
-            .from('wellness_scores')
-            .select('total_score')
-            .eq('clerk_user_id', user.id)
-            .order('calculated_at', { ascending: false })
-            .limit(1)
-            .single(),
-        ]);
-
-        // 스트릭 조회
-        const { data: workoutStreakData } = await supabase
-          .from('workout_streaks')
-          .select('current_streak, longest_streak')
-          .eq('user_id', user.id)
-          .single();
-
-        const { data: nutritionStreakData } = await supabase
-          .from('nutrition_streaks')
-          .select('current_streak, longest_streak')
-          .eq('clerk_user_id', user.id)
-          .single();
-
-        // 새 등급 시스템 데이터 조회
-        const userLevelData = await getUserLevel(supabase, user.id);
-        const userLevelState = userLevelData
-          ? calculateUserLevelState(userLevelData.totalActivityCount)
-          : null;
-
-        // 배지 통계 — 배지 섹션은 FEATURE_FLAGS.BADGES(현재 false)로 게이팅되어 미노출.
-        // 노출 재개 시 total 하드코딩(23) 대신 getAllBadges() 실카운트로 교체 필요.
-        const badgeStats = {
-          total: 23, // 전체 배지 수 (하드코딩 — BADGES 플래그 OFF 상태라 사용자 표면 미노출)
-          earned: userBadges.length,
-          progress: Math.round((userBadges.length / 23) * 100),
-        };
-
-        // 최근 획득 배지 3개
-        const recentBadges = userBadges
-          .sort((a, b) => new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime())
-          .slice(0, 3);
-
-        // 리더보드 순위 변화
-        const leaderData = leaderboardResult.data;
-        const weeklyRank = leaderData?.rank ?? null;
-        const rankChange = leaderData
-          ? (leaderData.previous_rank ?? leaderData.rank) - leaderData.rank
-          : 0;
-
-        setProfileData({
-          levelInfo,
-          recentBadges,
-          badgeStats,
-          challengeStats,
-          workoutStreak: workoutStreakData
-            ? {
-                current: workoutStreakData.current_streak,
-                longest: workoutStreakData.longest_streak,
-              }
-            : null,
-          nutritionStreak: nutritionStreakData
-            ? {
-                current: nutritionStreakData.current_streak,
-                longest: nutritionStreakData.longest_streak,
-              }
-            : null,
-          // 분석 결과
-          wellnessScore: wellnessResult.data?.total_score ?? 0,
-          // 소셜
-          friendCount: friendsResult.count ?? 0,
-          friendRequests: friendRequestsResult.count ?? 0,
-          weeklyRank,
-          rankChange,
-          // 새 등급 시스템
-          userLevelState,
-        });
+        setProfileData(await loadProfileData(supabase, user.id));
       } catch (error) {
         console.error('[ProfilePage] 데이터 조회 실패:', error);
         setLoadError(true);
@@ -430,19 +465,7 @@ export default function ProfilePage() {
             {/* 등급 진행률 */}
             {profileData?.userLevelState && (
               <FadeInUp delay={4}>
-                <section className="bg-card rounded-2xl border p-6">
-                  <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                    <TrendingUp className="h-5 w-5 text-purple-500" />
-                    나의 등급
-                  </h3>
-                  <NewLevelProgress
-                    level={profileData.userLevelState.level}
-                    currentCount={profileData.userLevelState.totalActivityCount}
-                    nextThreshold={profileData.userLevelState.nextLevelThreshold}
-                    progress={profileData.userLevelState.progress}
-                    showDetails
-                  />
-                </section>
+                <LevelProgressSection state={profileData.userLevelState} />
               </FadeInUp>
             )}
           </>
@@ -451,6 +474,12 @@ export default function ProfilePage() {
         {/* ── 탭: 활동 ── */}
         {activeTab === 'activity' && (
           <>
+            <FadeInUp>
+              <ActivitySummarySection
+                activityCount={profileData?.userLevelState?.totalActivityCount ?? 0}
+              />
+            </FadeInUp>
+
             {/* 스트릭 — ADR-098: 운동/식단 연속기록은 W/N 숨김 (WELLNESS_PHASE2) */}
             {FEATURE_FLAGS.WELLNESS_PHASE2 && (
               <FadeInUp>
@@ -558,24 +587,28 @@ export default function ProfilePage() {
               </FadeInUp>
             )}
 
-            {/* 챌린지 */}
-            <FadeInUp delay={2}>
-              <section className="bg-card rounded-2xl border p-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="flex items-center gap-2 text-lg font-semibold">
-                    <Target className="h-5 w-5 text-blue-500" />
-                    챌린지
-                  </h3>
-                  <Link
-                    href="/challenges"
-                    className="text-primary flex items-center gap-1 text-sm hover:underline"
-                  >
-                    챌린지 보기 <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </div>
-                <ChallengeStatsPanel stats={profileData?.challengeStats} />
-              </section>
-            </FadeInUp>
+            {/* 챌린지 — ADR-098: 챌린지 목록이 전부 운동·영양 의존이라 W/N 숨김 상태에선
+                달성 불가능한 목표만 노출됐다. 스트릭·배지와 동일하게 WELLNESS_PHASE2 게이팅.
+                (3-up 채점판 ChallengeStatsPanel도 이 섹션 안이라 함께 숨겨진다) */}
+            {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+              <FadeInUp delay={2}>
+                <section className="bg-card rounded-2xl border p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="flex items-center gap-2 text-lg font-semibold">
+                      <Target className="h-5 w-5 text-blue-500" />
+                      챌린지
+                    </h3>
+                    <Link
+                      href="/challenges"
+                      className="text-primary flex items-center gap-1 text-sm hover:underline"
+                    >
+                      챌린지 보기 <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                  <ChallengeStatsPanel stats={profileData?.challengeStats ?? undefined} />
+                </section>
+              </FadeInUp>
+            )}
           </>
         )}
 
@@ -692,12 +725,13 @@ export default function ProfilePage() {
               <ChevronRight className="text-muted-foreground h-4 w-4" />
             </Link>
             <Link
-              href="/capsule"
+              href="/capsule/daily"
               className="hover:bg-muted/50 flex items-center justify-between p-4 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Box className="h-5 w-5 text-gray-500" />
-                {/* 사용자 대면 명칭은 "오늘의 루틴"으로 통일 — 경로/식별자(capsule)는 유지. (배치 IA-3) */}
+                {/* 사용자 대면 명칭은 "오늘의 루틴"으로 통일 — 경로/식별자(capsule)는 유지. (배치 IA-3)
+                    링크는 정본 표면 /capsule/daily로 (/capsule은 캡슐 워드로브 대시보드). */}
                 <span>오늘의 루틴</span>
               </div>
               <ChevronRight className="text-muted-foreground h-4 w-4" />
@@ -801,6 +835,62 @@ export default function ProfilePage() {
 
       <BottomNav />
     </div>
+  );
+}
+
+/** 나의 등급 — 활동 0이면 "왜 0인지"를 알 방법이 없어 블록이 고장처럼 보이므로 안내를 덧붙인다 */
+function LevelProgressSection({ state }: { state: UserLevelState }): React.JSX.Element {
+  return (
+    <section className="bg-card rounded-2xl border p-6">
+      <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+        <TrendingUp className="h-5 w-5 text-purple-500" />
+        나의 등급
+      </h3>
+      <NewLevelProgress
+        level={state.level}
+        currentCount={state.totalActivityCount}
+        nextThreshold={state.nextLevelThreshold}
+        progress={state.progress}
+        showDetails
+      />
+      {state.totalActivityCount === 0 && (
+        <p className="text-muted-foreground mt-3 text-sm">
+          분석을 완료하거나 오늘의 루틴을 체크하면 활동이 쌓여요.
+        </p>
+      )}
+    </section>
+  );
+}
+
+/**
+ * 활동 기록 — 등급을 쌓는 활동이 무엇인지 알려주는 유일한 비게이팅 표면.
+ *
+ * 운동·영양(스트릭)·배지·챌린지가 모두 숨김이라 이 카드가 없으면 활동 탭이 통째로 빈다.
+ * 분석 완료(2점)·오늘의 루틴 체크(1점/일)가 실제로 카운트를 올리는 활동이다.
+ */
+function ActivitySummarySection({ activityCount }: { activityCount: number }): React.JSX.Element {
+  return (
+    <section className="bg-card rounded-2xl border p-6" data-testid="activity-summary">
+      <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold">
+        <Flame className="h-5 w-5 text-orange-500" />
+        활동 기록
+      </h3>
+      <p className="text-3xl font-bold">
+        {activityCount}
+        <span className="text-muted-foreground ml-1 text-base font-medium">회</span>
+      </p>
+      <p className="text-muted-foreground mt-2 text-sm">
+        {activityCount === 0
+          ? '아직 쌓인 활동이 없어요. 분석을 완료하거나 오늘의 루틴을 체크하면 활동이 쌓여요.'
+          : '분석 완료와 오늘의 루틴 체크가 활동으로 쌓여요.'}
+      </p>
+      <Link
+        href="/capsule/daily"
+        className="text-primary mt-3 inline-flex items-center gap-1 text-sm hover:underline"
+      >
+        오늘의 루틴 확인 <ChevronRight className="h-4 w-4" />
+      </Link>
+    </section>
   );
 }
 

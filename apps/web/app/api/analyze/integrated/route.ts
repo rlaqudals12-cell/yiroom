@@ -26,6 +26,8 @@ import {
 import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import { requireBiometricConsent } from '@/lib/api/biometric-consent';
 import { runFullPipeline } from '@/lib/api/image-pipeline';
+import { trackActivity } from '@/lib/levels';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import {
   runIntegratedAnalysis,
   integratedAnalysisInputSchema,
@@ -61,6 +63,27 @@ function withCors(response: NextResponse): NextResponse {
  */
 export async function OPTIONS(): Promise<NextResponse> {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
+/**
+ * 등급 시스템 활동 기록 (analysis, 2점).
+ *
+ * 비차단 — 계측 실패가 분석 응답을 깨면 안 되므로 모든 예외를 삼키고 로깅만 한다.
+ * 활동 로그 INSERT는 DB 트리거가 user_levels를 자동 갱신하며, 트리거가 user_levels에
+ * 쓰려면 RLS를 우회해야 하므로 service-role 클라이언트를 쓴다(기존 호출처 4곳과 동일).
+ */
+async function recordAnalysisActivity(
+  userId: string,
+  result: IntegratedAnalysisResult
+): Promise<void> {
+  const realAxes = result.axesCompleted.filter((axis) => !result.usedFallback.includes(axis));
+  if (result.status === 'failed' || realAxes.length === 0) return;
+
+  try {
+    await trackActivity(createServiceRoleClient(), userId, 'analysis', result.sessionId);
+  } catch (error) {
+    console.error('[API /analyze/integrated] activity tracking failed:', error);
+  }
 }
 
 /**
@@ -157,6 +180,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       userId,
       capture
     );
+
+    // 4.4 등급 활동 기록 — 통합 분석 완료는 뷰티 사용자의 대표 활동이다.
+    // activity_logs 호출처가 숨김 모듈(운동·영양)뿐이라 분석·옷장·루틴만 쓰는 사용자는
+    // 영구 Lv.1·0회로 남았다(DB CHECK 제약은 'analysis'를 이미 허용 — 배선만 빠져 있었음).
+    // 전 축 실패이거나 모든 성공 축이 Mock 폴백이면 실제 판정이 0이므로 활동으로 치지 않는다.
+    await recordAnalysisActivity(userId, result);
 
     // 4.5 모바일 앱 퍼널 계측 — 웹은 클라이언트 track()이 이미 잡으므로 모바일 요청만 서버 track (중복 방지).
     // 계측 실패가 분석 응답을 깨면 안 되므로 방어적으로 무시.

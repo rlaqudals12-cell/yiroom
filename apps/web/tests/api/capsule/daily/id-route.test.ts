@@ -16,6 +16,15 @@ vi.mock('@/lib/capsule/daily', () => ({
   checkDailyItems: vi.fn(),
 }));
 
+// 등급 활동 기록은 별도 스위트(id-route.activity.test.ts)에서 검증 — 여기선 체크 계약만 본다
+vi.mock('@/lib/supabase/service-role', () => ({
+  createServiceRoleClient: vi.fn(() => ({})),
+}));
+vi.mock('@/lib/levels', () => ({
+  getTodayActivityCount: vi.fn().mockResolvedValue(0),
+  trackActivity: vi.fn().mockResolvedValue({ success: true }),
+}));
+
 import { PATCH } from '@/app/api/capsule/daily/[id]/route';
 import { auth } from '@clerk/nextjs/server';
 import { checkDailyItems } from '@/lib/capsule/daily';

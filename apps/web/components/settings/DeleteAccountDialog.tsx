@@ -20,13 +20,28 @@ interface DeleteAccountDialogProps {
   userEmail: string;
 }
 
+/**
+ * 이메일을 확인할 수 없을 때 요구하는 고정 확인 문구.
+ *
+ * 이 경로로 제출하면 서버(`DELETE /api/user/account`)는 여전히 Clerk 이메일 일치를
+ * 요구하므로 실제 삭제는 되지 않고 "이메일이 일치하지 않습니다"로 거절된다.
+ * 즉 이 문구는 "이메일 없는 우회 삭제 경로"가 아니라, 빈 입력으로 삭제 버튼이
+ * 눌리는 것을 막는 클라이언트 가드다.
+ */
+const FALLBACK_CONFIRMATION = '계정삭제';
+
 export function DeleteAccountDialog({ open, onOpenChange, userEmail }: DeleteAccountDialogProps) {
   const t = useTranslations('settingsUI');
   const [confirmation, setConfirmation] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isConfirmed = confirmation.toLowerCase() === userEmail.toLowerCase();
+  // 이메일이 아직 로드되지 않았거나(useUser 로딩 중) 이메일이 없는 계정이면 userEmail은 ''.
+  // 그대로 비교하면 '' === ''가 참이 되어 아무것도 입력하지 않아도 삭제 버튼이 활성화됐다
+  // (확인 절차 무력화). 이메일이 있을 때만 이메일 비교, 없으면 고정 문구 입력을 요구한다.
+  const hasEmail = userEmail.length > 0;
+  const expectedConfirmation = hasEmail ? userEmail : FALLBACK_CONFIRMATION;
+  const isConfirmed = confirmation.toLowerCase() === expectedConfirmation.toLowerCase();
 
   const handleDelete = async () => {
     if (!isConfirmed) return;
@@ -88,18 +103,26 @@ export function DeleteAccountDialog({ open, onOpenChange, userEmail }: DeleteAcc
             </ul>
           </div>
 
-          {/* 이메일 확인 입력 */}
+          {/* 확인 입력 — 이메일이 있으면 이메일, 없으면 고정 문구 */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">확인을 위해 이메일을 입력하세요</label>
+            <label className="text-sm font-medium">
+              {hasEmail
+                ? '확인을 위해 이메일을 입력하세요'
+                : `확인을 위해 "${FALLBACK_CONFIRMATION}"를 입력하세요`}
+            </label>
             <Input
-              type="email"
-              placeholder={userEmail}
+              type={hasEmail ? 'email' : 'text'}
+              placeholder={expectedConfirmation}
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
               disabled={isDeleting}
               data-testid="delete-confirmation-input"
             />
-            <p className="text-xs text-muted-foreground">계정 이메일: {userEmail}</p>
+            <p className="text-xs text-muted-foreground">
+              {hasEmail
+                ? `계정 이메일: ${userEmail}`
+                : '계정 이메일을 불러오지 못했어요. 삭제가 진행되지 않으면 잠시 후 다시 시도해주세요.'}
+            </p>
           </div>
 
           {/* 에러 메시지 */}

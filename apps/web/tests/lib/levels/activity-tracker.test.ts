@@ -128,6 +128,12 @@ describe('lib/levels/activity-tracker', () => {
       // review = 3 points
       await trackActivity(mockSupabase as never, mockUserId, 'review');
       expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({ points: 3 }));
+
+      // checkin = 1 point (루틴 체크 배선 — DB CHECK 제약이 허용하는 활동 유형)
+      await trackActivity(mockSupabase as never, mockUserId, 'checkin');
+      expect(insertMock).toHaveBeenCalledWith(
+        expect.objectContaining({ activity_type: 'checkin', points: 1 })
+      );
     });
   });
 
