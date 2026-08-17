@@ -60,7 +60,8 @@ describe('lib/weather', () => {
       const result = await getCurrentWeather();
 
       expect(result?.precipitationMm).toBe(0.2); // 소수 1자리 반올림, ×100 아님
-      expect(result?.precipitation).toBe(result?.precipitationMm); // 하위호환 별칭도 같은 mm 값
+      // 하위호환 별칭(precipitation)은 폐지 — mm 값이 "%"로 오독되던 통로였다
+      expect('precipitation' in (result as object)).toBe(false);
     });
 
     it('기본 좌표 조회는 locationSource="default"로 표시한다(위치 과장 금지)', async () => {

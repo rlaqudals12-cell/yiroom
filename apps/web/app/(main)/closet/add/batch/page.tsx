@@ -6,8 +6,8 @@
  * 사진 여러 장 선택 → 장당 AI 자동 분류(이름·카테고리·색상·시즌·상황) →
  * 확인/수정 → 일괄 저장. 옷장 앱 공통 이탈 장벽인 "한 벌씩 등록 피로"를 해소.
  *
- * 배경 제거는 일괄에서 생략(장당 수 초의 클라이언트 모델 — N장이면 체감 불가
- * 수준으로 느려짐). 원본 사진 그대로 저장하고, 개별 수정에서 다듬을 수 있다.
+ * 저장되는 이미지는 원본 사진 그대로다 — 단건 등록도 동일하다(배경 제거 기능 없음,
+ * 2026-08 수리 전에는 "일괄은 배경 제거 없이"라며 존재하지 않는 차이를 고지했다).
  */
 
 import { useState, useRef, useCallback } from 'react';
@@ -271,7 +271,23 @@ export default function BatchAddClothingPage() {
           <span className="text-sm font-medium">
             {items.length === 0 ? '사진 여러 장 선택' : '사진 더 추가'}
           </span>
-          <span className="text-[11px]">일괄 등록은 배경 제거 없이 원본으로 저장돼요</span>
+          <span className="text-[11px]" data-testid="save-mode-notice">
+            원본 사진 그대로 저장돼요
+          </span>
+        </button>
+
+        {/* 촬영 가이드 — 전신 착장샷은 여러 벌이 한 장에 담겨 한 벌로 잘못 등록된다 */}
+        <p className="text-center text-xs text-muted-foreground" data-testid="shot-guide">
+          옷 한 벌만 나오게 찍어주세요 — 전신 착장샷은 한 벌로 인식돼요
+        </p>
+
+        {/* 한 벌씩 등록 경로 — 기본은 일괄이지만 단건 경로를 막지 않는다 */}
+        <button
+          onClick={() => router.push('/closet/add')}
+          data-testid="batch-single-add-link"
+          className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
+        >
+          한 벌씩 등록할래요
         </button>
 
         {/* 파일 인테이크 안내 (전부/일부 건너뜀) */}

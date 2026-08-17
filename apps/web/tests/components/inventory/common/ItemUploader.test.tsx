@@ -11,7 +11,6 @@ import { ItemUploader } from '@/components/inventory/common/ItemUploader';
 vi.mock('@/lib/inventory', () => ({
   validateImageFile: vi.fn(() => ({ valid: true })),
   resizeImage: vi.fn((blob) => Promise.resolve(blob)),
-  removeBackgroundClient: vi.fn((blob) => Promise.resolve(blob)),
   blobToDataUrl: vi.fn(() => Promise.resolve('data:image/png;base64,test')),
 }));
 
@@ -72,12 +71,7 @@ describe('ItemUploader', () => {
   });
 
   it('applies custom className', () => {
-    render(
-      <ItemUploader
-        onUploadComplete={() => {}}
-        className="custom-class"
-      />
-    );
+    render(<ItemUploader onUploadComplete={() => {}} className="custom-class" />);
 
     const container = screen.getByTestId('item-uploader');
     expect(container).toHaveClass('custom-class');

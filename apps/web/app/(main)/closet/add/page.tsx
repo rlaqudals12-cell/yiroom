@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Check, Loader2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -55,10 +55,15 @@ export default function AddClothingPage() {
 
   // 업로드 결과
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+  // AI 자동 분류 실패 — 업로드 단계가 끝나도 상세 폼에서 계속 고지해야 하므로 부모가 들고 있는다
+  // (예전엔 업로더 내부 배지라 details로 넘어가는 순간 언마운트돼 안내가 영구 미노출이었다)
+  const [classifyFailed, setClassifyFailed] = useState(false);
 
   // 폼 데이터
   const [name, setName] = useState('');
-  const [category, setCategory] = useState<ClothingCategory>('top');
+  // 카테고리는 미선택('')으로 시작한다 — 무고지 기본값('상의')은 사용자가 확인하지 않은 분류를
+  // 그대로 저장시킨다(특히 자동 분류 실패 시). 반드시 직접 고르게 한다.
+  const [category, setCategory] = useState<ClothingCategory | ''>('');
   const [subCategory, setSubCategory] = useState('');
   const [brand, setBrand] = useState('');
   const [colors, setColors] = useState<string[]>([]);
@@ -71,12 +76,13 @@ export default function AddClothingPage() {
   // 업로드 완료 핸들러
   const handleUploadComplete = (result: UploadResult) => {
     setUploadResult(result);
+    setClassifyFailed(!!result.classifyFailed);
 
-    // AI 분류 결과 자동 적용
+    // AI 분류 결과 자동 적용 (폴백은 업로더가 걸러내므로 여기 오는 값은 실제 판정)
     if (result.classification) {
       const { classification } = result;
       setName(classification.suggestedName || '');
-      setCategory(classification.category || 'top');
+      setCategory(classification.category || '');
       setSubCategory(classification.subCategory || '');
       setColors(classification.colors || []);
       if (classification.pattern) {
@@ -117,7 +123,9 @@ export default function AddClothingPage() {
 
   // 저장
   const handleSave = async () => {
-    if (!uploadResult) return;
+    // 카테고리 미선택 저장 차단 — 조립기(closetMatcher)가 쓰는 대분류가 비면
+    // 등록은 되는데 코디에서 영영 안 잡힌다
+    if (!uploadResult || !category) return;
 
     setSaving(true);
     try {
@@ -232,13 +240,18 @@ export default function AddClothingPage() {
             <div className="text-center mb-6">
               <h2 className="text-lg font-semibold mb-1">옷 사진을 올려주세요</h2>
               <p className="text-sm text-muted-foreground">AI가 자동으로 분류해드려요</p>
+              {/* 촬영 가이드 — 전신 착장샷은 여러 벌이 한 장에 담겨 한 벌로 잘못 등록된다 */}
+              <p className="mt-1.5 text-xs text-muted-foreground" data-testid="shot-guide">
+                옷 한 벌만 나오게 찍어주세요 — 전신 착장샷은 한 벌로 인식돼요
+              </p>
             </div>
 
-            <ItemUploader
-              onUploadComplete={handleUploadComplete}
-              autoRemoveBackground={true}
-              autoClassify={true}
-            />
+            <ItemUploader onUploadComplete={handleUploadComplete} autoClassify={true} />
+
+            {/* 저장 방식 고지 — 두 등록 경로(단건·일괄)가 같은 말을 하게 통일 */}
+            <p className="text-center text-xs text-muted-foreground" data-testid="save-mode-notice">
+              원본 사진 그대로 저장돼요
+            </p>
 
             <Button
               variant="outline"
@@ -253,6 +266,22 @@ export default function AddClothingPage() {
         {/* Step 2: 상세 정보 */}
         {step === 'details' && uploadResult && (
           <div className="space-y-6">
+            {/* 자동 분류 실패 상시 배너 — 업로드 배지는 단계 전환과 함께 사라지므로
+                지어낸 분류를 채우지 않았다는 사실을 폼 상단에서 계속 알린다 */}
+            {classifyFailed && (
+              <div
+                data-testid="classify-failed-banner"
+                role="status"
+                className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-200"
+              >
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>
+                  자동 분류에 실패했어요 — 이름과 카테고리를 직접 확인해주세요. 추측한 값을 대신
+                  채우지 않았어요.
+                </span>
+              </div>
+            )}
+
             {/* 미리보기 이미지 */}
             <div className="flex justify-center">
               <div className="w-40 h-40 rounded-xl overflow-hidden bg-muted">
@@ -286,8 +315,8 @@ export default function AddClothingPage() {
                   setSubCategory('');
                 }}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="카테고리 선택" />
+                <SelectTrigger data-testid="category-select">
+                  <SelectValue placeholder="카테고리를 선택해주세요" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
@@ -299,15 +328,17 @@ export default function AddClothingPage() {
               </Select>
             </div>
 
-            {/* 서브카테고리 */}
+            {/* 서브카테고리 — 카테고리를 골라야 목록이 정해진다 */}
             <div className="space-y-2">
               <Label>종류</Label>
-              <Select value={subCategory} onValueChange={setSubCategory}>
+              <Select value={subCategory} onValueChange={setSubCategory} disabled={!category}>
                 <SelectTrigger>
-                  <SelectValue placeholder="종류 선택" />
+                  <SelectValue
+                    placeholder={category ? '종류 선택' : '카테고리를 먼저 골라주세요'}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {CLOTHING_SUB_CATEGORIES[category].map((sub) => (
+                  {(category ? CLOTHING_SUB_CATEGORIES[category] : []).map((sub) => (
                     <SelectItem key={sub} value={sub}>
                       {sub}
                     </SelectItem>
@@ -429,8 +460,13 @@ export default function AddClothingPage() {
               )}
             </div>
 
-            {/* 저장 버튼 */}
-            <Button className="w-full" size="lg" onClick={handleSave} disabled={saving || !name}>
+            {/* 저장 버튼 — 카테고리는 사용자가 직접 고른 값만 저장한다(기본값 자동 통과 금지) */}
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={handleSave}
+              disabled={saving || !name || !category}
+            >
               {saving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />

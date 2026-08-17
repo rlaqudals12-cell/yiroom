@@ -37,7 +37,7 @@ import { OCCASION_LABELS, type Occasion } from '@/types/inventory';
 import type { InventoryItem, InventoryItemDB, Season } from '@/types/inventory';
 import { getPersonalColorSeasonLabel, type PersonalColorSeason } from '@/lib/color-recommendations';
 import { getBodyShapeLabel } from '@/lib/body';
-import { getWeatherWithGeolocation, type WeatherData } from '@/lib/weather';
+import { getWeatherWithGeolocation, RAIN_THRESHOLD_MM, type WeatherData } from '@/lib/weather';
 import { assessOutfitHarmony } from '@/lib/inventory/color-bridge';
 // 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
 import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
@@ -50,6 +50,15 @@ function readContrastLevel(raw: unknown): 'low' | 'medium' | 'high' | undefined 
   if (typeof raw !== 'object' || raw === null) return undefined;
   const v = (raw as { contrastLevel?: unknown }).contrastLevel;
   return v === 'low' || v === 'medium' || v === 'high' ? v : undefined;
+}
+
+/**
+ * 날씨 아이콘 — 실측(위치 동의)일 때만 하늘을 말한다.
+ * 계절 추정에는 관측하지 않은 날씨(☀️) 대신 중립 온도계를 쓴다(정직성).
+ */
+function weatherIcon(weather: WeatherData | null): string {
+  if (!weather) return '🌡';
+  return weather.precipitationMm >= RAIN_THRESHOLD_MM ? '🌧' : '☀️';
 }
 
 /** 저장·착용 기록 피드백 색 — 성공/안내/실패를 시각적으로도 구분 */
@@ -341,10 +350,16 @@ export default function ClosetRecommendPage() {
     return LIPSTICK_RECOMMENDATIONS[season] ?? [];
   }, [personalColor]);
 
-  // 옷장 분석 요약
+  // 옷장 분석 요약 — 코디가 불발일 때는 부재 카테고리 안내를 접는다.
+  // 불발 문구가 이미 "하의(또는 원피스)를 1벌 등록해주세요"를 말하고 있어, 요약까지 같은 요청을
+  // 반복하면 한 화면에서 두 번 조르는 꼴이 된다(불발 문구가 1주인공).
   const summary = useMemo(() => {
-    return getRecommendationSummary(items, { personalColor, bodyType });
-  }, [items, personalColor, bodyType]);
+    return getRecommendationSummary(items, {
+      personalColor,
+      bodyType,
+      hideAbsentCategoryTip: !outfit,
+    });
+  }, [items, personalColor, bodyType, outfit]);
 
   // 보유 슬롯 집계 — 조립기가 실제로 인식하는 기준(resolveClothingCategory)과 동일하게 센다.
   // 미매핑 아이템(목록 밖 한글 세부종류 등)은 조립 슬롯에서 빠지므로 집계에도 넣지 않는다
@@ -373,12 +388,14 @@ export default function ClosetRecommendPage() {
 
   // 빈 옷장 콜드스타트 — 진단 기반 코디 "방향"(실제 옷을 지어내지 않고 색·역할·스타일 가이드만).
   // 오늘의 배색: DB 베스트 컬러 우선, 없으면 진단 시즌의 추천 팔레트(Hybrid). 둘 다 없으면 null(정직성).
+  // 진단 시즌을 함께 넘겨야 뉴트럴(신발)이 언더톤에 맞게 확정된다
+  // (미전달 시 팔레트 b* 평균 폴백 — 저채도 팔레트에서 웜/쿨이 뒤집힐 수 있다)
   const coldStartOutfit = useMemo(() => {
-    const fromDiagnosed = composeDailyOutfit(pcBestColors, new Date(), pcContrast);
+    const fromDiagnosed = composeDailyOutfit(pcBestColors, new Date(), pcContrast, personalColor);
     if (fromDiagnosed) return fromDiagnosed;
     if (personalColor) {
       const seasonPalette = BEST_COLORS[personalColor.toLowerCase() as SeasonType] ?? [];
-      return composeDailyOutfit(seasonPalette, new Date(), pcContrast);
+      return composeDailyOutfit(seasonPalette, new Date(), pcContrast, personalColor);
     }
     return null;
   }, [pcBestColors, pcContrast, personalColor]);
@@ -771,9 +788,12 @@ export default function ClosetRecommendPage() {
         {/* 날씨 및 프로필 정보 */}
         <Card>
           <CardContent className="p-4">
+            {/* 실측(위치 동의)과 추정(월 기준)을 시각적으로 구분한다.
+                추정일 때 날씨 아이콘(☀️)을 띄우면 관측하지 않은 하늘을 단정하게 되므로
+                중립 온도계(🌡)로 두고 온도 옆에 '추정' 배지를 단다 */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>{weather && weather.precipitation > 0 ? '🌧' : '☀️'}</span>
+                <span>{weatherIcon(weather)}</span>
                 <span>{weather ? weather.condition : '계절 기준 추정'}</span>
                 {weather && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600">
@@ -784,6 +804,14 @@ export default function ClosetRecommendPage() {
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Thermometer className="w-4 h-4" />
                 <span>{temp}°C</span>
+                {!weather && (
+                  <span
+                    data-testid="temp-estimated-badge"
+                    className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
+                  >
+                    추정
+                  </span>
+                )}
               </div>
             </div>
 
@@ -840,32 +868,38 @@ export default function ClosetRecommendPage() {
           </CardContent>
         </Card>
 
-        {/* 상황(TPO) 선택 */}
-        <div className="flex gap-2 overflow-x-auto pb-1" data-testid="occasion-chips">
-          <button
-            onClick={() => setOccasion(null)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-              occasion === null
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-background text-muted-foreground border-border'
-            }`}
-          >
-            전체
-          </button>
-          {(Object.entries(OCCASION_LABELS) as Array<[Occasion, string]>).map(([value, label]) => (
+        {/* 상황(TPO) 선택 — 조립할 코디가 있을 때만.
+            불발 상태에서는 어떤 칩을 눌러도 결과가 바뀌지 않아(고를 옷 자체가 없음)
+            "눌러도 아무 일 없는 버튼"이 된다 */}
+        {outfit && (
+          <div className="flex gap-2 overflow-x-auto pb-1" data-testid="occasion-chips">
             <button
-              key={value}
-              onClick={() => setOccasion(occasion === value ? null : value)}
+              onClick={() => setOccasion(null)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                occasion === value
+                occasion === null
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background text-muted-foreground border-border'
               }`}
             >
-              {label}
+              전체
             </button>
-          ))}
-        </div>
+            {(Object.entries(OCCASION_LABELS) as Array<[Occasion, string]>).map(
+              ([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setOccasion(occasion === value ? null : value)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    occasion === value
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background text-muted-foreground border-border'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            )}
+          </div>
+        )}
 
         {/* 코디 추천 */}
         {outfit ? (
@@ -947,7 +981,9 @@ export default function ClosetRecommendPage() {
             )}
 
             {/* 코디 팁 — 색 조화(LCh 판정)·날씨 팁을 앞에 */}
-            {(outfit.tips.length > 0 || harmony || (weather && weather.precipitation > 0)) && (
+            {(outfit.tips.length > 0 ||
+              harmony ||
+              (weather && weather.precipitationMm >= RAIN_THRESHOLD_MM)) && (
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">💡 코디 팁</CardTitle>
@@ -955,9 +991,9 @@ export default function ClosetRecommendPage() {
                 <CardContent className="pt-0">
                   <ul className="space-y-1">
                     {harmony && <li className="text-sm text-muted-foreground">🎨 {harmony.tip}</li>}
-                    {weather && weather.precipitation > 0 && (
+                    {weather && weather.precipitationMm >= RAIN_THRESHOLD_MM && (
                       <li className="text-sm text-muted-foreground">
-                        ☔ 강수가 있어요 — 우산과 함께 방수 소재 신발을 권해요
+                        ☔ 지금 비가 내리고 있어요 — 우산과 함께 방수 소재 신발을 권해요
                       </li>
                     )}
                     {outfit.tips.map((tip, idx) => (
@@ -1008,6 +1044,10 @@ export default function ClosetRecommendPage() {
             <Card className="p-6 text-center">
               <p className="text-muted-foreground mb-2">추천할 코디를 찾지 못했어요</p>
               <p className="text-sm text-muted-foreground">{missingSlotMessage}</p>
+              {/* 상황(TPO) 칩 대신 — 지금은 고를 옷이 없어 상황별 추천도 못 한다는 사실을 알린다 */}
+              <p className="mt-2 text-xs text-muted-foreground" data-testid="occasion-unavailable">
+                옷을 더 등록하면 상황별로 골라드려요
+              </p>
             </Card>
 
             {/* 빈 옷장 상태와 동일한 일괄 등록 CTA 카드 재사용 (두 분기는 동시에 렌더되지 않음) */}
@@ -1078,6 +1118,13 @@ export default function ClosetRecommendPage() {
                   <p className="text-xs text-muted-foreground">개선 필요</p>
                 </div>
               </div>
+              {/* 판정 근거 고지 — 이 집계는 날씨·계절이 아니라 진단 두 축으로만 매긴다 */}
+              <p
+                className="mt-2 text-center text-[11px] text-muted-foreground"
+                data-testid="summary-basis"
+              >
+                퍼스널컬러·체형 기준이에요
+              </p>
             </div>
             {summary.suggestions.length > 0 && (
               <ul className="space-y-1">
@@ -1092,11 +1139,8 @@ export default function ClosetRecommendPage() {
           </CardContent>
         </Card>
 
-        {/* 옷장으로 이동 */}
-        <Button variant="outline" className="w-full" onClick={() => router.push('/closet')}>
-          옷장 전체 보기
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </Button>
+        {/* '옷장 전체 보기' 버튼 없음 — 되돌아가는 길은 헤더 뒤로가기 하나로 통일한다
+            (같은 목적지로 가는 출구가 두 개면 어느 쪽이 정본인지 알 수 없다) */}
       </div>
     </div>
   );

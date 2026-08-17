@@ -4,8 +4,11 @@
  * 아이템 이미지 업로더 컴포넌트
  * - 드래그 앤 드롭 / 클릭 업로드
  * - 이미지 미리보기
- * - 배경 제거 처리
  * - AI 분류 자동 실행
+ *
+ * 배경 제거 단계는 없다(2026-08 수리). 라이브러리가 설치된 적이 없어 실제로는
+ * 원본이 그대로 저장되는데도 "배경 제거 중..." 단계를 표시해 하지 않은 일을 했다고
+ * 말하던 거짓 UI를 걷어냈다. 되살릴 땐 실제 처리와 함께 단계도 같이 살린다.
  */
 
 import { useState, useRef, useCallback } from 'react';
@@ -17,24 +20,15 @@ import { Progress } from '@/components/ui/progress';
 import {
   validateImageFile,
   resizeImage,
-  removeBackgroundClient,
   blobToDataUrl,
   type ClothingClassificationResult,
 } from '@/lib/inventory/imageProcessing';
 
-type ProcessingStep =
-  | 'idle'
-  | 'uploading'
-  | 'resizing'
-  | 'removing_bg'
-  | 'classifying'
-  | 'done'
-  | 'error';
+type ProcessingStep = 'idle' | 'uploading' | 'resizing' | 'classifying' | 'done' | 'error';
 
 interface ItemUploaderProps {
   onUploadComplete: (result: UploadResult) => void;
   onCancel?: () => void;
-  autoRemoveBackground?: boolean;
   autoClassify?: boolean;
   className?: string;
 }
@@ -44,13 +38,18 @@ export interface UploadResult {
   processedUrl: string;
   classification?: ClothingClassificationResult;
   colors?: string[];
+  /**
+   * AI 자동 분류가 실패(폴백 포함)했는지.
+   * 호출측은 이 표식으로 "직접 확인해주세요"를 상세 폼에서도 계속 안내해야 한다
+   * (업로더 배지는 단계가 넘어가면 사라진다).
+   */
+  classifyFailed?: boolean;
 }
 
 const STEP_LABELS: Record<ProcessingStep, string> = {
   idle: '이미지를 업로드하세요',
   uploading: '업로드 중...',
   resizing: '이미지 최적화 중...',
-  removing_bg: '배경 제거 중...',
   classifying: 'AI 분석 중...',
   done: '완료!',
   error: '오류가 발생했습니다',
@@ -58,9 +57,8 @@ const STEP_LABELS: Record<ProcessingStep, string> = {
 
 const STEP_PROGRESS: Record<ProcessingStep, number> = {
   idle: 0,
-  uploading: 15,
-  resizing: 30,
-  removing_bg: 60,
+  uploading: 20,
+  resizing: 50,
   classifying: 85,
   done: 100,
   error: 0,
@@ -69,7 +67,6 @@ const STEP_PROGRESS: Record<ProcessingStep, number> = {
 export function ItemUploader({
   onUploadComplete,
   onCancel,
-  autoRemoveBackground = true,
   autoClassify = true,
   className,
 }: ItemUploaderProps) {
@@ -104,27 +101,14 @@ export function ItemUploader({
         const originalUrl = await blobToDataUrl(originalBlob);
         setPreviewUrl(originalUrl);
 
-        // 2. 리사이즈
+        // 2. 리사이즈 (저장되는 이미지는 여기까지 — 원본 사진 그대로)
         setStep('resizing');
         const resizedBlob = await resizeImage(originalBlob, 800, 800, 0.9);
 
-        let processedBlob = resizedBlob;
-
-        // 3. 배경 제거 (옵션)
-        if (autoRemoveBackground) {
-          setStep('removing_bg');
-          try {
-            processedBlob = await removeBackgroundClient(resizedBlob);
-          } catch (bgError) {
-            console.warn('[ItemUploader] Background removal failed:', bgError);
-            // 배경 제거 실패해도 계속 진행
-          }
-        }
-
-        const processedDataUrl = await blobToDataUrl(processedBlob);
+        const processedDataUrl = await blobToDataUrl(resizedBlob);
         setProcessedUrl(processedDataUrl);
 
-        // 4. AI 분류 (옵션)
+        // 3. AI 분류 (옵션)
         let classification: ClothingClassificationResult | undefined;
         let classifyFallback = false;
         if (autoClassify) {
@@ -152,13 +136,14 @@ export function ItemUploader({
           setClassifyFailed(classifyFallback);
         }
 
-        // 5. 완료
+        // 4. 완료 — 분류 실패 표식을 함께 넘겨, 다음 단계(상세 폼)에서도 계속 고지되게 한다
         setStep('done');
         onUploadComplete({
           originalUrl,
           processedUrl: processedDataUrl,
           classification,
           colors: classification?.colors,
+          classifyFailed: classifyFallback,
         });
       } catch (err) {
         console.error('[ItemUploader] Processing error:', err);
@@ -166,7 +151,7 @@ export function ItemUploader({
         setStep('error');
       }
     },
-    [autoRemoveBackground, autoClassify, onUploadComplete]
+    [autoClassify, onUploadComplete]
   );
 
   // 파일 선택 핸들러
@@ -218,7 +203,7 @@ export function ItemUploader({
     }
   };
 
-  const isProcessing = ['uploading', 'resizing', 'removing_bg', 'classifying'].includes(step);
+  const isProcessing = ['uploading', 'resizing', 'classifying'].includes(step);
 
   return (
     <div data-testid="item-uploader" className={cn('space-y-4', className)}>

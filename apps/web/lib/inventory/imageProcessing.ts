@@ -1,23 +1,17 @@
 /**
  * 이미지 처리 유틸리티
- * - 배경 제거: @imgly/background-removal (브라우저)
  * - 색상 추출: Canvas API
  * - AI 분류: Gemini Vision
+ *
+ * 배경 제거는 없다(2026-08 수리). 과거 `removeBackgroundClient()`가
+ * `@imgly/background-removal`을 동적 import 했지만 패키지가 설치된 적이 없어
+ * 호출은 항상 throw → 원본 반환이었고, UI만 "배경 제거 중…"을 표시해 하지도 않는 일을
+ * 했다고 말했다. 죽은 경로와 그 위의 거짓 안내를 함께 걷어냈다.
+ * 실제 배선(패키지 도입 또는 서버 처리)은 별도 결정 대기 — 되살릴 땐 UI 문구도 같이 살린다.
  */
 
 import { inventoryLogger } from '@/lib/utils/logger';
 import { ClothingCategory, Pattern, Season, Occasion } from '@/types/inventory';
-
-// @imgly/background-removal 타입 (패키지 미설치 시에도 동작)
-interface RemoveBackgroundOptions {
-  model?: 'small' | 'medium' | 'large';
-  output?: {
-    format?: string;
-    quality?: number;
-  };
-}
-
-type RemoveBackgroundFn = (imageBlob: Blob, options?: RemoveBackgroundOptions) => Promise<Blob>;
 
 // 색상 이름 매핑 (HEX -> 한글)
 const COLOR_NAMES: Record<string, string> = {
@@ -147,38 +141,6 @@ export async function extractDominantColors(imageBlob: Blob, count: number = 3):
 
   // 중복 제거
   return [...new Set(sorted)];
-}
-
-/**
- * 배경 제거 (브라우저 전용)
- * @imgly/background-removal 패키지 필요
- */
-export async function removeBackgroundClient(imageBlob: Blob): Promise<Blob> {
-  // Dynamic import (브라우저에서만)
-  if (typeof window === 'undefined') {
-    throw new Error('Background removal is only available in browser');
-  }
-
-  try {
-    // @imgly/background-removal 패키지가 설치되어 있어야 동작
-    // webpackIgnore: 패키지 미설치 시에도 빌드 에러 방지
-    const mod = await import(/* webpackIgnore: true */ '@imgly/background-removal');
-    const removeBackground = mod.removeBackground as RemoveBackgroundFn;
-
-    const result = await removeBackground(imageBlob, {
-      model: 'medium',
-      output: {
-        format: 'image/png',
-        quality: 0.8,
-      },
-    });
-
-    return result;
-  } catch (error) {
-    inventoryLogger.error('Background removal failed:', error);
-    // 실패 시 원본 반환
-    return imageBlob;
-  }
 }
 
 /**

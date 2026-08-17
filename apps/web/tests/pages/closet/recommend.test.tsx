@@ -22,6 +22,7 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('@/lib/weather', () => ({
   getWeatherWithGeolocation: vi.fn().mockResolvedValue(null),
+  RAIN_THRESHOLD_MM: 0.1,
 }));
 
 import ClosetRecommendPage from '@/app/(main)/closet/recommend/page';

@@ -107,4 +107,67 @@ describe('ItemCard', () => {
     const card = screen.getByTestId('item-card');
     expect(card).toHaveClass('ring-2');
   });
+
+  // 재발 방지: 클릭 발화 조건이 selectable까지 요구해, 선택 모드가 아닌 옷장 목록에서는
+  // 카드를 눌러도 아무 일이 없었다(상세 시트=수정·삭제 경로가 영구 미개봉).
+  describe('카드 탭 (상세 열기)', () => {
+    it('selectable이 아니어도 onSelect가 있으면 클릭이 발화한다', () => {
+      const onSelect = vi.fn();
+      render(<ItemCard item={mockItem} onSelect={onSelect} />);
+
+      fireEvent.click(screen.getByTestId('item-card'));
+
+      expect(onSelect).toHaveBeenCalledWith(mockItem);
+    });
+
+    it('onSelect가 없으면 클릭 가능한 것처럼 보이지 않는다', () => {
+      render(<ItemCard item={mockItem} />);
+
+      expect(screen.getByTestId('item-card')).not.toHaveClass('cursor-pointer');
+    });
+
+    it('onSelect가 있으면 포인터 커서로 누를 수 있음을 알린다', () => {
+      render(<ItemCard item={mockItem} onSelect={vi.fn()} />);
+
+      expect(screen.getByTestId('item-card')).toHaveClass('cursor-pointer');
+    });
+  });
+
+  // 재발 방지: 저장값은 대개 한글 색상명인데 '#' 시작만 칠해서 색 표시가 항상 빈 원이었다.
+  describe('색상 스와치', () => {
+    it('한글 색상명을 대표 hex로 칠한다', () => {
+      const item = {
+        ...mockItem,
+        metadata: { ...mockItem.metadata, color: ['네이비'] },
+      };
+      render(<ItemCard item={item} />);
+
+      const swatch = screen.getByTestId('item-color-swatch');
+      expect(swatch).toHaveStyle({ backgroundColor: '#1F3A5F' });
+      expect(swatch).toHaveAttribute('title', '네이비');
+    });
+
+    it('hex 값은 그대로 칠한다', () => {
+      const item = {
+        ...mockItem,
+        metadata: { ...mockItem.metadata, color: ['#123456'] },
+      };
+      render(<ItemCard item={item} />);
+
+      expect(screen.getByTestId('item-color-swatch')).toHaveStyle({
+        backgroundColor: '#123456',
+      });
+    });
+
+    it('풀 수 없는 색상명은 빈 원 대신 이름 칩으로 보여준다', () => {
+      const item = {
+        ...mockItem,
+        metadata: { ...mockItem.metadata, color: ['연청'] },
+      };
+      render(<ItemCard item={item} />);
+
+      expect(screen.queryByTestId('item-color-swatch')).not.toBeInTheDocument();
+      expect(screen.getByTestId('item-color-chip')).toHaveTextContent('연청');
+    });
+  });
 });

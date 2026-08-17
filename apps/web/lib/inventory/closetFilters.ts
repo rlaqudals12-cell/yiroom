@@ -54,3 +54,18 @@ export function filterClosetItems(
 
   return items.filter((item) => matchesCategory(item, categories) && matchesSeason(item, seasons));
 }
+
+/**
+ * 이름·브랜드 검색용 PostGREST `or()` 필터 문자열을 안전하게 조립한다.
+ *
+ * 왜: 검색어를 그대로 `name.ilike.%검색어%,brand.ilike.%검색어%`에 끼워 넣으면
+ * 쉼표·괄호가 필터 구분자로 해석돼 조건이 쪼개지거나 쿼리가 통째로 실패한다
+ * (사용자에겐 "검색만 하면 옷장이 빈다"로 보인다). 값 전체를 큰따옴표로 감싸고
+ * 따옴표·역슬래시만 이스케이프하면 예약문자를 리터럴로 넘길 수 있다.
+ *
+ * `%`는 의도된 와일드카드라 그대로 둔다(사용자가 넣으면 범위가 넓어질 뿐 오작동 아님).
+ */
+export function buildClosetSearchFilter(query: string): string {
+  const escaped = query.replace(/["\\]/g, (char) => `\\${char}`);
+  return `name.ilike."%${escaped}%",brand.ilike."%${escaped}%"`;
+}

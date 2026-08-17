@@ -209,15 +209,14 @@ describe('extractDominantColors (jsdom 환경)', () => {
   });
 });
 
-describe('removeBackgroundClient (jsdom 환경)', () => {
-  it('@imgly/background-removal 없으면 Blob을 반환한다 (graceful fallback)', async () => {
-    const { removeBackgroundClient } = await import('@/lib/inventory/imageProcessing');
+// 배경 제거(removeBackgroundClient)는 2026-08 폐지 — 라이브러리가 설치된 적이 없어
+// 항상 원본을 반환하면서 UI만 "배경 제거 중"을 표시하던 죽은 경로였다.
+// 재발 방지: 모듈이 다시 그 이름을 노출하지 않는지 확인한다(되살릴 땐 실제 처리와 함께).
+describe('배경 제거 경로 폐지', () => {
+  it('imageProcessing이 removeBackgroundClient를 노출하지 않는다', async () => {
+    const mod = await import('@/lib/inventory/imageProcessing');
 
-    const blob = new Blob(['test'], { type: 'image/png' });
-    // 패키지 미설치 시 import 실패 -> catch에서 원본 반환
-    const result = await removeBackgroundClient(blob);
-
-    expect(result).toBeInstanceOf(Blob);
+    expect('removeBackgroundClient' in mod).toBe(false);
   });
 });
 

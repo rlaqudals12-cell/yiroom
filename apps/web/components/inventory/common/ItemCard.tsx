@@ -19,6 +19,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+// 저장값은 대개 한글 색상명('화이트')이라 hex 대표색으로 풀어야 스와치를 칠할 수 있다
+import { colorNameToHex } from '@/lib/inventory/color-bridge';
 import type { InventoryItem, ClothingMetadata } from '@/types/inventory';
 
 interface ItemCardProps {
@@ -46,10 +48,11 @@ export function ItemCard({
   const metadata = item.metadata as Partial<ClothingMetadata>;
   const colors = metadata?.color || [];
 
+  // 클릭 발화 기준은 onSelect 유무다(selectable 아님).
+  // 과거엔 selectable까지 요구해, 선택 모드가 아닌 옷장 목록에서는 카드를 눌러도
+  // 아무 일도 일어나지 않았다 — 상세 시트(수정·삭제 포함)가 영구 미개봉이었다.
   const handleClick = () => {
-    if (selectable && onSelect) {
-      onSelect(item);
-    }
+    onSelect?.(item);
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
@@ -63,7 +66,7 @@ export function ItemCard({
       onClick={handleClick}
       className={cn(
         'group relative overflow-hidden rounded-xl bg-card border transition-all duration-200',
-        selectable && 'cursor-pointer hover:shadow-md',
+        onSelect && 'cursor-pointer hover:shadow-md',
         selected && 'ring-2 ring-primary border-primary'
       )}
     >
@@ -97,9 +100,7 @@ export function ItemCard({
           <div
             className={cn(
               'absolute top-2 left-2 w-5 h-5 rounded-full border-2 transition-colors',
-              selected
-                ? 'bg-primary border-primary'
-                : 'bg-white/80 border-gray-300'
+              selected ? 'bg-primary border-primary' : 'bg-white/80 border-gray-300'
             )}
           >
             {selected && (
@@ -131,25 +132,35 @@ export function ItemCard({
           )}
           aria-label={item.isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
         >
-          <Heart
-            className="w-4 h-4"
-            fill={item.isFavorite ? 'currentColor' : 'none'}
-          />
+          <Heart className="w-4 h-4" fill={item.isFavorite ? 'currentColor' : 'none'} />
         </button>
 
-        {/* 색상 표시 */}
+        {/* 색상 표시 — hex는 그대로, 한글 색상명은 대표 hex로 변환.
+            둘 다 안 되면 빈 원(무엇을 뜻하는지 알 수 없는 점) 대신 이름 칩으로 보여준다 */}
         {colors.length > 0 && (
-          <div className="absolute bottom-2 left-2 flex gap-1">
-            {colors.slice(0, 3).map((color, idx) => (
-              <div
-                key={idx}
-                className="w-3 h-3 rounded-full border border-white shadow-sm"
-                style={{
-                  backgroundColor: color.startsWith('#') ? color : undefined,
-                }}
-                title={color}
-              />
-            ))}
+          <div className="absolute bottom-2 left-2 flex items-center gap-1">
+            {colors.slice(0, 3).map((color, idx) => {
+              const swatchHex = color.startsWith('#') ? color : colorNameToHex(color);
+              return swatchHex ? (
+                <span
+                  key={idx}
+                  data-testid="item-color-swatch"
+                  className="w-3 h-3 rounded-full border border-white shadow-sm"
+                  style={{ backgroundColor: swatchHex }}
+                  title={color}
+                  aria-label={color}
+                />
+              ) : (
+                <span
+                  key={idx}
+                  data-testid="item-color-chip"
+                  className="rounded-full bg-white/85 px-1.5 py-0.5 text-[9px] font-medium text-gray-700 shadow-sm"
+                  title={color}
+                >
+                  {color}
+                </span>
+              );
+            })}
           </div>
         )}
       </div>
@@ -159,11 +170,7 @@ export function ItemCard({
         <div className="flex items-start justify-between gap-1">
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-sm truncate">{item.name}</h3>
-            {item.brand && (
-              <p className="text-xs text-muted-foreground truncate">
-                {item.brand}
-              </p>
-            )}
+            {item.brand && <p className="text-xs text-muted-foreground truncate">{item.brand}</p>}
           </div>
 
           {/* 더보기 메뉴 */}
@@ -179,16 +186,9 @@ export function ItemCard({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {onEdit && (
-                  <DropdownMenuItem onClick={() => onEdit(item)}>
-                    수정
-                  </DropdownMenuItem>
-                )}
+                {onEdit && <DropdownMenuItem onClick={() => onEdit(item)}>수정</DropdownMenuItem>}
                 {onDelete && (
-                  <DropdownMenuItem
-                    onClick={() => onDelete(item)}
-                    className="text-destructive"
-                  >
+                  <DropdownMenuItem onClick={() => onDelete(item)} className="text-destructive">
                     삭제
                   </DropdownMenuItem>
                 )}
@@ -205,16 +205,12 @@ export function ItemCard({
                 {item.tags[0]}
               </Badge>
               {item.tags.length > 1 && (
-                <span className="text-[10px] text-muted-foreground">
-                  +{item.tags.length - 1}
-                </span>
+                <span className="text-[10px] text-muted-foreground">+{item.tags.length - 1}</span>
               )}
             </div>
           )}
           {item.useCount > 0 && (
-            <span className="text-[10px] text-muted-foreground">
-              {item.useCount}회 착용
-            </span>
+            <span className="text-[10px] text-muted-foreground">{item.useCount}회 착용</span>
           )}
         </div>
       </div>

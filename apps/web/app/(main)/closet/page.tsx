@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { InventoryGrid, CategoryFilter, ItemDetailSheet } from '@/components/inventory';
-import { filterClosetItems } from '@/lib/inventory/client';
+import { filterClosetItems, buildClosetSearchFilter } from '@/lib/inventory/client';
 // 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
 import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
 import type { InventoryItem, InventoryItemDB } from '@/types/inventory';
@@ -78,9 +78,10 @@ export default function ClosetPage() {
           .order('created_at', { ascending: false })
           .range(currentOffset, currentOffset + pageSize - 1);
 
-        // 검색 (DB에서 처리 가능 — name/brand는 실제 컬럼)
+        // 검색 (DB에서 처리 가능 — name/brand는 실제 컬럼).
+        // 검색어는 그대로 끼워 넣지 않는다 — 쉼표·괄호가 or() 구분자로 해석돼 쿼리가 깨진다
         if (searchQuery) {
-          query = query.or(`name.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`);
+          query = query.or(buildClosetSearchFilter(searchQuery));
         }
 
         const { data, error } = await query;
@@ -231,7 +232,9 @@ export default function ClosetPage() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-xl font-bold">내 옷장</h1>
-            <Button size="sm" onClick={() => router.push('/closet/add')}>
+            {/* 등록 기본 경로 = 일괄(사진 여러 장). 한 벌씩 경로는 일괄 화면에서 이어간다 —
+                등록 진입점마다 다른 화면으로 갈리지 않게 한 곳으로 모은다 */}
+            <Button size="sm" onClick={() => router.push('/closet/add/batch')}>
               <Plus className="w-4 h-4 mr-1" />
               추가
             </Button>
@@ -310,11 +313,11 @@ export default function ClosetPage() {
           onLoadMore={() => fetchItems(false)}
           onItemSelect={handleItemSelect}
           onFavoriteToggle={handleFavoriteToggle}
-          onAddNew={() => router.push('/closet/add')}
+          onAddNew={() => router.push('/closet/add/batch')}
           emptyMessage="아직 등록된 옷이 없어요"
           emptyAction={{
-            label: '첫 번째 옷 추가하기',
-            onClick: () => router.push('/closet/add'),
+            label: '사진 여러 장 한 번에 등록',
+            onClick: () => router.push('/closet/add/batch'),
           }}
         />
       </div>

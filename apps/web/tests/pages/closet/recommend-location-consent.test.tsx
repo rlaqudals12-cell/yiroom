@@ -26,7 +26,7 @@ vi.mock('next/navigation', () => ({
 const { getWeatherWithGeolocation } = vi.hoisted(() => ({
   getWeatherWithGeolocation: vi.fn(),
 }));
-vi.mock('@/lib/weather', () => ({ getWeatherWithGeolocation }));
+vi.mock('@/lib/weather', () => ({ getWeatherWithGeolocation, RAIN_THRESHOLD_MM: 0.1 }));
 
 import ClosetRecommendPage from '@/app/(main)/closet/recommend/page';
 
@@ -88,8 +88,9 @@ describe('ClosetRecommendPage 위치 동의(위치정보보호법)', () => {
   it('마운트만으로는 위치를 자동 요청하지 않고, 목적 고지가 있는 동의 컨트롤을 노출한다', async () => {
     render(<ClosetRecommendPage />);
 
+    // 날씨 카드는 옷이 있는 기존 추천 뷰에서 렌더된다(상의 1벌 → 코디는 불발이지만 카드는 뜬다)
     await waitFor(() => {
-      expect(screen.getByTestId('occasion-chips')).toBeInTheDocument();
+      expect(screen.getByTestId('location-consent')).toBeInTheDocument();
     });
 
     // 핵심(재발 방지): 페이지 로드만으로 geolocation 자동 요청 금지

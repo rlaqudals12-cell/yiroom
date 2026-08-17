@@ -4,7 +4,7 @@ import type { WeatherData } from '@/lib/weather';
 
 // 기본 날씨 데이터 팩토리
 function createWeather(overrides: Partial<WeatherData> = {}): WeatherData {
-  const base = {
+  return {
     temp: 22,
     precipitationMm: 0,
     condition: '맑음',
@@ -13,8 +13,6 @@ function createWeather(overrides: Partial<WeatherData> = {}): WeatherData {
     locationSource: 'default' as const,
     ...overrides,
   };
-  // precipitation은 precipitationMm의 하위호환 별칭 — 항상 같은 mm 값을 유지한다
-  return { ...base, precipitation: base.precipitationMm };
 }
 
 describe('generateEnvironmentAdvice', () => {

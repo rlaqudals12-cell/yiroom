@@ -13,6 +13,8 @@
  * @see app/(main)/analysis/integrated/result/[sessionId]/_components/CurationCard.tsx
  */
 
+import { subjectParticle } from '@/lib/utils/korean';
+
 /** 순위별 메달 배지 (0-index: BEST 1 = 금, 2 = 은, 3 = 동) */
 export const RANK_BADGES = [
   { emoji: '🥇', label: 'BEST 1' },
@@ -136,15 +138,7 @@ export function buildRankReasonLine(
   return `${base} — ${reasons.join('·')}에 모두 맞아요`;
 }
 
-/** 받침 유무에 따라 주격 조사(이/가) 선택. 비한글 끝문자는 '가' 기본. */
-function subjectParticle(word: string): '이' | '가' {
-  if (word.length === 0) return '가';
-  const code = word.charCodeAt(word.length - 1);
-  // 한글 음절(가~힣) 범위 밖이면 '가'
-  if (code < 0xac00 || code > 0xd7a3) return '가';
-  // (음절코드 - 0xAC00) % 28 !== 0 → 받침 있음 → '이'
-  return (code - 0xac00) % 28 !== 0 ? '이' : '가';
-}
+// 받침 판정·조사 선택은 공용 유틸(lib/utils/korean)에서만 한다 — 모듈마다 다시 구현하면 규칙이 갈린다.
 
 /**
  * BEST 1 vs BEST 2 비교 한 줄(제미나이 비교표의 정직 버전).

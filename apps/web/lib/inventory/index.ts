@@ -37,7 +37,6 @@ export {
 // Image Processing
 export {
   extractDominantColors,
-  removeBackgroundClient,
   classifyClothing,
   resizeImage,
   validateImageFile,
@@ -98,8 +97,12 @@ export {
 // Clothing Category (한글 세부종류 → 영문 대분류 정규화)
 export { resolveClothingCategory } from './clothingCategory';
 
-// Closet Filters (옷장 목록 카테고리·시즌 필터 — 순수 함수)
-export { filterClosetItems, type ClosetFilterCriteria } from './closetFilters';
+// Closet Filters (옷장 목록 카테고리·시즌 필터 + 검색 필터 조립 — 순수 함수)
+export {
+  filterClosetItems,
+  buildClosetSearchFilter,
+  type ClosetFilterCriteria,
+} from './closetFilters';
 
 // Closet Matcher (퍼스널컬러/체형/날씨 기반 추천)
 export {

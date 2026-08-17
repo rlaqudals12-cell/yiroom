@@ -25,6 +25,7 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('@/lib/weather', () => ({
   getWeatherWithGeolocation: vi.fn().mockResolvedValue(null),
+  RAIN_THRESHOLD_MM: 0.1,
 }));
 
 import ClosetRecommendPage from '@/app/(main)/closet/recommend/page';
@@ -173,10 +174,13 @@ describe('ClosetRecommendPage 콜드스타트(빈 옷장 진단 제안)', () => 
 
     render(<ClosetRecommendPage />);
 
-    // 기존 경로 마커(상황 칩)만 뜨고 콜드스타트 제안은 없어야 함
+    // 기존 경로 마커만 뜨고 콜드스타트 제안은 없어야 함.
+    // (상의 1벌뿐이라 코디는 불발 → 상황 칩 대신 불발 안내가 마커다.
+    //  상황 칩은 조립된 코디가 있을 때만 렌더된다 — 눌러도 안 바뀌는 칩 제거)
     await waitFor(() => {
-      expect(screen.getByTestId('occasion-chips')).toBeInTheDocument();
+      expect(screen.getByTestId('outfit-missing-slots')).toBeInTheDocument();
     });
+    expect(screen.queryByTestId('occasion-chips')).not.toBeInTheDocument();
     expect(screen.queryByTestId('coldstart-suggestions')).not.toBeInTheDocument();
     expect(screen.queryByTestId('closet-empty-state')).not.toBeInTheDocument();
   });

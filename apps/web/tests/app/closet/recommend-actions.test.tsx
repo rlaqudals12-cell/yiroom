@@ -29,6 +29,7 @@ vi.mock('lucide-react', () => {
 // 날씨는 외부 호출 — 계절 추정 폴백 경로로 고정
 vi.mock('@/lib/weather', () => ({
   getWeatherWithGeolocation: vi.fn(async () => null),
+  RAIN_THRESHOLD_MM: 0.1,
 }));
 
 const ITEM_ROWS = [

@@ -217,11 +217,6 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-// Mock @imgly/background-removal (optional peer dependency)
-vi.mock('@imgly/background-removal', () => ({
-  removeBackground: vi.fn().mockResolvedValue(new Blob()),
-}));
-
 // Mock Clerk
 vi.mock('@clerk/nextjs', () => ({
   useUser: () => ({

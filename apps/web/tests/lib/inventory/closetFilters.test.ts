@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { filterClosetItems } from '@/lib/inventory/closetFilters';
+import { filterClosetItems, buildClosetSearchFilter } from '@/lib/inventory/closetFilters';
 import type { InventoryItem } from '@/types/inventory';
 
 function createItem(overrides: Partial<InventoryItem> = {}): InventoryItem {
@@ -156,5 +156,37 @@ describe('filterClosetItems', () => {
     it('빈 목록은 빈 목록을 반환한다', () => {
       expect(filterClosetItems([], { categories: ['top'] })).toEqual([]);
     });
+  });
+});
+
+/**
+ * 검색 필터 조립 (buildClosetSearchFilter)
+ *
+ * 배경: 검색어를 `name.ilike.%${q}%,brand.ilike.%${q}%`에 그대로 끼워 넣어,
+ * 쉼표·괄호가 들어간 검색어는 필터가 쪼개지거나 쿼리 자체가 실패했다
+ * (사용자에겐 "검색만 하면 옷장이 빈다"로 보인다).
+ */
+describe('buildClosetSearchFilter', () => {
+  it('이름·브랜드 두 컬럼을 OR로 묶는다', () => {
+    expect(buildClosetSearchFilter('셔츠')).toBe('name.ilike."%셔츠%",brand.ilike."%셔츠%"');
+  });
+
+  it('예약문자(쉼표·괄호)가 있어도 값이 따옴표 안에 갇힌다 (필터 구분자로 새지 않음)', () => {
+    const filter = buildClosetSearchFilter('셔츠, (여름)');
+
+    // 컬럼 구분자는 정확히 1개 — 값 안의 쉼표가 조건을 쪼개지 않는다
+    expect(filter.split('",').length - 1).toBe(1);
+    expect(filter).toBe('name.ilike."%셔츠, (여름)%",brand.ilike."%셔츠, (여름)%"');
+  });
+
+  it('따옴표·역슬래시는 이스케이프한다 (따옴표 조기 종료 방지)', () => {
+    // 입력: 12" 백\  →  값 안의 " 와 \ 가 각각 백슬래시로 이스케이프돼야 한다
+    expect(buildClosetSearchFilter('12" 백\\')).toBe(
+      'name.ilike."%12\\" 백\\\\%",brand.ilike."%12\\" 백\\\\%"'
+    );
+  });
+
+  it('빈 검색어도 안전한 문자열을 만든다', () => {
+    expect(buildClosetSearchFilter('')).toBe('name.ilike."%%",brand.ilike."%%"');
   });
 });

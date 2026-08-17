@@ -102,4 +102,25 @@ describe('BatchAddClothingPage — 파일 인테이크 표면화', () => {
     });
     expect(screen.queryByTestId('batch-intake-notice')).not.toBeInTheDocument();
   });
+
+  // 재발 방지: 배경 제거 기능이 존재한 적이 없는데 "일괄은 배경 제거 없이 원본으로"라며
+  // 단건과의 존재하지 않는 차이를 고지했다. 두 경로가 같은 말을 해야 한다.
+  it('저장 방식을 단건과 같은 문구로 안내하고 배경 제거를 언급하지 않는다', () => {
+    render(<BatchAddClothingPage />);
+
+    expect(screen.getByTestId('save-mode-notice')).toHaveTextContent('원본 사진 그대로 저장돼요');
+    expect(document.body.textContent).not.toContain('배경 제거');
+  });
+
+  it('촬영 가이드와 한 벌씩 등록 경로를 함께 제공한다', () => {
+    const push = vi.fn();
+    (useRouter as ReturnType<typeof vi.fn>).mockReturnValue({ push, back: vi.fn() });
+
+    render(<BatchAddClothingPage />);
+
+    expect(screen.getByTestId('shot-guide')).toHaveTextContent('옷 한 벌만 나오게 찍어주세요');
+
+    fireEvent.click(screen.getByTestId('batch-single-add-link'));
+    expect(push).toHaveBeenCalledWith('/closet/add');
+  });
 });

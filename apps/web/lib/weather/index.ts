@@ -36,15 +36,14 @@ export type WeatherLocationSource = 'geolocation' | 'default';
 
 export interface WeatherData {
   temp: number;
-  /** 강수량 (mm) — 직전 1시간 관측값. **확률(%)이 아니다** */
-  precipitationMm: number;
   /**
-   * @deprecated `precipitationMm`과 동일한 mm 값(이름만 남은 하위호환 필드).
-   * 과거 이 필드는 `mm * 100`을 "%"로 사칭했으나 그 변환은 폐지됐다.
-   * 마지막 소비처(app/(main)/closet/recommend/page.tsx의 `weather.precipitation > 0` 3곳)를
-   * `precipitationMm`으로 옮기면 제거한다.
+   * 강수량 (mm) — 직전 1시간 관측값. **확률(%)이 아니다**.
+   * 판정은 항상 `RAIN_THRESHOLD_MM` 이상인지로 한다(0 초과는 관측 노이즈까지 비로 센다).
+   *
+   * (하위호환 별칭 `precipitation`은 2026-08 제거 — 마지막 소비처였던 옷장 추천 화면이
+   *  `precipitationMm`으로 옮겨갔다. 이름만 mm였던 필드가 "%"로 오독되는 통로였다.)
    */
-  precipitation: number;
+  precipitationMm: number;
   condition: string;
   /** UV 지수 (0-11+) */
   uvIndex: number;
@@ -133,7 +132,6 @@ export async function getCurrentWeather(
     return {
       temp: Math.round(data.current.temperature_2m),
       precipitationMm,
-      precipitation: precipitationMm, // @deprecated 하위호환(같은 mm 값)
       condition: WEATHER_CONDITIONS[data.current.weather_code] || '알 수 없음',
       uvIndex: Math.round((data.current.uv_index ?? 0) * 10) / 10,
       humidity: Math.round(data.current.relative_humidity_2m ?? 50),

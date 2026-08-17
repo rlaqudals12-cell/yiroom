@@ -330,10 +330,11 @@ describe('closetMatcher', () => {
       expect(suggestion?.top).toBeUndefined();
     });
 
-    it('원피스 보유 시 상·하의 부재를 "없어요"로 안내하지 않아야 한다', () => {
+    it('원피스 보유 시 상·하의 부재를 미등록으로 안내하지 않아야 한다', () => {
       const summary = getRecommendationSummary(dressOnly, {});
 
-      const absentMessage = summary.suggestions.find((s) => s.includes('없어요'));
+      const absentMessage =
+        summary.suggestions.find((s) => s.includes('아직 등록 안 됐어요')) ?? '';
       expect(absentMessage).not.toContain('상의');
       expect(absentMessage).not.toContain('하의');
       // 대신 원피스로 조립 가능하다는 사실 + 확장 경로를 안내
@@ -654,7 +655,7 @@ describe('closetMatcher', () => {
       expect(summary.total).toBe(3);
     });
 
-    it('0벌 카테고리는 "없어요", 1벌 카테고리는 "1벌뿐"으로 분리 안내해야 한다', () => {
+    it('0벌 카테고리는 "아직 등록 안 됐어요", 1벌 카테고리는 "1벌뿐"으로 분리 안내해야 한다', () => {
       // 상의 1벌 + 하의 2벌 → 상의=빈약(1벌뿐), 아우터·신발=부재(없어요), 하의=안내 없음
       const splitItems: InventoryItem[] = [
         createMockItem({ id: 'top-1', subCategory: 'top' }),
@@ -663,7 +664,7 @@ describe('closetMatcher', () => {
       ];
       const summary = getRecommendationSummary(splitItems, {});
 
-      const absentMessage = summary.suggestions.find((s) => s.includes('없어요'));
+      const absentMessage = summary.suggestions.find((s) => s.includes('아직 등록 안 됐어요'));
       const thinMessage = summary.suggestions.find((s) => s.includes('1벌뿐'));
 
       // 0벌(아우터·신발)은 부재 안내에만 등장
@@ -1079,10 +1080,10 @@ describe('closetMatcher', () => {
       // 단 '상의가 없다'류의 오집계(unknown 처리·0벌 취급)는 아니어야 한다
       const summary = getRecommendationSummary(koreanItems, {});
 
-      // 아우터 0벌은 반드시 부재('없어요') 안내에 포함
-      expect(summary.suggestions.some((s) => s.includes('아우터') && s.includes('없어요'))).toBe(
-        true
-      );
+      // 아우터 0벌은 반드시 부재(미등록) 안내에 포함
+      expect(
+        summary.suggestions.some((s) => s.includes('아우터') && s.includes('아직 등록 안 됐어요'))
+      ).toBe(true);
       // 보유 1벌인 상의는 부재가 아니라 '1벌뿐' 안내로 분류
       expect(summary.suggestions.some((s) => s.includes('상의') && s.includes('1벌뿐'))).toBe(true);
     });

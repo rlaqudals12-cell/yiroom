@@ -53,11 +53,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
-      // @imgly/background-removal은 선택적 의존성 - 테스트에서 모킹
-      '@imgly/background-removal': path.resolve(
-        __dirname,
-        './tests/__mocks__/imgly-background-removal.ts'
-      ),
       // @anthropic-ai/sdk는 선택적 의존성 - 테스트에서 모킹
       '@anthropic-ai/sdk': path.resolve(__dirname, './tests/__mocks__/anthropic-ai-sdk.ts'),
     },
