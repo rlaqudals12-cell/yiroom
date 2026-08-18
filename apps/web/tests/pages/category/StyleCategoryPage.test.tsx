@@ -141,10 +141,10 @@ describe('StyleCategoryPage', () => {
       });
     });
 
-    it('BottomNav가 표시된다', () => {
+    it('페이지 자체 BottomNav를 렌더하지 않는다 (루트 셸 단일 소유)', () => {
       render(<StyleCategoryPage />);
 
-      expect(screen.getByTestId('bottom-nav')).toBeInTheDocument();
+      expect(screen.queryByTestId('bottom-nav')).not.toBeInTheDocument();
     });
   });
 

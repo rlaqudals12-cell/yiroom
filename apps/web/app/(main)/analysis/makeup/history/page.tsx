@@ -27,7 +27,6 @@ const AnalysisTimelineChart = dynamic(
   { ssr: false }
 );
 import type { TrendDirection } from '@/lib/utils/conditional-helpers';
-import { BottomNav } from '@/components/BottomNav';
 import type {
   MakeupAnalysisHistoryItem,
   PeriodFilter,
@@ -144,7 +143,7 @@ export default function MakeupHistoryPage() {
   )!;
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="makeup-history-page">
+    <div className="min-h-screen bg-background" data-testid="makeup-history-page">
       {/* 헤더 */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between p-4">
@@ -344,8 +343,6 @@ export default function MakeupHistoryPage() {
           </p>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 }

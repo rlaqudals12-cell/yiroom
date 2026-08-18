@@ -8,7 +8,6 @@ import { ArrowLeft, Calendar, ChevronRight, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BottomNav } from '@/components/BottomNav';
 import type {
   PersonalColorHistoryItem,
   PeriodFilter,
@@ -76,7 +75,7 @@ export default function PersonalColorHistoryPage(): React.JSX.Element {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="personal-color-history-page">
+    <div className="min-h-screen bg-background" data-testid="personal-color-history-page">
       {/* 헤더 */}
       <header className="sticky top-0 z-40 bg-background border-b">
         <div className="flex items-center justify-between p-4">
@@ -207,8 +206,6 @@ export default function PersonalColorHistoryPage(): React.JSX.Element {
           </p>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 }

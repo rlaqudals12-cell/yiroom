@@ -53,6 +53,24 @@ interface TableResponses {
 
 const EMPTY: QueryResult = { data: null, error: null };
 
+const mockBroadcastChannels: MockBroadcastChannel[] = [];
+const broadcastBehavior = { throwOnConstruct: false, throwOnPost: false };
+
+class MockBroadcastChannel {
+  readonly name: string;
+  onmessage: ((event: MessageEvent) => void) | null = null;
+  postMessage = vi.fn((_message: unknown) => {
+    if (broadcastBehavior.throwOnPost) throw new Error('BroadcastChannel post failed');
+  });
+  close = vi.fn();
+
+  constructor(name: string) {
+    if (broadcastBehavior.throwOnConstruct) throw new Error('BroadcastChannel unavailable');
+    this.name = name;
+    mockBroadcastChannels.push(this);
+  }
+}
+
 function setupTables(responses: TableResponses, usersSelectSpy?: (cols?: string) => void) {
   mockSupabaseFrom.mockImplementation((table: string) => {
     switch (table) {
@@ -74,6 +92,10 @@ describe('useUserProfile', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSupabaseFrom.mockReturnValue(makeChain(EMPTY));
+    mockBroadcastChannels.length = 0;
+    broadcastBehavior.throwOnConstruct = false;
+    broadcastBehavior.throwOnPost = false;
+    vi.stubGlobal('BroadcastChannel', MockBroadcastChannel);
   });
 
   it('사용자가 없으면 기본 프로필을 반환한다', () => {
@@ -213,6 +235,91 @@ describe('useUserProfile', () => {
     expect(ok).toBe(true);
     expect(mockSupabaseFrom).toHaveBeenCalledWith('user_body_measurements');
     expect(result.current.profile.heightCm).toBe(180);
+  });
+
+  it('탭 focus와 같은 사용자의 profile-version 메시지에서 재검증한다', async () => {
+    mockUseUser.mockReturnValue({ user: { id: 'user_123' }, isLoaded: true });
+    setupTables({
+      users: { data: { gender: 'female' }, error: null },
+      user_body_measurements: { data: { height: 165, weight: 55 }, error: null },
+      nutrition_settings: { data: { allergies: [] }, error: null },
+    });
+    renderHook(() => useUserProfile());
+    await vi.waitFor(() => expect(mockSupabaseFrom).toHaveBeenCalledTimes(3));
+    const listener = mockBroadcastChannels[0];
+    expect(listener.name).toBe('yiroom-profile-version');
+
+    window.dispatchEvent(new Event('focus'));
+    await vi.waitFor(() => expect(mockSupabaseFrom).toHaveBeenCalledTimes(6));
+
+    act(() => {
+      listener.onmessage?.(
+        new MessageEvent('message', { data: { userId: 'other-user', version: 1 } })
+      );
+    });
+    expect(mockSupabaseFrom).toHaveBeenCalledTimes(6);
+
+    act(() => {
+      listener.onmessage?.(
+        new MessageEvent('message', { data: { userId: 'user_123', version: 2 } })
+      );
+    });
+    await vi.waitFor(() => expect(mockSupabaseFrom).toHaveBeenCalledTimes(9));
+  });
+
+  it('프로필 저장 성공 후 profile-version을 발행한다', async () => {
+    mockUseUser.mockReturnValue({ user: { id: 'user_123' }, isLoaded: true });
+    setupTables({
+      users: { data: { gender: 'neutral' }, error: null },
+      user_body_measurements: { data: { height: 165, weight: 55 }, error: null },
+      nutrition_settings: { data: { allergies: [] }, error: null },
+    });
+    const { result } = renderHook(() => useUserProfile());
+    await vi.waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.updateGender('female');
+    });
+
+    const publisher = mockBroadcastChannels.find((channel) =>
+      channel.postMessage.mock.calls.some(
+        ([message]) => (message as { userId?: string }).userId === 'user_123'
+      )
+    );
+    expect(publisher?.name).toBe('yiroom-profile-version');
+    expect(publisher?.postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'user_123', version: expect.any(Number) })
+    );
+    expect(publisher?.close).toHaveBeenCalledTimes(1);
+  });
+
+  it('profile-version 발행 실패가 이미 성공한 DB 저장을 실패로 바꾸지 않는다', async () => {
+    mockUseUser.mockReturnValue({ user: { id: 'user_123' }, isLoaded: true });
+    setupTables({ users: { data: { gender: 'neutral' }, error: null } });
+    const { result } = renderHook(() => useUserProfile());
+    await vi.waitFor(() => expect(result.current.isLoading).toBe(false));
+    broadcastBehavior.throwOnPost = true;
+
+    let ok = false;
+    await act(async () => {
+      ok = await result.current.updateGender('female');
+    });
+
+    expect(ok).toBe(true);
+    expect(result.current.profile.gender).toBe('female');
+    expect(result.current.error).toBeNull();
+  });
+
+  it('BroadcastChannel 생성 실패 시에도 focus 재검증은 유지한다', async () => {
+    mockUseUser.mockReturnValue({ user: { id: 'user_123' }, isLoaded: true });
+    setupTables({ users: { data: { gender: 'neutral' }, error: null } });
+    broadcastBehavior.throwOnConstruct = true;
+
+    renderHook(() => useUserProfile());
+    await vi.waitFor(() => expect(mockSupabaseFrom).toHaveBeenCalledTimes(3));
+
+    window.dispatchEvent(new Event('focus'));
+    await vi.waitFor(() => expect(mockSupabaseFrom).toHaveBeenCalledTimes(6));
   });
 
   it('supabase 접근이 예외를 던지면 에러를 설정한다', async () => {

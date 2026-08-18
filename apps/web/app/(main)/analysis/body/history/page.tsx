@@ -11,7 +11,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
-import { BottomNav } from '@/components/BottomNav';
 
 const AnalysisTimelineChart = dynamic(
   () => import('@/components/analysis/visual/AnalysisTimelineChart'),
@@ -93,7 +92,7 @@ export default function BodyHistoryPage() {
   )!;
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="body-history-page">
+    <div className="min-h-screen bg-background" data-testid="body-history-page">
       {/* 헤더 */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between p-4">
@@ -263,8 +262,6 @@ export default function BodyHistoryPage() {
           </p>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 }

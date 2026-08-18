@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import { BottomNav } from '@/components/BottomNav';
 import { HomeHeader } from './_components/HomeHeader';
 import HomeStateRouter from './_components/HomeStateRouter';
 import WelcomeBackBanner from './_components/WelcomeBackBanner';
@@ -36,7 +35,7 @@ function HomeStateSkeleton() {
 export default async function HomePage() {
   return (
     // 크림 지면(--surface-ground) 위 백색 카드 = 2단 깊이(다크는 기존 배경으로 폴백)
-    <div className="min-h-screen bg-surface-ground pb-20" data-testid="home-page">
+    <div className="min-h-screen bg-surface-ground" data-testid="home-page">
       {/* 헤더 - Server Component (LCP 요소) */}
       <HomeHeader />
 
@@ -52,8 +51,6 @@ export default async function HomePage() {
           <HomeStateRouter />
         </Suspense>
       </div>
-
-      <BottomNav />
     </div>
   );
 }

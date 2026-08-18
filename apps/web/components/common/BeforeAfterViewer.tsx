@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { ArrowLeftRight, ToggleLeft, ToggleRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -64,53 +64,18 @@ export function BeforeAfterViewer({
       }
     : { height };
   const [showAfter, setShowAfter] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-
-  // 슬라이더 드래그 처리
-  const handleMouseDown = useCallback(() => {
-    isDragging.current = true;
-  }, []);
-
-  const handleMouseUp = useCallback(() => {
-    isDragging.current = false;
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging.current || !containerRef.current) return;
-
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    setSliderPosition(percentage);
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!containerRef.current) return;
-
-    const rect = containerRef.current.getBoundingClientRect();
-    const touch = e.touches[0];
-    const x = touch.clientX - rect.left;
-    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    setSliderPosition(percentage);
-  }, []);
 
   // Slider 모드
   if (mode === 'slider') {
     return (
       <div
-        ref={containerRef}
         className={cn(
           'relative overflow-hidden rounded-xl cursor-ew-resize select-none touch-none',
           className
         )}
         style={frameStyle}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchMove={handleTouchMove}
         data-testid="before-after-viewer"
-        role="img"
+        role="group"
         aria-label={`${beforeLabel}와 ${afterLabel} 비교 이미지`}
       >
         {/* Before 이미지 (전체) */}
@@ -146,18 +111,24 @@ export function BeforeAfterViewer({
           </span>
         </div>
 
-        {/* 슬라이더 핸들 */}
-        <div
-          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg cursor-ew-resize z-10"
-          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleMouseDown}
-          role="slider"
+        {/* native range가 포인터·터치·키보드 조작과 값 범위를 모두 담당한다. */}
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={Math.round(sliderPosition)}
+          onChange={(event) => setSliderPosition(Number(event.target.value))}
           aria-label="비포/애프터 비교 슬라이더"
-          aria-valuenow={Math.round(sliderPosition)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          tabIndex={0}
+          aria-valuetext={`${beforeLabel} ${Math.round(sliderPosition)}%, ${afterLabel} ${100 - Math.round(sliderPosition)}%`}
+          className="peer absolute inset-0 z-20 h-full w-full cursor-ew-resize opacity-0"
+        />
+
+        {/* 시각 핸들 — 조작과 접근성은 바로 앞 native range가 소유한다. */}
+        <div
+          className="pointer-events-none absolute top-0 bottom-0 z-10 w-1 bg-white shadow-lg peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2"
+          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
+          aria-hidden="true"
         >
           {/* 핸들 아이콘 */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center">

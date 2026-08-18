@@ -21,7 +21,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { selectByKey, selectByCondition, getTrendDirection } from '@/lib/utils/conditional-helpers';
-import { BottomNav } from '@/components/BottomNav';
 import type { AnalysisCompareResponse, SkinAnalysisHistoryItem } from '@/types/analysis-history';
 
 // BeforeAfterViewer 동적 import
@@ -168,7 +167,7 @@ function SkinCompareContent() {
   const overallChange = data.changes.overall;
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="skin-compare-page">
+    <div className="min-h-screen bg-background" data-testid="skin-compare-page">
       {/* 헤더 */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between p-4">
@@ -325,8 +324,6 @@ function SkinCompareContent() {
           새로운 피부 분석하기
         </Button>
       </div>
-
-      <BottomNav />
     </div>
   );
 }

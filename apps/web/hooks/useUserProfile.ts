@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 
@@ -53,6 +53,37 @@ const USERS_TABLE = 'users';
 const MEASUREMENTS_TABLE = 'user_body_measurements';
 const BODY_ANALYSES_TABLE = 'body_analyses';
 const NUTRITION_SETTINGS_TABLE = 'nutrition_settings';
+const PROFILE_VERSION_CHANNEL = 'yiroom-profile-version';
+
+interface ProfileVersionMessage {
+  userId: string;
+  version: number;
+}
+
+function publishProfileVersion(userId: string): void {
+  if (typeof BroadcastChannel === 'undefined') return;
+
+  let channel: BroadcastChannel | null = null;
+  try {
+    channel = new BroadcastChannel(PROFILE_VERSION_CHANNEL);
+    channel.postMessage({ userId, version: Date.now() } satisfies ProfileVersionMessage);
+  } catch (error) {
+    // 탭 동기화는 best-effort다. DB 저장 성공을 로컬 브라우저 기능 실패로 뒤집지 않는다.
+    console.warn('[useUserProfile] Profile version broadcast unavailable:', error);
+  } finally {
+    try {
+      channel?.close();
+    } catch {
+      // 이미 저장된 프로필 결과에는 영향이 없어야 한다.
+    }
+  }
+}
+
+function isProfileVersionMessage(value: unknown): value is ProfileVersionMessage {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<ProfileVersionMessage>;
+  return typeof candidate.userId === 'string' && typeof candidate.version === 'number';
+}
 
 // NUMERIC/텍스트 혼재 방어 — 숫자로 정규화
 function toNumberOrNull(value: unknown): number | null {
@@ -73,9 +104,11 @@ export function useUserProfile(): UseUserProfileResult {
   const [profile, setProfile] = useState<UserProfileData>(DEFAULT_PROFILE);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const fetchSequenceRef = useRef(0);
 
   // 프로필 정보 조회 — 정본 테이블 3곳을 병렬 조회 (한 곳 실패가 전체를 막지 않음)
   const fetchProfile = useCallback(async () => {
+    const sequence = ++fetchSequenceRef.current;
     if (!isLoaded || !user) {
       setIsLoading(false);
       return;
@@ -119,6 +152,7 @@ export function useUserProfile(): UseUserProfileResult {
         if (weightKg === null) weightKg = toNumberOrNull(bodyData?.weight);
       }
 
+      if (sequence !== fetchSequenceRef.current) return;
       setProfile({
         gender: (genderRes.data?.gender as GenderType | null) ?? null,
         heightCm,
@@ -126,11 +160,12 @@ export function useUserProfile(): UseUserProfileResult {
         allergies: Array.isArray(allergyRes.data?.allergies) ? allergyRes.data.allergies : [],
       });
     } catch (err) {
+      if (sequence !== fetchSequenceRef.current) return;
       const error = err instanceof Error ? err : new Error('Unknown error');
       console.error('[useUserProfile] Fetch error:', error);
       setError(error);
     } finally {
-      setIsLoading(false);
+      if (sequence === fetchSequenceRef.current) setIsLoading(false);
     }
   }, [isLoaded, user, supabase]);
 
@@ -138,6 +173,42 @@ export function useUserProfile(): UseUserProfileResult {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  // 다른 탭의 프로필 저장과 현재 탭 복귀를 정본 재조회 신호로 사용한다.
+  useEffect(() => {
+    if (!user) return undefined;
+
+    const handleFocus = () => {
+      void fetchProfile();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    if (typeof BroadcastChannel === 'undefined') {
+      return () => window.removeEventListener('focus', handleFocus);
+    }
+
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel(PROFILE_VERSION_CHANNEL);
+      channel.onmessage = (event: MessageEvent<unknown>) => {
+        if (isProfileVersionMessage(event.data) && event.data.userId === user.id) {
+          void fetchProfile();
+        }
+      };
+    } catch (error) {
+      // Safari 사설 모드 등 채널 생성 실패 환경에서도 focus 재검증은 계속 유지한다.
+      console.warn('[useUserProfile] Profile version subscription unavailable:', error);
+    }
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      try {
+        channel?.close();
+      } catch {
+        // 정리 실패는 화면 생명주기에 영향을 주지 않는다.
+      }
+    };
+  }, [fetchProfile, user]);
 
   // 성별 업데이트 → users.gender
   const updateGender = useCallback(
@@ -155,6 +226,7 @@ export function useUserProfile(): UseUserProfileResult {
         }
 
         setProfile((prev) => ({ ...prev, gender }));
+        publishProfileVersion(user.id);
         return true;
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error');
@@ -202,10 +274,11 @@ export function useUserProfile(): UseUserProfileResult {
       const success = await upsertMeasurements({ height: heightCm });
       if (success) {
         setProfile((prev) => ({ ...prev, heightCm }));
+        if (user) publishProfileVersion(user.id);
       }
       return success;
     },
-    [upsertMeasurements]
+    [upsertMeasurements, user]
   );
 
   // 몸무게 업데이트
@@ -214,10 +287,11 @@ export function useUserProfile(): UseUserProfileResult {
       const success = await upsertMeasurements({ weight: weightKg });
       if (success) {
         setProfile((prev) => ({ ...prev, weightKg }));
+        if (user) publishProfileVersion(user.id);
       }
       return success;
     },
-    [upsertMeasurements]
+    [upsertMeasurements, user]
   );
 
   // 키와 몸무게 동시 업데이트
@@ -226,10 +300,11 @@ export function useUserProfile(): UseUserProfileResult {
       const success = await upsertMeasurements({ height: heightCm, weight: weightKg });
       if (success) {
         setProfile((prev) => ({ ...prev, heightCm, weightKg }));
+        if (user) publishProfileVersion(user.id);
       }
       return success;
     },
-    [upsertMeasurements]
+    [upsertMeasurements, user]
   );
 
   // 알레르기 업데이트 → nutrition_settings.allergies
@@ -266,6 +341,7 @@ export function useUserProfile(): UseUserProfileResult {
         }
 
         setProfile((prev) => ({ ...prev, allergies }));
+        publishProfileVersion(user.id);
         return true;
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error');

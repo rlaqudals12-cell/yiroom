@@ -57,8 +57,25 @@ describe('BeforeAfterViewer', () => {
 
     it('has accessible aria-label', () => {
       render(<BeforeAfterViewer {...defaultProps} beforeLabel="이전" afterLabel="이후" />);
-      const viewer = screen.getByRole('img', { name: '이전와 이후 비교 이미지' });
+      const viewer = screen.getByRole('group', { name: '이전와 이후 비교 이미지' });
       expect(viewer).toBeInTheDocument();
+    });
+
+    it('uses a native range and updates the comparison position', () => {
+      render(<BeforeAfterViewer {...defaultProps} />);
+      const slider = screen.getByRole('slider', { name: '비포/애프터 비교 슬라이더' });
+
+      expect(slider).toBeInstanceOf(HTMLInputElement);
+      expect(slider).toHaveAttribute('type', 'range');
+      expect(slider).toHaveValue('50');
+      expect(slider).toHaveAttribute('aria-valuetext', 'Before 50%, After 50%');
+
+      fireEvent.change(slider, { target: { value: '73' } });
+
+      expect(slider).toHaveValue('73');
+      expect(slider).toHaveAttribute('aria-valuetext', 'Before 73%, After 27%');
+      const images = screen.getAllByTestId('before-after-image');
+      expect(images[1].parentElement).toHaveStyle({ clipPath: 'inset(0 0 0 73%)' });
     });
 
     it('has cursor-ew-resize class for slider', () => {

@@ -10,7 +10,7 @@ import { HomeHeader } from './_components/HomeHeader';
 export default function HomeLoading() {
   return (
     // 본 페이지와 동일한 크림 지면 — 로딩→콘텐츠 전환 시 배경 점프 방지(장식 그라데 해체)
-    <div className="min-h-screen bg-surface-ground pb-20" data-testid="home-loading">
+    <div className="min-h-screen bg-surface-ground" data-testid="home-loading">
       {/* 실제 헤더 컴포넌트 - CLS 방지 */}
       <HomeHeader />
 

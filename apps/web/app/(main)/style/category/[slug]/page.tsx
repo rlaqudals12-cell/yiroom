@@ -5,7 +5,6 @@ import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { ArrowLeft, ChevronDown, Star, Loader2, Shirt, ExternalLink } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
-import { BottomNav } from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
@@ -238,7 +237,7 @@ export default function StyleCategoryPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="style-category-page">
+    <div className="min-h-screen bg-background" data-testid="style-category-page">
       {/* 헤더 */}
       <header className="sticky top-0 z-40 bg-background border-b">
         <div className="flex items-center justify-between px-4 py-3">
@@ -459,8 +458,6 @@ export default function StyleCategoryPage() {
           </>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 }

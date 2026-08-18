@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { FlaskConical, Palette, ScanLine, ChevronRight } from 'lucide-react';
-import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useUserMatching } from '@/hooks/useUserMatching';
@@ -263,7 +262,7 @@ export default function BeautyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="beauty-page">
+    <div className="min-h-screen bg-background" data-testid="beauty-page">
       {/* F3: 시각적 위계 — h1 sr-only */}
       <h1 className="sr-only">뷰티 - 피부 맞춤 제품 추천</h1>
 
@@ -443,8 +442,6 @@ export default function BeautyPage() {
           </ErrorBoundary>
         </TabsContent>
       </Tabs>
-
-      <BottomNav />
     </div>
   );
 }

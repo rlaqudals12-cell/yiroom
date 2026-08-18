@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { BottomNav } from '@/components/BottomNav';
 import type { AnalysisCompareResponse, MakeupAnalysisHistoryItem } from '@/types/analysis-history';
 
 // BeforeAfterViewer 동적 import
@@ -139,7 +138,7 @@ function MakeupCompareContent() {
   const after = data.after as MakeupAnalysisHistoryItem;
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="makeup-compare-page">
+    <div className="min-h-screen bg-background" data-testid="makeup-compare-page">
       {/* 헤더 */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between p-4">
@@ -258,8 +257,6 @@ function MakeupCompareContent() {
           새로운 메이크업 분석하기
         </Button>
       </div>
-
-      <BottomNav />
     </div>
   );
 }

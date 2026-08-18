@@ -14,7 +14,6 @@ import { useUser } from '@clerk/nextjs';
 import { ArrowLeft, Sparkles, Loader2 } from 'lucide-react';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
-import { BottomNav } from '@/components/BottomNav';
 import { StyleGallery } from '@/components/fashion/StyleGallery';
 import type { StyleCategory, OutfitRecommendation } from '@/lib/fashion';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
@@ -78,7 +77,7 @@ export default function StyleGalleryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="style-gallery-page">
+    <div className="min-h-screen bg-background" data-testid="style-gallery-page">
       {/* 헤더 */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between px-4 py-3">
@@ -137,8 +136,6 @@ export default function StyleGalleryPage() {
           </Button>
         </div>
       )}
-
-      <BottomNav />
     </div>
   );
 }

@@ -107,16 +107,29 @@ function TimePicker({
 }
 
 // Toggle 컴포넌트
-function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (enabled: boolean) => void }) {
+function Toggle({
+  enabled,
+  onChange,
+  disabled = false,
+  label,
+}: {
+  enabled: boolean;
+  onChange: (enabled: boolean) => void;
+  disabled?: boolean;
+  label: string;
+}) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={enabled}
+      aria-label={label}
+      disabled={disabled}
       onClick={() => onChange(!enabled)}
       className={cn(
         'relative w-11 h-6 rounded-full transition-colors',
-        enabled ? 'bg-primary' : 'bg-muted'
+        enabled ? 'bg-primary' : 'bg-muted',
+        disabled && 'cursor-not-allowed opacity-50'
       )}
     >
       <div
@@ -211,7 +224,14 @@ export default function SettingsPage() {
   // 알림 설정 상태 (DB-backed)
   const [notificationSettings, setNotificationSettings] =
     useState<NotificationSettings>(DB_DEFAULT_SETTINGS);
-  const { userId } = useAuth();
+  const [notificationStatus, setNotificationStatus] = useState<'loading' | 'ready' | 'error'>(
+    'loading'
+  );
+  const [notificationReloadKey, setNotificationReloadKey] = useState(0);
+  const [savingNotificationFields, setSavingNotificationFields] = useState<
+    Set<keyof NotificationSettings>
+  >(new Set());
+  const { userId, isLoaded: isAuthLoaded } = useAuth();
 
   // 언어 설정 상태
   const [language, setLanguage] = useState<string>(() => {
@@ -224,50 +244,80 @@ export default function SettingsPage() {
 
   // 마운트 시 설정 불러오기
   useEffect(() => {
-    // 알림 설정: Supabase에서 불러오기
-    if (userId) {
-      fetch('/api/user/notification-settings')
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success && result.data) {
-            setNotificationSettings({ ...DB_DEFAULT_SETTINGS, ...result.data });
-          }
-        })
-        .catch(() => {
-          /* 네트워크 오류 시 기본값 사용 */
-        });
+    if (!isAuthLoaded) return;
+
+    if (!userId) {
+      setNotificationStatus('error');
+      return;
     }
+
+    const controller = new AbortController();
+    setNotificationStatus('loading');
+
+    void (async () => {
+      try {
+        const response = await fetch('/api/user/notification-settings', {
+          signal: controller.signal,
+        });
+        const result = (await response.json()) as {
+          success?: boolean;
+          data?: Partial<NotificationSettings> | null;
+        };
+        if (!response.ok || !result.success) throw new Error('notification settings load failed');
+
+        setNotificationSettings({ ...DB_DEFAULT_SETTINGS, ...(result.data ?? {}) });
+        setNotificationStatus('ready');
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') setNotificationStatus('error');
+      }
+    })();
 
     // 언어 설정: 쿠키에서 읽기 (localStorage 대신)
     const localeMatch = document.cookie.match(/NEXT_LOCALE=([^;]+)/);
     if (localeMatch) {
       setLanguage(localeMatch[1]);
     }
-  }, [userId]);
+    return () => controller.abort();
+  }, [isAuthLoaded, notificationReloadKey, userId]);
 
   // 알림 설정 변경 시 Supabase에 저장
-  const updateNotificationSettings = useCallback((update: Partial<NotificationSettings>) => {
-    setNotificationSettings((prev) => {
-      const newSettings = { ...prev, ...update };
-      // Supabase에 비동기 저장
-      fetch('/api/user/notification-settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSettings),
-      })
-        .then((res) => {
-          if (res.ok) {
-            toast.success('알림 설정이 저장되었어요');
-          } else {
-            toast.error('알림 설정 저장에 실패했어요');
-          }
-        })
-        .catch(() => {
-          toast.error('알림 설정 저장에 실패했어요');
+  const updateNotificationSetting = useCallback(
+    async <K extends keyof NotificationSettings>(field: K, value: NotificationSettings[K]) => {
+      if (notificationStatus !== 'ready' || savingNotificationFields.has(field)) return;
+
+      const previousValue = notificationSettings[field];
+      setNotificationSettings((previous) => ({ ...previous, [field]: value }));
+      setSavingNotificationFields((previous) => new Set(previous).add(field));
+
+      try {
+        const response = await fetch('/api/user/notification-settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [field]: value }),
         });
-      return newSettings;
-    });
-  }, []);
+        const result = (await response.json()) as { success?: boolean };
+        if (!response.ok || !result.success) throw new Error('notification settings save failed');
+        toast.success('알림 설정이 저장되었어요');
+      } catch {
+        // 다른 필드의 낙관적 변경은 유지하고 실패한 필드만 되돌린다.
+        setNotificationSettings((previous) => ({ ...previous, [field]: previousValue }));
+        toast.error('알림 설정 저장에 실패했어요');
+      } finally {
+        setSavingNotificationFields((previous) => {
+          const next = new Set(previous);
+          next.delete(field);
+          return next;
+        });
+      }
+    },
+    [notificationSettings, notificationStatus, savingNotificationFields]
+  );
+
+  const isNotificationControlDisabled = useCallback(
+    (field: keyof NotificationSettings, additionallyDisabled = false) =>
+      notificationStatus !== 'ready' || savingNotificationFields.has(field) || additionallyDisabled,
+    [notificationStatus, savingNotificationFields]
+  );
 
   // 테마 변경 핸들러
   const handleThemeChange = (newTheme: ThemeOption) => {
@@ -310,28 +360,37 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground">맞춤 추천에 활용됩니다</p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <fieldset className="flex gap-2">
+                      <legend className="sr-only">성별 선택</legend>
                       {[
                         { id: 'male' as GenderType, label: '남성' },
                         { id: 'female' as GenderType, label: '여성' },
                         { id: 'neutral' as GenderType, label: '선택 안함' },
                       ].map((genderOption) => (
-                        <button
+                        <label
                           key={genderOption.id}
-                          onClick={() => handleGenderChange(genderOption.id)}
-                          disabled={isProfileLoading}
                           className={cn(
-                            'flex-1 py-2 rounded-lg border transition-colors',
+                            'flex-1 cursor-pointer rounded-lg border py-2 text-center transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2',
                             profile.gender === genderOption.id
                               ? 'bg-primary text-primary-foreground border-primary'
                               : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted',
                             isProfileLoading && 'opacity-50 cursor-not-allowed'
                           )}
                         >
+                          <input
+                            type="radio"
+                            name="gender"
+                            value={genderOption.id}
+                            checked={profile.gender === genderOption.id}
+                            aria-checked={profile.gender === genderOption.id}
+                            onChange={() => handleGenderChange(genderOption.id)}
+                            disabled={isProfileLoading}
+                            className="sr-only"
+                          />
                           <span className="text-sm">{genderOption.label}</span>
-                        </button>
+                        </label>
                       ))}
-                    </div>
+                    </fieldset>
                   </div>
 
                   {/* 신체 정보 카드 */}
@@ -387,6 +446,26 @@ export default function SettingsPage() {
         return (
           <FadeInUp>
             <div className="space-y-6" data-testid="notification-settings">
+              {notificationStatus === 'loading' && (
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  알림 설정을 불러오는 중이에요.
+                </p>
+              )}
+              {notificationStatus === 'error' && (
+                <div
+                  className="flex items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4"
+                  role="alert"
+                >
+                  <p className="text-sm text-destructive">알림 설정을 불러오지 못했어요.</p>
+                  <button
+                    type="button"
+                    className="rounded-lg border border-destructive/30 px-3 py-1.5 text-sm text-destructive"
+                    onClick={() => setNotificationReloadKey((value) => value + 1)}
+                  >
+                    다시 시도
+                  </button>
+                </div>
+              )}
               {/* 마스터 토글 */}
               <div>
                 <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">전체</h2>
@@ -398,7 +477,9 @@ export default function SettingsPage() {
                     action={
                       <Toggle
                         enabled={notificationSettings.enabled}
-                        onChange={(v) => updateNotificationSettings({ enabled: v })}
+                        label="알림 받기"
+                        disabled={isNotificationControlDisabled('enabled')}
+                        onChange={(value) => updateNotificationSetting('enabled', value)}
                       />
                     }
                   />
@@ -418,14 +499,21 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-3">
                           <TimePicker
                             value={notificationSettings.workoutReminderTime}
-                            onChange={(v) => updateNotificationSettings({ workoutReminderTime: v })}
-                            disabled={
-                              !notificationSettings.enabled || !notificationSettings.workoutReminder
+                            onChange={(value) =>
+                              updateNotificationSetting('workoutReminderTime', value)
                             }
+                            disabled={isNotificationControlDisabled(
+                              'workoutReminderTime',
+                              !notificationSettings.enabled || !notificationSettings.workoutReminder
+                            )}
                           />
                           <Toggle
                             enabled={notificationSettings.workoutReminder}
-                            onChange={(v) => updateNotificationSettings({ workoutReminder: v })}
+                            label="운동 리마인더"
+                            disabled={isNotificationControlDisabled('workoutReminder')}
+                            onChange={(value) =>
+                              updateNotificationSetting('workoutReminder', value)
+                            }
                           />
                         </div>
                       }
@@ -437,7 +525,9 @@ export default function SettingsPage() {
                       action={
                         <Toggle
                           enabled={notificationSettings.streakWarning}
-                          onChange={(v) => updateNotificationSettings({ streakWarning: v })}
+                          label="연속 기록 경고"
+                          disabled={isNotificationControlDisabled('streakWarning')}
+                          onChange={(value) => updateNotificationSetting('streakWarning', value)}
                         />
                       }
                     />
@@ -457,7 +547,11 @@ export default function SettingsPage() {
                       action={
                         <Toggle
                           enabled={notificationSettings.nutritionReminder}
-                          onChange={(v) => updateNotificationSettings({ nutritionReminder: v })}
+                          label="식사 리마인더"
+                          disabled={isNotificationControlDisabled('nutritionReminder')}
+                          onChange={(value) =>
+                            updateNotificationSetting('nutritionReminder', value)
+                          }
                         />
                       }
                     />
@@ -467,26 +561,39 @@ export default function SettingsPage() {
                           <span className="text-sm text-muted-foreground">아침</span>
                           <TimePicker
                             value={notificationSettings.mealReminderBreakfast}
-                            onChange={(v) =>
-                              updateNotificationSettings({ mealReminderBreakfast: v })
+                            onChange={(value) =>
+                              updateNotificationSetting('mealReminderBreakfast', value)
                             }
-                            disabled={!notificationSettings.enabled}
+                            disabled={isNotificationControlDisabled(
+                              'mealReminderBreakfast',
+                              !notificationSettings.enabled
+                            )}
                           />
                         </div>
                         <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
                           <span className="text-sm text-muted-foreground">점심</span>
                           <TimePicker
                             value={notificationSettings.mealReminderLunch}
-                            onChange={(v) => updateNotificationSettings({ mealReminderLunch: v })}
-                            disabled={!notificationSettings.enabled}
+                            onChange={(value) =>
+                              updateNotificationSetting('mealReminderLunch', value)
+                            }
+                            disabled={isNotificationControlDisabled(
+                              'mealReminderLunch',
+                              !notificationSettings.enabled
+                            )}
                           />
                         </div>
                         <div className="flex items-center justify-between px-4 py-3 bg-card rounded-xl border">
                           <span className="text-sm text-muted-foreground">저녁</span>
                           <TimePicker
                             value={notificationSettings.mealReminderDinner}
-                            onChange={(v) => updateNotificationSettings({ mealReminderDinner: v })}
-                            disabled={!notificationSettings.enabled}
+                            onChange={(value) =>
+                              updateNotificationSetting('mealReminderDinner', value)
+                            }
+                            disabled={isNotificationControlDisabled(
+                              'mealReminderDinner',
+                              !notificationSettings.enabled
+                            )}
                           />
                         </div>
                       </>
@@ -500,13 +607,15 @@ export default function SettingsPage() {
                           <select
                             value={notificationSettings.waterReminderInterval}
                             onChange={(e) =>
-                              updateNotificationSettings({
-                                waterReminderInterval: Number(e.target.value),
-                              })
+                              updateNotificationSetting(
+                                'waterReminderInterval',
+                                Number(e.target.value)
+                              )
                             }
-                            disabled={
+                            disabled={isNotificationControlDisabled(
+                              'waterReminderInterval',
                               !notificationSettings.enabled || !notificationSettings.waterReminder
-                            }
+                            )}
                             className={cn(
                               'px-2 py-1 text-sm rounded-lg border bg-card text-foreground',
                               (!notificationSettings.enabled ||
@@ -522,7 +631,9 @@ export default function SettingsPage() {
                           </select>
                           <Toggle
                             enabled={notificationSettings.waterReminder}
-                            onChange={(v) => updateNotificationSettings({ waterReminder: v })}
+                            label="수분 섭취 알림"
+                            disabled={isNotificationControlDisabled('waterReminder')}
+                            onChange={(value) => updateNotificationSetting('waterReminder', value)}
                           />
                         </div>
                       }
@@ -542,7 +653,11 @@ export default function SettingsPage() {
                     action={
                       <Toggle
                         enabled={notificationSettings.socialNotifications}
-                        onChange={(v) => updateNotificationSettings({ socialNotifications: v })}
+                        label="소셜 알림"
+                        disabled={isNotificationControlDisabled('socialNotifications')}
+                        onChange={(value) =>
+                          updateNotificationSetting('socialNotifications', value)
+                        }
                       />
                     }
                   />
@@ -553,8 +668,10 @@ export default function SettingsPage() {
                     action={
                       <Toggle
                         enabled={notificationSettings.achievementNotifications}
-                        onChange={(v) =>
-                          updateNotificationSettings({ achievementNotifications: v })
+                        label="성취 알림"
+                        disabled={isNotificationControlDisabled('achievementNotifications')}
+                        onChange={(value) =>
+                          updateNotificationSetting('achievementNotifications', value)
                         }
                       />
                     }
@@ -580,27 +697,36 @@ export default function SettingsPage() {
                     <p className="text-sm text-muted-foreground">앱 색상 모드</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <fieldset className="flex gap-2">
+                  <legend className="sr-only">테마 선택</legend>
                   {[
                     { id: 'light', label: '라이트', icon: Sun },
                     { id: 'dark', label: '다크', icon: Moon },
                     { id: 'system', label: '시스템', icon: Palette },
                   ].map((themeOption) => (
-                    <button
+                    <label
                       key={themeOption.id}
-                      onClick={() => handleThemeChange(themeOption.id as ThemeOption)}
                       className={cn(
-                        'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors',
+                        'flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border py-2 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2',
                         currentTheme === themeOption.id
                           ? 'bg-primary text-primary-foreground border-primary'
                           : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
                       )}
                     >
-                      <themeOption.icon className="w-4 h-4" />
+                      <input
+                        type="radio"
+                        name="theme"
+                        value={themeOption.id}
+                        checked={currentTheme === themeOption.id}
+                        aria-checked={currentTheme === themeOption.id}
+                        onChange={() => handleThemeChange(themeOption.id as ThemeOption)}
+                        className="sr-only"
+                      />
+                      <themeOption.icon className="w-4 h-4" aria-hidden="true" />
                       <span className="text-sm">{themeOption.label}</span>
-                    </button>
+                    </label>
                   ))}
-                </div>
+                </fieldset>
               </div>
 
               {/* 언어 선택 */}
@@ -614,27 +740,38 @@ export default function SettingsPage() {
                     <p className="text-sm text-muted-foreground">앱 표시 언어</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <fieldset className="flex gap-2">
+                  <legend className="sr-only">언어 선택</legend>
                   {[
                     { id: 'ko', label: '한국어' },
                     { id: 'en', label: 'English' },
                     { id: 'ja', label: '日本語' },
                     { id: 'zh', label: '中文' },
                   ].map((lang) => (
-                    <button
+                    <label
                       key={lang.id}
-                      onClick={() => handleLanguageChange(lang.id)}
                       className={cn(
-                        'flex-1 py-2 rounded-lg border transition-colors',
+                        'flex-1 cursor-pointer rounded-lg border py-2 text-center transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2',
                         language === lang.id
                           ? 'bg-primary text-primary-foreground border-primary'
                           : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
                       )}
                     >
-                      <span className="text-sm">{lang.label}</span>
-                    </button>
+                      <input
+                        type="radio"
+                        name="language"
+                        value={lang.id}
+                        checked={language === lang.id}
+                        aria-checked={language === lang.id}
+                        onChange={() => handleLanguageChange(lang.id)}
+                        className="sr-only"
+                      />
+                      <span className="text-sm" lang={lang.id}>
+                        {lang.label}
+                      </span>
+                    </label>
                   ))}
-                </div>
+                </fieldset>
               </div>
 
               {/* 색맹 모드 */}

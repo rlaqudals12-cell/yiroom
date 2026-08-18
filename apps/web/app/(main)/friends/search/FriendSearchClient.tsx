@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Loader2, Check, Clock, Ban, UserPlus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,30 +22,59 @@ export function FriendSearchClient() {
   const supabase = useClerkSupabaseClient();
   const { userId } = useAuth();
   const debouncedQuery = useDebounce(query, 300);
+  const searchSequenceRef = useRef(0);
+  const searchAbortRef = useRef<AbortController | null>(null);
 
-  // 검색 실행
-  const performSearch = useCallback(async () => {
-    if (!userId || !debouncedQuery || debouncedQuery.length < 2) {
-      setResults([]);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const searchResults = await searchUsers(supabase, userId, debouncedQuery);
-      setResults(searchResults);
-    } catch (error) {
-      console.error('[FriendSearch] Search error:', error);
-      setResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [supabase, userId, debouncedQuery]);
-
-  // 디바운스된 검색어가 변경되면 검색 실행
+  // 디바운스된 검색어가 변경되면 이전 요청을 끊고 최신 요청만 반영한다.
   useEffect(() => {
-    performSearch();
-  }, [performSearch]);
+    const sequence = ++searchSequenceRef.current;
+    searchAbortRef.current?.abort();
+    searchAbortRef.current = null;
+
+    const normalizedQuery = query.trim();
+    const normalizedDebouncedQuery = debouncedQuery.trim();
+
+    if (!userId || normalizedQuery.length < 2) {
+      setResults([]);
+      setIsSearching(false);
+      return undefined;
+    }
+
+    // 원문 입력이 바뀐 즉시 이전 결과를 폐기한다. debounce 300ms 동안 옛 결과가
+    // 새 검색어 아래 노출되거나 늦은 응답이 다시 붙는 창을 남기지 않는다.
+    if (normalizedQuery !== normalizedDebouncedQuery) {
+      setResults([]);
+      setIsSearching(true);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+    setIsSearching(true);
+    void (async () => {
+      try {
+        const searchResults = await searchUsers(
+          supabase,
+          userId,
+          normalizedDebouncedQuery,
+          10,
+          controller.signal
+        );
+        if (!controller.signal.aborted && sequence === searchSequenceRef.current) {
+          setResults(searchResults);
+        }
+      } catch (error) {
+        if (!controller.signal.aborted && sequence === searchSequenceRef.current) {
+          console.error('[FriendSearch] Search error:', error);
+          setResults([]);
+        }
+      } finally {
+        if (sequence === searchSequenceRef.current) setIsSearching(false);
+      }
+    })();
+
+    return () => controller.abort();
+  }, [supabase, userId, query, debouncedQuery]);
 
   // 친구 요청 보내기
   const handleSendRequest = async (targetUserId: string) => {
@@ -56,11 +85,7 @@ export function FriendSearchClient() {
       const result = await sendFriendRequest(supabase, userId, targetUserId);
       if (result.success) {
         setResults((prev) =>
-          prev.map((user) =>
-            user.userId === targetUserId
-              ? { ...user, isPending: true }
-              : user
-          )
+          prev.map((user) => (user.userId === targetUserId ? { ...user, isPending: true } : user))
         );
       }
     } catch (error) {
@@ -86,17 +111,13 @@ export function FriendSearchClient() {
         <Card>
           <CardContent className="py-12 text-center">
             <Search className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-            <p className="text-muted-foreground">
-              친구의 이름을 검색해보세요
-            </p>
+            <p className="text-muted-foreground">친구의 이름을 검색해보세요</p>
           </CardContent>
         </Card>
       )}
 
       {query.length > 0 && query.length < 2 && (
-        <p className="text-sm text-muted-foreground text-center">
-          2글자 이상 입력해주세요
-        </p>
+        <p className="text-sm text-muted-foreground text-center">2글자 이상 입력해주세요</p>
       )}
 
       {/* 검색 결과 */}
@@ -104,9 +125,7 @@ export function FriendSearchClient() {
         {results.length === 0 && debouncedQuery.length >= 2 && !isSearching && (
           <Card>
             <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground">
-                검색 결과가 없습니다
-              </p>
+              <p className="text-muted-foreground">검색 결과가 없습니다</p>
             </CardContent>
           </Card>
         )}
@@ -118,9 +137,7 @@ export function FriendSearchClient() {
                 {/* 아바타 */}
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={user.avatarUrl ?? undefined} />
-                  <AvatarFallback>
-                    {user.displayName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
+                  <AvatarFallback>{user.displayName.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
 
                 {/* 정보 */}

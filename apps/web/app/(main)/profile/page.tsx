@@ -40,7 +40,6 @@ import {
   FileText,
   Shield,
 } from 'lucide-react';
-import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { FEATURE_FLAGS } from '@yiroom/shared';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
@@ -320,7 +319,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="bg-background min-h-screen pb-20" data-testid="profile-page">
+    <div className="bg-background min-h-screen" data-testid="profile-page">
       <div className="space-y-4 px-4 py-6">
         {/* K-5: 시간대별 인사말 헤더 */}
         <FadeInUp>
@@ -832,8 +831,6 @@ export default function ProfilePage() {
           </section>
         </FadeInUp>
       </div>
-
-      <BottomNav />
     </div>
   );
 }

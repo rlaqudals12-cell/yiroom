@@ -15,7 +15,6 @@ import {
   TrendingUp,
   Loader2,
 } from 'lucide-react';
-import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { cn } from '@/lib/utils';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
@@ -258,7 +257,7 @@ export default function RecordPage() {
   }, [user?.id, supabase, waterCount, targetWater]);
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="record-page">
+    <div className="min-h-screen bg-background" data-testid="record-page">
       {/* 페이지 제목 (스크린리더용) */}
       <h1 className="sr-only">기록 - 운동 및 영양 관리</h1>
 
@@ -586,8 +585,6 @@ export default function RecordPage() {
           </>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 }

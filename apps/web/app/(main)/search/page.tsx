@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Search, X, Clock, SearchX } from 'lucide-react';
-import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { cn } from '@/lib/utils';
@@ -146,12 +145,15 @@ export default function SearchPage() {
   const [activeTab, setActiveTab] = useUrlTab(SEARCH_TABS, 'all');
   const [searches, setSearches] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const [userSkinType, setUserSkinType] = useState<string | null>(null);
   const [userSeasonType, setUserSeasonType] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<SearchResults>({
     beauty: [],
     ingredient: [],
   });
+  const searchSequenceRef = useRef(0);
+  const searchAbortRef = useRef<AbortController | null>(null);
 
   // 맞춤 추천 검색어
   const recommendedSearches = useMemo(
@@ -227,10 +229,16 @@ export default function SearchPage() {
     async (searchQuery: string) => {
       if (!searchQuery.trim()) return;
 
+      const sequence = ++searchSequenceRef.current;
+      searchAbortRef.current?.abort();
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
+
       setQuery(searchQuery);
       setIsSearching(true);
       setIsLoading(true);
       setShowSuggestions(false);
+      setActiveSuggestionIndex(-1);
 
       // 최근 검색어에 추가 (중복 제거)
       const filtered = searches.filter((s) => s !== searchQuery);
@@ -251,7 +259,11 @@ export default function SearchPage() {
           )
           // rating 대부분 null — nulls last로 정렬 무너짐 방지
           .order('rating', { ascending: false, nullsFirst: false })
-          .limit(6);
+          .limit(6)
+          .abortSignal(controller.signal);
+
+        // 중단을 지원하지 않는 mock/네트워크 계층도 있으므로 sequence를 함께 검증한다.
+        if (controller.signal.aborted || sequence !== searchSequenceRef.current) return;
 
         const beautyResults: SearchProduct[] = (cosmeticData || []).map((row) => ({
           id: row.id,
@@ -295,15 +307,17 @@ export default function SearchPage() {
           });
         }
 
+        if (sequence !== searchSequenceRef.current) return;
         setSearchResults({
           beauty: beautyResults,
           ingredient: ingredientResults,
         });
       } catch (err) {
+        if (controller.signal.aborted || sequence !== searchSequenceRef.current) return;
         console.error('[Search] 검색 오류:', err);
         setSearchResults({ beauty: [], ingredient: [] });
       } finally {
-        setIsLoading(false);
+        if (sequence === searchSequenceRef.current) setIsLoading(false);
       }
     },
     [router, searches, saveSearches, supabase]
@@ -311,9 +325,15 @@ export default function SearchPage() {
 
   // 검색어 삭제
   const handleClearSearch = () => {
+    searchSequenceRef.current += 1;
+    searchAbortRef.current?.abort();
+    searchAbortRef.current = null;
     setQuery('');
     setIsSearching(false);
+    setIsLoading(false);
+    setSearchResults({ beauty: [], ingredient: [] });
     setShowSuggestions(false);
+    setActiveSuggestionIndex(-1);
     router.replace('/search');
   };
 
@@ -344,8 +364,51 @@ export default function SearchPage() {
     }
   }, [query, isSearching]);
 
+  useEffect(() => {
+    setActiveSuggestionIndex(-1);
+  }, [debouncedQuery]);
+
+  const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const hasSuggestions = showSuggestions && suggestions.length > 0;
+
+    if (event.key === 'ArrowDown' && suggestions.length > 0) {
+      event.preventDefault();
+      setShowSuggestions(true);
+      setActiveSuggestionIndex((current) => (current + 1) % suggestions.length);
+      return;
+    }
+
+    if (event.key === 'ArrowUp' && suggestions.length > 0) {
+      event.preventDefault();
+      setShowSuggestions(true);
+      setActiveSuggestionIndex((current) => (current <= 0 ? suggestions.length - 1 : current - 1));
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setShowSuggestions(false);
+      setActiveSuggestionIndex(-1);
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const selected = hasSuggestions ? suggestions[activeSuggestionIndex] : undefined;
+      void handleSearch(selected ?? query);
+    }
+  };
+
+  useEffect(
+    () => () => {
+      searchSequenceRef.current += 1;
+      searchAbortRef.current?.abort();
+    },
+    []
+  );
+
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="search-page">
+    <div className="min-h-screen bg-background" data-testid="search-page">
       {/* 페이지 제목 (스크린리더용) */}
       <h1 className="sr-only">통합 검색 - 뷰티, 성분</h1>
 
@@ -365,7 +428,7 @@ export default function SearchPage() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
+              onKeyDown={handleSearchKeyDown}
               placeholder="제품, 성분 검색..."
               data-testid="search-input"
               className="w-full pl-10 pr-10 py-2.5 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
@@ -375,6 +438,12 @@ export default function SearchPage() {
               role="combobox"
               aria-expanded={showSuggestions && suggestions.length > 0}
               aria-controls="search-suggestions"
+              aria-haspopup="listbox"
+              aria-activedescendant={
+                showSuggestions && activeSuggestionIndex >= 0
+                  ? `search-suggestion-${activeSuggestionIndex}`
+                  : undefined
+              }
             />
             {query && (
               <button
@@ -396,7 +465,11 @@ export default function SearchPage() {
                 {suggestions.map((suggestion, index) => (
                   <button
                     key={suggestion}
+                    id={`search-suggestion-${index}`}
+                    role="option"
+                    aria-selected={activeSuggestionIndex === index}
                     onClick={() => handleSearch(suggestion)}
+                    onMouseEnter={() => setActiveSuggestionIndex(index)}
                     className={cn(
                       'w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted transition-colors',
                       index < suggestions.length - 1 && 'border-b'
@@ -660,8 +733,6 @@ export default function SearchPage() {
           </div>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 }

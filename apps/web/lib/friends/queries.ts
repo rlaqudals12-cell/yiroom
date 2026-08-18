@@ -234,18 +234,21 @@ export async function searchUsers(
   supabase: SupabaseClient,
   clerkUserId: string,
   query: string,
-  limit: number = 10
+  limit: number = 10,
+  signal?: AbortSignal
 ): Promise<UserSearchResult[]> {
   if (!query || query.length < 2) return [];
 
   // 사용자 검색
-  const { data: users, error } = await supabase
+  const usersQuery = supabase
     .from('users')
     .select('clerk_user_id, display_name, avatar_url')
     .neq('clerk_user_id', clerkUserId)
     .ilike('display_name', `%${query}%`)
     .limit(limit);
+  const { data: users, error } = signal ? await usersQuery.abortSignal(signal) : await usersQuery;
 
+  if (signal?.aborted) return [];
   if (error || !users) {
     socialLogger.error('사용자 검색 실패:', error);
     return [];
@@ -256,19 +259,27 @@ export async function searchUsers(
   const userIds = users.map((u) => u.clerk_user_id);
 
   // 친구 관계 확인
-  const { data: friendships } = await supabase
+  const friendshipsQuery = supabase
     .from('friendships')
     .select('requester_id, addressee_id, status')
     .or(
       `and(requester_id.eq.${clerkUserId},addressee_id.in.(${userIds.join(',')})),` +
         `and(addressee_id.eq.${clerkUserId},requester_id.in.(${userIds.join(',')}))`
     );
+  const { data: friendships } = signal
+    ? await friendshipsQuery.abortSignal(signal)
+    : await friendshipsQuery;
+
+  if (signal?.aborted) return [];
 
   // 레벨 정보 조회
-  const { data: levels } = await supabase
+  const levelsQuery = supabase
     .from('user_levels')
     .select('clerk_user_id, level, tier')
     .in('clerk_user_id', userIds);
+  const { data: levels } = signal ? await levelsQuery.abortSignal(signal) : await levelsQuery;
+
+  if (signal?.aborted) return [];
 
   const levelMap = new Map(
     (levels ?? []).map((l) => [l.clerk_user_id, { level: l.level, tier: l.tier }])

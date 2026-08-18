@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react';
 // lucide-react mock (아이콘 렌더 불필요)
 vi.mock('lucide-react', () => ({
   AlertTriangle: () => null,
+  CircleHelp: () => null,
 }));
 
 import { AxisFallbackNotice } from '@/app/(main)/analysis/integrated/result/[sessionId]/_components/AxisFallbackNotice';
@@ -44,5 +45,20 @@ describe('AxisFallbackNotice', () => {
     render(await AxisFallbackNotice({ usedFallback: ['unknown_axis'] }));
     // 유효 라벨이 0개면 배너 미표시
     expect(screen.queryByTestId('axis-fallback-notice')).toBeNull();
+  });
+
+  it('출처 불명 축은 샘플 배너와 분리해 낮은 신뢰도 고지를 표시', async () => {
+    render(await AxisFallbackNotice({ usedFallback: [], unknownAxes: ['body'] }));
+    expect(screen.getByTestId('axis-unknown-provenance-notice')).toBeInTheDocument();
+    expect(screen.getByText('unknownProvenance.title')).toBeInTheDocument();
+    expect(screen.queryByTestId('axis-fallback-notice')).toBeNull();
+  });
+
+  it('확정 폴백과 출처 불명이 함께 있으면 서로 다른 배너와 축 목록을 유지', async () => {
+    render(await AxisFallbackNotice({ usedFallback: ['skin'], unknownAxes: ['personal_color'] }));
+    expect(screen.getByTestId('axis-fallback-notice')).toHaveTextContent('axes.skin');
+    expect(screen.getByTestId('axis-unknown-provenance-notice')).toHaveTextContent(
+      'axes.personalColor'
+    );
   });
 });

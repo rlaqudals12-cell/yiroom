@@ -504,7 +504,8 @@
       },
       "footer": {
         "reproducibility": "Same photo, same result — we re-ran the same photo repeatedly to verify the results stay consistent.",
-        "aiDisclaimer": "Results are AI-generated reference information and are not a substitute for medical diagnosis."
+        "aiDisclaimer": "Results are AI-generated reference information and are not a substitute for medical diagnosis.",
+        "referenceDisclaimer": "Results are for reference and are not a substitute for medical diagnosis."
       },
       "axes": {
         "personalColor": "Personal Color",
@@ -526,6 +527,12 @@
         "title": "Some axes show sample results",
         "bodyAfterLabels": "— AI analysis was temporarily unavailable, so sample (example) results are shown for these. They aren't real results, so please use them for reference only.",
         "retryHint": "Try analyzing these axes again in a moment to get accurate results."
+      },
+      "unknownProvenance": {
+        "title": "The source of some axes could not be verified",
+        "bodyAfterLabels": "— these saved records do not include source markers, so we cannot confirm whether they are AI analysis or sample results. Please treat them as low-confidence reference information.",
+        "retryHint": "Re-analyze these axes if you need a verified result.",
+        "confidenceLabel": "Low analysis confidence"
       },
       "crossInsights": {
         "heading": "Your axes are talking",
