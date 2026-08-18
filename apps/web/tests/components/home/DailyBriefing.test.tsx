@@ -118,6 +118,8 @@ describe('DailyBriefing', () => {
   it('루틴·코디를 먼저 노출하고 내 상태·정체성 리포트는 기본 접힘으로 통합한다', () => {
     render(<DailyBriefing analyses={analyses} />);
     expect(screen.getByTestId('briefing-routine')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '오늘의 루틴' })).toBeInTheDocument();
+    expect(screen.queryByText('오늘 먼저 할 일')).not.toBeInTheDocument();
     expect(screen.getByTestId('briefing-style')).toBeInTheDocument();
     expect(screen.getByTestId('briefing-status')).toBeInTheDocument();
     expect(screen.getByTestId('home-daily-capsule')).toBeInTheDocument();
@@ -280,6 +282,7 @@ describe('DailyBriefing', () => {
   it('"나의 퍼스널컬러" 라벨을 렌더한다', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
     expect(screen.getByText('나의 퍼스널컬러')).toBeInTheDocument();
+    expect(screen.queryByText('대표 색')).not.toBeInTheDocument();
   });
 
   it('베스트 컬러 이름을 원본 순서로 스와치 아래에 표시한다', () => {
@@ -310,14 +313,20 @@ describe('DailyBriefing', () => {
   });
 
   // verdict-first: 오늘 행동은 히어로, 관찰·상세 이유는 접힌 근거로 분리한다.
-  it('캡슐 행동을 verdict로 올리고 제품함 관찰·상세 근거는 기본 접힘한다', async () => {
+  it('캡슐의 실제 행동 문구를 verdict로 올리고 제품함 후속은 마무리 뒤로 분리한다', async () => {
     fetchMock.mockImplementation((url: string) => {
       const u = String(url);
       if (u.includes('/api/scan/shelf')) {
         return Promise.resolve({
           ok: true,
           json: async () => ({
-            items: [{ productName: '수분 앰플', scannedAt: new Date().toISOString() }],
+            items: [
+              {
+                id: 'shelf-briefing',
+                productName: '수분 앰플',
+                scannedAt: new Date().toISOString(),
+              },
+            ],
           }),
         });
       }
@@ -336,9 +345,8 @@ describe('DailyBriefing', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
 
     const verdict = await screen.findByTestId('briefing-verdict');
-    expect(verdict).toHaveTextContent('오늘은 세안 한 가지만 먼저 챙겨보세요');
+    expect(verdict).toHaveTextContent(/^오늘은 약산성 클렌저 챙겨봐요$/);
     expect(verdict).toHaveClass('font-serif');
-    expect(verdict).not.toHaveTextContent('약산성 클렌저 챙겨봐요');
 
     const attribute = screen.getByTestId('briefing-attribute');
     expect(attribute).toHaveTextContent('세안');
@@ -347,8 +355,93 @@ describe('DailyBriefing', () => {
     const evidence = screen.getByTestId('briefing-evidence');
     expect(evidence.tagName).toBe('DETAILS');
     expect(evidence).not.toHaveAttribute('open');
-    expect(evidence).toHaveTextContent('수분 앰플');
     expect(evidence).toHaveTextContent('장벽 회복 중');
+    expect(evidence).not.toHaveTextContent('수분 앰플');
+
+    const followup = screen.getByTestId('shelf-feedback-followup');
+    expect(followup).toHaveTextContent('지난번 담아둔 수분 앰플, 잘 맞고 있어요?');
+    expect(evidence).not.toContainElement(followup);
+    const closing = screen.getByTestId('briefing-closing');
+    expect(
+      closing.compareDocumentPosition(followup) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('히어로도 저녁 시간대 첫 미완료 행동을 골라 루틴 카드와 같은 선택 계약을 쓴다', async () => {
+    const hourSpy = vi.spyOn(Date.prototype, 'getHours').mockReturnValue(20);
+    fetchMock.mockImplementation((url: string) => {
+      if (String(url).includes('/api/capsule/daily')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            data: {
+              items: [
+                {
+                  id: 'morning',
+                  moduleCode: 'S',
+                  name: '아침 세안',
+                  reason: '아침 근거',
+                  compatibilityScore: 80,
+                  isChecked: false,
+                  timeOfDay: 'morning',
+                },
+                {
+                  id: 'evening',
+                  moduleCode: 'S',
+                  name: '저녁 보습',
+                  reason: '저녁 근거',
+                  compatibilityScore: 80,
+                  isChecked: false,
+                  timeOfDay: 'evening',
+                },
+              ],
+            },
+          }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    expect(await screen.findByTestId('briefing-verdict')).toHaveTextContent(
+      /^오늘은 저녁 보습 챙겨봐요$/
+    );
+    expect(screen.queryByText('아침 세안 챙겨봐요')).not.toBeInTheDocument();
+    hourSpy.mockRestore();
+  });
+
+  it('모든 루틴 행동이 완료됐으면 히어로도 완료 항목을 다시 결론으로 올리지 않는다', async () => {
+    fetchMock.mockImplementation((url: string) => {
+      if (String(url).includes('/api/capsule/daily')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            data: {
+              items: [
+                {
+                  id: 'done',
+                  moduleCode: 'S',
+                  name: '이미 마친 세안',
+                  reason: '완료한 행동',
+                  compatibilityScore: 80,
+                  isChecked: true,
+                  timeOfDay: 'anytime',
+                },
+              ],
+            },
+          }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    expect(await screen.findByTestId('briefing-verdict')).toHaveTextContent(
+      /^오늘은 내 상태에 맞는 한 가지만 가볍게 챙겨보세요$/
+    );
+    expect(screen.queryByText(/이미 마친 세안/)).not.toBeInTheDocument();
   });
 
   // 폐루프 v1(고객 노트) — 미응답 후속 질문에 응답 버튼을 달고, 답하면 rating을 저장한다
@@ -376,7 +469,10 @@ describe('DailyBriefing', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
 
     // 후속 질문 + 응답 버튼 등장
-    expect(await screen.findByTestId('shelf-feedback-actions')).toBeInTheDocument();
+    const actions = await screen.findByTestId('shelf-feedback-actions');
+    expect(actions).toBeInTheDocument();
+    expect(screen.getByTestId('shelf-feedback-followup')).toContainElement(actions);
+    expect(screen.queryByTestId('briefing-evidence')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('shelf-feedback-positive'));
 
     // 낙관적 "기억해둘게요" 확인 + 버튼 사라짐
@@ -451,8 +547,8 @@ describe('DailyBriefing', () => {
     expect(screen.queryByText('오늘의 스타일')).not.toBeInTheDocument();
   });
 
-  // ── 캡션 병렬화: 날씨 팁이 배색 설명을 덮어쓰지 않는다(이전엔 fashionTip ?? 배색설명) ──
-  it('날씨 팁이 있어도 배색 캡션을 함께 보여준다(2줄 병렬)', async () => {
+  // ── 코디 감량: 긴 권장 비율 설명은 빼고 범례·날씨·CTA 하나만 둔다 ──
+  it('날씨 팁과 범례를 유지하되 긴 배색 캡션과 반복 CTA는 만들지 않는다', async () => {
     weatherMocks.getCurrentWeather.mockResolvedValue(createWeather({ precipitationMm: 1 }));
     weatherMocks.generateEnvironmentAdvice.mockReturnValue({
       skin: ['보습 강화 필요'],
@@ -463,13 +559,11 @@ describe('DailyBriefing', () => {
 
     // 날씨 팁(아이콘 행)
     expect(await screen.findByTestId('briefing-weather-tip')).toHaveTextContent('우산');
-    // 배색 캡션(밴드 소속) — 고정 휴리스틱을 실측처럼 말하지 않는다
-    const caption = screen.getByTestId('briefing-outfit-caption');
-    expect(caption).toHaveTextContent('권장 배색 비율');
-    expect(caption).not.toHaveTextContent('실제 착장 면적 비율');
-    // 개수는 실제 렌더 세그먼트에서 센다(뉴트럴=신발 1칸)
-    expect(caption).toHaveTextContent('4색');
-    expect(caption).toHaveTextContent('뉴트럴 1색');
+    expect(screen.queryByTestId('briefing-outfit-caption')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('briefing-outfit-name')).toHaveLength(3);
+    const style = screen.getByTestId('briefing-style');
+    expect(style.querySelectorAll('a')).toHaveLength(1);
+    expect(style.querySelector('a')).toHaveAttribute('href', '/closet/recommend');
   });
 
   // ── 위치 정직화: 동의 전에는 서울 기본 좌표 + "서울 기준" 고지 ──

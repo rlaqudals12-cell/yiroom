@@ -23,7 +23,7 @@ export default async function HomePage() {
       <HomeHeader />
 
       {/* 본문 */}
-      <div className="px-4 py-5 space-y-5">
+      <div className="mx-auto w-full max-w-3xl px-4 py-5 space-y-5">
         {/* ADR-114: 인사는 브리핑 레터가 담당(DailyBriefing) — 서버 인사말 중복 제거 */}
 
         {/* 복귀자 환영 배너 (3일+ 미접속 시 표시) */}

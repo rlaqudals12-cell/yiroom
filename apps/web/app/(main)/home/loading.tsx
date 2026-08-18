@@ -6,7 +6,7 @@ export default function HomeLoading(): React.JSX.Element {
   return (
     <div className="min-h-screen bg-surface-ground" data-testid="home-loading">
       <HomeHeader />
-      <div className="px-4 py-5">
+      <div className="mx-auto w-full max-w-3xl px-4 py-5">
         <HomeBriefingSkeleton />
       </div>
     </div>

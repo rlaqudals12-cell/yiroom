@@ -29,8 +29,9 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { DailyCapsule, DailyItem, DailySolutionProduct, ModuleCode } from '@/types/capsule';
-// 시간대 → 활성 그룹 판정 — 배럴(index) 대신 직접 import (서버 전용 모듈 끌림 방지)
-import { getTimeGroupPriority } from '@/lib/capsule/time-of-day';
+// 홈 히어로와 같은 행동을 고르기 위해 공용 선택자를 직접 import한다.
+// 배럴(index)은 서버 전용 모듈까지 끌어오므로 클라이언트 경계에서는 피한다.
+import { selectCurrentCapsuleAction } from '@/lib/capsule/time-of-day';
 import type { ExplanationDepth } from '@/lib/connection-awareness';
 import {
   exposeConnection,
@@ -69,16 +70,6 @@ const MODULE_ICONS: Record<ModuleCode, LucideIcon> = {
   Fashion: Shirt,
 };
 
-/** 현재 시간대에서 먼저 실행할 미완료 1건. 중요도 데이터가 없으므로 생성 순서를 그대로 따른다. */
-function selectFirstAction(items: DailyItem[], hour: number): DailyItem | null {
-  const uncheckedItems = items.filter((item) => !item.isChecked);
-  for (const key of getTimeGroupPriority(hour)) {
-    const first = uncheckedItems.find((item) => (item.timeOfDay ?? 'anytime') === key);
-    if (first) return first;
-  }
-  return items[0] ?? null;
-}
-
 export default function HomeDailyCapsuleWidget() {
   const { user } = useUser();
   const userId = user?.id;
@@ -91,7 +82,7 @@ export default function HomeDailyCapsuleWidget() {
   // 각 모듈의 내재화 상태 (도메인 단위 추적)
   const [moduleDepths, setModuleDepths] = useState<Record<string, ExplanationDepth>>({});
   const firstAction = useMemo(
-    () => (capsule ? selectFirstAction(capsule.items, new Date().getHours()) : null),
+    () => (capsule ? selectCurrentCapsuleAction(capsule.items, new Date().getHours()) : null),
     [capsule]
   );
 
@@ -252,8 +243,28 @@ export default function HomeDailyCapsuleWidget() {
     );
   }
 
-  // items가 비어 있지 않으므로 firstAction은 존재한다. 타입 가드는 비정상 응답에도 안전한 빈 상태를 보장한다.
-  if (!firstAction) return null;
+  // 모든 행동을 마친 뒤에는 취소선 행동을 다시 꺼내지 않는다.
+  if (!firstAction) {
+    return (
+      <div
+        className="bg-card rounded-2xl border border-border p-5"
+        data-testid="home-daily-capsule"
+        role="region"
+        aria-label={t('capsuleLabel')}
+      >
+        <p className="text-sm font-medium text-foreground" data-testid="capsule-complete-message">
+          오늘 루틴을 모두 마쳤어요.
+        </p>
+        <Link
+          href="/capsule/daily"
+          className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
+        >
+          전체 루틴 보기
+          <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
+      </div>
+    );
+  }
 
   const Icon = MODULE_ICONS[firstAction.moduleCode];
   const depth = moduleDepths[firstAction.moduleCode] ?? 'full';
@@ -282,10 +293,9 @@ export default function HomeDailyCapsuleWidget() {
       role="region"
       aria-label={t('capsuleLabel')}
     >
-      <p className="text-xs font-medium text-muted-foreground">오늘 먼저 할 일</p>
       <button
         onClick={() => handleCheck(firstAction)}
-        className="mt-2 flex min-h-[44px] w-full items-center gap-3 rounded-lg py-2 text-left transition-colors hover:bg-secondary/60"
+        className="flex min-h-[44px] w-full items-center gap-3 rounded-lg py-2 text-left transition-colors hover:bg-secondary/60"
       >
         {firstAction.isChecked ? (
           <CheckCircle2 className="h-5 w-5 shrink-0 text-foreground" aria-hidden="true" />

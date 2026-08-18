@@ -5,6 +5,8 @@
  * (index 배럴은 service-role 등 서버 전용 모듈을 함께 끌고 옴).
  */
 
+import type { DailyItem } from '@/types/capsule';
+
 export type CapsuleTimeGroup = 'morning' | 'evening' | 'anytime';
 
 /**
@@ -26,4 +28,20 @@ export function getTimeGroupPriority(hour: number): CapsuleTimeGroup[] {
   if (hour < 11) return ['morning', 'anytime', 'evening'];
   if (hour >= 17) return ['evening', 'anytime', 'morning'];
   return ['anytime', 'evening', 'morning'];
+}
+
+/**
+ * 현재 시간대부터 실행할 첫 미완료 행동을 고른다.
+ * 홈 히어로와 루틴 카드가 반드시 같은 결론을 말하도록 이 선택자 하나만 공유한다.
+ */
+export function selectCurrentCapsuleAction<T extends Pick<DailyItem, 'isChecked' | 'timeOfDay'>>(
+  items: ReadonlyArray<T>,
+  hour: number
+): T | null {
+  const uncheckedItems = items.filter((item) => !item.isChecked);
+  for (const timeGroup of getTimeGroupPriority(hour)) {
+    const first = uncheckedItems.find((item) => (item.timeOfDay ?? 'anytime') === timeGroup);
+    if (first) return first;
+  }
+  return null;
 }

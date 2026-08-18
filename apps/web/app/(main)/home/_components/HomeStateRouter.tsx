@@ -19,6 +19,7 @@ import { useAnalysisStatus } from '@/hooks/useAnalysisStatus';
 import HomeStateNew from './HomeStateNew';
 import HomeStateGrowing from './HomeStateGrowing';
 import HomeStateActive from './HomeStateActive';
+import { HomeBriefingSkeleton } from './HomeBriefingSkeleton';
 
 // State 분기 함수 (테스트 가능하도록 export)
 export type HomeState = 'new' | 'growing' | 'active';
@@ -27,20 +28,6 @@ export function getHomeState(analysisCount: number): HomeState {
   if (analysisCount === 0) return 'new';
   if (analysisCount <= 3) return 'growing';
   return 'active';
-}
-
-// 스켈레톤 (로딩 중 표시)
-function HomeStateSkeleton() {
-  return (
-    <div className="space-y-5 animate-pulse" data-testid="home-state-skeleton">
-      {/* 유리 해체(ADR-120): 솔리드 bg-card + 헤어라인 보더 */}
-      <div className="bg-card rounded-2xl border border-border p-6">
-        <div className="h-6 w-48 bg-slate-200 dark:bg-slate-700 rounded mb-4" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-700 rounded mb-3" />
-        <div className="h-10 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
-      </div>
-    </div>
-  );
 }
 
 export default function HomeStateRouter() {
@@ -56,7 +43,7 @@ export default function HomeStateRouter() {
   }, [isLoading, hasError, analysisCount]);
 
   if (isLoading) {
-    return <HomeStateSkeleton />;
+    return <HomeBriefingSkeleton />;
   }
 
   // 분석 상태 조회 실패 시 에러 UI (신규 사용자로 잘못 표시하는 대신)

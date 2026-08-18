@@ -89,8 +89,11 @@ export function PWAInstallPrompt() {
     >
       <div className="bg-card border border-border rounded-xl shadow-lg p-4">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Smartphone className="w-5 h-5 text-primary" />
+          <div
+            className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0"
+            data-testid="pwa-install-icon"
+          >
+            <Smartphone className="w-5 h-5 text-foreground" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground">앱으로 설치하기</h3>
@@ -98,7 +101,12 @@ export function PWAInstallPrompt() {
               홈 화면에 추가하여 더 빠르게 이용하세요
             </p>
             <div className="flex gap-2 mt-3">
-              <Button size="sm" onClick={handleInstall} className="flex-1">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleInstall}
+                className="flex-1 border-foreground/20 text-foreground"
+              >
                 <Download className="w-4 h-4 mr-1" />
                 설치
               </Button>

@@ -20,8 +20,10 @@ import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { MessageCircle, Shirt, ChevronRight, ArrowRight } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
+import type { DailyItem } from '@/types/capsule';
 import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
 import type { OutfitColor, OutfitRole } from '@/lib/color/daily-outfit';
+import { selectCurrentCapsuleAction } from '@/lib/capsule/time-of-day';
 import {
   assembleBriefing,
   ratingToFeedback,
@@ -137,9 +139,6 @@ const OUTFIT_BAND: ReadonlyArray<{ role: OutfitRole; widthPct: number }> = [
   { role: '신발', widthPct: 13 }, // 뉴트럴 끝단 — 배색을 받쳐주며 바를 닫는다
 ];
 
-/** 밴드에서 "뉴트럴"로 취급하는 역할 — 진단 팔레트가 아니라 배색을 받쳐주는 중립색 */
-const OUTFIT_NEUTRAL_ROLES: ReadonlySet<OutfitRole> = new Set<OutfitRole>(['신발']);
-
 /**
  * 범례에 색 이름까지 노출할 최소 폭(%). 이 미만 세그먼트는 역할만 보이고
  * 색 이름은 접근성 텍스트(sr-only)로만 남긴다 — 13% 폭에 이름을 우겨넣으면 둘 다 안 읽힌다.
@@ -154,16 +153,6 @@ function orderOutfitBand(colors: ReadonlyArray<OutfitColor>): OutfitBandSegment[
     const color = colors.find((c) => c.role === role);
     return color ? [{ color, widthPct }] : [];
   });
-}
-
-/**
- * 밴드 캡션 — 폭이 실측값이 아닌 권장 배색 비율이라는 의도를 말로 전달한다.
- * 개수는 실제 렌더 세그먼트에서 세서 표기 — 밴드가 줄어도 문구가 거짓말하지 않는다.
- */
-function outfitBandCaption(band: ReadonlyArray<OutfitBandSegment>): string {
-  const neutral = band.filter((s) => OUTFIT_NEUTRAL_ROLES.has(s.color.role)).length;
-  const fromPalette = band.length - neutral;
-  return `대표 색을 바탕으로 만든 ${fromPalette}색 + 받쳐주는 뉴트럴 ${neutral}색 — 폭은 권장 배색 비율이에요`;
 }
 
 /** 밴드 전체를 한 장의 그림으로 읽어주는 aria-label(세그먼트별 aria-label 나열 대신 1개) */
@@ -183,6 +172,7 @@ function outfitVerdict(band: ReadonlyArray<OutfitBandSegment>): string | null {
 interface BriefingAttribute {
   label: string;
   value: string;
+  verdictText: string;
   rationale: string | null;
 }
 
@@ -202,27 +192,17 @@ function toBriefingAttribute(line: string, index: number): BriefingAttribute {
   return {
     label,
     value: action.replace(/^오늘은\s*/, '').trim(),
+    verdictText: action.trim(),
     rationale,
   };
 }
 
-/** 실제 조언에서 읽힌 축만 묶어 상세 행과 중복되지 않는 오늘의 결론을 만든다. */
+/** 첫 조언의 실제 문장을 그대로 올린다. 데이터가 없을 때만 정직한 빈 결론으로 폴백한다. */
 function buildBriefingVerdict(attributes: ReadonlyArray<BriefingAttribute>): string {
-  const verdictTerms = [...new Set(attributes.map((attribute) => attribute.label))]
-    .slice(0, 2)
-    .map((label) => {
-      if (label === '루틴') return '첫 루틴';
-      if (label === '환경') return '환경 조절';
-      return label;
-    });
-
-  if (verdictTerms.length === 0) {
-    return '오늘은 내 상태에 맞는 한 가지만 가볍게 챙겨보세요';
-  }
-  if (verdictTerms.length === 1) {
-    return `오늘은 ${verdictTerms[0]} 한 가지만 먼저 챙겨보세요`;
-  }
-  return `오늘은 ${verdictTerms.join(' · ')}만 가볍게 챙겨보세요`;
+  return (
+    attributes.find((attribute) => attribute.verdictText.length > 0)?.verdictText ??
+    '오늘은 내 상태에 맞는 한 가지만 가볍게 챙겨보세요'
+  );
 }
 
 /** "기억한다" 화법 입력(제품함 후속 + 오늘 캡슐 우선) */
@@ -271,8 +251,9 @@ async function loadCapsulePriority(): Promise<BriefingCapsulePriority | null> {
   try {
     const res = await fetch('/api/capsule/daily');
     if (!res.ok) return null;
-    const json = await res.json();
-    const first = json?.data?.items?.[0];
+    const json: { data?: { items?: DailyItem[] } } = await res.json();
+    const items = json.data?.items ?? [];
+    const first = selectCurrentCapsuleAction(items, new Date().getHours());
     if (!first?.name) return null;
     return { name: first.name, reason: first.reason ?? null };
   } catch {
@@ -349,10 +330,11 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
     [briefing.advice]
   );
   const verdict = buildBriefingVerdict(briefingAttributes);
+  // 응답 대기 중인 제품함 후속은 근거가 아니라 다음 브리핑을 만드는 폐루프 대화다.
+  const shelfFollowup = briefing.shelfFollowup;
   const hasBriefingEvidence =
-    Boolean(briefing.observation) ||
-    briefingAttributes.some((attribute) => attribute.rationale !== null) ||
-    Boolean(briefing.shelfFollowup);
+    Boolean(briefing.observation && !shelfFollowup) ||
+    briefingAttributes.some((attribute) => attribute.rationale !== null);
 
   const dailyOutfit = payload.todayStyle.outfit;
   const fashionTip = payload.todayStyle.fashionTip;
@@ -362,9 +344,6 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
     [dailyOutfit]
   );
   const outfitConclusion = outfitVerdict(outfitBand);
-  // 응답 대기 중인 제품함 후속(미응답 질문일 때만 존재) — 로컬 const라 클로저에서 좁힘이 유지된다
-  const shelfFollowup = briefing.shelfFollowup;
-
   // 내 상태 섹션용(브리핑 조립과 별개) — 피부 추이 칩에 사용
   const skinEntry = analyses.find((a) => a.type === 'skin');
 
@@ -450,14 +429,14 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
               </dl>
             )}
 
-            {/* 관찰·이유·제품함 후속은 결론 뒤의 접힌 근거로만 제공한다. */}
+            {/* 관찰·이유는 결론 뒤의 접힌 근거로만 제공한다. */}
             {hasBriefingEvidence && (
               <details className="mt-3 text-sm" data-testid="briefing-evidence">
                 <summary className="cursor-pointer text-xs font-medium text-foreground/70 hover:text-foreground">
                   오늘 제안의 근거
                 </summary>
                 <div className="mt-3 space-y-2 border-l border-border pl-3 text-xs leading-relaxed text-muted-foreground">
-                  {briefing.observation && <p>{briefing.observation}</p>}
+                  {briefing.observation && !shelfFollowup && <p>{briefing.observation}</p>}
                   {briefingAttributes.map(
                     (attribute, index) =>
                       attribute.rationale && (
@@ -468,37 +447,49 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                         </p>
                       )
                   )}
-                  {/* 제품함 후속 응답 — 답하면 rating 저장 → 다음 브리핑이 기억한다. */}
-                  {shelfFollowup &&
-                    (shelfFeedbackSaved ? (
-                      <p className="font-medium text-foreground" data-testid="shelf-feedback-ack">
-                        기억해둘게요.
-                      </p>
-                    ) : (
-                      <div className="flex flex-wrap gap-2" data-testid="shelf-feedback-actions">
-                        <button
-                          type="button"
-                          data-testid="shelf-feedback-positive"
-                          onClick={() => handleShelfFeedback(shelfFollowup.shelfItemId, 'positive')}
-                          className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
-                        >
-                          잘 맞아요
-                        </button>
-                        <button
-                          type="button"
-                          data-testid="shelf-feedback-negative"
-                          onClick={() => handleShelfFeedback(shelfFollowup.shelfItemId, 'negative')}
-                          className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
-                        >
-                          글쎄요
-                        </button>
-                      </div>
-                    ))}
                 </div>
               </details>
             )}
 
-            <p className="mt-3 text-xs text-muted-foreground">{briefing.closing}</p>
+            <p className="mt-3 text-xs text-muted-foreground" data-testid="briefing-closing">
+              {briefing.closing}
+            </p>
+
+            {/* 제품함 후속은 마무리 뒤의 한 줄 대화로 두어 근거 disclosure와 분리한다. */}
+            {shelfFollowup && (
+              <div
+                className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border pt-3 text-xs"
+                data-testid="shelf-feedback-followup"
+              >
+                {shelfFeedbackSaved ? (
+                  <p className="font-medium text-foreground" data-testid="shelf-feedback-ack">
+                    기억해둘게요.
+                  </p>
+                ) : (
+                  <>
+                    <p className="mr-auto text-muted-foreground">{briefing.observation}</p>
+                    <div className="flex gap-2" data-testid="shelf-feedback-actions">
+                      <button
+                        type="button"
+                        data-testid="shelf-feedback-positive"
+                        onClick={() => handleShelfFeedback(shelfFollowup.shelfItemId, 'positive')}
+                        className="rounded-full border border-border bg-card px-3 py-1.5 font-medium text-foreground transition-colors hover:bg-secondary"
+                      >
+                        잘 맞아요
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="shelf-feedback-negative"
+                        onClick={() => handleShelfFeedback(shelfFollowup.shelfItemId, 'negative')}
+                        className="rounded-full border border-border bg-card px-3 py-1.5 font-medium text-foreground transition-colors hover:bg-secondary"
+                      >
+                        글쎄요
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </section>
 
@@ -510,7 +501,6 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
               <div className="flex items-baseline justify-between gap-2">
                 <div>
                   <h3 className="text-xs font-semibold text-muted-foreground">나의 퍼스널컬러</h3>
-                  <p className="mt-1 text-sm font-medium text-foreground">대표 색</p>
                 </div>
                 {seasonLabel && (
                   <span
@@ -632,13 +622,6 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                     </span>
                   ))}
                 </div>
-                {/* 배색 캡션 — 밴드에 소속된 설명(날씨 팁과 경쟁하지 않게 분리) */}
-                <p
-                  className="mt-1.5 break-keep text-[11px] leading-relaxed text-muted-foreground"
-                  data-testid="briefing-outfit-caption"
-                >
-                  {outfitBandCaption(outfitBand)}
-                </p>
               </div>
             )}
             <div className="flex items-center gap-3">

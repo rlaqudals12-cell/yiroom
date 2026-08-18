@@ -89,10 +89,13 @@ describe('HomeDailyCapsuleWidget — 체크 API 계약', () => {
       // 구 이중화 경로 재발 방지
       expect(String(patchCall![0])).not.toContain('/api/capsule/check/');
     });
-    // 성공 시 체크 반영 — 방금 체크한 아이템은 취소선으로 남는다
+    // 성공 시 마지막 행동을 다시 취소선으로 꺼내지 않고 완료 상태로 전환한다.
     await waitFor(() => {
-      expect(screen.getByText('루틴 i1')).toHaveClass('line-through');
+      expect(screen.getByTestId('capsule-complete-message')).toHaveTextContent(
+        '오늘 루틴을 모두 마쳤어요.'
+      );
     });
+    expect(screen.queryByText('루틴 i1')).not.toBeInTheDocument();
   });
 
   it('서버가 거부하면(!res.ok) 로컬 체크 상태를 갱신하지 않는다', async () => {

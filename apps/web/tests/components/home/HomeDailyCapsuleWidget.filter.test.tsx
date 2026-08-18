@@ -83,6 +83,7 @@ describe('HomeDailyCapsuleWidget — 활성 시간대 필터', () => {
     render(<HomeDailyCapsuleWidget />);
 
     expect(await screen.findByText('루틴 m1')).toBeInTheDocument();
+    expect(screen.queryByText('오늘 먼저 할 일')).not.toBeInTheDocument();
     // 같은 시간대의 후속 행동·체크된 행동·저녁 행동은 모두 홈에서 미노출
     expect(screen.queryByText('루틴 m3')).not.toBeInTheDocument();
     expect(screen.queryByText('루틴 m4')).not.toBeInTheDocument();
@@ -120,12 +121,19 @@ describe('HomeDailyCapsuleWidget — 활성 시간대 필터', () => {
     expect(screen.queryByText('루틴 m1')).not.toBeInTheDocument();
   });
 
-  it('미체크가 전혀 없으면 첫 행동 1개만 폴백 노출한다 (빈 위젯 방지)', async () => {
+  it('모든 행동을 마치면 취소선 행동 대신 완료 문장과 전체 루틴 링크만 노출한다', async () => {
     vi.spyOn(Date.prototype, 'getHours').mockReturnValue(9);
     stubFetch([makeItem('m1', { isChecked: true }), makeItem('m2', { isChecked: true })]);
     render(<HomeDailyCapsuleWidget />);
 
-    expect(await screen.findByText('루틴 m1')).toBeInTheDocument();
+    expect(await screen.findByTestId('capsule-complete-message')).toHaveTextContent(
+      '오늘 루틴을 모두 마쳤어요.'
+    );
+    expect(screen.queryByText('루틴 m1')).not.toBeInTheDocument();
     expect(screen.queryByText('루틴 m2')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /전체 루틴 보기/ })).toHaveAttribute(
+      'href',
+      '/capsule/daily'
+    );
   });
 });
