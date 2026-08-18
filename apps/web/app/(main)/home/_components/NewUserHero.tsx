@@ -4,145 +4,12 @@
  * 신규 사용자 히어로 섹션
  *
  * ADR-101: Primary CTA는 통합 분석 1개로 일원화 (이전: 2개 분기 카드)
- * P-UX6: Social Proof + 설문 대안
- * 비주얼 증거: 분석 결과 미리보기 카드 3종
- * 차별화: 통합 시너지 인과 체인 시각화
+ * P-UX6: 결과를 지어내지 않는 신뢰 문구 + 단일 진입점
  */
 
 import Link from 'next/link';
-import { Palette, Sparkles, ChevronRight, Droplet, Shirt, ShoppingBag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
-
-/**
- * 분석 결과 미리보기 카드 3종
- * CSS로 구현된 미니 프리뷰 — 실제 이미지 불필요
- */
-function AnalysisPreviewCards({
-  t,
-}: {
-  t: ReturnType<typeof useTranslations<'home'>>;
-}): React.ReactElement {
-  return (
-    <div
-      className="flex gap-3 mt-6"
-      data-testid="hero-analysis-preview"
-      role="group"
-      aria-label={t('previewLabel')}
-    >
-      {/* 퍼스널컬러 미니카드 */}
-      <div className="rounded-xl bg-secondary/60 p-3 flex-1 min-w-0">
-        <div className="flex gap-1.5 mb-2">
-          <div className="w-4 h-4 rounded-full bg-[#F472B6]" />
-          <div className="w-4 h-4 rounded-full bg-[#EC4899]" />
-          <div className="w-4 h-4 rounded-full bg-[#A855F7]" />
-        </div>
-        <p className="text-xs text-foreground/80 dark:text-white/80 font-medium">
-          {t('previewSpringWarm')}
-        </p>
-        <p className="text-[10px] text-muted-foreground dark:text-white/50">
-          {t('previewPersonalColor')}
-        </p>
-      </div>
-
-      {/* 피부 분석 미니카드 */}
-      <div className="rounded-xl bg-secondary/60 p-3 flex-1 min-w-0">
-        <div className="text-lg font-bold text-foreground dark:text-white leading-tight">85</div>
-        <p className="text-xs text-foreground/80 dark:text-white/80 font-medium">
-          {t('previewSkinScore')}
-        </p>
-        <p className="text-[10px] text-muted-foreground dark:text-white/50">
-          {t('previewSkinAnalysis')}
-        </p>
-      </div>
-
-      {/* 체형 분석 미니카드 */}
-      <div className="rounded-xl bg-secondary/60 p-3 flex-1 min-w-0">
-        <div className="w-6 h-6 mb-1">
-          <Shirt className="w-5 h-5 text-foreground/60 dark:text-white/60" aria-hidden="true" />
-        </div>
-        <p className="text-xs text-foreground/80 dark:text-white/80 font-medium">
-          {t('previewNatural')}
-        </p>
-        <p className="text-[10px] text-muted-foreground dark:text-white/50">
-          {t('previewBodyType')}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// 시너지 스텝 데이터
-const SYNERGY_STEPS = [
-  {
-    icon: Palette,
-    key: 'synergyStep1' as const,
-  },
-  {
-    icon: Droplet,
-    key: 'synergyStep2' as const,
-  },
-  {
-    icon: Sparkles,
-    key: 'synergyStep3' as const,
-  },
-  {
-    icon: ShoppingBag,
-    key: 'synergyStep4' as const,
-  },
-];
-
-/**
- * 통합 시너지 인과 체인 시각화
- * 퍼스널컬러 → 피부 분석 → 메이크업 추천 → 제품 매칭
- */
-function SynergyChain({
-  t,
-}: {
-  t: ReturnType<typeof useTranslations<'home'>>;
-}): React.ReactElement {
-  return (
-    <div
-      className="bg-card rounded-2xl border border-border p-5 shadow-sm dark:shadow-none"
-      data-testid="hero-synergy-chain"
-      role="region"
-      aria-label={t('synergyLabel')}
-    >
-      <h3 className="text-sm font-bold text-foreground mb-1">{t('synergyTitle')}</h3>
-      <p className="text-xs text-muted-foreground mb-5">{t('synergySubtitle')}</p>
-
-      {/* 가로 스텝 인디케이터 */}
-      <div className="flex items-start justify-between gap-1">
-        {SYNERGY_STEPS.map((step, idx) => {
-          const Icon = step.icon;
-          return (
-            <div key={step.key} className="flex items-start flex-1 min-w-0">
-              {/* 스텝 */}
-              <div className="flex flex-col items-center flex-1 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shadow-sm">
-                  <Icon className="w-[18px] h-[18px] text-primary" aria-hidden="true" />
-                </div>
-                <p className="text-[11px] font-medium text-foreground mt-2 text-center leading-tight">
-                  {t(step.key)}
-                </p>
-              </div>
-
-              {/* 연결 화살표 (마지막 스텝 제외) */}
-              {idx < SYNERGY_STEPS.length - 1 && (
-                <div className="flex items-center pt-3 px-0.5 shrink-0">
-                  <ChevronRight
-                    className="w-3.5 h-3.5 text-muted-foreground/50"
-                    aria-hidden="true"
-                  />
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 export default function NewUserHero(): React.ReactElement {
   const t = useTranslations('home');
@@ -151,7 +18,7 @@ export default function NewUserHero(): React.ReactElement {
     <div data-testid="home-new-hero" role="region" aria-label={t('newUserGuide')}>
       {/* 히어로 카드 — 신규 상태 표면의 유일한 주인공(raised 섀도 + 세리프 앵커).
           보더는 히어로 전용 웜 시트 토큰(라이트 한정 — 다크는 기존 보더 유지) */}
-      <div className="relative overflow-hidden bg-card border border-[var(--border-warm-sheet)] dark:border-border rounded-2xl p-6 mb-4 shadow-[var(--shadow-raised)] dark:shadow-none">
+      <div className="relative overflow-hidden rounded-2xl border border-[var(--border-warm-sheet)] bg-card p-6 shadow-[var(--shadow-raised)] dark:border-border dark:shadow-none">
         {/* 종이 그레인 — 히어로 한정 1겹(전 카드 살포 금지) */}
         <div
           aria-hidden="true"
@@ -175,7 +42,7 @@ export default function NewUserHero(): React.ReactElement {
             <span className="text-base leading-snug">
               내 정체성 5가지 알아보기
               <span className="block text-xs font-normal text-white/80 mt-0.5">
-                색 · 피부 · 체형 · 헤어 한 번에 · 약 2분
+                색 · 피부 · 체형 · 헤어 · 메이크업 한 번에 · 약 2분
               </span>
             </span>
           </Link>
@@ -206,30 +73,7 @@ export default function NewUserHero(): React.ReactElement {
               {t('makeupAnalysis')}
             </Link>
           </div>
-
-          {/* 분석 결과 미리보기 카드 3종 */}
-          <AnalysisPreviewCards t={t} />
         </div>
-      </div>
-
-      {/* 통합 시너지 인과 체인 */}
-      <div className="mb-4">
-        <SynergyChain t={t} />
-      </div>
-
-      {/* 부담 없이 시작 유도 — 통합 분석(사진 1장)로 연결.
-          이전 /onboarding은 레거시 3축+음식 알레르기(W/N 유령) 설문이라 5축 정체성과 불일치 */}
-      <div data-testid="home-new-survey-alt">
-        <Link
-          href="/analysis/integrated"
-          className="flex items-center justify-between px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <span>{t('surveyAltLabel')}</span>
-          <div className="flex items-center gap-1">
-            <span>{t('surveyAltAction')}</span>
-            <ChevronRight className="w-4 h-4" />
-          </div>
-        </Link>
       </div>
     </div>
   );

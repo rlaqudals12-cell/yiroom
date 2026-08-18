@@ -1,8 +1,8 @@
 /**
- * HomeDailyCapsuleWidget — U2: 제품 칩 depth 무관 노출
+ * HomeDailyCapsuleWidget — 대표 행동 근거 disclosure
  *
- * 내재화 수준(depth)이 낮아 reason/solution 텍스트가 숨겨져도,
- * 제품 칩("내 ○○" / "맞는 제품 보기")은 "행동"이라 항상 노출되어야 한다.
+ * 실제 reason/solution은 depth 계약을 지키되, full일 때도 결론 뒤의 닫힌 영역에 둔다.
+ * 제품 연결은 대표 행동 1건에 대해서만 카드 하단에 노출한다.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -12,11 +12,15 @@ vi.mock('@clerk/nextjs', () => ({
   useUser: () => ({ user: { id: 'u1' }, isLoaded: true, isSignedIn: true }),
 }));
 
-// depth를 'minimal'로 고정 — 텍스트 게이팅은 걸리지만 제품 칩은 노출되어야 함
+const awarenessMocks = vi.hoisted(() => ({
+  depth: 'minimal' as 'full' | 'brief' | 'minimal' | 'none',
+}));
+
+// 테스트별 depth를 주입해 설명 게이팅과 기본 접힘을 함께 검증한다.
 vi.mock('@/lib/connection-awareness', () => ({
   exposeConnection: vi.fn().mockResolvedValue({ status: 'internalized' }),
   confirmConnection: vi.fn().mockResolvedValue({ status: 'internalized' }),
-  getExplanationDepth: () => 'minimal',
+  getExplanationDepth: () => awarenessMocks.depth,
   capsuleItemToExposeRequest: (moduleCode: string) => ({
     connectionId: `c-${moduleCode}`,
     moduleCode,
@@ -65,8 +69,9 @@ const catalogItem = {
   solutionProduct: { id: 'p2', name: '세라마이드 크림', brand: '브랜드B', source: 'catalog' },
 };
 
-describe('HomeDailyCapsuleWidget — 제품 칩 depth 무관 (U2)', () => {
+describe('HomeDailyCapsuleWidget — 대표 행동 근거와 제품 연결', () => {
   beforeEach(() => {
+    awarenessMocks.depth = 'minimal';
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -80,11 +85,12 @@ describe('HomeDailyCapsuleWidget — 제품 칩 depth 무관 (U2)', () => {
     vi.clearAllMocks();
   });
 
-  it('depth=minimal이어도 shelf/catalog 제품 칩을 노출한다', async () => {
+  it('depth=minimal이어도 대표 행동의 보유 제품은 노출한다', async () => {
     render(<HomeDailyCapsuleWidget />);
     const owned = await screen.findByTestId('capsule-owned-chip');
-    expect(owned).toHaveTextContent('내 수분 토너');
-    expect(screen.getByTestId('capsule-catalog-chip')).toHaveTextContent('맞는 제품 보기');
+    expect(owned).toHaveTextContent('보유 제품 · 수분 토너');
+    // 두 번째 행동의 catalog CTA는 홈에 반복 노출하지 않는다.
+    expect(screen.queryByTestId('capsule-catalog-chip')).not.toBeInTheDocument();
   });
 
   it('depth=minimal이면 reason/solution 텍스트는 숨긴다 (칩만 노출)', async () => {
@@ -101,5 +107,16 @@ describe('HomeDailyCapsuleWidget — 제품 칩 depth 무관 (U2)', () => {
     expect(screen.queryByText('거품 내어 30초')).not.toBeInTheDocument();
     // 스펙명(아이템 name)은 노출
     expect(screen.getByText('약산성 클렌저')).toBeInTheDocument();
+  });
+
+  it('depth=full이면 실제 근거와 사용 방법을 기본 닫힌 disclosure에 보존한다', async () => {
+    awarenessMocks.depth = 'full';
+    render(<HomeDailyCapsuleWidget />);
+
+    const evidence = await screen.findByTestId('capsule-evidence');
+    expect(evidence).not.toHaveAttribute('open');
+    expect(screen.getByText('선택 근거와 사용 방법')).toBeInTheDocument();
+    expect(screen.getByText('노폐물 제거')).toBeInTheDocument();
+    expect(screen.getByText('거품 내어 30초')).toBeInTheDocument();
   });
 });

@@ -68,6 +68,14 @@ describe('IntegratedSessionPromptCard', () => {
     expect(link).toHaveAttribute('href', '/analysis/integrated');
   });
 
+  it('홈의 접힌 후속 영역에서는 브랜드 CTA 색을 제거한 embedded 표현을 쓴다', () => {
+    render(<IntegratedSessionPromptCard embedded />);
+    const link = screen.getByTestId('integrated-prompt-cta');
+
+    expect(link).toHaveClass('bg-secondary/40');
+    expect(link).not.toHaveClass('bg-primary');
+  });
+
   it('세션 있으면 "내 정체성 카드·리포트 보기" 링크 표시 (카드 존재를 라벨이 알림 — 7/18 발견성 감사)', () => {
     mockHookReturn.session = {
       id: '7a3f1234-5678-4abc-def0-0123456789ab',

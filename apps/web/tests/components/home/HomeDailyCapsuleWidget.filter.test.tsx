@@ -1,8 +1,8 @@
 /**
- * HomeDailyCapsuleWidget — 활성 시간대 필터 (2026-07-25 홈/상세 분업)
+ * HomeDailyCapsuleWidget — 활성 시간대 대표 행동 선택
  *
- * 홈 위젯은 활성 시간대(아침/저녁/언제든)의 미체크 상위 3개만 노출하고,
- * 남은 미체크 수를 '더 보기' 라인으로 안내한다. 전체 목록은 /capsule/daily 담당.
+ * 홈 위젯은 활성 시간대(아침/저녁/언제든)의 첫 미완료 행동 1개만 노출하고,
+ * 나머지는 개수로 압박하지 않은 채 전체 루틴 화면으로 연결한다.
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
@@ -70,7 +70,7 @@ describe('HomeDailyCapsuleWidget — 활성 시간대 필터', () => {
     vi.restoreAllMocks();
   });
 
-  it('아침(9시)에는 아침 미체크 상위 3개만 노출하고 남은 미체크 수를 안내한다', async () => {
+  it('아침(9시)에는 첫 아침 미완료 행동 1개만 노출한다', async () => {
     vi.spyOn(Date.prototype, 'getHours').mockReturnValue(9);
     stubFetch([
       makeItem('m1'),
@@ -83,14 +83,20 @@ describe('HomeDailyCapsuleWidget — 활성 시간대 필터', () => {
     render(<HomeDailyCapsuleWidget />);
 
     expect(await screen.findByText('루틴 m1')).toBeInTheDocument();
-    expect(screen.getByText('루틴 m3')).toBeInTheDocument();
-    expect(screen.getByText('루틴 m4')).toBeInTheDocument();
-    // 4번째 아침 미체크·체크된 아이템·저녁 아이템은 미노출
+    // 같은 시간대의 후속 행동·체크된 행동·저녁 행동은 모두 홈에서 미노출
+    expect(screen.queryByText('루틴 m3')).not.toBeInTheDocument();
+    expect(screen.queryByText('루틴 m4')).not.toBeInTheDocument();
     expect(screen.queryByText('루틴 m5')).not.toBeInTheDocument();
     expect(screen.queryByText('루틴 m2')).not.toBeInTheDocument();
     expect(screen.queryByText('루틴 e1')).not.toBeInTheDocument();
-    // 남은 미체크(m5, e1) → 더 보기 라인 (i18n mock은 키 반환)
-    expect(screen.getByText('capsuleMoreItems')).toBeInTheDocument();
+
+    const allRoutineLink = screen.getByRole('link', { name: /전체 루틴 보기/ });
+    expect(allRoutineLink).toHaveAttribute('href', '/capsule/daily');
+    // 홈에서는 진행률·예상 시간·남은 개수를 표시하지 않는다(i18n mock은 키 반환).
+    expect(screen.queryByText('todayRoutine')).not.toBeInTheDocument();
+    expect(screen.queryByText('capsuleMinutes')).not.toBeInTheDocument();
+    expect(screen.queryByText('capsuleMoreItems')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^\d+\/\d+$/)).not.toBeInTheDocument();
   });
 
   it('저녁(20시)에는 저녁 미체크 아이템을 우선 노출한다', async () => {
@@ -114,12 +120,12 @@ describe('HomeDailyCapsuleWidget — 활성 시간대 필터', () => {
     expect(screen.queryByText('루틴 m1')).not.toBeInTheDocument();
   });
 
-  it('미체크가 전혀 없으면 앞 3개를 폴백 노출한다 (빈 위젯 방지)', async () => {
+  it('미체크가 전혀 없으면 첫 행동 1개만 폴백 노출한다 (빈 위젯 방지)', async () => {
     vi.spyOn(Date.prototype, 'getHours').mockReturnValue(9);
     stubFetch([makeItem('m1', { isChecked: true }), makeItem('m2', { isChecked: true })]);
     render(<HomeDailyCapsuleWidget />);
 
     expect(await screen.findByText('루틴 m1')).toBeInTheDocument();
-    expect(screen.getByText('루틴 m2')).toBeInTheDocument();
+    expect(screen.queryByText('루틴 m2')).not.toBeInTheDocument();
   });
 });

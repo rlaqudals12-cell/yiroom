@@ -18,18 +18,9 @@ import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
-import {
-  MessageCircle,
-  Shirt,
-  ChevronRight,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  ArrowRight,
-} from 'lucide-react';
+import { MessageCircle, Shirt, ChevronRight, ArrowRight } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
-import { hexToLab, calculateHue } from '@/lib/color';
 import type { OutfitColor, OutfitRole } from '@/lib/color/daily-outfit';
 import {
   assembleBriefing,
@@ -133,7 +124,7 @@ function useEnvironmentAdvice(): BriefingWeather {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * 배색 바 역할별 폭 비율(%) — 실제 착장에서 차지하는 면적 비율로 색 질량을 표현.
+ * 배색 바 역할별 권장 비율(%) — 착장 역할의 일반적인 면적 차이를 색 질량으로 표현.
  * 동일 크기 점 5개는 "역할"이 읽히지 않던 원인 — 상의가 주인공, 포인트는 좁은 세로 띠.
  * 포인트 6%→13% 상향(2026-08): 6%는 모바일에서 지각 한계 미만이라 악센트가 죽었다.
  * 합 100% 유지 — 상의·하의·가방에서 7%p를 회수해 재배분.
@@ -166,19 +157,72 @@ function orderOutfitBand(colors: ReadonlyArray<OutfitColor>): OutfitBandSegment[
 }
 
 /**
- * 밴드 캡션 — 폭이 "면적 비율"이라는 의도를 말로 전달한다(그림만으로는 안 읽힘).
+ * 밴드 캡션 — 폭이 실측값이 아닌 권장 배색 비율이라는 의도를 말로 전달한다.
  * 개수는 실제 렌더 세그먼트에서 세서 표기 — 밴드가 줄어도 문구가 거짓말하지 않는다.
  */
 function outfitBandCaption(band: ReadonlyArray<OutfitBandSegment>): string {
   const neutral = band.filter((s) => OUTFIT_NEUTRAL_ROLES.has(s.color.role)).length;
   const fromPalette = band.length - neutral;
-  return `베스트 컬러에서 뽑은 ${fromPalette}색 + 받쳐주는 뉴트럴 ${neutral}색 — 폭은 실제 착장 면적 비율이에요`;
+  return `대표 색을 바탕으로 만든 ${fromPalette}색 + 받쳐주는 뉴트럴 ${neutral}색 — 폭은 권장 배색 비율이에요`;
 }
 
 /** 밴드 전체를 한 장의 그림으로 읽어주는 aria-label(세그먼트별 aria-label 나열 대신 1개) */
 function outfitBandLabel(band: ReadonlyArray<OutfitBandSegment>): string {
   const parts = band.map((s) => `${s.color.role} ${s.color.name}`).join(', ');
   return `오늘의 배색: ${parts}`;
+}
+
+/** 실제 배색 역할/이름만 사용해 밴드보다 먼저 읽히는 결론을 만든다. */
+function outfitVerdict(band: ReadonlyArray<OutfitBandSegment>): string | null {
+  const top = band.find((segment) => segment.color.role === '상의')?.color.name;
+  const bottom = band.find((segment) => segment.color.role === '하의')?.color.name;
+  if (!top || !bottom) return null;
+  return `${top} 상의 + ${bottom} 하의`;
+}
+
+interface BriefingAttribute {
+  label: string;
+  value: string;
+  rationale: string | null;
+}
+
+/** 문장에 드러난 의미만 라벨링하고, 불명확하면 데이터 출처 이름으로 폴백한다. */
+function toBriefingAttribute(line: string, index: number): BriefingAttribute {
+  const [action = line, ...reasonParts] = line.split(' — ');
+  const rationale = reasonParts.join(' — ').trim() || null;
+  const searchable = `${action} ${rationale ?? ''}`;
+  const label = /클렌|세안/.test(searchable)
+    ? '세안'
+    : /보습|수분|크림/.test(searchable)
+      ? '보습'
+      : index === 0
+        ? '루틴'
+        : '환경';
+
+  return {
+    label,
+    value: action.replace(/^오늘은\s*/, '').trim(),
+    rationale,
+  };
+}
+
+/** 실제 조언에서 읽힌 축만 묶어 상세 행과 중복되지 않는 오늘의 결론을 만든다. */
+function buildBriefingVerdict(attributes: ReadonlyArray<BriefingAttribute>): string {
+  const verdictTerms = [...new Set(attributes.map((attribute) => attribute.label))]
+    .slice(0, 2)
+    .map((label) => {
+      if (label === '루틴') return '첫 루틴';
+      if (label === '환경') return '환경 조절';
+      return label;
+    });
+
+  if (verdictTerms.length === 0) {
+    return '오늘은 내 상태에 맞는 한 가지만 가볍게 챙겨보세요';
+  }
+  if (verdictTerms.length === 1) {
+    return `오늘은 ${verdictTerms[0]} 한 가지만 먼저 챙겨보세요`;
+  }
+  return `오늘은 ${verdictTerms.join(' · ')}만 가볍게 챙겨보세요`;
 }
 
 /** "기억한다" 화법 입력(제품함 후속 + 오늘 캡슐 우선) */
@@ -298,19 +342,17 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
 
   const { briefing, myColors } = payload;
 
-  // 12톤 밴드 표시용 정렬 — 명도(L*) 내림차순, 동률이면 색상각(h°) 오름차순.
-  // 왜: 진단 팔레트 원래 순서는 뮤트 톤에서 "회청 일색"으로 보인다 —
-  // 밝음→어두움 그라데이션으로 늘어놓으면 같은 색들이 명도 축으로 구분된다.
-  // hex·데이터는 불변(표시 순서만 바꿈 — 진단 결과 훼손 없음).
-  const sortedMyColors = useMemo(() => {
-    if (!myColors) return null;
-    return [...myColors.colors].sort((a, b) => {
-      const labA = hexToLab(a.hex);
-      const labB = hexToLab(b.hex);
-      if (labB.L !== labA.L) return labB.L - labA.L;
-      return calculateHue(labA) - calculateHue(labB);
-    });
-  }, [myColors]);
+  // 진단 정본(bestColors)의 우선순위를 그대로 보존한다. 홈은 대표 3색만 맡고 전체 팔레트는 리포트가 맡는다.
+  const representativeColors = myColors?.colors.slice(0, 3) ?? null;
+  const briefingAttributes = useMemo(
+    () => briefing.advice.slice(0, 2).map(toBriefingAttribute),
+    [briefing.advice]
+  );
+  const verdict = buildBriefingVerdict(briefingAttributes);
+  const hasBriefingEvidence =
+    Boolean(briefing.observation) ||
+    briefingAttributes.some((attribute) => attribute.rationale !== null) ||
+    Boolean(briefing.shelfFollowup);
 
   const dailyOutfit = payload.todayStyle.outfit;
   const fashionTip = payload.todayStyle.fashionTip;
@@ -319,6 +361,7 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
     () => (dailyOutfit ? orderOutfitBand(dailyOutfit.colors) : []),
     [dailyOutfit]
   );
+  const outfitConclusion = outfitVerdict(outfitBand);
   // 응답 대기 중인 제품함 후속(미응답 질문일 때만 존재) — 로컬 const라 클로저에서 좁힘이 유지된다
   const shelfFollowup = briefing.shelfFollowup;
 
@@ -379,61 +422,80 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
             style={{ backgroundImage: PAPER_GRAIN_URI }}
           />
           <div className="relative">
-            <p className="mb-3 font-serif text-[13px] italic text-primary">전속 뷰티팀</p>
+            <p className="mb-3 font-serif text-[13px] italic text-foreground/60">전속 뷰티팀</p>
 
-            {/* 인사 — 세리프 디스플레이(레터의 앵커 1곳) */}
-            <p className="break-keep font-serif text-2xl font-semibold leading-snug text-foreground md:text-3xl">
+            {/* 관계 서사는 작은 윗줄로 보존하고, 오늘의 결론만 세리프 히어로가 맡는다. */}
+            <p className="text-sm text-muted-foreground" data-testid="briefing-greeting">
               {briefing.greeting}
             </p>
+            <h2
+              className="mt-2 break-keep font-serif text-2xl font-semibold leading-snug text-foreground md:text-3xl"
+              data-testid="briefing-verdict"
+            >
+              {verdict}
+            </h2>
 
-            {briefing.observation && (
-              <p className="mt-3 text-sm text-foreground/90 leading-relaxed">
-                {briefing.observation}
-              </p>
+            {briefingAttributes.length > 0 && (
+              <dl className="mt-5 divide-y divide-border border-y border-border">
+                {briefingAttributes.map((attribute, index) => (
+                  <div
+                    key={`${attribute.label}-${index}`}
+                    className="grid grid-cols-[4.5rem_1fr] gap-3 py-2.5 text-sm"
+                    data-testid="briefing-attribute"
+                  >
+                    <dt className="font-medium text-muted-foreground">{attribute.label}</dt>
+                    <dd className="break-keep text-foreground/90">{attribute.value}</dd>
+                  </div>
+                ))}
+              </dl>
             )}
 
-            {/* 제품함 후속 응답 — 폐루프 v1(고객 노트). 답하면 rating 저장 → 다음 브리핑이 기억한다 */}
-            {shelfFollowup &&
-              (shelfFeedbackSaved ? (
-                <p
-                  className="mt-2 text-xs font-medium text-pink-600 dark:text-pink-300"
-                  data-testid="shelf-feedback-ack"
-                >
-                  기억해둘게요.
-                </p>
-              ) : (
-                <div className="mt-2.5 flex flex-wrap gap-2" data-testid="shelf-feedback-actions">
-                  <button
-                    type="button"
-                    data-testid="shelf-feedback-positive"
-                    onClick={() => handleShelfFeedback(shelfFollowup.shelfItemId, 'positive')}
-                    className="rounded-full border border-emerald-300 dark:border-emerald-800 bg-emerald-50/80 dark:bg-emerald-950/30 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
-                  >
-                    잘 맞아요
-                  </button>
-                  <button
-                    type="button"
-                    data-testid="shelf-feedback-negative"
-                    onClick={() => handleShelfFeedback(shelfFollowup.shelfItemId, 'negative')}
-                    className="rounded-full border border-border bg-secondary/60 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors hover:bg-secondary"
-                  >
-                    글쎄요
-                  </button>
+            {/* 관찰·이유·제품함 후속은 결론 뒤의 접힌 근거로만 제공한다. */}
+            {hasBriefingEvidence && (
+              <details className="mt-3 text-sm" data-testid="briefing-evidence">
+                <summary className="cursor-pointer text-xs font-medium text-foreground/70 hover:text-foreground">
+                  오늘 제안의 근거
+                </summary>
+                <div className="mt-3 space-y-2 border-l border-border pl-3 text-xs leading-relaxed text-muted-foreground">
+                  {briefing.observation && <p>{briefing.observation}</p>}
+                  {briefingAttributes.map(
+                    (attribute, index) =>
+                      attribute.rationale && (
+                        <p key={`${attribute.label}-reason-${index}`}>
+                          <span className="font-medium text-foreground/80">{attribute.label}</span>
+                          {' | '}
+                          {attribute.rationale}
+                        </p>
+                      )
+                  )}
+                  {/* 제품함 후속 응답 — 답하면 rating 저장 → 다음 브리핑이 기억한다. */}
+                  {shelfFollowup &&
+                    (shelfFeedbackSaved ? (
+                      <p className="font-medium text-foreground" data-testid="shelf-feedback-ack">
+                        기억해둘게요.
+                      </p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2" data-testid="shelf-feedback-actions">
+                        <button
+                          type="button"
+                          data-testid="shelf-feedback-positive"
+                          onClick={() => handleShelfFeedback(shelfFollowup.shelfItemId, 'positive')}
+                          className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          잘 맞아요
+                        </button>
+                        <button
+                          type="button"
+                          data-testid="shelf-feedback-negative"
+                          onClick={() => handleShelfFeedback(shelfFollowup.shelfItemId, 'negative')}
+                          className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                          글쎄요
+                        </button>
+                      </div>
+                    ))}
                 </div>
-              ))}
-
-            {briefing.advice.length > 0 && (
-              <ul className="mt-3 space-y-1.5">
-                {briefing.advice.map((line, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-foreground/90">
-                    <ArrowRight
-                      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-pink-500"
-                      aria-hidden="true"
-                    />
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
+              </details>
             )}
 
             <p className="mt-3 text-xs text-muted-foreground">{briefing.closing}</p>
@@ -442,14 +504,14 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
 
         {/* 1-b) 나의 퍼스널컬러 — 원형 점 대신 풀폭 색면 밴드(하드엣지)로 색 질량 복구.
             색은 전부 사용자 진단 hex — 장식색·채도 증폭 없음 */}
-        {myColors && sortedMyColors && (
+        {myColors && representativeColors && representativeColors.length > 0 && (
           <section aria-label="나의 퍼스널컬러" data-testid="briefing-my-colors">
-            <Link
-              href={`/analysis/personal-color/result/${myColors.analysisId}`}
-              className="block rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
-            >
+            <div className="rounded-2xl border border-border bg-card p-4">
               <div className="flex items-baseline justify-between gap-2">
-                <h3 className="text-xs font-semibold text-muted-foreground">나의 퍼스널컬러</h3>
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground">나의 퍼스널컬러</h3>
+                  <p className="mt-1 text-sm font-medium text-foreground">대표 색</p>
+                </div>
                 {seasonLabel && (
                   <span
                     className="break-keep font-serif text-base font-semibold text-foreground"
@@ -465,11 +527,11 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
               <div
                 className="mt-3 flex h-12 overflow-hidden rounded-lg ring-1 ring-black/5 dark:ring-white/10"
                 role="img"
-                aria-label={`나의 퍼스널컬러 팔레트: ${sortedMyColors
+                aria-label={`나의 퍼스널컬러 대표 색: ${representativeColors
                   .map((c) => c.name || c.hex)
                   .join(', ')}`}
               >
-                {sortedMyColors.map((c, i) => (
+                {representativeColors.map((c, i) => (
                   <span
                     key={`${c.hex}-${i}`}
                     className="h-full min-w-0 flex-1"
@@ -481,17 +543,24 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
               </div>
               {/* 색 이름 — 밴드 세그먼트와 같은 폭 배분, 2줄까지 허용(잘림 대신 가독) */}
               <div className="mt-1.5 flex">
-                {sortedMyColors.map((c, i) => (
+                {representativeColors.map((c, i) => (
                   <span
                     key={`${c.hex}-name-${i}`}
                     className="min-w-0 flex-1 text-center text-[10px] leading-tight text-muted-foreground break-keep line-clamp-2"
                     data-testid="briefing-color-name"
                   >
-                    {c.name}
+                    {c.name || c.hex}
                   </span>
                 ))}
               </div>
-            </Link>
+              <Link
+                href={`/analysis/personal-color/result/${myColors.analysisId}`}
+                className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
+              >
+                전체 리포트 보기
+                <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            </div>
           </section>
         )}
       </div>
@@ -510,11 +579,19 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
           <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">오늘의 코디</h3>
           <Link
             href="/closet/recommend"
-            className="block rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
+            className="block rounded-2xl border border-border bg-card p-4 transition-colors hover:border-foreground/30"
           >
             {/* 오늘의 배색 (베스트 컬러가 있을 때만 — 결정론). 착장 면적 비율 배색 바 */}
             {dailyOutfit && (
               <div className="mb-3" data-testid="briefing-outfit-palette">
+                {outfitConclusion && (
+                  <p
+                    className="mb-2 break-keep font-serif text-lg font-semibold text-foreground"
+                    data-testid="briefing-outfit-verdict"
+                  >
+                    {outfitConclusion}
+                  </p>
+                )}
                 {/* 경계 링: 흰 카드에서 밝은 색면이 녹지 않게. 접근성: 밴드 1장 = 그림 1개 */}
                 <div
                   className="flex h-10 overflow-hidden rounded-lg ring-1 ring-black/5 dark:ring-white/10"
@@ -565,8 +642,8 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
               </div>
             )}
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                <Shirt className="h-5 w-5 text-primary" aria-hidden="true" />
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
+                <Shirt className="h-5 w-5 text-foreground/70" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
                 {/* 날씨 팁 — 배색 캡션과 별개 줄. 위치는 동의한 사용자만 실제 좌표,
@@ -575,7 +652,7 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                   className="text-sm leading-snug text-foreground/90"
                   data-testid="briefing-weather-tip"
                 >
-                  {fashionTip ?? '오늘 날씨와 내 체형에 맞는 코디를 골라줄게요'}
+                  {fashionTip ?? '오늘의 배색과 코디 조합을 더 자세히 확인해보세요'}
                   {fashionTip && weatherLocationSource === 'default' && (
                     <span
                       className="ml-1.5 text-xs text-muted-foreground"
@@ -585,127 +662,132 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                     </span>
                   )}
                 </p>
-                <p className="mt-0.5 text-xs font-medium text-primary">코디 추천 받기</p>
+                <p className="mt-0.5 text-xs font-medium text-foreground/70">코디 추천 받기</p>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             </div>
           </Link>
         </section>
-
-        {/* ③ 내 상태 */}
-        <section aria-label="내 상태" data-testid="briefing-status">
-          <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">내 상태</h3>
-          <div className="rounded-2xl border border-border bg-card p-4">
-            {skinEntry?.skinTrend && (
-              <div className="mb-3 flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">피부 컨디션</span>
-                <BriefingSkinChip trend={skinEntry.skinTrend} delta={skinEntry.skinDelta ?? 0} />
-              </div>
-            )}
-            {topInsight ? (
-              <div>
-                <p className="text-sm font-medium text-foreground">{topInsight.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                  {topInsight.description}
-                </p>
-              </div>
-            ) : (
-              !skinEntry?.skinTrend && (
-                <p className="text-sm text-muted-foreground">
-                  분석을 더 담아주면 내 상태를 더 자세히 읽어드릴게요
-                </p>
-              )
-            )}
-            <Link
-              href="/profile"
-              className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
-            >
-              내 프로필 전체 보기
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-            {/* 피부 일기 재측정 유도 — 피부 분석을 한 사용자에게만 노출(다이어리 추적 IA 진입).
-                리텐션 엔진(before/after·상관·악화 알림)이 홈에서 도달 가능하게 배선 */}
-            {skinEntry && (
-              <Link
-                href="/analysis/skin/diary"
-                className="mt-2 flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
-                data-testid="briefing-skin-diary-link"
-              >
-                피부 일기로 오늘 컨디션 기록하기
-                <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-              </Link>
-            )}
-          </div>
-        </section>
       </div>
 
-      {/* ── 그룹 3: 물어보기 + 최신 통합 결과 ── */}
-      <div className="space-y-3">
+      {/* ── 그룹 3: 공식 후속 채널 + 접힌 상태/리포트 ── */}
+      <div className="space-y-4 border-t border-border pt-6">
         {/* 물어보기 프리뷰 인풋 */}
-        <form onSubmit={handleAsk} data-testid="briefing-ask" className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <MessageCircle
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <input
-              type="text"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="무엇이든 물어보세요 — 피부·옷·헤어"
-              aria-label="무엇이든 물어보세요"
-              data-testid="briefing-ask-input"
-              className="w-full rounded-full border border-border bg-card py-3 pl-9 pr-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/60"
-            />
-          </div>
-          <button
-            type="submit"
-            aria-label="물어보기"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm transition-colors hover:bg-primary/90"
-          >
-            <ArrowRight className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </form>
+        <div data-testid="briefing-ask-channel">
+          <p className="mb-2 px-1 text-xs text-muted-foreground">
+            오늘 브리핑에서 더 궁금한 점이 있나요?
+          </p>
+          <form onSubmit={handleAsk} data-testid="briefing-ask" className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <MessageCircle
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <input
+                type="text"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="피부·옷·헤어를 물어보세요"
+                aria-label="무엇이든 물어보세요"
+                data-testid="briefing-ask-input"
+                className="w-full rounded-full border border-border bg-card py-2.5 pl-9 pr-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-foreground/40"
+              />
+            </div>
+            <button
+              type="submit"
+              aria-label="물어보기"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground text-background transition-colors hover:bg-foreground/85"
+            >
+              <ArrowRight className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </form>
+        </div>
 
-        {/* 최신 통합 결과 링크 */}
-        <IntegratedSessionPromptCard />
+        {/* 내 상태와 정체성 리포트는 한 후속 영역으로 통합하고 기본 접힘 상태를 유지한다. */}
+        <details
+          className="rounded-2xl border border-border bg-card"
+          data-testid="briefing-followup"
+        >
+          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-foreground marker:content-none">
+            <span className="flex items-center justify-between gap-3">
+              내 상태와 정체성 리포트
+              <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            </span>
+          </summary>
+          <div className="space-y-4 border-t border-border p-4">
+            <section aria-label="내 상태" data-testid="briefing-status">
+              {skinEntry?.skinTrend && (
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">피부 컨디션</span>
+                  <BriefingSkinChip trend={skinEntry.skinTrend} />
+                </div>
+              )}
+              {topInsight ? (
+                <div>
+                  <p className="text-sm font-medium text-foreground">{topInsight.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {topInsight.description}
+                  </p>
+                </div>
+              ) : (
+                !skinEntry?.skinTrend && (
+                  <p className="text-sm text-muted-foreground">
+                    분석을 더 담아주면 내 상태를 더 자세히 읽어드릴게요
+                  </p>
+                )
+              )}
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-foreground/70 hover:text-foreground"
+                >
+                  내 프로필 전체 보기
+                  <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+                {/* 피부 분석이 있는 사용자만 다이어리 추적 경로를 제공한다. */}
+                {skinEntry && (
+                  <Link
+                    href="/analysis/skin/diary"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-foreground/70 hover:text-foreground"
+                    data-testid="briefing-skin-diary-link"
+                  >
+                    피부 일기로 오늘 컨디션 기록하기
+                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                )}
+              </div>
+            </section>
+
+            <IntegratedSessionPromptCard embedded />
+          </div>
+        </details>
       </div>
     </div>
   );
 }
 
-/** 피부 점수 추이 칩 — 직전 분석 대비 (↑ 개선 / ↓ 하락 / 유지) */
-function BriefingSkinChip({ trend, delta }: { trend: 'up' | 'down' | 'flat'; delta: number }) {
-  const magnitude = Math.abs(delta);
+/** 숫자 점수 대신 직전 분석 대비 방향만 정직하게 전달한다. */
+function BriefingSkinChip({ trend }: { trend: 'up' | 'down' | 'flat' }) {
   const config = {
     up: {
-      Icon: TrendingUp,
-      cls: 'bg-emerald-500/25 text-emerald-700 dark:text-emerald-300',
-      label: `+${magnitude}점`,
-      desc: `지난 분석보다 ${magnitude}점 올랐어요`,
+      cls: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200',
+      label: '지난 분석보다 안정적이에요',
     },
     down: {
-      Icon: TrendingDown,
-      cls: 'bg-amber-500/25 text-amber-700 dark:text-amber-300',
-      label: `-${magnitude}점`,
-      desc: `지난 분석보다 ${magnitude}점 내려갔어요`,
+      cls: 'bg-amber-500/15 text-amber-800 dark:text-amber-200',
+      label: '지난 분석보다 세심한 관리가 필요해요',
     },
     flat: {
-      Icon: Minus,
-      cls: 'bg-slate-500/20 text-slate-600 dark:text-slate-300',
-      label: '유지',
-      desc: '지난 분석과 같은 점수예요',
+      cls: 'bg-secondary text-foreground/70',
+      label: '지난 분석과 비슷해요',
     },
   }[trend];
-  const { Icon, cls, label, desc } = config;
+  const { cls, label } = config;
   return (
     <span
-      className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${cls}`}
-      title={desc}
-      aria-label={desc}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${cls}`}
       data-testid="skin-trend-chip"
     >
-      <Icon className="h-3 w-3" aria-hidden="true" />
       {label}
     </span>
   );

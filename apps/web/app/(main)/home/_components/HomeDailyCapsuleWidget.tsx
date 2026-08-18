@@ -8,16 +8,14 @@
  * - 내재화 수준에 따라 reason 표시 깊이 조절
  */
 
-import { useState, useEffect, useCallback, type ReactElement } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import Link from 'next/link';
 import {
-  Sparkles,
   CheckCircle2,
   Circle,
-  Clock,
   ChevronRight,
   Palette,
   Droplets,
@@ -28,6 +26,7 @@ import {
   Smile,
   Shirt,
   Activity,
+  type LucideIcon,
 } from 'lucide-react';
 import type { DailyCapsule, DailyItem, DailySolutionProduct, ModuleCode } from '@/types/capsule';
 // 시간대 → 활성 그룹 판정 — 배럴(index) 대신 직접 import (서버 전용 모듈 끌림 방지)
@@ -57,44 +56,8 @@ type CapsuleWithEveningFocus = DailyCapsule & {
 // G4 일변화 체감 — 오늘 요일 (저녁 포커스 배지에 표기)
 const DOW_KO = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 
-// 아이템에 붙은 실제 제품 칩 — 보유(shelf)면 배지, 없으면(catalog) 구매 연결.
-function CapsuleProductChip({ sp }: { sp: SolutionProductWithSource }): ReactElement {
-  if (sp.source === 'shelf') {
-    return (
-      <span
-        className="ml-11 mb-1 inline-flex max-w-[calc(100%-3rem)] items-center gap-1 truncate rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300"
-        data-testid="capsule-owned-chip"
-        title={`내 ${sp.name}`}
-      >
-        🧴 내 {sp.name}
-      </span>
-    );
-  }
-  // catalog: 제품 id가 있으면 상세 링크, 없으면 링크 없는 안내 칩
-  if (sp.id) {
-    return (
-      <Link
-        href={`/beauty/${sp.id}`}
-        className="ml-11 mb-1 inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
-        data-testid="capsule-catalog-chip"
-      >
-        맞는 제품 보기
-        <ChevronRight className="w-3 h-3" />
-      </Link>
-    );
-  }
-  return (
-    <span
-      className="ml-11 mb-1 inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
-      data-testid="capsule-catalog-chip"
-    >
-      맞는 제품 보기
-    </span>
-  );
-}
-
 // 모듈별 아이콘 매핑
-const MODULE_ICONS: Record<ModuleCode, typeof Sparkles> = {
+const MODULE_ICONS: Record<ModuleCode, LucideIcon> = {
   PC: Palette,
   S: Droplets,
   C: Activity,
@@ -105,6 +68,16 @@ const MODULE_ICONS: Record<ModuleCode, typeof Sparkles> = {
   OH: Smile,
   Fashion: Shirt,
 };
+
+/** 현재 시간대에서 먼저 실행할 미완료 1건. 중요도 데이터가 없으므로 생성 순서를 그대로 따른다. */
+function selectFirstAction(items: DailyItem[], hour: number): DailyItem | null {
+  const uncheckedItems = items.filter((item) => !item.isChecked);
+  for (const key of getTimeGroupPriority(hour)) {
+    const first = uncheckedItems.find((item) => (item.timeOfDay ?? 'anytime') === key);
+    if (first) return first;
+  }
+  return items[0] ?? null;
+}
 
 export default function HomeDailyCapsuleWidget() {
   const { user } = useUser();
@@ -117,6 +90,10 @@ export default function HomeDailyCapsuleWidget() {
 
   // 각 모듈의 내재화 상태 (도메인 단위 추적)
   const [moduleDepths, setModuleDepths] = useState<Record<string, ExplanationDepth>>({});
+  const firstAction = useMemo(
+    () => (capsule ? selectFirstAction(capsule.items, new Date().getHours()) : null),
+    [capsule]
+  );
 
   useEffect(() => {
     if (!userId) {
@@ -144,33 +121,25 @@ export default function HomeDailyCapsuleWidget() {
     fetchCapsule();
   }, [userId]);
 
-  // 캡슐 아이템 로드 후 ConnectionAwareness 노출 기록
+  // 홈에 실제 노출하는 대표 행동 1건만 ConnectionAwareness 노출로 기록한다.
   useEffect(() => {
-    if (!userId || !capsule || capsule.items.length === 0) return;
+    if (!userId || !firstAction) return;
+    const action = firstAction;
 
     async function trackCapsuleExposure(): Promise<void> {
-      const depths: Record<string, ExplanationDepth> = {};
-      const trackedModules = new Set<string>();
-
-      for (const item of capsule!.items) {
-        // 이미 추적한 모듈은 건너뜀 (도메인 단위)
-        if (trackedModules.has(item.moduleCode)) continue;
-        trackedModules.add(item.moduleCode);
-
-        const request = capsuleItemToExposeRequest(item.moduleCode);
-        try {
-          const response = await exposeConnection(supabase, userId!, request);
-          depths[item.moduleCode] = getExplanationDepth(response.status);
-        } catch {
-          depths[item.moduleCode] = 'full';
-        }
+      const request = capsuleItemToExposeRequest(action.moduleCode);
+      let depth: ExplanationDepth = 'full';
+      try {
+        const response = await exposeConnection(supabase, userId!, request);
+        depth = getExplanationDepth(response.status);
+      } catch {
+        // 추적 실패는 설명 노출을 막지 않는다.
       }
-
-      setModuleDepths(depths);
+      setModuleDepths((previous) => ({ ...previous, [action.moduleCode]: depth }));
     }
 
     trackCapsuleExposure();
-  }, [userId, capsule, supabase]);
+  }, [userId, firstAction, supabase]);
 
   // 아이템 체크 토글 + ConnectionAwareness 확인
   const handleCheck = useCallback(
@@ -257,7 +226,7 @@ export default function HomeDailyCapsuleWidget() {
               .catch(() => setHasError(true))
               .finally(() => setIsLoading(false));
           }}
-          className="text-sm text-primary hover:text-primary/80 font-medium min-h-[44px]"
+          className="min-h-[44px] text-sm font-medium text-foreground/70 hover:text-foreground"
         >
           {t('capsuleRetry')}
         </button>
@@ -274,7 +243,7 @@ export default function HomeDailyCapsuleWidget() {
         <p className="text-sm text-muted-foreground">{t('capsuleEmptyState')}</p>
         <Link
           href="/analysis/integrated"
-          className="mt-3 inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium min-h-[44px]"
+          className="mt-3 inline-flex min-h-[44px] items-center gap-1 text-sm font-medium text-foreground/70 hover:text-foreground"
         >
           {t('capsuleEmptyCta')}
           <ChevronRight className="w-4 h-4" />
@@ -283,31 +252,28 @@ export default function HomeDailyCapsuleWidget() {
     );
   }
 
-  const checkedCount = capsule.items.filter((i) => i.isChecked).length;
-  const totalCount = capsule.items.length;
-  const progress = Math.round((checkedCount / totalCount) * 100);
+  // items가 비어 있지 않으므로 firstAction은 존재한다. 타입 가드는 비정상 응답에도 안전한 빈 상태를 보장한다.
+  if (!firstAction) return null;
 
-  // 홈/상세 분업 — 홈은 활성 시간대(아침/저녁/언제든)의 미체크 상위 3개만 노출.
-  // 전체 목록·시간대 그룹은 /capsule/daily 담당 (기존 5개 복제 축소, API·정렬 로직 불변)
-  const uncheckedItems = capsule.items.filter((i) => !i.isChecked);
-  let displayItems: DailyItem[] = [];
-  for (const key of getTimeGroupPriority(new Date().getHours())) {
-    const groupUnchecked = uncheckedItems.filter((i) => (i.timeOfDay ?? 'anytime') === key);
-    if (groupUnchecked.length > 0) {
-      displayItems = groupUnchecked.slice(0, 3);
-      break;
-    }
-  }
-  // 미체크가 전혀 없으면(전부 완료 직후 등) 앞 3개 폴백 — 빈 위젯 방지
-  if (displayItems.length === 0) displayItems = capsule.items.slice(0, 3);
-  const moreUncheckedCount = uncheckedItems.filter(
-    (i) => !displayItems.some((d) => d.id === i.id)
-  ).length;
+  const Icon = MODULE_ICONS[firstAction.moduleCode];
+  const depth = moduleDepths[firstAction.moduleCode] ?? 'full';
+  const solutionProduct = firstAction.solutionProduct as SolutionProductWithSource | undefined;
+  const hasProduct = solutionProduct?.source != null;
+  const canBrowseProducts = ['S', 'M', 'H'].includes(firstAction.moduleCode);
+  const productHref =
+    solutionProduct?.source === 'catalog' && solutionProduct.id
+      ? `/beauty/${solutionProduct.id}`
+      : solutionProduct?.source === 'catalog' || (!hasProduct && canBrowseProducts)
+        ? '/beauty'
+        : null;
   // ADR-117: 오늘 저녁 포커스(배지 1줄) — 있을 때만, 과하지 않게
   const eveningFocus = (capsule as CapsuleWithEveningFocus).skinEveningFocus;
   // G4: 어제 대비 변화 문구 + 오늘 요일 (일변화 체감)
   const eveningChange = (capsule as CapsuleWithEveningFocus).skinEveningChange;
   const todayDow = DOW_KO[new Date().getDay()] ?? '';
+  const showReason = (depth === 'full' || depth === 'brief') && Boolean(firstAction.reason);
+  const showSolution = depth === 'full' && Boolean(firstAction.solution);
+  const hasEvidence = showReason || showSolution || Boolean(eveningFocus?.label);
 
   return (
     <div
@@ -316,143 +282,82 @@ export default function HomeDailyCapsuleWidget() {
       role="region"
       aria-label={t('capsuleLabel')}
     >
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-foreground">{t('todayRoutine')}</h3>
-          <span className="text-xs text-muted-foreground" aria-live="polite">
-            {checkedCount}/{totalCount}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Clock className="w-3.5 h-3.5" />
-          <span>{t('capsuleMinutes', { minutes: capsule.estimatedMinutes })}</span>
-        </div>
-      </div>
-
-      {/* 프로그레스 바 */}
-      <div className="h-1.5 bg-secondary rounded-full mb-4 overflow-hidden">
-        <div
-          className="h-full bg-primary rounded-full transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      {/* 오늘 저녁 포커스 배지 (ADR-117) + 요일·어제 대비 변화 (G4 일변화 체감) */}
-      {eveningFocus?.label && (
-        <div
-          className="mb-3 rounded-lg bg-primary/10 px-3 py-1.5 text-xs text-primary"
-          data-testid="capsule-evening-focus"
+      <p className="text-xs font-medium text-muted-foreground">오늘 먼저 할 일</p>
+      <button
+        onClick={() => handleCheck(firstAction)}
+        className="mt-2 flex min-h-[44px] w-full items-center gap-3 rounded-lg py-2 text-left transition-colors hover:bg-secondary/60"
+      >
+        {firstAction.isChecked ? (
+          <CheckCircle2 className="h-5 w-5 shrink-0 text-foreground" aria-hidden="true" />
+        ) : (
+          <Circle className="h-5 w-5 shrink-0 text-muted-foreground/50" aria-hidden="true" />
+        )}
+        <Icon className="h-4 w-4 shrink-0 text-foreground/60" aria-hidden="true" />
+        <span
+          className={`block min-w-0 flex-1 text-sm font-medium ${
+            firstAction.isChecked ? 'text-muted-foreground line-through' : 'text-foreground'
+          }`}
         >
-          <div className="flex items-center gap-1.5">
-            <span aria-hidden="true">🌙</span>
-            <span className="font-medium">
-              {todayDow ? `${todayDow} · ` : ''}오늘 저녁: {eveningFocus.label}
-            </span>
-          </div>
-          {eveningChange && (
-            <span
-              className="mt-0.5 block text-[11px] text-primary/80"
-              data-testid="capsule-evening-change"
-            >
-              {eveningChange}
-            </span>
-          )}
-        </div>
-      )}
+          {firstAction.name}
+        </span>
+      </button>
 
-      {/* 아이템 리스트 — 활성 시간대 미체크 상위 3개 */}
-      <div className="space-y-1.5">
-        {displayItems.map((item) => {
-          const Icon = MODULE_ICONS[item.moduleCode] || Sparkles;
-          const depth = moduleDepths[item.moduleCode] ?? 'full';
-          // ADR-117: 아이템에 붙은 실제 제품 — 보유(shelf) 제품이면 "내 ○○" 배지,
-          // 없으면(catalog) "맞는 제품 보기" 구매 연결. source가 없으면(구 데이터) 미표시.
-          // U2: 제품 칩은 depth 무관 항상 노출 — 제품은 "행동"이라 내재화 수준과 무관하게
-          // 필요하다(reason/solution 텍스트 게이팅은 유지).
-          const sp = item.solutionProduct as SolutionProductWithSource | undefined;
-          const showProduct = sp != null && sp.source != null;
-          // 제품 카탈로그가 있는 축(피부·메이크업·헤어)인데 매칭 제품이 없으면 탐색 폴백 —
-          // 칩 유무가 들쭉날쭉해 "반쯤 만들다 만" 인상을 주던 문제(7/18 감사·페르소나 지적)
-          const showProductFallback = !showProduct && ['S', 'M', 'H'].includes(item.moduleCode);
-
-          return (
-            <div key={item.id} className="rounded-lg">
-              <button
-                onClick={() => handleCheck(item)}
-                className="flex items-center gap-3 w-full p-3 min-h-[44px] rounded-lg hover:bg-secondary/60 transition-colors text-left"
-              >
-                {item.isChecked ? (
-                  <CheckCircle2 className="w-4.5 h-4.5 text-primary shrink-0" />
-                ) : (
-                  <Circle className="w-4.5 h-4.5 text-muted-foreground/40 shrink-0" />
+      {/* 성분·방법·저녁 보충 설명은 결론 뒤에서 사용자가 요청할 때만 펼친다. */}
+      {hasEvidence && (
+        <details className="mt-2 border-t border-border pt-2" data-testid="capsule-evidence">
+          <summary className="cursor-pointer text-xs font-medium text-foreground/70 hover:text-foreground">
+            선택 근거와 사용 방법
+          </summary>
+          <div className="mt-2 space-y-2 text-xs leading-relaxed text-muted-foreground">
+            {showReason && <p>{firstAction.reason}</p>}
+            {showSolution && <p>{firstAction.solution}</p>}
+            {eveningFocus?.label && (
+              <div data-testid="capsule-evening-focus">
+                <p className="font-medium text-foreground/80">
+                  {todayDow ? `${todayDow} · ` : ''}오늘 저녁: {eveningFocus.label}
+                </p>
+                {eveningChange && (
+                  <p className="mt-0.5" data-testid="capsule-evening-change">
+                    {eveningChange}
+                  </p>
                 )}
-                <Icon className="w-4 h-4 text-primary shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span
-                    className={`text-sm block truncate ${
-                      item.isChecked ? 'line-through text-muted-foreground' : 'text-foreground'
-                    }`}
-                  >
-                    {item.name}
-                  </span>
-                  {/* reason 표시 — 내재화 수준에 따라 분기 */}
-                  {depth === 'full' && item.reason && (
-                    <span className="text-[11px] text-muted-foreground truncate block">
-                      {item.reason}
-                    </span>
-                  )}
-                  {depth === 'brief' && item.reason && (
-                    <span className="text-[10px] text-muted-foreground/70 truncate block">
-                      {item.reason}
-                    </span>
-                  )}
-                  {/* 실행 가이드("어떤 것으로/어떻게") — 엔진이 이미 생성하지만 위젯에서 숨겨져 있었음 */}
-                  {depth === 'full' && item.solution && (
-                    <span className="text-[11px] text-primary/90 truncate block">
-                      {item.solution}
-                    </span>
-                  )}
-                  {/* minimal/none: reason 생략 — 사용자가 이미 이해함 */}
-                </div>
-              </button>
-              {/* 실제 제품 연결 — 버튼(체크 토글) 밖에 두어 링크/버튼 중첩 방지 */}
-              {showProduct && <CapsuleProductChip sp={sp!} />}
-              {showProductFallback && (
-                <Link
-                  href="/beauty"
-                  className="ml-11 inline-block pb-1.5 text-[11px] text-muted-foreground transition-colors hover:text-primary"
-                  data-testid="capsule-product-fallback"
-                >
-                  이 단계에 맞는 제품 찾기 →
-                </Link>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* 더 보기 — 표시되지 않은 남은 미체크 수 */}
-      {moreUncheckedCount > 0 && (
-        <p className="text-xs text-muted-foreground mt-2 pl-2">
-          {t('capsuleMoreItems', { count: moreUncheckedCount })}
-        </p>
+              </div>
+            )}
+          </div>
+        </details>
       )}
 
-      {/* 완료 상태 또는 상세 보기 */}
-      {capsule.status === 'completed' ? (
-        <div className="mt-3 pt-3 border-t border-border text-center">
-          <p className="text-sm font-medium text-primary">{t('capsuleAllComplete')}</p>
-        </div>
-      ) : (
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
         <Link
           href="/capsule/daily"
-          className="flex items-center justify-center gap-1 mt-3 pt-3 border-t border-border text-sm text-primary hover:text-primary/80 transition-colors"
+          className="inline-flex items-center gap-1 text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
         >
-          {t('capsuleDetail')}
-          <ChevronRight className="w-4 h-4" />
+          전체 루틴 보기
+          <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
-      )}
+
+        {/* 선택된 행동의 제품 연결만 카드 하단 한 곳에 둔다. */}
+        {solutionProduct?.source === 'shelf' ? (
+          <span
+            className="text-xs text-muted-foreground"
+            data-testid="capsule-owned-chip"
+            title={`내 ${solutionProduct.name}`}
+          >
+            보유 제품 · {solutionProduct.name}
+          </span>
+        ) : (
+          productHref && (
+            <Link
+              href={productHref}
+              className="inline-flex items-center gap-1 text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
+              data-testid="capsule-catalog-chip"
+            >
+              맞는 제품 보기
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          )
+        )}
+      </div>
     </div>
   );
 }

@@ -2,24 +2,7 @@ import { Suspense } from 'react';
 import { HomeHeader } from './_components/HomeHeader';
 import HomeStateRouter from './_components/HomeStateRouter';
 import WelcomeBackBanner from './_components/WelcomeBackBanner';
-
-// 스켈레톤 컴포넌트 — State 로딩 중 표시
-function HomeStateSkeleton() {
-  return (
-    // 유리 해체(ADR-120): 크림 지면 위 솔리드 카드 스켈레톤
-    <div className="space-y-5 animate-pulse">
-      <div className="bg-card rounded-2xl border border-border p-6">
-        <div className="h-6 w-48 bg-slate-200 dark:bg-slate-700 rounded mb-4" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-700 rounded mb-3" />
-        <div className="h-10 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
-      </div>
-      <div className="bg-card rounded-2xl border border-border p-5">
-        <div className="h-5 w-24 bg-slate-200 dark:bg-slate-700 rounded mb-3" />
-        <div className="h-12 bg-slate-200 dark:bg-slate-700 rounded" />
-      </div>
-    </div>
-  );
-}
+import { HomeBriefingSkeleton } from './_components/HomeBriefingSkeleton';
 
 /**
  * 홈 탭 - Server Component
@@ -47,7 +30,7 @@ export default async function HomePage() {
         <WelcomeBackBanner />
 
         {/* 3-State 홈 라우터 */}
-        <Suspense fallback={<HomeStateSkeleton />}>
+        <Suspense fallback={<HomeBriefingSkeleton />}>
           <HomeStateRouter />
         </Suspense>
       </div>

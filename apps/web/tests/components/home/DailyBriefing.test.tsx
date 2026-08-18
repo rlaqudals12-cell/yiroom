@@ -62,6 +62,7 @@ const analysesWithColors = [
       { name: '코랄', hex: '#FF7F50' },
       { name: '골드', hex: '#FFD700' },
       { name: '오렌지', hex: '#FFA500' },
+      { name: '네이비', hex: '#1F3A5F' },
     ],
   },
 ] as AnalysisSummary[];
@@ -100,24 +101,38 @@ describe('DailyBriefing', () => {
     vi.unstubAllGlobals();
   });
 
-  it('브리핑 레터와 인사말을 렌더한다', () => {
-    render(<DailyBriefing analyses={analyses} />);
+  it('인사는 작은 윗줄로 남기고 오늘의 결론을 세리프 히어로 렌더한다', () => {
+    render(<DailyBriefing analyses={analysesWithColors} />);
     expect(screen.getByTestId('home-daily-briefing')).toBeInTheDocument();
     expect(screen.getByTestId('briefing-letter')).toBeInTheDocument();
-    expect(screen.getByText(/지민님/)).toBeInTheDocument();
+    const greeting = screen.getByTestId('briefing-greeting');
+    const verdict = screen.getByTestId('briefing-verdict');
+
+    expect(greeting).toHaveTextContent(/지민님/);
+    expect(greeting).toHaveClass('text-sm');
+    expect(verdict.tagName).toBe('H2');
+    expect(verdict).toHaveClass('font-serif');
+    expect(verdict).toHaveTextContent('오늘은 내 상태에 맞는 한 가지만 가볍게 챙겨보세요');
   });
 
-  it('오늘의 실행 3개(루틴·스타일·내 상태)를 렌더한다', () => {
+  it('루틴·코디를 먼저 노출하고 내 상태·정체성 리포트는 기본 접힘으로 통합한다', () => {
     render(<DailyBriefing analyses={analyses} />);
     expect(screen.getByTestId('briefing-routine')).toBeInTheDocument();
     expect(screen.getByTestId('briefing-style')).toBeInTheDocument();
     expect(screen.getByTestId('briefing-status')).toBeInTheDocument();
     expect(screen.getByTestId('home-daily-capsule')).toBeInTheDocument();
+    const followup = screen.getByTestId('briefing-followup');
+    expect(followup.tagName).toBe('DETAILS');
+    expect(followup).not.toHaveAttribute('open');
+    expect(followup).toHaveTextContent('내 상태와 정체성 리포트');
   });
 
-  it('피부 추이 칩을 표시한다', () => {
+  it('피부 추이는 점수 없이 직전 분석 대비 언어로 표시한다', () => {
     render(<DailyBriefing analyses={analyses} />);
-    expect(screen.getByTestId('skin-trend-chip')).toBeInTheDocument();
+    const chip = screen.getByTestId('skin-trend-chip');
+    expect(chip).toHaveTextContent('지난 분석보다 안정적이에요');
+    expect(chip).not.toHaveTextContent('점');
+    expect(chip).not.toHaveTextContent('+2');
   });
 
   it('질문을 입력해 제출하면 /coach?q= 로 이동한다', () => {
@@ -134,9 +149,12 @@ describe('DailyBriefing', () => {
     expect(pushMock).toHaveBeenCalledWith('/coach');
   });
 
-  it('최신 통합 결과 링크(IntegratedSessionPromptCard)를 렌더한다', () => {
+  it('최신 통합 결과 링크를 접힌 후속 영역 안에 렌더한다', () => {
     render(<DailyBriefing analyses={analyses} />);
-    expect(screen.getByTestId('integrated-session-prompt-card')).toBeInTheDocument();
+    const followup = screen.getByTestId('briefing-followup');
+    const prompt = screen.getByTestId('integrated-session-prompt-card');
+    expect(followup).toContainElement(prompt);
+    expect(followup).not.toHaveAttribute('open');
   });
 
   // 다이어리 추적 IA 진입 — 피부 분석이 있으면 홈 브리핑에서 피부 일기로 유도(재측정 링크)
@@ -152,17 +170,20 @@ describe('DailyBriefing', () => {
     expect(screen.queryByTestId('briefing-skin-diary-link')).not.toBeInTheDocument();
   });
 
-  it('PC 베스트 컬러가 있으면 "나의 컬러" 스와치 행을 렌더하고 PC 결과로 링크한다', () => {
+  it('PC 베스트 컬러가 있으면 원본 우선순위 상위 3색만 렌더하고 전체 리포트로 링크한다', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
     const section = screen.getByTestId('briefing-my-colors');
     expect(section).toBeInTheDocument();
-    // 스와치 개수 = 팔레트 색 수, 각 스와치 title=색이름
-    // 표시 순서는 명도(L*) 내림차순 — 골드(L*86.9)가 맨 앞
+    // 4개 원본 중 상위 3개만, 재정렬 없이 저장 순서를 유지한다.
     const swatches = screen.getAllByTestId('briefing-color-swatch');
     expect(swatches).toHaveLength(3);
-    expect(swatches[0]).toHaveAttribute('title', '골드');
-    // 행 전체가 PC 결과 페이지로 링크
-    expect(section.querySelector('a')).toHaveAttribute(
+    expect(swatches.map((swatch) => swatch.getAttribute('title'))).toEqual([
+      '코랄',
+      '골드',
+      '오렌지',
+    ]);
+    expect(screen.queryByTitle('네이비')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /전체 리포트 보기/ })).toHaveAttribute(
       'href',
       '/analysis/personal-color/result/pc-9'
     );
@@ -173,10 +194,24 @@ describe('DailyBriefing', () => {
     expect(screen.queryByTestId('briefing-my-colors')).not.toBeInTheDocument();
   });
 
-  it('베스트 컬러가 있으면 오늘의 스타일에 배색 블록(상의·하의·신발·가방·포인트) 5개를 렌더한다', () => {
+  it('베스트 컬러가 있으면 실제 상의·하의 조합명을 밴드 앞에 렌더한다', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
     expect(screen.getByTestId('briefing-outfit-palette')).toBeInTheDocument();
-    expect(screen.getAllByTestId('briefing-outfit-block')).toHaveLength(5);
+    const blocks = screen.getAllByTestId('briefing-outfit-block');
+    expect(blocks).toHaveLength(5);
+    const topName = blocks
+      .find((block) => block.getAttribute('title')?.startsWith('상의 · '))
+      ?.getAttribute('title')
+      ?.replace('상의 · ', '');
+    const bottomName = blocks
+      .find((block) => block.getAttribute('title')?.startsWith('하의 · '))
+      ?.getAttribute('title')
+      ?.replace('하의 · ', '');
+    expect(topName).toBeTruthy();
+    expect(bottomName).toBeTruthy();
+    expect(screen.getByTestId('briefing-outfit-verdict')).toHaveTextContent(
+      `${topName} 상의 + ${bottomName} 하의`
+    );
   });
 
   // 범례 정렬 수리: 좁은 세그먼트(13%)는 역할만 — 색 이름은 폭이 넉넉한 3칸에만 붙는다
@@ -218,7 +253,7 @@ describe('DailyBriefing', () => {
   // 퍼스널컬러 밴드도 같은 계약(경계 링 + 그림 1개)
   it('퍼스널컬러 밴드도 role="img" + 경계 링을 갖는다', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
-    const band = screen.getByRole('img', { name: /나의 퍼스널컬러 팔레트/ });
+    const band = screen.getByRole('img', { name: /나의 퍼스널컬러 대표 색/ });
     expect(band.className).toContain('ring-1');
     expect(
       screen.getAllByTestId('briefing-color-swatch').every((el) => !el.hasAttribute('aria-label'))
@@ -247,26 +282,23 @@ describe('DailyBriefing', () => {
     expect(screen.getByText('나의 퍼스널컬러')).toBeInTheDocument();
   });
 
-  it('베스트 컬러 이름을 스와치 아래에 표시한다(표시 순서=명도 내림차순)', () => {
+  it('베스트 컬러 이름을 원본 순서로 스와치 아래에 표시한다', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
     const names = screen.getAllByTestId('briefing-color-name');
     expect(names).toHaveLength(3);
-    expect(names[0]).toHaveTextContent('골드');
+    expect(names.map((name) => name.textContent?.trim())).toEqual(['코랄', '골드', '오렌지']);
   });
 
-  // 회청 일색 수리 — 밴드를 명도 그라데이션으로 표시(진단 hex·데이터는 불변, 표시 순서만)
-  it('스와치 밴드를 명도(L*) 내림차순으로 정렬해 표시한다', () => {
+  it('대표 색은 명도로 재정렬하지 않고 bestColors 선행 3개만 사용한다', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
     const titles = screen
       .getAllByTestId('briefing-color-swatch')
       .map((el) => el.getAttribute('title'));
-    // 골드 L*86.9 > 오렌지 L*74.9 > 코랄 L*67.3 (원본 배열 순서: 코랄·골드·오렌지)
-    expect(titles).toEqual(['골드', '오렌지', '코랄']);
-    // 이름 행도 같은 정렬을 따른다(스와치와 1:1 정합)
+    expect(titles).toEqual(['코랄', '골드', '오렌지']);
     const nameOrder = screen
       .getAllByTestId('briefing-color-name')
       .map((el) => el.textContent?.trim());
-    expect(nameOrder).toEqual(['골드', '오렌지', '코랄']);
+    expect(nameOrder).toEqual(titles);
   });
 
   it('스와치 이름은 잘림(truncate)이 아니라 온전히 읽히게 렌더한다', () => {
@@ -277,8 +309,8 @@ describe('DailyBriefing', () => {
     expect(name.className).toContain('line-clamp-2');
   });
 
-  // ADR-114 화법 4요소 "기억한다" — 제품함 후속·오늘 캡슐 우선을 브리핑에 반영(모바일 정합)
-  it('제품함·오늘 캡슐 데이터가 있으면 "기억한다" 화법을 반영한다', async () => {
+  // verdict-first: 오늘 행동은 히어로, 관찰·상세 이유는 접힌 근거로 분리한다.
+  it('캡슐 행동을 verdict로 올리고 제품함 관찰·상세 근거는 기본 접힘한다', async () => {
     fetchMock.mockImplementation((url: string) => {
       const u = String(url);
       if (u.includes('/api/scan/shelf')) {
@@ -303,9 +335,20 @@ describe('DailyBriefing', () => {
     // 피부 추이 없는 분석(관찰 우선순위상 제품함 후속이 관찰로 노출)
     render(<DailyBriefing analyses={analysesWithColors} />);
 
-    // 제품함 후속(관찰) + 캡슐 우선(조언)이 화법에 등장
-    expect(await screen.findByText(/수분 앰플/)).toBeInTheDocument();
-    expect(await screen.findByText(/약산성 클렌저/)).toBeInTheDocument();
+    const verdict = await screen.findByTestId('briefing-verdict');
+    expect(verdict).toHaveTextContent('오늘은 세안 한 가지만 먼저 챙겨보세요');
+    expect(verdict).toHaveClass('font-serif');
+    expect(verdict).not.toHaveTextContent('약산성 클렌저 챙겨봐요');
+
+    const attribute = screen.getByTestId('briefing-attribute');
+    expect(attribute).toHaveTextContent('세안');
+    expect(attribute).toHaveTextContent('약산성 클렌저 챙겨봐요');
+
+    const evidence = screen.getByTestId('briefing-evidence');
+    expect(evidence.tagName).toBe('DETAILS');
+    expect(evidence).not.toHaveAttribute('open');
+    expect(evidence).toHaveTextContent('수분 앰플');
+    expect(evidence).toHaveTextContent('장벽 회복 중');
   });
 
   // 폐루프 v1(고객 노트) — 미응답 후속 질문에 응답 버튼을 달고, 답하면 rating을 저장한다
@@ -420,9 +463,10 @@ describe('DailyBriefing', () => {
 
     // 날씨 팁(아이콘 행)
     expect(await screen.findByTestId('briefing-weather-tip')).toHaveTextContent('우산');
-    // 배색 캡션(밴드 소속) — 면적 비율 의도를 말로 전달
+    // 배색 캡션(밴드 소속) — 고정 휴리스틱을 실측처럼 말하지 않는다
     const caption = screen.getByTestId('briefing-outfit-caption');
-    expect(caption).toHaveTextContent('착장 면적 비율');
+    expect(caption).toHaveTextContent('권장 배색 비율');
+    expect(caption).not.toHaveTextContent('실제 착장 면적 비율');
     // 개수는 실제 렌더 세그먼트에서 센다(뉴트럴=신발 1칸)
     expect(caption).toHaveTextContent('4색');
     expect(caption).toHaveTextContent('뉴트럴 1색');
@@ -469,7 +513,7 @@ describe('DailyBriefing', () => {
 
     await waitFor(() => expect(weatherMocks.getCurrentWeather).toHaveBeenCalled());
     expect(screen.getByTestId('briefing-weather-tip')).toHaveTextContent(
-      '오늘 날씨와 내 체형에 맞는 코디를 골라줄게요'
+      '오늘의 배색과 코디 조합을 더 자세히 확인해보세요'
     );
     expect(screen.queryByTestId('briefing-weather-location')).not.toBeInTheDocument();
   });

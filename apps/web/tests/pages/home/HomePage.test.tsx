@@ -48,6 +48,7 @@ vi.mock('@/lib/utils/timezone', () => ({
 
 import { HomeHeader } from '@/app/(main)/home/_components/HomeHeader';
 import { HomeGreeting } from '@/app/(main)/home/_components/HomeGreeting';
+import { HomeBriefingSkeleton } from '@/app/(main)/home/_components/HomeBriefingSkeleton';
 
 describe('HomeHeader', () => {
   it('브랜드명이 표시된다', async () => {
@@ -78,6 +79,14 @@ describe('HomeHeader', () => {
     const icons = container.querySelectorAll('[aria-hidden="true"]');
     expect(icons.length).toBeGreaterThan(0);
   });
+
+  it('모바일에서만 솔리드 지면으로 표시된다', async () => {
+    const { container } = render(await HomeHeader());
+
+    const header = container.querySelector('header');
+    expect(header).toHaveClass('md:hidden', 'bg-surface-ground', 'border-border');
+    expect(header).not.toHaveClass('backdrop-blur-xl', 'bg-white/70');
+  });
 });
 
 describe('HomeGreeting', () => {
@@ -98,5 +107,15 @@ describe('HomeGreeting', () => {
     render(await HomeGreeting({ userName: '회원' }));
 
     expect(screen.getByText('dailyMotivation')).toBeInTheDocument();
+  });
+});
+
+describe('HomeBriefingSkeleton', () => {
+  it('구형 대시보드 격자 대신 히어로 1개와 짧은 보조 1개만 유지한다', () => {
+    render(<HomeBriefingSkeleton />);
+
+    expect(screen.getByTestId('home-briefing-skeleton-hero')).toBeInTheDocument();
+    expect(screen.getByTestId('home-briefing-skeleton-support')).toBeInTheDocument();
+    expect(screen.getAllByRole('status')).toHaveLength(1);
   });
 });

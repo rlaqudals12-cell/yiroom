@@ -9,7 +9,7 @@ export async function HomeHeader() {
   const t = await getTranslations('home');
 
   return (
-    <header className="sticky top-0 z-40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-white/20 dark:border-slate-700/30">
+    <header className="sticky top-0 z-40 border-b border-border bg-surface-ground md:hidden">
       <div className="flex items-center justify-between px-4 h-14">
         <Link
           href="/notifications"

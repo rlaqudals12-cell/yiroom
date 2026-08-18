@@ -4,7 +4,7 @@ import { SignedOut, SignInButton, SignedIn, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Heart, Globe, Check } from 'lucide-react';
+import { Bell, Check, Globe, Heart, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -58,6 +58,8 @@ function NavLocaleSwitcher(): React.JSX.Element {
 const Navbar = () => {
   // 헤더 네비게이션 라벨 i18n (messages/*.json의 nav)
   const t = useTranslations('nav');
+  // 홈 전용 헤더에서 글로벌 유틸로 옮긴 접근성 라벨은 기존 번역을 재사용한다.
+  const homeT = useTranslations('home');
 
   return (
     <header
@@ -114,8 +116,22 @@ const Navbar = () => {
             </Link>
           </nav>
           <Link
+            href="/notifications"
+            className="hidden md:inline-flex p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label={homeT('notificationLabel')}
+          >
+            <Bell className="h-5 w-5" aria-hidden="true" />
+          </Link>
+          <Link
+            href="/search"
+            className="hidden md:inline-flex p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label={homeT('searchLabel')}
+          >
+            <Search className="h-5 w-5" aria-hidden="true" />
+          </Link>
+          <Link
             href="/wishlist"
-            className="p-2 rounded-full text-muted-foreground hover:text-pink-500 hover:bg-pink-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label={t('wishlist')}
           >
             <Heart className="h-5 w-5" />

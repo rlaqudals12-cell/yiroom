@@ -62,4 +62,16 @@ describe('Navbar — 5탭 단일 IA (ADR-114)', () => {
     render(<Navbar />);
     expect(screen.getByRole('link', { name: 'wishlist' })).toHaveAttribute('href', '/wishlist');
   });
+
+  it('알림·검색은 데스크톱 글로벌 유틸로 제공된다', () => {
+    render(<Navbar />);
+
+    const notificationLink = screen.getByRole('link', { name: 'notificationLabel' });
+    const searchLink = screen.getByRole('link', { name: 'searchLabel' });
+
+    expect(notificationLink).toHaveAttribute('href', '/notifications');
+    expect(notificationLink).toHaveClass('hidden', 'md:inline-flex');
+    expect(searchLink).toHaveAttribute('href', '/search');
+    expect(searchLink).toHaveClass('hidden', 'md:inline-flex');
+  });
 });

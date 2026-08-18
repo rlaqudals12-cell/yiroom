@@ -16,8 +16,16 @@
 import Link from 'next/link';
 import { ChevronRight, Check, Palette } from 'lucide-react';
 import { useLatestIntegratedSession } from '@/hooks/useLatestIntegratedSession';
+import { cn } from '@/lib/utils';
 
-export function IntegratedSessionPromptCard(): React.JSX.Element {
+interface IntegratedSessionPromptCardProps {
+  /** 접힌 홈 후속 영역 안에서는 중첩 카드와 브랜드 CTA 색을 줄인다. */
+  embedded?: boolean;
+}
+
+export function IntegratedSessionPromptCard({
+  embedded = false,
+}: IntegratedSessionPromptCardProps = {}): React.JSX.Element {
   const { session, isLoading, error } = useLatestIntegratedSession();
 
   // 로딩 스켈레톤
@@ -25,7 +33,12 @@ export function IntegratedSessionPromptCard(): React.JSX.Element {
     return (
       <div
         data-testid="integrated-prompt-skeleton"
-        className="h-[72px] animate-pulse rounded-2xl bg-white/5 border border-zinc-800"
+        className={cn(
+          'h-[72px] animate-pulse border',
+          embedded
+            ? 'rounded-xl border-border bg-secondary/50'
+            : 'rounded-2xl border-zinc-800 bg-white/5'
+        )}
       />
     );
   }
@@ -53,10 +66,23 @@ export function IntegratedSessionPromptCard(): React.JSX.Element {
       <Link
         href={`/analysis/integrated/result/${session.id}`}
         data-testid="integrated-prompt-existing"
-        className="flex items-center gap-3 rounded-2xl border border-pink-500/30 bg-card p-4 hover:border-pink-500/50 transition-colors"
+        className={cn(
+          'flex items-center gap-3 border transition-colors',
+          embedded
+            ? 'rounded-xl border-border bg-secondary/40 p-3 hover:bg-secondary'
+            : 'rounded-2xl border-pink-500/30 bg-card p-4 hover:border-pink-500/50'
+        )}
       >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-pink-500/20">
-          <Check className="h-5 w-5 text-pink-400" aria-hidden="true" />
+        <div
+          className={cn(
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+            embedded ? 'bg-card' : 'bg-pink-500/20'
+          )}
+        >
+          <Check
+            className={cn('h-5 w-5', embedded ? 'text-foreground/60' : 'text-pink-400')}
+            aria-hidden="true"
+          />
         </div>
         <div className="flex-1 min-w-0">
           {/* "카드"를 라벨에 명시 — 공유카드 존재를 이 링크가 알리지 않으면 유저가 모름(7/18 감사) */}
@@ -75,16 +101,34 @@ export function IntegratedSessionPromptCard(): React.JSX.Element {
     <Link
       href="/analysis/integrated"
       data-testid="integrated-prompt-cta"
-      className="flex items-center gap-3 rounded-2xl bg-primary p-4 shadow-sm transition-all hover:bg-primary/90"
+      className={cn(
+        'flex items-center gap-3 transition-colors',
+        embedded
+          ? 'rounded-xl border border-border bg-secondary/40 p-3 hover:bg-secondary'
+          : 'rounded-2xl bg-primary p-4 shadow-sm hover:bg-primary/90'
+      )}
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20">
-        <Palette className="h-5 w-5 text-white" aria-hidden="true" />
+      <div
+        className={cn(
+          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+          embedded ? 'bg-card' : 'bg-white/20'
+        )}
+      >
+        <Palette
+          className={cn('h-5 w-5', embedded ? 'text-foreground/60' : 'text-white')}
+          aria-hidden="true"
+        />
       </div>
-      <div className="flex-1 min-w-0 text-white">
+      <div className={cn('min-w-0 flex-1', embedded ? 'text-foreground' : 'text-white')}>
         <p className="text-sm font-bold">내 정체성 5가지 한 번에 알아보기</p>
-        <p className="text-xs text-white/80">색 · 피부 · 체형 · 헤어 · 메이크업 · 약 2분</p>
+        <p className={cn('text-xs', embedded ? 'text-muted-foreground' : 'text-white/80')}>
+          색 · 피부 · 체형 · 헤어 · 메이크업 · 약 2분
+        </p>
       </div>
-      <ChevronRight className="h-4 w-4 shrink-0 text-white/80" aria-hidden="true" />
+      <ChevronRight
+        className={cn('h-4 w-4 shrink-0', embedded ? 'text-muted-foreground' : 'text-white/80')}
+        aria-hidden="true"
+      />
     </Link>
   );
 }
