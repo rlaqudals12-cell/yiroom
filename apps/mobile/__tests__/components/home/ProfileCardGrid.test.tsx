@@ -120,6 +120,27 @@ describe('ProfileCardGrid', () => {
     expect(getByText('피부 점수 82점')).toBeTruthy();
   });
 
+  it('퍼스널컬러 카드에 서버 12톤과 개인 베스트 팔레트를 표시한다', () => {
+    const personalColor = makeAnalysis('personal-color', {
+      summary: '봄 웜톤',
+      seasonSubtype: 'bright',
+      bestColors: ['#123456', '#ABCDEF'],
+    });
+
+    const { getByTestId, getByText } = renderWithTheme(
+      <ProfileCardGrid analyses={[personalColor]} />
+    );
+
+    expect(getByText('브라이트')).toBeTruthy();
+    expect(getByTestId('profile-card-personal-color-palette')).toBeTruthy();
+    expect(getByTestId('profile-card-personal-color-color-0')).toHaveStyle({
+      backgroundColor: '#123456',
+    });
+    expect(getByTestId('profile-card-personal-color-color-1')).toHaveStyle({
+      backgroundColor: '#ABCDEF',
+    });
+  });
+
   it('skin 분석에 skinTrend/skinDelta가 있으면 추이 칩을 렌더링해야 한다', () => {
     const analyses = [
       makeAnalysis('skin', {

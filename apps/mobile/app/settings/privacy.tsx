@@ -9,10 +9,11 @@ import { Stack, router } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Switch, Pressable, Alert, Platform } from 'react-native';
 
-import { useClerkSupabaseClient } from '../../lib/supabase';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { ScreenContainer, GlassCard } from '../../components/ui';
+import { AccountApiError, deleteAccount } from '../../lib/api/account';
+import { useClerkSupabaseClient } from '../../lib/supabase';
 
 interface PrivacySettings {
   analyticsConsent: boolean;
@@ -28,12 +29,9 @@ const DEFAULT_SETTINGS: PrivacySettings = {
   shareResults: false,
 };
 
-// GDPR 유예기간 (일)
-const GRACE_PERIOD_DAYS = 30;
-
 export default function PrivacySettingsScreen(): React.JSX.Element {
   const { colors, brand } = useTheme();
-  const { signOut } = useAuth();
+  const { getToken, signOut } = useAuth();
   const supabase = useClerkSupabaseClient();
 
   const [settings, setSettings] = useState<PrivacySettings>(DEFAULT_SETTINGS);
@@ -45,6 +43,8 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
   };
 
   const { user } = useUser();
+  const userEmail =
+    user?.emailAddresses[0]?.emailAddress ?? user?.primaryEmailAddress?.emailAddress ?? null;
   const [isExporting, setIsExporting] = useState(false);
 
   // 내 데이터 내보내기 (JSON 파일 공유)
@@ -153,63 +153,60 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
     }
   }, [user?.id, supabase]);
 
-  // 계정 삭제 요청 (30일 유예기간 후 삭제)
+  // 계정·DB·비공개 스토리지를 웹 정본 API에서 즉시 파기한다.
   const handleDeleteAccount = useCallback((): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Alert.alert(
       '계정 삭제',
-      `정말 계정을 삭제하시겠어요?\n\n• ${GRACE_PERIOD_DAYS}일 후 모든 데이터가 영구 삭제돼요\n• ${GRACE_PERIOD_DAYS}일 이내에 다시 로그인하면 삭제를 취소할 수 있어요\n• 삭제 후에는 복구할 수 없어요`,
+      '계정과 모든 데이터, 저장된 사진이 즉시 영구 삭제돼요. 삭제 후에는 복구할 수 없어요.',
       [
         { text: '취소', style: 'cancel' },
         {
-          text: '삭제 요청',
+          text: '영구 삭제',
           style: 'destructive',
           onPress: async () => {
-            // Clerk 사용자 id 없이는 삭제 요청을 기록할 수 없다 — 정직하게 실패
-            const clerkUserId = user?.id;
-            if (!clerkUserId) {
-              Alert.alert('오류', '로그인 정보를 확인할 수 없어요. 다시 로그인 후 시도해주세요.');
+            // 웹은 Clerk 이메일을 재대조한다. 로컬에서 확인값을 만들 수 없으면 요청하지 않는다.
+            if (!user?.id || !userEmail) {
+              Alert.alert('오류', '로그인 이메일을 확인할 수 없어요. 다시 로그인 후 시도해주세요.');
               return;
             }
 
             setIsDeleting(true);
             try {
-              // Supabase에 삭제 요청 기록
-              const now = new Date();
-              const scheduledAt = new Date(now);
-              scheduledAt.setDate(scheduledAt.getDate() + GRACE_PERIOD_DAYS);
-
-              // 왜 직접 UPDATE인가: request_account_deletion RPC는 저장소·prod에 정의가 없고,
-              // 이전 폴백은 supabase.auth.getUser()(Clerk 통합에선 항상 null)로
-              // 0행 업데이트가 에러 없이 통과해 "거짓 삭제 완료" 알림을 띄웠다 (2026-07-16 감사).
-              // .select()로 실제 갱신된 행을 확인해 0행이면 실패로 처리한다.
-              const { data: updated, error } = await supabase
-                .from('users')
-                .update({
-                  deletion_requested_at: now.toISOString(),
-                  deletion_scheduled_at: scheduledAt.toISOString(),
-                })
-                .eq('clerk_user_id', clerkUserId)
-                .select('clerk_user_id');
-
-              if (error) {
-                throw error;
-              }
-              if (!updated || updated.length === 0) {
-                throw new Error(`deletion request updated 0 rows (clerk_user_id=${clerkUserId})`);
+              const clerkToken = await getToken();
+              if (!clerkToken) {
+                throw new AccountApiError(
+                  '로그인 정보가 만료되었어요. 다시 로그인 후 시도해주세요.',
+                  401,
+                  'AUTH_ERROR'
+                );
               }
 
-              // 로그아웃 처리
-              await signOut();
+              await deleteAccount(userEmail, clerkToken);
+
+              // 계정은 이미 서버에서 삭제됐다. 로컬 세션 정리 실패를 삭제 실패로 오인시키지 않는다.
+              try {
+                await signOut();
+              } catch (signOutError) {
+                console.warn(
+                  '[Privacy] Local sign-out after account deletion failed:',
+                  signOutError
+                );
+              }
 
               Alert.alert(
-                '삭제 요청 완료',
-                `계정 삭제가 예약되었어요.\n${scheduledAt.toLocaleDateString('ko-KR')}에 삭제될 예정이에요.\n그 전에 다시 로그인하면 취소할 수 있어요.`,
+                '계정 삭제 완료',
+                '계정과 모든 데이터가 영구 삭제되었어요. 이 작업은 되돌릴 수 없어요.',
                 [{ text: '확인', onPress: () => router.replace('/(auth)/sign-in') }]
               );
             } catch (error) {
               console.error('[Privacy] Delete account error:', error);
-              Alert.alert('오류', '계정 삭제 요청에 실패했어요. 다시 시도해주세요.');
+              Alert.alert(
+                '오류',
+                error instanceof AccountApiError
+                  ? error.message
+                  : '계정 삭제에 실패했어요. 다시 시도해주세요.'
+              );
             } finally {
               setIsDeleting(false);
             }
@@ -217,7 +214,7 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
         },
       ]
     );
-  }, [supabase, signOut, user?.id]);
+  }, [getToken, signOut, user?.id, userEmail]);
 
   return (
     <>
@@ -380,8 +377,10 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
             <Pressable
               style={styles.actionRow}
               onPress={handleDeleteAccount}
+              disabled={isDeleting}
               accessibilityRole="button"
               accessibilityLabel="계정 삭제"
+              accessibilityState={{ disabled: isDeleting, busy: isDeleting }}
             >
               <View style={styles.settingsRowContent}>
                 <Text style={styles.settingsIcon}>🗑️</Text>

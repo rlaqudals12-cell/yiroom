@@ -6,6 +6,11 @@ import { useUser } from '@clerk/clerk-expo';
 import { computeSkinTrend } from '@yiroom/shared';
 import { useState, useEffect, useCallback } from 'react';
 
+import {
+  normalizePersonalColorHexes,
+  normalizePersonalColorSubtype,
+  type PersonalColorSeasonSubtype,
+} from '../lib/api/personalColor';
 import { useClerkSupabaseClient } from '../lib/supabase';
 import { analysisLogger } from '../lib/utils/logger';
 
@@ -17,6 +22,9 @@ export interface AnalysisSummary {
   summary: string;
   // 타입별 추가 데이터
   seasonType?: string;
+  seasonSubtype?: PersonalColorSeasonSubtype;
+  bestColors?: string[];
+  worstColors?: string[];
   skinScore?: number;
   skinDelta?: number; // S-1 직전 대비 점수 변화 (ADR-109 Phase 3 — "오늘의 컨디션")
   skinTrend?: 'up' | 'down' | 'flat'; // S-1 추이 방향
@@ -32,6 +40,10 @@ export interface PersonalColorResult {
   id: string;
   season: string;
   tone: string;
+  seasonSubtype: PersonalColorSeasonSubtype | null;
+  bestColors: string[];
+  worstColors: string[];
+  /** 기존 소비부 호환 별칭. bestColors와 같은 배열이다. */
   colorPalette: string[];
   createdAt: Date;
 }
@@ -116,19 +128,25 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
         // 존재하지 않는 컬럼을 요청해 쿼리가 런타임 에러로 죽고 홈 집계에서 통째로 누락됐다.
         const { data: pcData, error: pcError } = await supabase
           .from('personal_color_assessments')
-          .select('id, season, undertone, best_colors, created_at')
+          .select('id, season, undertone, season_subtype, best_colors, worst_colors, created_at')
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
         if (pcData && !pcError) {
+          const bestColors = normalizePersonalColorHexes(pcData.best_colors);
+          const worstColors = normalizePersonalColorHexes(pcData.worst_colors);
+          const seasonSubtype = normalizePersonalColorSubtype(pcData.season_subtype);
           const pc: PersonalColorResult = {
             id: pcData.id,
             season: pcData.season,
             // 톤(웜/쿨)은 실재 undertone 컬럼으로 대체
             tone: pcData.undertone || '',
-            // 팔레트는 실재 best_colors(jsonb 배열)로 대체
-            colorPalette: pcData.best_colors || [],
+            seasonSubtype,
+            bestColors,
+            worstColors,
+            // 기존 인사이트 소비부가 같은 서버 팔레트를 계속 사용하도록 별칭을 유지한다.
+            colorPalette: bestColors,
             createdAt: new Date(pcData.created_at),
           };
           setPersonalColor(pc);
@@ -138,6 +156,9 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
             createdAt: pc.createdAt,
             summary: getSeasonLabel(pc.season),
             seasonType: pc.season,
+            ...(seasonSubtype ? { seasonSubtype } : {}),
+            bestColors,
+            worstColors,
           });
         }
 

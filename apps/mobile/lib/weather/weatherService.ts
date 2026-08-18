@@ -1,8 +1,6 @@
 /**
  * 모바일 날씨 서비스
- * OpenWeatherMap API + 메모리 캐시 + Mock Fallback
- *
- * API 키 없으면 자동 mock 데이터 반환 (개발/데모 모드)
+ * OpenWeatherMap API + 메모리 캐시 + 정직한 Fallback
  */
 
 import type { KoreaRegion, WeatherData, HourlyForecast } from './types';
@@ -116,14 +114,15 @@ export async function getWeatherByRegion(region: KoreaRegion): Promise<WeatherDa
       },
       forecast: hourly,
       cachedAt: new Date().toISOString(),
+      usedFallback: false,
       expiresAt: Date.now() + WEATHER_CACHE_TTL_MS,
     };
 
     weatherCache.set(region, weatherData);
     return weatherData;
   } catch {
-    // 만료된 캐시라도 반환 (fallback)
-    if (cached) return cached;
+    // 만료된 관측값은 추천 근거로 재사용하지 않도록 폴백 출처를 명시한다.
+    if (cached) return { ...cached, usedFallback: true };
     return generateMockWeather(region);
   }
 }
@@ -147,58 +146,38 @@ export function findNearestRegion(lat: number, lon: number): KoreaRegion {
 }
 
 /**
- * Mock 날씨 데이터 (API 키 없거나 실패 시)
+ * API 키가 없거나 호출에 실패했을 때 반환하는 비관측 placeholder.
+ * 수치는 UI나 추천 근거로 쓰지 않고 usedFallback 계약으로 차단한다.
  */
 export function generateMockWeather(region: KoreaRegion): WeatherData {
   const coords = REGION_INFO[region] || REGION_INFO.seoul;
-  const month = new Date().getMonth() + 1;
-
-  let baseTemp: number;
-  let description: string;
-
-  if (month >= 3 && month <= 5) {
-    baseTemp = 15;
-    description = '맑음';
-  } else if (month >= 6 && month <= 8) {
-    baseTemp = 28;
-    description = '구름 조금';
-  } else if (month >= 9 && month <= 11) {
-    baseTemp = 18;
-    description = '맑음';
-  } else {
-    baseTemp = 2;
-    description = '흐림';
-  }
-
-  const now = new Date();
-  const forecast: HourlyForecast[] = [];
-  for (let i = 1; i <= 6; i++) {
-    const hour = (now.getHours() + i * 3) % 24;
-    forecast.push({
-      time: `${hour.toString().padStart(2, '0')}:00`,
-      temp: baseTemp + Math.floor(Math.random() * 4) - 2,
-      feelsLike: baseTemp + Math.floor(Math.random() * 4) - 3,
-      precipitation: Math.floor(Math.random() * 30),
-      description,
-      icon: '01d',
-    });
-  }
+  const forecast: HourlyForecast[] = ['09:00', '12:00', '15:00', '18:00', '21:00', '00:00'].map(
+    (time) => ({
+      time,
+      temp: 0,
+      feelsLike: 0,
+      precipitation: 0,
+      description: '날씨 정보 없음',
+      icon: '',
+    })
+  );
 
   return {
     region,
     location: coords.nameKr,
     current: {
-      temp: baseTemp,
-      feelsLike: baseTemp - 2,
-      humidity: 60,
-      windSpeed: 2.5,
-      uvi: estimateUVI(),
-      description,
-      icon: '01d',
-      precipitation: 10,
+      temp: 0,
+      feelsLike: 0,
+      humidity: 0,
+      windSpeed: 0,
+      uvi: 0,
+      description: '날씨 정보 없음',
+      icon: '',
+      precipitation: 0,
     },
     forecast,
-    cachedAt: new Date().toISOString(),
+    cachedAt: '',
+    usedFallback: true,
   };
 }
 

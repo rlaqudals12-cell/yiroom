@@ -6,7 +6,7 @@ import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,11 @@ import { GlassCard, ScreenContainer } from '../../components/ui';
 import { staggeredEntry, TIMING } from '../../lib/animations';
 import { coarseCategoryOf, fineCategoriesFor } from '../../lib/products';
 import {
+  calculateMatchScore as calculateProductMatchScore,
+  calculatePersonalMatchPercentage,
+  type UserProfile,
+} from '../../lib/products/matching';
+import {
   getCosmeticProducts,
   getCosmeticProductsByCategories,
   getCosmeticsBySkinType,
@@ -36,6 +41,7 @@ import { productLogger } from '../../lib/utils/logger';
 import type {
   CosmeticProduct,
   PersonalColorSeason,
+  SkinConcern,
   SkinType,
   SupplementProduct,
 } from '../../types/product';
@@ -60,7 +66,7 @@ interface DisplayProduct {
   price?: number; // KRW
   rating?: number;
   reviewCount?: number;
-  matchScore: number;
+  matchScore?: number;
   // 매칭 계산용 원본 필드
   skinTypes?: string[];
   personalColorSeasons?: string[];
@@ -96,7 +102,7 @@ function categoryEmoji(category: string): string {
 }
 
 // cosmetic/supplement → DisplayProduct 변환
-function cosmeticToDisplay(p: CosmeticProduct, matchScore: number): DisplayProduct {
+function cosmeticToDisplay(p: CosmeticProduct, matchScore?: number): DisplayProduct {
   return {
     id: p.id,
     name: p.name,
@@ -113,7 +119,7 @@ function cosmeticToDisplay(p: CosmeticProduct, matchScore: number): DisplayProdu
   };
 }
 
-function supplementToDisplay(p: SupplementProduct, matchScore: number): DisplayProduct {
+function supplementToDisplay(p: SupplementProduct, matchScore?: number): DisplayProduct {
   return {
     id: p.id,
     name: p.name,
@@ -127,8 +133,39 @@ function supplementToDisplay(p: SupplementProduct, matchScore: number): DisplayP
   };
 }
 
+const SKIN_TYPES: readonly SkinType[] = ['dry', 'oily', 'combination', 'sensitive', 'normal'];
+const SKIN_CONCERNS: readonly SkinConcern[] = [
+  'acne',
+  'aging',
+  'whitening',
+  'hydration',
+  'pore',
+  'redness',
+];
+
+function normalizeSkinType(value: string | undefined): SkinType | undefined {
+  return SKIN_TYPES.includes(value as SkinType) ? (value as SkinType) : undefined;
+}
+
+function normalizeConcerns(value: string | undefined): SkinConcern[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((concern) => concern.trim().toLowerCase())
+    .filter((concern): concern is SkinConcern => SKIN_CONCERNS.includes(concern as SkinConcern));
+}
+
+/** 개인 진단과 실제 제품 메타데이터가 일치할 때만 표시용 점수를 돌려준다. */
+function getDisplayMatchScore(
+  product: CosmeticProduct | SupplementProduct,
+  profile: UserProfile
+): number | undefined {
+  const result = calculateProductMatchScore(product, profile);
+  return calculatePersonalMatchPercentage(result.reasons);
+}
+
 export default function ProductsScreen() {
-  const { colors, brand, status, module: moduleColors, typography } = useTheme();
+  const { colors, brand, status } = useTheme();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
@@ -153,6 +190,24 @@ export default function ProductsScreen() {
   // 쿼리에서 온 필터 정보 표시용
   const [filterSource, setFilterSource] = useState<string | null>(null);
 
+  const normalizedSkinType = useMemo(() => normalizeSkinType(skinType), [skinType]);
+  const normalizedConcerns = useMemo(() => normalizeConcerns(concerns), [concerns]);
+  const activeSeason = useMemo(
+    () => normalizeSeason(querySeason ?? userSeason ?? ''),
+    [querySeason, userSeason]
+  );
+  const matchProfile = useMemo<UserProfile>(
+    () => ({
+      skinType: normalizedSkinType,
+      skinConcerns: normalizedConcerns.length > 0 ? normalizedConcerns : undefined,
+      personalColorSeason: activeSeason ?? undefined,
+    }),
+    [normalizedSkinType, normalizedConcerns, activeSeason]
+  );
+  const hasDiagnosticProfile = Boolean(
+    matchProfile.skinType || matchProfile.skinConcerns?.length || matchProfile.personalColorSeason
+  );
+
   // 사용자 분석 결과 조회
   const fetchUserData = useCallback(async () => {
     if (!user?.id) return;
@@ -176,55 +231,18 @@ export default function ProductsScreen() {
 
   // 쿼리 파라미터 기반 필터 소스 설정
   useEffect(() => {
-    if (skinType && concerns) {
+    if (normalizedSkinType && normalizedConcerns.length > 0) {
       setFilterSource('피부 분석 + 고민 기반');
-    } else if (skinType) {
+    } else if (normalizedSkinType) {
       setFilterSource('피부 분석 결과 기반');
-    } else if (querySeason) {
+    } else if (normalizedConcerns.length > 0) {
+      setFilterSource('피부 고민 분석 결과 기반');
+    } else if (activeSeason) {
       setFilterSource('퍼스널 컬러 분석 기반');
     } else {
       setFilterSource(null);
     }
-  }, [skinType, concerns, querySeason]);
-
-  // 매칭 점수 계산 (분석 결과 기반) — cosmetic/supplement 공통 필드 사용
-  const calculateMatchScore = useCallback(
-    (
-      p: Pick<DisplayProduct, 'skinTypes' | 'personalColorSeasons' | 'concerns' | 'rating'>
-    ): number => {
-      let score = 70; // 기본 점수
-
-      // 피부 타입 매칭 (cosmetic.skin_types — dry/oily/...)
-      if (skinType && p.skinTypes?.includes(skinType)) {
-        score += 15;
-      }
-
-      // 퍼스널 컬러 매칭 (cosmetic.personal_color_seasons — 'Spring' 형식)
-      if (querySeason) {
-        const target = normalizeSeason(querySeason);
-        if (target && p.personalColorSeasons?.includes(target)) {
-          score += 15;
-        }
-      }
-
-      // 피부 고민 매칭
-      if (concerns && p.concerns) {
-        const userConcerns = concerns.split(',').map((c) => c.trim().toLowerCase());
-        const matchedConcerns = p.concerns.filter((sc) => userConcerns.includes(sc.toLowerCase()));
-        if (matchedConcerns.length > 0) {
-          score += Math.min(matchedConcerns.length * 5, 15);
-        }
-      }
-
-      // 평점 보너스 (4.5 이상)
-      if (p.rating && p.rating >= 4.5) {
-        score += 5;
-      }
-
-      return Math.min(score, 100);
-    },
-    [skinType, querySeason, concerns]
-  );
+  }, [normalizedSkinType, normalizedConcerns, activeSeason]);
 
   // 제품 목록 조회 (DB 연동) — cosmetic_products(2,821행)·supplement_products(200행)
   const fetchProducts = useCallback(async () => {
@@ -234,17 +252,22 @@ export default function ProductsScreen() {
       if (selectedCategory === 'supplement') {
         // 영양제 — supplement_products (이미지 전량 null → 이모지 플레이스홀더 정직 유지)
         const supplements = await getSupplementProducts(undefined, 20);
-        display = supplements.map((p) => supplementToDisplay(p, calculateMatchScore(p)));
+        display = supplements.map((product) =>
+          supplementToDisplay(product, getDisplayMatchScore(product, matchProfile))
+        );
       } else {
         let cosmetics: CosmeticProduct[] = [];
 
-        if (skinType) {
+        if (normalizedSkinType) {
           // 피부 타입 기반 추천 (skin_types overlaps)
-          cosmetics = await getCosmeticsBySkinType(skinType as SkinType, undefined, 20);
-        } else if (querySeason) {
+          cosmetics = await getCosmeticsBySkinType(
+            normalizedSkinType,
+            normalizedConcerns.length > 0 ? normalizedConcerns : undefined,
+            20
+          );
+        } else if (activeSeason) {
           // 퍼스널 컬러 기반 추천 (personal_color_seasons overlaps)
-          const season = normalizeSeason(querySeason);
-          cosmetics = season ? await getCosmeticsByPersonalColor(season, 20) : [];
+          cosmetics = await getCosmeticsByPersonalColor(activeSeason, 20);
         } else {
           // 일반 조회 — 대분류→세분류 매핑
           const fine = fineCategoriesFor(selectedCategory);
@@ -255,15 +278,17 @@ export default function ProductsScreen() {
 
         // 분석 기반 추천 결과에도 대분류 필터 적용
         const filtered =
-          selectedCategory !== 'all' && (skinType || querySeason)
+          selectedCategory !== 'all' && (normalizedSkinType || activeSeason)
             ? cosmetics.filter((p) => coarseCategoryOf(p.category) === selectedCategory)
             : cosmetics;
 
-        display = filtered.map((p) => cosmeticToDisplay(p, calculateMatchScore(p)));
+        display = filtered.map((product) =>
+          cosmeticToDisplay(product, getDisplayMatchScore(product, matchProfile))
+        );
       }
 
-      // 매칭 점수 정렬
-      display.sort((a, b) => b.matchScore - a.matchScore);
+      // 실제 개인화 점수가 있는 제품만 우선하고, 근거 없는 제품끼리는 조회 순서를 보존한다.
+      display.sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1));
       setProducts(display);
     } catch (error) {
       productLogger.error('Failed to fetch products:', error);
@@ -272,7 +297,7 @@ export default function ProductsScreen() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [selectedCategory, skinType, querySeason, calculateMatchScore]);
+  }, [selectedCategory, normalizedSkinType, normalizedConcerns, activeSeason, matchProfile]);
 
   useEffect(() => {
     fetchUserData();
@@ -298,17 +323,6 @@ export default function ProductsScreen() {
     return `₩${price.toLocaleString()}`;
   };
 
-  // 시즌 라벨
-  const getSeasonLabel = (season: string) => {
-    const labels: Record<string, string> = {
-      Spring: '봄 웜톤',
-      Summer: '여름 쿨톤',
-      Autumn: '가을 웜톤',
-      Winter: '겨울 쿨톤',
-    };
-    return labels[season] || season;
-  };
-
   return (
     <ScreenContainer
       testID="products-screen"
@@ -318,23 +332,20 @@ export default function ProductsScreen() {
       backgroundGradient="beauty"
     >
       {/* 맞춤 추천 배너 */}
-      {(filterSource || userSeason) && (
-        <Animated.View entering={FadeInUp.duration(TIMING.normal)} style={styles.bannerWrapper}>
-          <GlassCard shadowSize="md" style={styles.banner}>
-            <Text style={styles.bannerIcon}>{filterSource ? '🎯' : '✨'}</Text>
-            <View style={styles.bannerContent}>
-              <Text style={[styles.bannerTitle, { color: colors.foreground }]}>
-                {filterSource ? '맞춤 제품 추천' : '나를 위한 추천'}
-              </Text>
-              <Text style={[styles.bannerSubtitle, { color: colors.mutedForeground }]}>
-                {filterSource
-                  ? filterSource
-                  : `${getSeasonLabel(userSeason!)}에 맞는 제품을 추천해드려요`}
-              </Text>
-            </View>
-          </GlassCard>
-        </Animated.View>
-      )}
+      <Animated.View entering={FadeInUp.duration(TIMING.normal)} style={styles.bannerWrapper}>
+        <GlassCard shadowSize="md" style={styles.banner}>
+          <View style={styles.bannerContent}>
+            <Text style={[styles.bannerTitle, { color: colors.foreground }]}>
+              {hasDiagnosticProfile ? '맞춤 제품 추천' : '진단 후 더 정확해져요'}
+            </Text>
+            <Text style={[styles.bannerSubtitle, { color: colors.mutedForeground }]}>
+              {hasDiagnosticProfile
+                ? filterSource || '진단 결과 기반'
+                : '분석 결과가 생기면 제품별 맞춤 점수와 근거를 보여드려요'}
+            </Text>
+          </View>
+        </GlassCard>
+      </Animated.View>
 
       {/* 카테고리 */}
       <ScrollView
@@ -416,11 +427,13 @@ export default function ProductsScreen() {
                       )}
                     </View>
                     {/* 매칭 점수 배지 */}
-                    <View style={[styles.matchBadge, { backgroundColor: brand.primary }]}>
-                      <Text style={[styles.matchBadgeText, { color: brand.primaryForeground }]}>
-                        {product.matchScore}%
-                      </Text>
-                    </View>
+                    {product.matchScore !== undefined && (
+                      <View style={[styles.matchBadge, { backgroundColor: brand.primary }]}>
+                        <Text style={[styles.matchBadgeText, { color: brand.primaryForeground }]}>
+                          {product.matchScore}%
+                        </Text>
+                      </View>
+                    )}
                   </View>
 
                   {/* 제품 정보 */}
@@ -475,10 +488,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.md,
-  },
-  bannerIcon: {
-    fontSize: typography.size['2xl'],
-    marginRight: spacing.smx,
   },
   bannerContent: {
     flex: 1,

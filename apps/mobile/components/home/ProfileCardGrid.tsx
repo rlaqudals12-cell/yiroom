@@ -8,6 +8,7 @@
  * - 변동 아이콘: 🔒 identity / 🔄 slow / 📅 condition (AXIS_CADENCE)
  * - 피부 = 오늘의 컨디션: 직전 대비 추이 칩(SkinTrendChip)
  */
+import { CADENCE_META, shouldShowCadenceBadge, type CadenceGroup } from '@yiroom/shared';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import {
@@ -24,11 +25,7 @@ import {
 } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { CADENCE_META, shouldShowCadenceBadge, type CadenceGroup } from '@yiroom/shared';
 
-import type { AnalysisSummary } from '../../hooks/useUserAnalyses';
-import { TIMING } from '../../lib/animations';
-import { useTheme } from '../../lib/theme';
 import {
   PROFILE_META,
   PROFILE_ORDER,
@@ -37,6 +34,10 @@ import {
   getProfileResultRoute,
   type ProfileAxis,
 } from './profile-meta';
+import type { AnalysisSummary } from '../../hooks/useUserAnalyses';
+import { TIMING } from '../../lib/animations';
+import { getPersonalColorSubtypeLabel } from '../../lib/api/personalColor';
+import { useTheme } from '../../lib/theme';
 
 const CADENCE_ICON: Record<CadenceGroup, React.ComponentType<{ size?: number; color?: string }>> = {
   identity: Lock,
@@ -240,6 +241,34 @@ export function ProfileCardGrid({
                   <SkinTrendChip trend={analysis.skinTrend} delta={analysis.skinDelta ?? 0} />
                 ) : null}
               </View>
+              {analysis.type === 'personal-color' &&
+              (analysis.seasonSubtype || (analysis.bestColors?.length ?? 0) > 0) ? (
+                <View style={styles.personalColorDetails}>
+                  {analysis.seasonSubtype ? (
+                    <Text
+                      testID="profile-card-personal-color-subtype"
+                      style={{ fontSize: 10, color: colors.mutedForeground }}
+                    >
+                      {getPersonalColorSubtypeLabel(analysis.seasonSubtype)}
+                    </Text>
+                  ) : null}
+                  {analysis.bestColors && analysis.bestColors.length > 0 ? (
+                    <View
+                      testID="profile-card-personal-color-palette"
+                      accessibilityLabel={`내 베스트 컬러 ${analysis.bestColors.length}개`}
+                      style={styles.personalColorPalette}
+                    >
+                      {analysis.bestColors.slice(0, 4).map((color, index) => (
+                        <View
+                          key={`${color}-${index}`}
+                          testID={`profile-card-personal-color-color-${index}`}
+                          style={[styles.personalColorSwatch, { backgroundColor: color }]}
+                        />
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
+              ) : null}
               <View style={styles.metaRow}>
                 <Check size={11} color="#22C55E" />
                 <Text style={{ fontSize: 10, color: colors.mutedForeground }}>
@@ -363,6 +392,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  personalColorDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  personalColorPalette: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  personalColorSwatch: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
   },
   metaRow: {
     flexDirection: 'row',

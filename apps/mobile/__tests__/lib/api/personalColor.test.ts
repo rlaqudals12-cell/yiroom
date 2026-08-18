@@ -54,6 +54,35 @@ describe('requestPersonalColorAnalysis', () => {
     expect(result.usedMock).toBe(false);
   });
 
+  it('서버가 판정한 12톤과 객체형 베스트·워스트 팔레트를 응답 경계에서 보존한다', async () => {
+    mockFetchOnce(200, {
+      ...successBody(),
+      data: {
+        season: 'Spring',
+        season_subtype: 'light',
+        best_colors: [{ hex: '#DADADA', name: 'DB 폴백 색' }],
+        worst_colors: [{ hex: '#121212', name: 'DB 폴백 색' }],
+      },
+      result: {
+        ...successBody().result,
+        seasonSubtype: 'bright',
+        bestColors: [
+          { hex: '#123456', name: '서버 베스트 1' },
+          { hex: '#ABCDEF', name: '서버 베스트 2' },
+        ],
+        worstColors: [{ hex: '#654321', name: '서버 워스트' }],
+      },
+    });
+
+    const result = await requestPersonalColorAnalysis(VALID_INPUT, 'token-1', BASE_URL);
+
+    expect(result).toMatchObject({
+      seasonSubtype: 'bright',
+      bestColors: ['#123456', '#ABCDEF'],
+      worstColors: ['#654321'],
+    });
+  });
+
   it('data.season이 없으면 result.seasonType(소문자)를 정규화한다', async () => {
     mockFetchOnce(200, successBody({ data: {} }));
 
@@ -142,7 +171,9 @@ describe('requestPersonalColorAnalysis', () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     try {
-      await Promise.resolve(requestPersonalColorAnalysis(VALID_INPUT, 'token-1')).catch(() => undefined);
+      await Promise.resolve(requestPersonalColorAnalysis(VALID_INPUT, 'token-1')).catch(
+        () => undefined
+      );
 
       const calledUrl = String(fetchMock.mock.calls[0][0]);
       expect(calledUrl.startsWith(`${DEFAULT_API_BASE_URL}/api/`)).toBe(true);

@@ -34,6 +34,12 @@ import {
   FOUNDATION_PRESETS,
 } from '../../../lib/virtual-try-on/types';
 
+const mockGetToken = jest.fn().mockResolvedValue('vto-clerk-token');
+
+jest.mock('@clerk/clerk-expo', () => ({
+  useAuth: () => ({ getToken: mockGetToken }),
+}));
+
 // react-native-safe-area-context mock
 jest.mock('react-native-safe-area-context', () => {
   const { View } = require('react-native');
@@ -289,6 +295,34 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
       // Assert: 시뮬레이션 중 텍스트가 잠시 표시됨
       const processingText = await findByText('시뮬레이션 중...');
       expect(processingText).toBeTruthy();
+    });
+
+    it('VTO 요청에 Clerk 인증 헤더를 포함한다', async () => {
+      (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValueOnce({
+        status: 'granted',
+      });
+      (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValueOnce({
+        canceled: false,
+        assets: [{ uri: 'file://face.jpg', width: 300, height: 400 }],
+      });
+
+      const { getByText } = renderWithTheme(<VirtualTryOnScreen />);
+      fireEvent.press(getByText('갤러리'));
+      await waitFor(() => expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled());
+      fireEvent.press(getByText(LIP_PRESETS[0].name));
+
+      await waitFor(() => {
+        expect(mockGetToken).toHaveBeenCalledTimes(1);
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.stringContaining('/api/fitting/try-on'),
+          expect.objectContaining({
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer vto-clerk-token',
+            },
+          })
+        );
+      });
     });
 
     it('다른 카테고리로 전환 후 컬러 선택이 작동해야 한다', () => {

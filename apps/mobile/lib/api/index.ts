@@ -9,6 +9,9 @@ export { getApiBaseUrl, getWebHostLabel, DEFAULT_API_BASE_URL } from './base-url
 
 export { checkRateLimit, incrementRateLimit, getRateLimitInfo } from './rate-limit';
 
+// 계정 즉시 삭제 HTTP 클라이언트 (DB·스토리지·Clerk 파기는 웹 API가 단일 소유)
+export { deleteAccount, AccountApiError } from './account';
+
 // 통합 분석 HTTP 클라이언트 (웹 API 재사용) — ADR-102
 export { requestIntegratedAnalysis, IntegratedApiError } from './integrated';
 

@@ -5,8 +5,10 @@
  * 의존성: useAuth (Clerk), useClerkSupabaseClient, useTheme, Alert, Switch
  */
 import React from 'react';
-import { Alert } from 'react-native';
-import { render, fireEvent } from '@testing-library/react-native';
+import { Alert, Share } from 'react-native';
+import { act, render, fireEvent } from '@testing-library/react-native';
+
+import { useAuth, useUser } from '@clerk/clerk-expo';
 
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
@@ -43,15 +45,24 @@ jest.mock('react-native-safe-area-context', () => {
 // Supabase mock
 const mockRpc = jest.fn().mockResolvedValue({ data: null, error: null });
 const mockUpdate = jest.fn().mockReturnThis();
-const mockEq = jest.fn().mockResolvedValue({ data: null, error: null });
+const mockSingle = jest.fn().mockResolvedValue({ data: null, error: null });
+const mockQuery = {
+  select: jest.fn(),
+  update: mockUpdate,
+  eq: jest.fn(),
+  order: jest.fn(),
+  limit: jest.fn(),
+  single: mockSingle,
+};
+mockQuery.select.mockReturnValue(mockQuery);
+mockQuery.eq.mockReturnValue(mockQuery);
+mockQuery.order.mockReturnValue(mockQuery);
+mockQuery.limit.mockReturnValue(mockQuery);
 
 jest.mock('../../../lib/supabase', () => ({
   useClerkSupabaseClient: () => ({
     rpc: mockRpc,
-    from: jest.fn(() => ({
-      update: mockUpdate,
-      eq: mockEq,
-    })),
+    from: jest.fn(() => mockQuery),
     auth: {
       getUser: jest.fn().mockResolvedValue({
         data: { user: { id: 'test_user_123' } },
@@ -61,9 +72,30 @@ jest.mock('../../../lib/supabase', () => ({
   }),
 }));
 
-jest.spyOn(Alert, 'alert');
+jest.mock('../../../lib/api/account', () => ({
+  deleteAccount: jest.fn(),
+  AccountApiError: class AccountApiError extends Error {
+    public readonly status: number;
+    public readonly code: string | undefined;
 
+    constructor(message: string, status: number, code?: string) {
+      super(message);
+      this.name = 'AccountApiError';
+      this.status = status;
+      this.code = code;
+    }
+  },
+}));
+
+jest.spyOn(Alert, 'alert');
+jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
+
+import { AccountApiError, deleteAccount } from '../../../lib/api/account';
 import PrivacySettingsScreen from '../../../app/settings/privacy';
+
+const mockDeleteAccount = deleteAccount as jest.MockedFunction<typeof deleteAccount>;
+const mockGetToken = jest.fn();
+const mockSignOut = jest.fn();
 
 // ============================================================
 // 테마 헬퍼
@@ -103,6 +135,29 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 describe('PrivacySettingsScreen (개인정보 설정)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetToken.mockResolvedValue('mock_jwt_token');
+    mockSignOut.mockResolvedValue(undefined);
+    mockDeleteAccount.mockResolvedValue({
+      success: true,
+      message: '계정이 성공적으로 삭제되었습니다.',
+      deletedAt: '2026-08-18T00:00:00.000Z',
+    });
+    (useAuth as unknown as jest.Mock).mockReturnValue({
+      isSignedIn: true,
+      isLoaded: true,
+      userId: 'test_user_123',
+      getToken: mockGetToken,
+      signOut: mockSignOut,
+    });
+    (useUser as unknown as jest.Mock).mockReturnValue({
+      user: {
+        id: 'test_user_123',
+        emailAddresses: [{ emailAddress: 'test@example.com' }],
+        primaryEmailAddress: { emailAddress: 'test@example.com' },
+      },
+      isLoaded: true,
+      isSignedIn: true,
+    });
   });
 
   // ---------------------------------------------------------------
@@ -230,26 +285,108 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
       expect(flatStyle.color).toBe(lightColors.destructive);
     });
 
-    it('계정 삭제 클릭 시 30일 유예기간 포함 확인 Alert가 표시된다', () => {
+    it('계정 삭제 확인 Alert가 즉시·복구 불가 계약을 정확히 안내한다', () => {
       const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
       fireEvent.press(getByLabelText('계정 삭제'));
+
+      const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+      const message = alertCall[1] as string;
       expect(Alert.alert).toHaveBeenCalledWith(
         '계정 삭제',
-        expect.stringContaining('30일'),
+        expect.stringContaining('즉시'),
         expect.arrayContaining([
           expect.objectContaining({ text: '취소', style: 'cancel' }),
-          expect.objectContaining({ text: '삭제 요청', style: 'destructive' }),
+          expect.objectContaining({ text: '영구 삭제', style: 'destructive' }),
         ])
+      );
+      expect(message).toContain('복구할 수 없어요');
+      expect(message).not.toContain('30일');
+      expect(message).not.toContain('취소할 수 있어요');
+    });
+
+    it('확정 시 Clerk 토큰·이메일로 웹 삭제 API를 호출하고 direct UPDATE를 하지 않는다', async () => {
+      const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
+      fireEvent.press(getByLabelText('계정 삭제'));
+
+      const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+      const buttons = alertCall[2] as Array<{
+        text: string;
+        style?: string;
+        onPress?: () => void | Promise<void>;
+      }>;
+      const destructiveButton = buttons.find((button) => button.style === 'destructive');
+
+      await act(async () => {
+        await destructiveButton?.onPress?.();
+      });
+
+      expect(mockGetToken).toHaveBeenCalledTimes(1);
+      expect(mockDeleteAccount).toHaveBeenCalledWith('test@example.com', 'mock_jwt_token');
+      expect(mockUpdate).not.toHaveBeenCalled();
+      expect(mockSignOut).toHaveBeenCalledTimes(1);
+    });
+
+    it('다중 이메일 계정은 웹 대조 계약과 같은 emailAddresses[0]을 확인값으로 쓴다', async () => {
+      (useUser as unknown as jest.Mock).mockReturnValue({
+        user: {
+          id: 'test_user_123',
+          emailAddresses: [{ emailAddress: 'server-first@example.com' }],
+          primaryEmailAddress: { emailAddress: 'different-primary@example.com' },
+        },
+        isLoaded: true,
+        isSignedIn: true,
+      });
+      const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
+      fireEvent.press(getByLabelText('계정 삭제'));
+
+      const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+      const buttons = alertCall[2] as Array<{
+        style?: string;
+        onPress?: () => void | Promise<void>;
+      }>;
+
+      await act(async () => {
+        await buttons.find((button) => button.style === 'destructive')?.onPress?.();
+      });
+
+      expect(mockDeleteAccount).toHaveBeenCalledWith(
+        'server-first@example.com',
+        'mock_jwt_token'
       );
     });
 
-    it('계정 삭제 Alert 메시지에 복구 안내가 포함된다', () => {
+    it('웹 hard-delete가 실패하면 로그아웃하지 않고 서버 사용자 메시지를 표시한다', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      mockDeleteAccount.mockRejectedValue(
+        new AccountApiError(
+          '일부 데이터를 삭제하지 못해 계정 삭제를 중단했어요.',
+          500,
+          'DELETION_FAILED'
+        )
+      );
       const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
       fireEvent.press(getByLabelText('계정 삭제'));
+
       const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
-      const message = alertCall[1] as string;
-      expect(message).toContain('다시 로그인하면 삭제를 취소할 수 있어요');
-      expect(message).toContain('복구할 수 없어요');
+      const buttons = alertCall[2] as Array<{
+        style?: string;
+        onPress?: () => void | Promise<void>;
+      }>;
+
+      await act(async () => {
+        await buttons.find((button) => button.style === 'destructive')?.onPress?.();
+      });
+
+      expect(mockSignOut).not.toHaveBeenCalled();
+      expect(Alert.alert).toHaveBeenLastCalledWith(
+        '오류',
+        '일부 데이터를 삭제하지 못해 계정 삭제를 중단했어요.'
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[Privacy] Delete account error:',
+        expect.any(AccountApiError)
+      );
+      consoleErrorSpy.mockRestore();
     });
   });
 

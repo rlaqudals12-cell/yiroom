@@ -39,10 +39,16 @@ jest.mock('react-native-safe-area-context', () => {
 // -------------------------------------------------------------------
 // mock: useWeather (날씨 서비스)
 // -------------------------------------------------------------------
+const mockUseWeather = jest.fn();
 jest.mock('../../../lib/weather', () => ({
-  useWeather: jest.fn(() => ({
+  useWeather: (...args: unknown[]) => mockUseWeather(...args),
+}));
+
+function setupWeatherMock(usedFallback = false): void {
+  mockUseWeather.mockReturnValue({
     weather: {
       region: 'seoul',
+      location: '서울',
       current: {
         temp: 15,
         feelsLike: 13,
@@ -50,17 +56,20 @@ jest.mock('../../../lib/weather', () => ({
         description: '맑음',
         icon: '01d',
         windSpeed: 3,
+        uvi: 4,
+        precipitation: 0,
       },
-      hourly: [],
-      fetchedAt: Date.now(),
+      forecast: [],
+      cachedAt: '2026-08-18T00:00:00.000Z',
+      usedFallback,
     },
     isLoading: false,
     error: null,
     refetch: jest.fn(),
     temp: 15,
     locationName: '서울',
-  })),
-}));
+  });
+}
 
 // -------------------------------------------------------------------
 // mock: useUserAnalyses
@@ -311,6 +320,7 @@ describe('RecommendScreen 코디 저장 기능', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     alertSpy.mockClear();
+    setupWeatherMock();
     setupDefaultMocks();
   });
 
@@ -514,6 +524,35 @@ describe('RecommendScreen 코디 저장 기능', () => {
       });
 
       expect(mockSaveOutfit.mock.calls[0][0].description).toBe('Spring · 스트레이트 · 15°C');
+    });
+  });
+
+  describe('Mock 날씨 정직성', () => {
+    beforeEach(() => {
+      setupWeatherMock(true);
+    });
+
+    it('실측처럼 보이는 온도·상태를 숨기고 제외 안내를 표시한다', () => {
+      const { getByTestId, getByText, queryByText } = renderWithTheme(<RecommendScreen />);
+
+      expect(getByTestId('weather-fallback-notice')).toBeTruthy();
+      expect(getByText('실시간 날씨를 불러오지 못해 날씨 정보는 추천에서 제외했어요.')).toBeTruthy();
+      expect(queryByText('15°C')).toBeNull();
+      expect(queryByText('맑음')).toBeNull();
+    });
+
+    it('Mock 온도를 추천과 저장 설명의 근거로 사용하지 않는다', async () => {
+      const { getByTestId } = renderWithTheme(<RecommendScreen />);
+
+      await waitFor(() => {
+        expect(mockGetOutfitSuggestion).toHaveBeenCalledWith({ temp: null });
+      });
+
+      await act(async () => {
+        fireEvent.press(getByTestId('save-outfit-button'));
+      });
+
+      expect(mockSaveOutfit.mock.calls[0][0].description).toBe('Spring · 스트레이트');
     });
   });
 });

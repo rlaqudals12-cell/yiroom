@@ -48,6 +48,8 @@ export interface WeatherData {
   current: CurrentWeather;
   forecast: HourlyForecast[];
   cachedAt: string;
+  /** 실시간 관측값이 아닌 대체 데이터인지 여부 */
+  usedFallback: boolean;
 }
 
 export const REGION_INFO: Record<KoreaRegion, { lat: number; lon: number; nameKr: string }> = {

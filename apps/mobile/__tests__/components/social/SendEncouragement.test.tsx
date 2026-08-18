@@ -22,6 +22,13 @@ import {
   shadows,
   typography,
 } from '../../../lib/theme/tokens';
+
+const mockGetToken = jest.fn().mockResolvedValue('encouragement-clerk-token');
+
+jest.mock('@clerk/clerk-expo', () => ({
+  useAuth: () => ({ getToken: mockGetToken }),
+}));
+
 import { SendEncouragement } from '../../../components/social/SendEncouragement';
 
 function createThemeValue(isDark = false): ThemeContextValue {
@@ -142,7 +149,10 @@ describe('SendEncouragement', () => {
           'https://api.test.com/api/encouragements',
           expect.objectContaining({
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer encouragement-clerk-token',
+            },
             body: JSON.stringify({
               toUserId: 'user_789',
               message: '멋져요!',
@@ -153,6 +163,7 @@ describe('SendEncouragement', () => {
           })
         );
       });
+      expect(mockGetToken).toHaveBeenCalledTimes(1);
     });
   });
 

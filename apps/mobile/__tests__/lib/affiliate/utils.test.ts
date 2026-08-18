@@ -102,10 +102,7 @@ describe('calculateSkinMatchScore', () => {
 describe('calculateColorMatchScore', () => {
   it('퍼스널 컬러가 매칭되면 15점을 반환해야 함', () => {
     const product = {
-      personalColors: ['spring_warm', 'autumn_warm'] as (
-        | 'spring_warm'
-        | 'autumn_warm'
-      )[],
+      personalColors: ['spring_warm', 'autumn_warm'] as ('spring_warm' | 'autumn_warm')[],
     };
     expect(calculateColorMatchScore(product, 'Spring')).toBe(15);
     expect(calculateColorMatchScore(product, 'Autumn')).toBe(15);
@@ -154,30 +151,52 @@ describe('calculateProductMatchScore', () => {
     expect(calculateProductMatchScore(product, 'dry', 'Spring')).toBe(100);
   });
 
-  it('기본 점수 70점을 반환해야 함', () => {
+  it('진단 근거가 없으면 개인화 점수를 만들지 않아야 함', () => {
     const product = {};
-    expect(calculateProductMatchScore(product)).toBe(70);
+    expect(calculateProductMatchScore(product)).toBeNull();
   });
 
-  it('피부 타입만 매칭 시 85점을 반환해야 함', () => {
+  it('실제 피부 타입 데이터가 매칭되면 근거 비율 100점을 반환해야 함', () => {
     const product = {
       skinTypes: ['dry'] as 'dry'[],
     };
-    expect(calculateProductMatchScore(product, 'dry')).toBe(85);
+    expect(calculateProductMatchScore(product, 'dry')).toBe(100);
   });
 
-  it('퍼스널 컬러만 매칭 시 85점을 반환해야 함', () => {
+  it('실제 퍼스널 컬러 데이터가 매칭되면 근거 비율 100점을 반환해야 함', () => {
     const product = {
       personalColors: ['winter_cool'] as 'winter_cool'[],
     };
-    expect(calculateProductMatchScore(product, undefined, 'Winter')).toBe(85);
+    expect(calculateProductMatchScore(product, undefined, 'Winter')).toBe(100);
   });
 
-  it('평점만 높을 때 75점을 반환해야 함', () => {
+  it('평점만 높아도 개인 진단 근거가 아니므로 점수를 만들지 않아야 함', () => {
     const product = {
       rating: 4.5,
     };
-    expect(calculateProductMatchScore(product)).toBe(75);
+    expect(calculateProductMatchScore(product)).toBeNull();
+  });
+
+  it('도메인 전체가 붙은 블랭킷 태그는 개인화 점수를 만들지 않아야 함', () => {
+    const product = {
+      skinTypes: ['dry', 'oily', 'combination', 'sensitive', 'normal'] as (
+        | 'dry'
+        | 'oily'
+        | 'combination'
+        | 'sensitive'
+        | 'normal'
+      )[],
+    };
+
+    expect(calculateProductMatchScore(product, 'dry')).toBeNull();
+  });
+
+  it('실제 제품 데이터가 진단과 불일치하면 0점을 반환해야 함', () => {
+    const product = {
+      skinTypes: ['oily'] as 'oily'[],
+    };
+
+    expect(calculateProductMatchScore(product, 'dry')).toBe(0);
   });
 });
 

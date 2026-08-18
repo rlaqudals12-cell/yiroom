@@ -1,7 +1,8 @@
 /**
  * 피부 상담 화면
- * 빠른 질문 기반 AI 피부 상담 (API 연동 + 로컬 폴백)
+ * 빠른 질문 기반 AI 피부 상담
  */
+import { useAuth } from '@clerk/clerk-expo';
 import { Send } from 'lucide-react-native';
 import { useState, useCallback, useRef } from 'react';
 import {
@@ -17,7 +18,7 @@ import {
 } from 'react-native';
 
 import { ScreenContainer, GlassCard } from '@/components/ui';
-import { getApiBaseUrl } from '@/lib/api/base-url';
+import { sendCoachMessage, type CoachMessage } from '@/lib/coach';
 
 import { useTheme, brand, typography, spacing, radii } from '../../../lib/theme';
 
@@ -31,130 +32,70 @@ const QUICK_QUESTIONS = [
   { id: 'sensitive', label: '🩹 민감', question: '민감한 피부를 관리하는 방법이 궁금해요.' },
 ];
 
-// 상담 Mock 응답
-const CONSULTATION_RESPONSES: Record<string, { message: string; tips: string[] }> = {
-  dry: {
-    message:
-      '건조한 피부는 수분과 유분의 균형이 중요해요. 클렌징 후 3분 이내에 보습제를 바르는 것이 효과적이에요.',
-    tips: [
-      '세라마이드 성분 크림 사용',
-      '1일 2L 수분 섭취',
-      '실내 습도 50-60% 유지',
-      '뜨거운 물로 세안 자제',
-    ],
-  },
-  oil: {
-    message:
-      '유분이 많은 피부는 오히려 보습이 더 중요해요. 과도한 세안은 피지 분비를 촉진할 수 있어요.',
-    tips: [
-      '약산성 클렌저 사용',
-      '오일프리 보습제 선택',
-      '주 1-2회 클레이 마스크',
-      '가벼운 수분 에센스 사용',
-    ],
-  },
-  acne: {
-    message:
-      '트러블 관리는 클렌징과 진정이 핵심이에요. 손으로 짜지 않고 적절한 성분으로 관리하는 것이 좋아요.',
-    tips: [
-      '살리실산(BHA) 제품 사용',
-      '논코메도제닉 제품 선택',
-      '자극적인 스크럽 피하기',
-      '베개 커버 자주 교체',
-    ],
-  },
-  wrinkle: {
-    message: '잔주름 관리는 자외선 차단과 보습이 기본이에요. 꾸준한 관리가 가장 중요해요.',
-    tips: [
-      'SPF 50 자외선 차단제 매일 사용',
-      '레티놀 성분 제품 (저녁)',
-      '비타민 C 세럼 (아침)',
-      '충분한 수면',
-    ],
-  },
-  pore: {
-    message: '모공 관리는 피지 조절과 각질 관리가 핵심이에요. 즉각적인 효과보다 꾸준함이 중요해요.',
-    tips: ['BHA 토너 사용', '나이아신아마이드 세럼', '주 1회 효소 클렌저', '냉수 마무리 세안'],
-  },
-  sensitive: {
-    message:
-      '민감 피부는 최소한의 제품으로 단순하게 관리하는 것이 좋아요. 새 제품은 반드시 패치테스트 후 사용하세요.',
-    tips: ['무향 제품 선택', '성분 수 적은 제품 사용', '물리적 자외선 차단제', '알코올 프리 토너'],
-  },
-};
-
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  timestamp: Date;
   tips?: string[];
+  connectionNotice?: boolean;
 }
 
 export default function SkinConsultationScreen(): React.JSX.Element {
   const { colors } = useTheme();
+  const { getToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
       role: 'assistant',
       content:
         '안녕하세요! 피부 고민을 편하게 말씀해주세요. 아래 버튼으로 빠르게 질문할 수도 있어요.',
+      timestamp: new Date(0),
     },
   ]);
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList>(null);
 
   const [isTyping, setIsTyping] = useState(false);
+  const messageSequence = useRef(0);
 
-  // 로컬 키워드 매칭으로 폴백 응답 생성
-  const generateLocalResponse = useCallback((question: string): ChatMessage => {
-    const lowerQ = question.toLowerCase();
-    let concern = 'dry';
-    if (lowerQ.includes('유분') || lowerQ.includes('피지') || lowerQ.includes('번들'))
-      concern = 'oil';
-    else if (lowerQ.includes('트러블') || lowerQ.includes('여드름')) concern = 'acne';
-    else if (lowerQ.includes('주름') || lowerQ.includes('탄력')) concern = 'wrinkle';
-    else if (lowerQ.includes('모공')) concern = 'pore';
-    else if (lowerQ.includes('민감') || lowerQ.includes('자극')) concern = 'sensitive';
-    else if (lowerQ.includes('건조')) concern = 'dry';
-
-    const resp = CONSULTATION_RESPONSES[concern] ?? CONSULTATION_RESPONSES.dry;
+  const nextMessageIdentity = useCallback((role: ChatMessage['role']) => {
+    messageSequence.current += 1;
     return {
-      id: `assistant-${Date.now()}`,
-      role: 'assistant',
-      content: resp.message,
-      tips: resp.tips,
+      id: `${role}-${messageSequence.current}`,
+      timestamp: new Date(messageSequence.current),
     };
   }, []);
 
-  // AI 응답 생성 (API 호출 → 실패 시 로컬 폴백)
+  // 인증된 공용 API만 사용해 별도 404 경로와 무표식 로컬 답변을 차단한다.
   const generateResponse = useCallback(
     async (question: string): Promise<ChatMessage> => {
       try {
-        const response = await fetch(`${getApiBaseUrl()}/api/coach`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: question,
-            context: 'skin_consultation',
-          }),
-          signal: AbortSignal.timeout(5000),
-        });
+        const token = await getToken();
+        if (!token) throw new Error('Authentication required');
 
-        if (!response.ok) throw new Error('API error');
-
-        const data = await response.json();
+        const history: CoachMessage[] = messages.map(({ id, role, content, timestamp }) => ({
+          id,
+          role,
+          content,
+          timestamp,
+        }));
+        const response = await sendCoachMessage(question, history, token);
         return {
-          id: `assistant-${Date.now()}`,
+          ...nextMessageIdentity('assistant'),
           role: 'assistant',
-          content: data.message ?? data.response ?? '답변을 생성하지 못했어요.',
-          tips: data.tips,
+          content: response.message,
         };
       } catch {
-        // API 실패 시 로컬 응답 사용
-        return generateLocalResponse(question);
+        return {
+          ...nextMessageIdentity('assistant'),
+          role: 'assistant',
+          content: '상담 서비스에 연결하지 못했어요. 잠시 후 다시 시도해주세요.',
+          connectionNotice: true,
+        };
       }
     },
-    [generateLocalResponse]
+    [getToken, messages, nextMessageIdentity]
   );
 
   const handleSend = useCallback(
@@ -163,7 +104,7 @@ export default function SkinConsultationScreen(): React.JSX.Element {
       if (!msg || isTyping) return;
 
       const userMsg: ChatMessage = {
-        id: `user-${Date.now()}`,
+        ...nextMessageIdentity('user'),
         role: 'user',
         content: msg,
       };
@@ -178,7 +119,7 @@ export default function SkinConsultationScreen(): React.JSX.Element {
       setIsTyping(false);
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     },
-    [inputText, isTyping, generateResponse]
+    [inputText, isTyping, generateResponse, nextMessageIdentity]
   );
 
   const handleQuickQuestion = useCallback(
@@ -203,6 +144,11 @@ export default function SkinConsultationScreen(): React.JSX.Element {
             },
           ]}
         >
+          {item.connectionNotice && (
+            <Text style={[styles.noticeLabel, { color: colors.muted }]}>
+              AI 응답이 아닌 연결 안내예요.
+            </Text>
+          )}
           <Text
             style={[
               styles.messageText,
@@ -349,6 +295,10 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: typography.size.base,
     lineHeight: 22,
+  },
+  noticeLabel: {
+    fontSize: typography.size.xs,
+    marginBottom: spacing.xs,
   },
   tipsContainer: {
     marginTop: spacing.sm,

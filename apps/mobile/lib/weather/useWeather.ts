@@ -23,7 +23,7 @@ interface UseWeatherResult {
   error: string | null;
   refetch: () => Promise<void>;
   /** 현재 온도 (편의용) */
-  temp: number;
+  temp: number | null;
   /** 지역 이름 (편의용) */
   locationName: string;
 }
@@ -44,7 +44,7 @@ export function useWeather(options: UseWeatherOptions = {}): UseWeatherResult {
       setWeather(data);
     } catch {
       setError('날씨 정보를 불러올 수 없습니다');
-      // mock fallback
+      // 예외 경로도 출처가 표시된 placeholder만 사용한다.
       const mock = generateMockWeather(region);
       setWeather(mock);
     } finally {
@@ -72,7 +72,7 @@ export function useWeather(options: UseWeatherOptions = {}): UseWeatherResult {
     isLoading,
     error,
     refetch: fetchWeather,
-    temp: weather?.current.temp ?? 15,
+    temp: weather && !weather.usedFallback ? weather.current.temp : null,
     locationName: weather?.location ?? '서울',
   };
 }

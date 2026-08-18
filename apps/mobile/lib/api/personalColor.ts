@@ -23,13 +23,21 @@ import { toUserMessage } from './error-text';
 export interface PersonalColorApiResult {
   /** 4계절 진단 (Spring/Summer/Autumn/Winter) */
   season: PersonalColorSeason;
+  /** 서버가 판정한 12톤 서브타입. 구 결과에는 없을 수 있다. */
+  seasonSubtype: PersonalColorSeasonSubtype | null;
   /** 판정 신뢰도 0~1 (서버는 0~100로 주므로 정규화) */
   confidence: number;
   /** 시즌 설명 (없으면 빈 문자열 — 화면에서 정적 설명으로 폴백) */
   description: string;
+  /** 서버가 사진에서 판정한 베스트 컬러 hex 목록 */
+  bestColors: string[];
+  /** 서버가 사진에서 판정한 피해야 할 컬러 hex 목록 */
+  worstColors: string[];
   /** AI 폴백 여부 — true면 UI에 정직하게 표시 */
   usedMock: boolean;
 }
+
+export type PersonalColorSeasonSubtype = 'bright' | 'light' | 'true' | 'mute' | 'deep';
 
 export interface PersonalColorAnalysisInput {
   imageBase64: string;
@@ -83,6 +91,22 @@ function extractApiError(json: unknown): { message?: string; code?: string } {
 }
 
 const VALID_SEASONS: readonly PersonalColorSeason[] = ['Spring', 'Summer', 'Autumn', 'Winter'];
+const VALID_SUBTYPES: readonly PersonalColorSeasonSubtype[] = [
+  'bright',
+  'light',
+  'true',
+  'mute',
+  'deep',
+];
+const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;
+
+const SUBTYPE_LABELS: Record<PersonalColorSeasonSubtype, string> = {
+  bright: '브라이트',
+  light: '라이트',
+  true: '트루',
+  mute: '뮤트',
+  deep: '딥',
+};
 
 /** 웹은 season을 'Spring'(data) 또는 'spring'(result.seasonType) 두 형태로 준다 — 대소문자 정규화 */
 function toSeason(value: unknown): PersonalColorSeason | null {
@@ -91,6 +115,38 @@ function toSeason(value: unknown): PersonalColorSeason | null {
   return VALID_SEASONS.includes(normalized as PersonalColorSeason)
     ? (normalized as PersonalColorSeason)
     : null;
+}
+
+/** API result 객체형과 DB string[] 양쪽을 모바일 UI용 hex 배열로 정규화한다. */
+export function normalizePersonalColorHexes(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  const colors = value
+    .map((item): string | null => {
+      if (typeof item === 'string') return item;
+      if (typeof item !== 'object' || item === null) return null;
+      const color = item as Record<string, unknown>;
+      if (typeof color.hex === 'string') return color.hex;
+      return typeof color.color === 'string' ? color.color : null;
+    })
+    .map((color) => color?.trim() ?? null)
+    .filter((color): color is string => color !== null && HEX_COLOR_PATTERN.test(color));
+
+  return Array.from(new Set(colors));
+}
+
+/** 서버/DB의 12톤 표식을 한 계약으로 정규화한다. */
+export function normalizePersonalColorSubtype(value: unknown): PersonalColorSeasonSubtype | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase();
+  const canonical = normalized === 'muted' ? 'mute' : normalized;
+  return VALID_SUBTYPES.includes(canonical as PersonalColorSeasonSubtype)
+    ? (canonical as PersonalColorSeasonSubtype)
+    : null;
+}
+
+export function getPersonalColorSubtypeLabel(subtype: PersonalColorSeasonSubtype): string {
+  return SUBTYPE_LABELS[subtype];
 }
 
 /** 신뢰도 정규화: 서버는 0~100 스케일, 화면은 0~1을 기대 (×100로 표시) */
@@ -157,6 +213,10 @@ export async function requestPersonalColorAnalysis(
     string,
     unknown
   >;
+  const imageAnalysis =
+    typeof data.image_analysis === 'object' && data.image_analysis !== null
+      ? (data.image_analysis as Record<string, unknown>)
+      : {};
 
   // data.season('Spring') 우선, 없으면 result.seasonType('spring')
   const season = toSeason(data.season) ?? toSeason(result.seasonType);
@@ -175,10 +235,27 @@ export async function requestPersonalColorAnalysis(
     (typeof result.insight === 'string' ? result.insight : '') ||
     '';
 
+  // AI 결과를 우선하고, DB 응답 형상은 저장 성공 경로의 보조 소스로만 사용한다.
+  const resultBestColors = normalizePersonalColorHexes(result.bestColors);
+  const resultWorstColors = normalizePersonalColorHexes(result.worstColors);
+  const seasonSubtype =
+    normalizePersonalColorSubtype(result.seasonSubtype) ??
+    normalizePersonalColorSubtype(data.season_subtype) ??
+    normalizePersonalColorSubtype(imageAnalysis.seasonSubtype);
+
   return {
     season,
+    seasonSubtype,
     confidence: normalizeConfidence(result.confidence),
     description,
+    bestColors:
+      resultBestColors.length > 0
+        ? resultBestColors
+        : normalizePersonalColorHexes(data.best_colors),
+    worstColors:
+      resultWorstColors.length > 0
+        ? resultWorstColors
+        : normalizePersonalColorHexes(data.worst_colors),
     usedMock: obj.usedMock === true,
   };
 }

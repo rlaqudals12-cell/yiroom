@@ -144,4 +144,20 @@ describe('getCosmeticsByPersonalColor', () => {
     expect(qb.overlaps).toHaveBeenCalledWith('personal_color_seasons', ['Spring']);
     expect(result).toHaveLength(1);
   });
+
+  it('퍼스널컬러와 무관한 무채색 세분류는 후보 쿼리에서 제외한다', async () => {
+    const qb = createQueryBuilder([createRow({ category: 'makeup', subcategory: 'lip' })]);
+    mockFrom.mockReturnValue(qb);
+
+    await getCosmeticsByPersonalColor('Winter');
+
+    expect(qb.in).toHaveBeenCalledWith(
+      'subcategory',
+      expect.arrayContaining(['lip', 'blush', 'eyeshadow'])
+    );
+    const subcategories = qb.in.mock.calls.find(([column]) => column === 'subcategory')?.[1];
+    expect(subcategories).not.toEqual(
+      expect.arrayContaining(['primer', 'setting-spray', 'mascara', 'brow', 'powder', 'brush'])
+    );
+  });
 });

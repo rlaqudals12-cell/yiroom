@@ -31,6 +31,7 @@ import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
 import { buildPersonalColorTopActions, type TopAction } from '@/lib/analysis';
 import { TIMING } from '@/lib/animations';
 import {
+  getPersonalColorSubtypeLabel,
   requestPersonalColorAnalysis,
   PersonalColorApiError,
   type PersonalColorApiResult,
@@ -119,7 +120,7 @@ const SEASON_DATA: Record<PersonalColorSeason, SeasonInfo> = {
 
 export default function PersonalColorResultScreen(): React.JSX.Element {
   const { module } = useAnalysisStyles();
-  const { colors, typography } = useTheme();
+  const { colors } = useTheme();
   const accent = module.personalColor;
   const { getToken } = useAuth();
 
@@ -161,7 +162,12 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
 
       const response = await requestPersonalColorAnalysis({ imageBase64: base64Data }, token);
 
-      setUsedFallback(response.usedMock);
+      // 서버 실측 필드가 비면 시즌 고정표를 쓰므로 AI 실측처럼 표시하지 않는다.
+      const usesStaticDiagnosisFallback =
+        response.seasonSubtype === null ||
+        response.bestColors.length === 0 ||
+        response.worstColors.length === 0;
+      setUsedFallback(response.usedMock || usesStaticDiagnosisFallback);
       setResult(response);
       setShowCelebration(true);
     } catch (error) {
@@ -215,7 +221,16 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
     );
   }
 
-  const season = SEASON_DATA[result.season];
+  const fallbackSeason = SEASON_DATA[result.season];
+  const season: SeasonInfo = {
+    ...fallbackSeason,
+    // 서버 실측이 있으면 그것이 정본이며, 고정 시즌 표는 구 응답의 빈 필드에만 폴백한다.
+    subType: result.seasonSubtype
+      ? getPersonalColorSubtypeLabel(result.seasonSubtype)
+      : fallbackSeason.subType,
+    bestColors: result.bestColors.length > 0 ? result.bestColors : fallbackSeason.bestColors,
+    worstColors: result.worstColors.length > 0 ? result.worstColors : fallbackSeason.worstColors,
+  };
 
   // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 조립 (새 fetch/AI 없음)
   const topActions = buildPersonalColorTopActions({

@@ -113,6 +113,8 @@ export default function RecommendScreen() {
   } = useWeather({
     region: 'seoul',
   });
+  // 폴백 수치는 관측값이 아니므로 추천·저장 근거에서 완전히 제외한다.
+  const effectiveTemp = weather?.usedFallback ? null : temp;
 
   const { items, isLoading, summary, getOutfitSuggestion, refetch } = useClosetMatcher({
     personalColor,
@@ -127,9 +129,9 @@ export default function RecommendScreen() {
 
   // generateOutfit을 먼저 정의 (useEffect에서 사용)
   const generateOutfit = useCallback(() => {
-    const suggestion = getOutfitSuggestion({ temp });
+    const suggestion = getOutfitSuggestion({ temp: effectiveTemp });
     setOutfit(suggestion);
-  }, [getOutfitSuggestion, temp]);
+  }, [getOutfitSuggestion, effectiveTemp]);
 
   // 날씨 데이터 준비되면 코디 추천
   useEffect(() => {
@@ -221,7 +223,13 @@ export default function RecommendScreen() {
     const result = await saveOutfit({
       name: `${today} 추천 코디`,
       // 설명은 실제 추천 근거만 — 없는 진단은 적지 않는다 (웹 패턴 미러)
-      description: [personalColor, bodyTypeLabel, `${temp}°C`].filter(Boolean).join(' · '),
+      description: [
+        personalColor,
+        bodyTypeLabel,
+        effectiveTemp != null ? `${effectiveTemp}°C` : null,
+      ]
+        .filter(Boolean)
+        .join(' · '),
       itemIds,
       collageImageUrl: null,
       occasion: 'casual',
@@ -343,29 +351,44 @@ export default function RecommendScreen() {
       {/* 날씨 정보 */}
       <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
         <GlassCard shadowSize="md" style={{ ...styles.weatherCard }}>
-          <View style={styles.weatherRow}>
-            <View style={styles.weatherItem}>
-              <Text style={styles.weatherIcon}>📍</Text>
-              <Text style={[styles.weatherText, { color: colors.mutedForeground }]}>
-                {locationName}
+          {weather?.usedFallback ? (
+            <View
+              testID="weather-fallback-notice"
+              accessibilityRole="text"
+              style={styles.weatherFallbackNotice}
+            >
+              <Info size={16} color={colors.mutedForeground} />
+              <Text style={[styles.weatherText, { color: colors.mutedForeground, flex: 1 }]}>
+                실시간 날씨를 불러오지 못해 날씨 정보는 추천에서 제외했어요.
               </Text>
             </View>
-            <View style={styles.weatherItem}>
-              <Thermometer size={16} color={colors.mutedForeground} />
-              <Text style={[styles.weatherText, { color: colors.mutedForeground }]}>{temp}°C</Text>
-            </View>
-            {weather?.current && (
+          ) : (
+            <View style={styles.weatherRow}>
               <View style={styles.weatherItem}>
-                <WeatherIcon
-                  condition={weather.current.description}
-                  color={colors.mutedForeground}
-                />
+                <Text style={styles.weatherIcon}>📍</Text>
                 <Text style={[styles.weatherText, { color: colors.mutedForeground }]}>
-                  {weather.current.description}
+                  {locationName}
                 </Text>
               </View>
-            )}
-          </View>
+              <View style={styles.weatherItem}>
+                <Thermometer size={16} color={colors.mutedForeground} />
+                <Text style={[styles.weatherText, { color: colors.mutedForeground }]}>
+                  {effectiveTemp}°C
+                </Text>
+              </View>
+              {weather?.current && (
+                <View style={styles.weatherItem}>
+                  <WeatherIcon
+                    condition={weather.current.description}
+                    color={colors.mutedForeground}
+                  />
+                  <Text style={[styles.weatherText, { color: colors.mutedForeground }]}>
+                    {weather.current.description}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
           <View style={styles.weatherTags}>
             {personalColor && (
               <View style={[styles.tag, { backgroundColor: moduleTheme.body.dark + '20' }]}>
@@ -584,6 +607,12 @@ const styles = StyleSheet.create({
   weatherRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: spacing.smx,
+  },
+  weatherFallbackNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     marginBottom: spacing.smx,
   },
   weatherItem: {

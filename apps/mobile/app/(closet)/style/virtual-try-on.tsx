@@ -5,6 +5,7 @@
  * - Thin Client: 서버 Sharp 렌더링 (ADR-088)
  */
 
+import { useAuth } from '@clerk/clerk-expo';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, Palette, Sparkles, Droplets, Eye } from 'lucide-react-native';
@@ -80,6 +81,7 @@ function getCategoryLabel(category: MakeupCategory): string {
 
 export default function VirtualTryOnScreen(): React.JSX.Element {
   const { colors } = useTheme();
+  const { getToken } = useAuth();
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [resultUri, setResultUri] = useState<string | null>(null);
   const [category, setCategory] = useState<MakeupCategory>('lip');
@@ -138,6 +140,9 @@ export default function VirtualTryOnScreen(): React.JSX.Element {
 
       setProcessing(true);
       try {
+        const token = await getToken();
+        if (!token) throw new Error('Authentication required');
+
         // 이미지 → base64
         const base64 = await FileSystem.readAsStringAsync(imageUri, {
           encoding: 'base64',
@@ -147,7 +152,10 @@ export default function VirtualTryOnScreen(): React.JSX.Element {
 
         const response = await fetch(`${getApiBaseUrl()}/api/fitting/try-on`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             imageBase64: `data:image/jpeg;base64,${base64}`,
             type: apiType,
@@ -177,7 +185,7 @@ export default function VirtualTryOnScreen(): React.JSX.Element {
         }
       }
     },
-    [imageUri, category]
+    [imageUri, category, getToken]
   );
 
   const handleColorSelect = useCallback(

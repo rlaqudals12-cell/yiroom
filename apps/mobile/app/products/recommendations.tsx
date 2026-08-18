@@ -18,6 +18,11 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { staggeredEntry, TIMING } from '@/lib/animations';
 import {
+  calculateMatchScore,
+  calculatePersonalMatchPercentage,
+  type UserProfile,
+} from '@/lib/products/matching';
+import {
   getCosmeticsBySkinType,
   getCosmeticsByPersonalColor,
 } from '@/lib/products/repositories/cosmetic';
@@ -36,6 +41,8 @@ interface RecommendationSection {
 export default function RecommendationsScreen(): React.JSX.Element {
   const { colors, spacing, radii, typography, brand, status } = useTheme();
   const { personalColor, skinAnalysis, isLoading: analysisLoading } = useUserAnalyses();
+  const personalColorSeason = normalizeSeason(personalColor?.season ?? '');
+  const skinType = normalizeSkinType(skinAnalysis?.skinType);
 
   const [sections, setSections] = useState<RecommendationSection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,36 +53,31 @@ export default function RecommendationsScreen(): React.JSX.Element {
 
     try {
       // 피부 기반 추천 — cosmetic_products.skin_types 매칭
-      if (skinAnalysis) {
-        const skinProducts = await getCosmeticsBySkinType(
-          skinAnalysis.skinType as SkinType,
-          undefined,
-          10
-        );
-        if (skinProducts.length > 0) {
+      if (skinType) {
+        const skinProducts = await getCosmeticsBySkinType(skinType, undefined, 10);
+        const matchedProducts = withVerifiedMatchScore(skinProducts, {
+          skinType,
+        });
+        if (matchedProducts.length > 0) {
           result.push({
             title: '피부 맞춤 추천',
-            description: `${getSkinTypeLabel(skinAnalysis.skinType)}에 좋은 제품`,
-            products: skinProducts.map((p) => ({
-              ...p,
-              matchScore: calculateProductMatchScore(p, { skinType: skinAnalysis.skinType }),
-            })),
+            description: `${getSkinTypeLabel(skinType)}에 좋은 제품`,
+            products: matchedProducts,
           });
         }
       }
 
       // 퍼스널컬러 기반 추천 — cosmetic_products.personal_color_seasons 매칭
-      if (personalColor) {
-        const season = normalizeSeason(personalColor.season);
-        const colorProducts = season ? await getCosmeticsByPersonalColor(season, 10) : [];
-        if (colorProducts.length > 0) {
+      if (personalColorSeason) {
+        const colorProducts = await getCosmeticsByPersonalColor(personalColorSeason, 10);
+        const matchedProducts = withVerifiedMatchScore(colorProducts, {
+          personalColorSeason,
+        });
+        if (matchedProducts.length > 0) {
           result.push({
             title: '컬러 맞춤 추천',
-            description: `${getSeasonLabel(personalColor.season)}에 어울리는 제품`,
-            products: colorProducts.map((p) => ({
-              ...p,
-              matchScore: calculateProductMatchScore(p, { season: personalColor.season }),
-            })),
+            description: `${getSeasonLabel(personalColorSeason)}에 어울리는 제품`,
+            products: matchedProducts,
           });
         }
       }
@@ -86,7 +88,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
     }
 
     setSections(result);
-  }, [skinAnalysis, personalColor]);
+  }, [skinType, personalColorSeason]);
 
   useEffect(() => {
     if (!analysisLoading) {
@@ -97,7 +99,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
   const loading = isLoading || analysisLoading;
 
   // 분석 없음 상태
-  const noAnalysis = !personalColor && !skinAnalysis && !analysisLoading;
+  const noAnalysis = !personalColorSeason && !skinType && !analysisLoading;
 
   return (
     <ScreenContainer
@@ -137,24 +139,24 @@ export default function RecommendationsScreen(): React.JSX.Element {
             }}
           >
             {noAnalysis
-              ? '분석 결과가 없어요. AI 분석을 먼저 진행해주세요!'
+              ? '진단 후 더 정확한 제품 추천을 받을 수 있어요'
               : '분석 결과를 기반으로 가장 잘 맞는 제품을 추천해드려요'}
           </Text>
 
           {/* 분석 요약 태그 */}
-          {(personalColor || skinAnalysis) && (
+          {(personalColorSeason || skinType) && (
             <View style={[styles.tagRow, { marginTop: spacing.sm }]}>
-              {personalColor && (
+              {personalColorSeason && (
                 <View style={[styles.heroTag, { backgroundColor: brand.primaryForeground + '33' }]}>
                   <Text style={[styles.heroTagText, { color: brand.primaryForeground }]}>
-                    {getSeasonLabel(personalColor.season)}
+                    {getSeasonLabel(personalColorSeason)}
                   </Text>
                 </View>
               )}
-              {skinAnalysis && (
+              {skinType && (
                 <View style={[styles.heroTag, { backgroundColor: brand.primaryForeground + '33' }]}>
                   <Text style={[styles.heroTagText, { color: brand.primaryForeground }]}>
-                    {getSkinTypeLabel(skinAnalysis.skinType)}
+                    {getSkinTypeLabel(skinType)}
                   </Text>
                 </View>
               )}
@@ -335,7 +337,7 @@ export default function RecommendationsScreen(): React.JSX.Element {
                       )}
                     </View>
 
-                    {/* 매칭 점수 */}
+                    {/* 실제 진단 교집합이 확인된 제품만 매칭 점수를 가진다. */}
                     <View style={styles.matchBadge}>
                       <Star size={12} color={status.success} fill={status.success} />
                       <Text
@@ -414,44 +416,24 @@ function normalizeSeason(season: string): PersonalColorSeason | null {
     : null;
 }
 
-// 제품-사용자 매칭 점수 계산 (cosmetic_products 필드 기반)
-function calculateProductMatchScore(
-  product: CosmeticProduct,
-  userProfile: { skinType?: string; season?: string }
-): number {
-  let score = 55; // 기본 점수
+function normalizeSkinType(skinType: string | undefined): SkinType | null {
+  return (['dry', 'oily', 'combination', 'sensitive', 'normal'] as const).includes(
+    skinType as SkinType
+  )
+    ? (skinType as SkinType)
+    : null;
+}
 
-  // 피부 타입 매칭 (cosmetic.skin_types)
-  if (userProfile.skinType && product.skinTypes) {
-    if (product.skinTypes.includes(userProfile.skinType as SkinType)) {
-      score += 20;
-    }
-  }
-
-  // 퍼스널컬러 시즌 매칭 (cosmetic.personal_color_seasons — 'Spring' 형식)
-  if (userProfile.season && product.personalColorSeasons) {
-    const target = normalizeSeason(userProfile.season);
-    if (target && product.personalColorSeasons.includes(target)) {
-      score += 20;
-    } else if (product.personalColorSeasons.length === 0) {
-      // 컬러 제한 없는 제품은 무난
-      score += 10;
-    }
-  }
-
-  // 피부 고민 매칭 (cosmetic.concerns)
-  if (product.concerns && product.concerns.length > 0) {
-    score += Math.min(product.concerns.length * 3, 12);
-  }
-
-  // 평점 보너스
-  if (product.rating && product.rating >= 4.5) {
-    score += 5;
-  } else if (product.rating && product.rating >= 4.0) {
-    score += 3;
-  }
-
-  return Math.min(score, 98); // 최대 98%
+/** 실제 진단 축이 제품의 변별력 있는 태그와 일치한 제품만 점수와 함께 반환한다. */
+function withVerifiedMatchScore(
+  products: CosmeticProduct[],
+  profile: UserProfile
+): (CosmeticProduct & { matchScore: number })[] {
+  return products.flatMap((product) => {
+    const result = calculateMatchScore(product, profile);
+    const matchScore = calculatePersonalMatchPercentage(result.reasons);
+    return matchScore === undefined ? [] : [{ ...product, matchScore }];
+  });
 }
 
 // 헬퍼

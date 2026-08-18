@@ -139,7 +139,12 @@ const responses: Record<string, { data: unknown; error: unknown }> = {
       id: 'pc1',
       season: 'Spring',
       undertone: 'Warm',
-      best_colors: ['#ffcc00'],
+      season_subtype: 'bright',
+      best_colors: [
+        { hex: '#123456', name: '서버 베스트 1' },
+        { hex: '#ABCDEF', name: '서버 베스트 2' },
+      ],
+      worst_colors: [{ hex: '#654321', name: '서버 워스트' }],
       created_at: '2026-07-01T00:00:00Z',
     },
     error: null,
@@ -257,6 +262,26 @@ describe('useUserAnalyses — prod 스키마 정합', () => {
 });
 
 describe('useUserAnalyses — 점수 null 가드', () => {
+  it('PC 재방문 상태에 서버 팔레트와 12톤을 hex 배열로 보존한다', async () => {
+    const { result } = renderHook(() => useUserAnalyses());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(selectCalls.personal_color_assessments).toContain('season_subtype');
+    expect(selectCalls.personal_color_assessments).toContain('worst_colors');
+    expect(result.current.personalColor).toMatchObject({
+      seasonSubtype: 'bright',
+      bestColors: ['#123456', '#ABCDEF'],
+      worstColors: ['#654321'],
+      colorPalette: ['#123456', '#ABCDEF'],
+    });
+    expect(
+      result.current.analyses.find((analysis) => analysis.type === 'personal-color')
+    ).toMatchObject({
+      seasonSubtype: 'bright',
+      bestColors: ['#123456', '#ABCDEF'],
+    });
+  });
+
   it('헤어 overall_score가 null이면 "null점"을 렌더하지 않고 타입 라벨만 노출', async () => {
     const { result } = renderHook(() => useUserAnalyses());
     await waitFor(() => expect(result.current.isLoading).toBe(false));

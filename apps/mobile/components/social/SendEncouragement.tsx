@@ -4,6 +4,7 @@
  * - 커스텀 메시지 입력
  */
 
+import { useAuth } from '@clerk/clerk-expo';
 import { useState } from 'react';
 import {
   View,
@@ -43,6 +44,7 @@ export function SendEncouragement({
   onSuccess,
 }: SendEncouragementProps): React.JSX.Element {
   const { colors } = useTheme();
+  const { getToken } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -54,11 +56,16 @@ export function SendEncouragement({
 
     try {
       setIsLoading(true);
+      const token = await getToken();
+      if (!token) throw new Error('Authentication required');
 
       // Thin Client: 웹 API 호출
       const res = await fetch(`${getApiBaseUrl()}/api/encouragements`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           toUserId,
           message: finalMessage,

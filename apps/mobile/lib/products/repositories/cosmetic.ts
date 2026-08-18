@@ -18,6 +18,26 @@ import type {
   Undertone,
 } from '@/types/product';
 
+/**
+ * 퍼스널컬러와 직접 관련된 유채색 메이크업 세분류.
+ * 프라이머·세팅스프레이·마스카라처럼 색 선택이 시즌과 무관하거나 무채인 품목은
+ * "내 컬러 추천" 후보에서 제외한다.
+ */
+export const PERSONAL_COLOR_MAKEUP_SUBCATEGORIES = [
+  'lip',
+  'lip-gloss',
+  'lip-liner',
+  'blush',
+  'eyeshadow',
+  'eye',
+  'multi-palette',
+  'cushion',
+  'foundation',
+  'concealer',
+  'highlighter',
+  'contour',
+] as const;
+
 // 타입 변환 함수
 export function mapCosmeticRow(row: CosmeticProductRow): CosmeticProduct {
   return {
@@ -202,6 +222,7 @@ export async function getCosmeticsByPersonalColor(
     .select('*')
     .eq('is_active', true)
     .overlaps('personal_color_seasons', [season])
+    .in('subcategory', [...PERSONAL_COLOR_MAKEUP_SUBCATEGORIES])
     .order('rating', { ascending: false })
     .limit(limit);
 

@@ -4,6 +4,10 @@
  */
 
 import type { AffiliateProduct } from './types';
+import { isBlanketTag } from '../products/matching';
+
+const SKIN_TYPE_DOMAIN = ['dry', 'oily', 'combination', 'sensitive', 'normal'] as const;
+const PERSONAL_COLOR_DOMAIN = ['spring_warm', 'summer_cool', 'autumn_warm', 'winter_cool'] as const;
 
 /**
  * 가격 포맷 (한국 원화)
@@ -63,7 +67,14 @@ export function calculateSkinMatchScore(
   product: Pick<AffiliateProduct, 'skinTypes'>,
   userSkinType: string | undefined
 ): number {
-  if (!userSkinType || !product.skinTypes) return 0;
+  if (
+    !userSkinType ||
+    !SKIN_TYPE_DOMAIN.includes(userSkinType as (typeof SKIN_TYPE_DOMAIN)[number]) ||
+    !product.skinTypes ||
+    isBlanketTag(product.skinTypes, SKIN_TYPE_DOMAIN)
+  ) {
+    return 0;
+  }
   return product.skinTypes.includes(
     userSkinType as 'dry' | 'oily' | 'combination' | 'sensitive' | 'normal'
   )
@@ -88,6 +99,12 @@ export function calculateColorMatchScore(
   };
 
   const colorKey = seasonMap[userSeason] || userSeason;
+  if (
+    !PERSONAL_COLOR_DOMAIN.includes(colorKey as (typeof PERSONAL_COLOR_DOMAIN)[number]) ||
+    isBlanketTag(product.personalColors, PERSONAL_COLOR_DOMAIN)
+  ) {
+    return 0;
+  }
   return product.personalColors.includes(
     colorKey as 'spring_warm' | 'summer_cool' | 'autumn_warm' | 'winter_cool'
   )
@@ -104,20 +121,44 @@ export function calculateRatingBonus(rating: number | undefined): number {
 }
 
 /**
- * 제품 종합 매칭 점수 계산
- * 기본 점수 70점 + 피부 타입 15점 + 퍼스널 컬러 15점 + 평점 5점 = 최대 100점
+ * 제품 개인화 매칭 점수 계산.
+ * 실제 진단과 변별력 있는 제품 메타데이터가 만나는 축만 분모에 넣는다.
+ * 근거가 없으면 `null`을 반환해 UI가 점수 자체를 표시하지 않게 한다.
  */
 export function calculateProductMatchScore(
   product: Pick<AffiliateProduct, 'skinTypes' | 'personalColors' | 'rating'>,
   userSkinType?: string,
   userSeason?: string
-): number {
-  const baseScore = 70;
-  const skinBonus = calculateSkinMatchScore(product, userSkinType);
-  const colorBonus = calculateColorMatchScore(product, userSeason);
-  const ratingBonus = calculateRatingBonus(product.rating);
+): number | null {
+  const normalizedSeason: Record<string, string> = {
+    Spring: 'spring_warm',
+    Summer: 'summer_cool',
+    Autumn: 'autumn_warm',
+    Winter: 'winter_cool',
+  };
+  const colorKey = userSeason ? normalizedSeason[userSeason] || userSeason : undefined;
 
-  return Math.min(baseScore + skinBonus + colorBonus + ratingBonus, 100);
+  const hasSkinEvidence = Boolean(
+    userSkinType &&
+    SKIN_TYPE_DOMAIN.includes(userSkinType as (typeof SKIN_TYPE_DOMAIN)[number]) &&
+    product.skinTypes?.length &&
+    !isBlanketTag(product.skinTypes, SKIN_TYPE_DOMAIN)
+  );
+  const hasColorEvidence = Boolean(
+    colorKey &&
+    PERSONAL_COLOR_DOMAIN.includes(colorKey as (typeof PERSONAL_COLOR_DOMAIN)[number]) &&
+    product.personalColors?.length &&
+    !isBlanketTag(product.personalColors, PERSONAL_COLOR_DOMAIN)
+  );
+
+  const availableScore = (hasSkinEvidence ? 15 : 0) + (hasColorEvidence ? 15 : 0);
+  if (availableScore === 0) return null;
+
+  const matchedScore =
+    (hasSkinEvidence ? calculateSkinMatchScore(product, userSkinType) : 0) +
+    (hasColorEvidence ? calculateColorMatchScore(product, userSeason) : 0);
+
+  return Math.round((matchedScore / availableScore) * 100);
 }
 
 /**
