@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { getMeasurements, upsertMeasurements } from '@/lib/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
@@ -16,7 +17,9 @@ export async function GET() {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
-    const measurements = await getMeasurements(userId);
+    const db = createClerkSupabaseClient();
+
+    const measurements = await getMeasurements(userId, db);
 
     // 치수 정보가 없으면 기본값 반환
     if (!measurements) {
@@ -41,21 +44,27 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const body = await request.json();
 
-    const result = await upsertMeasurements(userId, {
-      height: body.height,
-      weight: body.weight,
-      bodyType: body.bodyType,
-      chest: body.chest,
-      waist: body.waist,
-      hip: body.hip,
-      shoulder: body.shoulder,
-      armLength: body.armLength,
-      inseam: body.inseam,
-      footLength: body.footLength,
-      preferredFit: body.preferredFit,
-    });
+    const result = await upsertMeasurements(
+      userId,
+      {
+        height: body.height,
+        weight: body.weight,
+        bodyType: body.bodyType,
+        chest: body.chest,
+        waist: body.waist,
+        hip: body.hip,
+        shoulder: body.shoulder,
+        armLength: body.armLength,
+        inseam: body.inseam,
+        footLength: body.footLength,
+        preferredFit: body.preferredFit,
+      },
+      db
+    );
 
     if (!result) {
       return NextResponse.json({ error: '치수 저장에 실패했습니다.' }, { status: 500 });

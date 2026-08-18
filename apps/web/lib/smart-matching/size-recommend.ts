@@ -20,6 +20,7 @@ import type {
   SizeFit,
   ProductMeasurements,
 } from '@/types/smart-matching';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { smartMatchingLogger } from '@/lib/utils/logger';
 import { getMeasurements } from './measurements';
 import { getSizeHistoryByBrand, getPerfectFitHistory } from './size-history';
@@ -52,22 +53,23 @@ export async function getSizeRecommendation(
   clerkUserId: string,
   brandId: string,
   brandName: string,
-  category: ClothingCategory
+  category: ClothingCategory,
+  db?: SupabaseClient
 ): Promise<SizeRecommendation> {
   // 1단계: 동일 브랜드 구매 기록 확인
-  const historyResult = await recommendFromHistory(clerkUserId, brandId, category);
+  const historyResult = await recommendFromHistory(clerkUserId, brandId, category, db);
   if (historyResult && historyResult.confidence >= 80) {
     return historyResult;
   }
 
   // 2단계: 브랜드 사이즈 차트 + 신체 치수
-  const chartResult = await recommendFromBrandChart(clerkUserId, brandId, category);
+  const chartResult = await recommendFromBrandChart(clerkUserId, brandId, category, db);
   if (chartResult && chartResult.confidence >= 60) {
     return chartResult;
   }
 
   // 3단계: 일반 사이즈 추론
-  const generalResult = await recommendGeneral(clerkUserId, category);
+  const generalResult = await recommendGeneral(clerkUserId, category, db);
   if (generalResult) {
     return generalResult;
   }
@@ -91,10 +93,11 @@ export async function getSizeRecommendation(
 async function recommendFromHistory(
   clerkUserId: string,
   brandId: string,
-  category: ClothingCategory
+  category: ClothingCategory,
+  db?: SupabaseClient
 ): Promise<SizeRecommendation | null> {
   // 동일 브랜드 + 동일 카테고리 기록 조회
-  const brandHistory = await getSizeHistoryByBrand(clerkUserId, brandId);
+  const brandHistory = await getSizeHistoryByBrand(clerkUserId, brandId, db);
   const categoryHistory = brandHistory.filter((h) => h.category === category);
 
   if (categoryHistory.length === 0) {
@@ -152,16 +155,17 @@ function calculateHistoryConfidence(history: UserSizeHistory[]): number {
 async function recommendFromBrandChart(
   clerkUserId: string,
   brandId: string,
-  category: ClothingCategory
+  category: ClothingCategory,
+  db?: SupabaseClient
 ): Promise<SizeRecommendation | null> {
   // 브랜드 사이즈 차트 조회
-  const sizeChart = await getSizeChart(brandId, category);
+  const sizeChart = await getSizeChart(brandId, category, db);
   if (!sizeChart) {
     return null;
   }
 
   // 사용자 신체 치수 조회
-  const measurements = await getMeasurements(clerkUserId);
+  const measurements = await getMeasurements(clerkUserId, db);
   if (!measurements) {
     return null;
   }
@@ -205,10 +209,11 @@ async function recommendFromBrandChart(
 
 async function recommendGeneral(
   clerkUserId: string,
-  category: ClothingCategory
+  category: ClothingCategory,
+  db?: SupabaseClient
 ): Promise<SizeRecommendation | null> {
   // 다른 브랜드의 perfect fit 기록 참조
-  const perfectFits = await getPerfectFitHistory(clerkUserId, category);
+  const perfectFits = await getPerfectFitHistory(clerkUserId, category, db);
 
   if (perfectFits.length > 0) {
     // 가장 많이 입는 사이즈 찾기
@@ -229,7 +234,7 @@ async function recommendGeneral(
   }
 
   // 신체 치수만으로 추론
-  const measurements = await getMeasurements(clerkUserId);
+  const measurements = await getMeasurements(clerkUserId, db);
   if (measurements && (measurements.height || measurements.weight)) {
     const generalSize = inferSizeFromBasicMeasurements(measurements, category);
     return {
@@ -377,17 +382,24 @@ export async function getProductSizeRecommendation(
   productId: string,
   brandId: string,
   brandName: string,
-  category: ClothingCategory
+  category: ClothingCategory,
+  db?: SupabaseClient
 ): Promise<SizeRecommendation> {
   // 기본 추천 먼저 수행
-  const baseRecommendation = await getSizeRecommendation(clerkUserId, brandId, brandName, category);
+  const baseRecommendation = await getSizeRecommendation(
+    clerkUserId,
+    brandId,
+    brandName,
+    category,
+    db
+  );
 
   // 제품별 실측 데이터로 보정
   try {
-    const productMeasurementsData = await getProductMeasurements(productId);
+    const productMeasurementsData = await getProductMeasurements(productId, db);
     if (productMeasurementsData && productMeasurementsData.sizeMeasurements.length > 0) {
       // 사용자 신체 치수 조회
-      const userMeasurements = await getMeasurements(clerkUserId);
+      const userMeasurements = await getMeasurements(clerkUserId, db);
       if (userMeasurements) {
         smartMatchingLogger.debug(
           `[Size] 실측 데이터 보정 적용 - product: ${productId}, reliability: ${productMeasurementsData.reliability}`

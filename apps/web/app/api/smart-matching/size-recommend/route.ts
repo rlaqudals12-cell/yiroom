@@ -5,11 +5,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import {
-  getSizeRecommendation,
-  getProductSizeRecommendation,
-} from '@/lib/smart-matching';
+import { getSizeRecommendation, getProductSizeRecommendation } from '@/lib/smart-matching';
 import type { ClothingCategory } from '@/types/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +16,8 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
+
+    const db = createClerkSupabaseClient();
 
     const body = await request.json();
     const { brandId, brandName, category, productId } = body;
@@ -32,10 +32,7 @@ export async function POST(request: NextRequest) {
     // 카테고리 유효성 검사
     const validCategories: ClothingCategory[] = ['top', 'bottom', 'outer', 'dress', 'shoes'];
     if (!validCategories.includes(category)) {
-      return NextResponse.json(
-        { error: '유효하지 않은 카테고리입니다.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '유효하지 않은 카테고리입니다.' }, { status: 400 });
     }
 
     let recommendation;
@@ -47,16 +44,12 @@ export async function POST(request: NextRequest) {
         productId,
         brandId,
         brandName,
-        category
+        category,
+        db
       );
     } else {
       // 브랜드 + 카테고리 기반 추천
-      recommendation = await getSizeRecommendation(
-        userId,
-        brandId,
-        brandName,
-        category
-      );
+      recommendation = await getSizeRecommendation(userId, brandId, brandName, category, db);
     }
 
     return NextResponse.json({

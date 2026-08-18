@@ -6,11 +6,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import {
-  getPriceWatches,
-  getPriceWatchByProduct,
-  createPriceWatch,
-} from '@/lib/smart-matching';
+import { getPriceWatches, getPriceWatchByProduct, createPriceWatch } from '@/lib/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,15 +17,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
 
     if (productId) {
-      const watch = await getPriceWatchByProduct(userId, productId);
+      const watch = await getPriceWatchByProduct(userId, productId, db);
       return NextResponse.json(watch);
     }
 
-    const watches = await getPriceWatches(userId);
+    const watches = await getPriceWatches(userId, db);
     return NextResponse.json(watches);
   } catch (error) {
     console.error('[API] PriceWatch GET error:', error);
@@ -44,6 +43,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const body = await request.json();
 
     if (!body.productId) {
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 이미 등록된 알림 확인
-    const existing = await getPriceWatchByProduct(userId, body.productId);
+    const existing = await getPriceWatchByProduct(userId, body.productId, db);
     if (existing) {
       return NextResponse.json(
         { error: '이미 등록된 가격 알림입니다.', data: existing },
@@ -59,14 +60,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await createPriceWatch({
-      clerkUserId: userId,
-      productId: body.productId,
-      targetPrice: body.targetPrice,
-      percentDrop: body.percentDrop,
-      platforms: body.platforms,
-      expiresAt: body.expiresAt ? new Date(body.expiresAt) : undefined,
-    });
+    const result = await createPriceWatch(
+      {
+        clerkUserId: userId,
+        productId: body.productId,
+        targetPrice: body.targetPrice,
+        percentDrop: body.percentDrop,
+        platforms: body.platforms,
+        expiresAt: body.expiresAt ? new Date(body.expiresAt) : undefined,
+      },
+      db
+    );
 
     if (!result) {
       return NextResponse.json({ error: '가격 알림 등록에 실패했습니다.' }, { status: 500 });

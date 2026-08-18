@@ -6,12 +6,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import {
-  getFeedbackList,
-  createFeedback,
-  getRecommendationAccuracy,
-} from '@/lib/smart-matching';
+import { getFeedbackList, createFeedback, getRecommendationAccuracy } from '@/lib/smart-matching';
 import type { FeedbackType } from '@/types/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,6 +18,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') as FeedbackType | null;
     const productId = searchParams.get('productId');
@@ -28,15 +27,19 @@ export async function GET(request: NextRequest) {
 
     // 추천 정확도 통계 요청
     if (stats) {
-      const accuracy = await getRecommendationAccuracy(userId);
+      const accuracy = await getRecommendationAccuracy(userId, db);
       return NextResponse.json({ accuracy });
     }
 
-    const feedback = await getFeedbackList(userId, {
-      type: type ?? undefined,
-      productId: productId ?? undefined,
-      limit: 50,
-    });
+    const feedback = await getFeedbackList(
+      userId,
+      {
+        type: type ?? undefined,
+        productId: productId ?? undefined,
+        limit: 50,
+      },
+      db
+    );
 
     return NextResponse.json(feedback);
   } catch (error) {
@@ -53,26 +56,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const body = await request.json();
 
     if (!body.feedbackType) {
       return NextResponse.json({ error: 'feedbackType이 필요합니다.' }, { status: 400 });
     }
 
-    const result = await createFeedback({
-      clerkUserId: userId,
-      feedbackType: body.feedbackType,
-      productId: body.productId,
-      recommendationId: body.recommendationId,
-      rating: body.rating,
-      sizeFit: body.sizeFit,
-      colorAccuracy: body.colorAccuracy,
-      wouldRecommend: body.wouldRecommend,
-      comment: body.comment,
-      pros: body.pros,
-      cons: body.cons,
-      photos: body.photos,
-    });
+    const result = await createFeedback(
+      {
+        clerkUserId: userId,
+        feedbackType: body.feedbackType,
+        productId: body.productId,
+        recommendationId: body.recommendationId,
+        rating: body.rating,
+        sizeFit: body.sizeFit,
+        colorAccuracy: body.colorAccuracy,
+        wouldRecommend: body.wouldRecommend,
+        comment: body.comment,
+        pros: body.pros,
+        cons: body.cons,
+        photos: body.photos,
+      },
+      db
+    );
 
     if (!result) {
       return NextResponse.json({ error: '피드백 저장에 실패했습니다.' }, { status: 500 });

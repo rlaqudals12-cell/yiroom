@@ -3,11 +3,8 @@
  * @description 여러 플랫폼의 가격을 비교하고 최적 구매처 추천
  */
 
-import type {
-  PriceComparison,
-  PurchaseOption,
-  DeliveryType,
-} from '@/types/smart-matching';
+import type { PriceComparison, PurchaseOption, DeliveryType } from '@/types/smart-matching';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { getPriceHistory, getLowestPrice, getPriceChangePercent } from './price-watches';
 
 // ============================================
@@ -100,12 +97,13 @@ export async function comparePrices(
   options?: {
     platforms?: string[];
     includeHistory?: boolean;
-  }
+  },
+  db?: SupabaseClient
 ): Promise<PriceComparison> {
   const targetPlatforms = options?.platforms || Object.keys(PLATFORMS);
 
   // 각 플랫폼별 가격 정보 조회 (실제로는 API 호출 또는 크롤링)
-  const purchaseOptions = await fetchPriceFromPlatforms(productId, targetPlatforms);
+  const purchaseOptions = await fetchPriceFromPlatforms(productId, targetPlatforms, db);
 
   // 최적 옵션 계산
   const bestPrice = findBestPrice(purchaseOptions);
@@ -128,7 +126,8 @@ export async function comparePrices(
  */
 async function fetchPriceFromPlatforms(
   productId: string,
-  platforms: string[]
+  platforms: string[],
+  db?: SupabaseClient
 ): Promise<PurchaseOption[]> {
   const options: PurchaseOption[] = [];
 
@@ -137,19 +136,18 @@ async function fetchPriceFromPlatforms(
     if (!platform) continue;
 
     // 가격 히스토리에서 최신 가격 조회
-    const history = await getPriceHistory(productId, {
-      platform: platformId,
-      limit: 1,
-    });
+    const history = await getPriceHistory(
+      productId,
+      {
+        platform: platformId,
+        limit: 1,
+      },
+      db
+    );
 
     if (history.length > 0) {
       const latest = history[0];
-      const option = createPurchaseOption(
-        platform,
-        latest.price,
-        latest.originalPrice,
-        productId
-      );
+      const option = createPurchaseOption(platform, latest.price, latest.originalPrice, productId);
       options.push(option);
     }
   }
@@ -168,14 +166,12 @@ function createPurchaseOption(
 ): PurchaseOption {
   const salePrice = price;
   const original = originalPrice || price;
-  const discountPercent = original > salePrice
-    ? Math.round(((original - salePrice) / original) * 100)
-    : 0;
+  const discountPercent =
+    original > salePrice ? Math.round(((original - salePrice) / original) * 100) : 0;
 
   // 배송비 계산
-  const deliveryFee = platform.freeDeliveryThreshold && salePrice >= platform.freeDeliveryThreshold
-    ? 0
-    : 3000; // 기본 배송비
+  const deliveryFee =
+    platform.freeDeliveryThreshold && salePrice >= platform.freeDeliveryThreshold ? 0 : 3000; // 기본 배송비
 
   // 적립 포인트 계산 (일반적으로 1%)
   const points = Math.floor(salePrice * 0.01);
@@ -299,15 +295,16 @@ function calculateValueScore(option: PurchaseOption): number {
  */
 export async function analyzePriceTrend(
   productId: string,
-  days: number = 30
+  days: number = 30,
+  db?: SupabaseClient
 ): Promise<{
   trend: 'rising' | 'falling' | 'stable';
   changePercent: number;
   lowestEver: { price: number; date: Date; platform: string } | null;
   suggestion: string;
 }> {
-  const changePercent = await getPriceChangePercent(productId, days);
-  const lowest = await getLowestPrice(productId);
+  const changePercent = await getPriceChangePercent(productId, days, db);
+  const lowest = await getLowestPrice(productId, undefined, db);
 
   let trend: 'rising' | 'falling' | 'stable' = 'stable';
   let suggestion = '';
@@ -326,7 +323,7 @@ export async function analyzePriceTrend(
 
   // 역대 최저가 근처인지 확인
   if (lowest) {
-    const history = await getPriceHistory(productId, { limit: 1 });
+    const history = await getPriceHistory(productId, { limit: 1 }, db);
     if (history.length > 0) {
       const currentPrice = history[0].price;
       const lowestPrice = lowest.price;
@@ -341,11 +338,13 @@ export async function analyzePriceTrend(
   return {
     trend,
     changePercent: changePercent || 0,
-    lowestEver: lowest ? {
-      price: lowest.price,
-      date: lowest.recordedAt,
-      platform: lowest.platform,
-    } : null,
+    lowestEver: lowest
+      ? {
+          price: lowest.price,
+          date: lowest.recordedAt,
+          platform: lowest.platform,
+        }
+      : null,
     suggestion,
   };
 }

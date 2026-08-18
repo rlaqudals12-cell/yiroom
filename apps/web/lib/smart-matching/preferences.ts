@@ -16,8 +16,11 @@ import { mapPreferencesRow } from '@/types/smart-matching';
 /**
  * 사용자 설정 조회
  */
-export async function getPreferences(clerkUserId: string): Promise<UserPreferences | null> {
-  const { data, error } = await supabase
+export async function getPreferences(
+  clerkUserId: string,
+  db = supabase
+): Promise<UserPreferences | null> {
+  const { data, error } = await db
     .from('user_shopping_preferences')
     .select('*')
     .eq('clerk_user_id', clerkUserId)
@@ -35,9 +38,10 @@ export async function getPreferences(clerkUserId: string): Promise<UserPreferenc
  */
 export async function upsertPreferences(
   clerkUserId: string,
-  preferences: Partial<Omit<UserPreferences, 'clerkUserId' | 'createdAt' | 'updatedAt'>>
+  preferences: Partial<Omit<UserPreferences, 'clerkUserId' | 'createdAt' | 'updatedAt'>>,
+  db = supabase
 ): Promise<UserPreferences | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('user_shopping_preferences')
     .upsert({
       clerk_user_id: clerkUserId,

@@ -21,9 +21,10 @@ export async function getNotifications(
     unreadOnly?: boolean;
     type?: NotificationType;
     limit?: number;
-  }
+  },
+  db = supabase
 ): Promise<SmartNotification[]> {
-  let query = supabase.from('smart_notifications').select('*').eq('clerk_user_id', clerkUserId);
+  let query = db.from('smart_notifications').select('*').eq('clerk_user_id', clerkUserId);
 
   if (options?.unreadOnly) {
     query = query.eq('read', false);
@@ -51,8 +52,8 @@ export async function getNotifications(
 /**
  * 읽지 않은 알림 개수 조회
  */
-export async function getUnreadCount(clerkUserId: string): Promise<number> {
-  const { count, error } = await supabase
+export async function getUnreadCount(clerkUserId: string, db = supabase): Promise<number> {
+  const { count, error } = await db
     .from('smart_notifications')
     .select('*', { count: 'exact', head: true })
     .eq('clerk_user_id', clerkUserId)
@@ -69,18 +70,21 @@ export async function getUnreadCount(clerkUserId: string): Promise<number> {
 /**
  * 알림 생성
  */
-export async function createNotification(input: {
-  clerkUserId: string;
-  notificationType: NotificationType;
-  title: string;
-  message: string;
-  imageUrl?: string;
-  productId?: string;
-  inventoryItemId?: string;
-  actionUrl?: string;
-  scheduledFor?: Date;
-}): Promise<SmartNotification | null> {
-  const { data, error } = await supabase
+export async function createNotification(
+  input: {
+    clerkUserId: string;
+    notificationType: NotificationType;
+    title: string;
+    message: string;
+    imageUrl?: string;
+    productId?: string;
+    inventoryItemId?: string;
+    actionUrl?: string;
+    scheduledFor?: Date;
+  },
+  db = supabase
+): Promise<SmartNotification | null> {
+  const { data, error } = await db
     .from('smart_notifications')
     .insert({
       clerk_user_id: input.clerkUserId,
@@ -107,8 +111,8 @@ export async function createNotification(input: {
 /**
  * 알림 읽음 처리
  */
-export async function markAsRead(notificationId: string): Promise<boolean> {
-  const { error } = await supabase
+export async function markAsRead(notificationId: string, db = supabase): Promise<boolean> {
+  const { error } = await db
     .from('smart_notifications')
     .update({
       read: true,
@@ -127,8 +131,8 @@ export async function markAsRead(notificationId: string): Promise<boolean> {
 /**
  * 모든 알림 읽음 처리
  */
-export async function markAllAsRead(clerkUserId: string): Promise<boolean> {
-  const { error } = await supabase
+export async function markAllAsRead(clerkUserId: string, db = supabase): Promise<boolean> {
+  const { error } = await db
     .from('smart_notifications')
     .update({
       read: true,
@@ -148,8 +152,8 @@ export async function markAllAsRead(clerkUserId: string): Promise<boolean> {
 /**
  * 알림 삭제
  */
-export async function deleteNotification(notificationId: string): Promise<boolean> {
-  const { error } = await supabase.from('smart_notifications').delete().eq('id', notificationId);
+export async function deleteNotification(notificationId: string, db = supabase): Promise<boolean> {
+  const { error } = await db.from('smart_notifications').delete().eq('id', notificationId);
 
   if (error) {
     smartMatchingLogger.error('알림 삭제 실패:', error);

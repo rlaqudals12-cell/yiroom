@@ -15,8 +15,11 @@ import { mapMeasurementsRow } from '@/types/smart-matching';
 /**
  * 신체 치수 조회
  */
-export async function getMeasurements(clerkUserId: string): Promise<UserBodyMeasurements | null> {
-  const { data, error } = await supabase
+export async function getMeasurements(
+  clerkUserId: string,
+  db = supabase
+): Promise<UserBodyMeasurements | null> {
+  const { data, error } = await db
     .from('user_body_measurements')
     .select('*')
     .eq('clerk_user_id', clerkUserId)
@@ -34,9 +37,10 @@ export async function getMeasurements(clerkUserId: string): Promise<UserBodyMeas
  */
 export async function upsertMeasurements(
   clerkUserId: string,
-  measurements: Partial<Omit<UserBodyMeasurements, 'clerkUserId' | 'createdAt' | 'updatedAt'>>
+  measurements: Partial<Omit<UserBodyMeasurements, 'clerkUserId' | 'createdAt' | 'updatedAt'>>,
+  db = supabase
 ): Promise<UserBodyMeasurements | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('user_body_measurements')
     .upsert({
       clerk_user_id: clerkUserId,

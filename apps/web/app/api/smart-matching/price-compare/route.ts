@@ -5,10 +5,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import {
-  comparePrices,
-  analyzePriceTrend,
-} from '@/lib/smart-matching';
+import { comparePrices, analyzePriceTrend } from '@/lib/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +15,8 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
+
+    const db = createClerkSupabaseClient();
 
     const body = await request.json();
     const { productId, platforms, action } = body;
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     // 가격 트렌드 분석 요청
     if (action === 'analyzeTrend') {
       const days = body.days || 30;
-      const trend = await analyzePriceTrend(productId, days);
+      const trend = await analyzePriceTrend(productId, days, db);
 
       return NextResponse.json({
         success: true,
@@ -37,10 +37,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 가격 비교 요청 (기본)
-    const comparison = await comparePrices(productId, {
-      platforms,
-      includeHistory: body.includeHistory,
-    });
+    const comparison = await comparePrices(
+      productId,
+      {
+        platforms,
+        includeHistory: body.includeHistory,
+      },
+      db
+    );
 
     return NextResponse.json({
       success: true,

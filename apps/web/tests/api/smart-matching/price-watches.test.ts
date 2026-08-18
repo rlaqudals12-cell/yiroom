@@ -10,6 +10,10 @@ vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn().mockResolvedValue({ userId: 'test-user-id' }),
 }));
 
+vi.mock('@/lib/supabase/server', () => ({
+  createClerkSupabaseClient: vi.fn(() => ({ from: vi.fn() })),
+}));
+
 vi.mock('@/lib/smart-matching', () => ({
   getPriceWatches: vi.fn(),
   getPriceWatchByProduct: vi.fn(),

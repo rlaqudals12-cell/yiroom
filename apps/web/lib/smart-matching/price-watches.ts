@@ -20,8 +20,8 @@ import { mapPriceWatchRow } from '@/types/smart-matching';
 /**
  * 사용자의 가격 알림 목록 조회
  */
-export async function getPriceWatches(clerkUserId: string): Promise<PriceWatch[]> {
-  const { data, error } = await supabase
+export async function getPriceWatches(clerkUserId: string, db = supabase): Promise<PriceWatch[]> {
+  const { data, error } = await db
     .from('price_watches')
     .select('*')
     .eq('clerk_user_id', clerkUserId)
@@ -39,9 +39,10 @@ export async function getPriceWatches(clerkUserId: string): Promise<PriceWatch[]
  */
 export async function getPriceWatchByProduct(
   clerkUserId: string,
-  productId: string
+  productId: string,
+  db = supabase
 ): Promise<PriceWatch | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('price_watches')
     .select('*')
     .eq('clerk_user_id', clerkUserId)
@@ -58,15 +59,18 @@ export async function getPriceWatchByProduct(
 /**
  * 가격 알림 생성
  */
-export async function createPriceWatch(input: {
-  clerkUserId: string;
-  productId: string;
-  targetPrice?: number;
-  percentDrop?: number;
-  platforms?: string[];
-  expiresAt?: Date;
-}): Promise<PriceWatch | null> {
-  const { data, error } = await supabase
+export async function createPriceWatch(
+  input: {
+    clerkUserId: string;
+    productId: string;
+    targetPrice?: number;
+    percentDrop?: number;
+    platforms?: string[];
+    expiresAt?: Date;
+  },
+  db = supabase
+): Promise<PriceWatch | null> {
+  const { data, error } = await db
     .from('price_watches')
     .insert({
       clerk_user_id: input.clerkUserId,
@@ -97,7 +101,8 @@ export async function updatePriceWatch(
     percentDrop?: number;
     platforms?: string[];
     expiresAt?: Date;
-  }
+  },
+  db = supabase
 ): Promise<boolean> {
   const updateData: Record<string, unknown> = {};
 
@@ -106,7 +111,7 @@ export async function updatePriceWatch(
   if (updates.platforms !== undefined) updateData.platforms = updates.platforms;
   if (updates.expiresAt !== undefined) updateData.expires_at = updates.expiresAt.toISOString();
 
-  const { error } = await supabase.from('price_watches').update(updateData).eq('id', watchId);
+  const { error } = await db.from('price_watches').update(updateData).eq('id', watchId);
 
   if (error) {
     smartMatchingLogger.error('가격알림 업데이트 실패:', error);
@@ -163,8 +168,8 @@ export async function markAsNotified(watchId: string): Promise<boolean> {
 /**
  * 가격 알림 삭제
  */
-export async function deletePriceWatch(watchId: string): Promise<boolean> {
-  const { error } = await supabase.from('price_watches').delete().eq('id', watchId);
+export async function deletePriceWatch(watchId: string, db = supabase): Promise<boolean> {
+  const { error } = await db.from('price_watches').delete().eq('id', watchId);
 
   if (error) {
     smartMatchingLogger.error('가격알림 삭제 실패:', error);
@@ -216,9 +221,10 @@ export async function getPriceHistory(
     platform?: string;
     days?: number;
     limit?: number;
-  }
+  },
+  db = supabase
 ): Promise<PriceHistory[]> {
-  let query = supabase.from('price_history').select('*').eq('product_id', productId);
+  let query = db.from('price_history').select('*').eq('product_id', productId);
 
   if (options?.platform) {
     query = query.eq('platform', options.platform);
@@ -278,9 +284,10 @@ export async function recordPrice(input: {
  */
 export async function getLowestPrice(
   productId: string,
-  platform?: string
+  platform?: string,
+  db = supabase
 ): Promise<{ price: number; platform: string; recordedAt: Date } | null> {
-  let query = supabase.from('price_history').select('*').eq('product_id', productId);
+  let query = db.from('price_history').select('*').eq('product_id', productId);
 
   if (platform) {
     query = query.eq('platform', platform);
@@ -305,9 +312,10 @@ export async function getLowestPrice(
  */
 export async function getPriceChangePercent(
   productId: string,
-  days: number = 7
+  days: number = 7,
+  db = supabase
 ): Promise<number | null> {
-  const history = await getPriceHistory(productId, { days, limit: 100 });
+  const history = await getPriceHistory(productId, { days, limit: 100 }, db);
 
   if (history.length < 2) {
     return null;

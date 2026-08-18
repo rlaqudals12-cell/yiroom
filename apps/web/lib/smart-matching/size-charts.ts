@@ -57,9 +57,10 @@ function mapProductMeasurementsRow(row: ProductMeasurementsDB): ProductMeasureme
  */
 export async function getSizeChart(
   brandId: string,
-  category: ClothingCategory
+  category: ClothingCategory,
+  db = supabase
 ): Promise<BrandSizeChart | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('brand_size_charts')
     .select('*')
     .eq('brand_id', brandId)
@@ -163,9 +164,10 @@ export async function upsertSizeChart(input: {
  * 제품 실측 데이터 조회
  */
 export async function getProductMeasurements(
-  productId: string
+  productId: string,
+  db = supabase
 ): Promise<ProductMeasurements | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('product_measurements')
     .select('*')
     .eq('product_id', productId)

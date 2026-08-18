@@ -7,17 +7,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { updateSizeFit, deleteSizeHistory } from '@/lib/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
+
+    const db = createClerkSupabaseClient();
 
     const { id } = await params;
     const body = await request.json();
@@ -29,7 +29,7 @@ export async function PATCH(
       );
     }
 
-    const success = await updateSizeFit(id, body.fit);
+    const success = await updateSizeFit(id, body.fit, db);
 
     if (!success) {
       return NextResponse.json({ error: '업데이트에 실패했습니다.' }, { status: 500 });
@@ -53,8 +53,10 @@ export async function DELETE(
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const { id } = await params;
-    const success = await deleteSizeHistory(id);
+    const success = await deleteSizeHistory(id, db);
 
     if (!success) {
       return NextResponse.json({ error: '삭제에 실패했습니다.' }, { status: 500 });

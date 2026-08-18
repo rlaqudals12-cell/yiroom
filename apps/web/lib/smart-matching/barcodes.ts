@@ -30,8 +30,11 @@ function toBarcode(row: ProductBarcodeDB): ProductBarcode {
 /**
  * 바코드로 제품 조회
  */
-export async function findByBarcode(barcode: string): Promise<ProductBarcode | null> {
-  const { data, error } = await supabase
+export async function findByBarcode(
+  barcode: string,
+  db = supabase
+): Promise<ProductBarcode | null> {
+  const { data, error } = await db
     .from('product_barcodes')
     .select('*')
     .eq('barcode', barcode)
@@ -63,17 +66,20 @@ export async function findByProductId(productId: string): Promise<ProductBarcode
 /**
  * 바코드 등록
  */
-export async function createBarcode(input: {
-  barcode: string;
-  barcodeType?: string;
-  productId?: string;
-  productName?: string;
-  brand?: string;
-  category?: string;
-  imageUrl?: string;
-  source?: string;
-}): Promise<ProductBarcode | null> {
-  const { data, error } = await supabase
+export async function createBarcode(
+  input: {
+    barcode: string;
+    barcodeType?: string;
+    productId?: string;
+    productName?: string;
+    brand?: string;
+    category?: string;
+    imageUrl?: string;
+    source?: string;
+  },
+  db = supabase
+): Promise<ProductBarcode | null> {
+  const { data, error } = await db
     .from('product_barcodes')
     .insert({
       barcode: input.barcode,

@@ -23,9 +23,10 @@ export async function getFeedbackList(
     type?: FeedbackType;
     productId?: string;
     limit?: number;
-  }
+  },
+  db = supabase
 ): Promise<UserFeedback[]> {
-  let query = supabase.from('user_feedback').select('*').eq('clerk_user_id', clerkUserId);
+  let query = db.from('user_feedback').select('*').eq('clerk_user_id', clerkUserId);
 
   if (options?.type) {
     query = query.eq('feedback_type', options.type);
@@ -70,21 +71,24 @@ export async function getFeedback(feedbackId: string): Promise<UserFeedback | nu
 /**
  * 피드백 생성
  */
-export async function createFeedback(input: {
-  clerkUserId: string;
-  feedbackType: FeedbackType;
-  productId?: string;
-  recommendationId?: string;
-  rating?: number;
-  sizeFit?: SizeFit;
-  colorAccuracy?: ColorAccuracy;
-  wouldRecommend?: boolean;
-  comment?: string;
-  pros?: string[];
-  cons?: string[];
-  photos?: string[];
-}): Promise<UserFeedback | null> {
-  const { data, error } = await supabase
+export async function createFeedback(
+  input: {
+    clerkUserId: string;
+    feedbackType: FeedbackType;
+    productId?: string;
+    recommendationId?: string;
+    rating?: number;
+    sizeFit?: SizeFit;
+    colorAccuracy?: ColorAccuracy;
+    wouldRecommend?: boolean;
+    comment?: string;
+    pros?: string[];
+    cons?: string[];
+    photos?: string[];
+  },
+  db = supabase
+): Promise<UserFeedback | null> {
+  const { data, error } = await db
     .from('user_feedback')
     .insert({
       clerk_user_id: input.clerkUserId,
@@ -125,7 +129,8 @@ export async function updateFeedback(
     pros: string[];
     cons: string[];
     photos: string[];
-  }>
+  }>,
+  db = supabase
 ): Promise<boolean> {
   const updateData: Record<string, unknown> = {};
 
@@ -138,7 +143,7 @@ export async function updateFeedback(
   if (updates.cons !== undefined) updateData.cons = updates.cons;
   if (updates.photos !== undefined) updateData.photos = updates.photos;
 
-  const { error } = await supabase.from('user_feedback').update(updateData).eq('id', feedbackId);
+  const { error } = await db.from('user_feedback').update(updateData).eq('id', feedbackId);
 
   if (error) {
     smartMatchingLogger.error('피드백 업데이트 실패:', error);
@@ -151,8 +156,8 @@ export async function updateFeedback(
 /**
  * 피드백 삭제
  */
-export async function deleteFeedback(feedbackId: string): Promise<boolean> {
-  const { error } = await supabase.from('user_feedback').delete().eq('id', feedbackId);
+export async function deleteFeedback(feedbackId: string, db = supabase): Promise<boolean> {
+  const { error } = await db.from('user_feedback').delete().eq('id', feedbackId);
 
   if (error) {
     smartMatchingLogger.error('피드백 삭제 실패:', error);
@@ -228,12 +233,15 @@ export async function getProductSizeFitStats(productId: string): Promise<{
 /**
  * 추천 정확도 통계 조회
  */
-export async function getRecommendationAccuracy(clerkUserId: string): Promise<{
+export async function getRecommendationAccuracy(
+  clerkUserId: string,
+  db = supabase
+): Promise<{
   totalRecommendations: number;
   positiveRatings: number;
   accuracyPercent: number;
 } | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('user_feedback')
     .select('rating, would_recommend')
     .eq('clerk_user_id', clerkUserId)

@@ -10,6 +10,10 @@ vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn().mockResolvedValue({ userId: 'test-user-id' }),
 }));
 
+vi.mock('@/lib/supabase/server', () => ({
+  createClerkSupabaseClient: vi.fn(() => ({ from: vi.fn() })),
+}));
+
 vi.mock('@/lib/smart-matching', () => ({
   getSizeRecommendation: vi.fn(),
   getProductSizeRecommendation: vi.fn(),
@@ -78,7 +82,8 @@ describe('POST /api/smart-matching/size-recommend', () => {
       'product-123',
       'nike',
       'Nike',
-      'top'
+      'top',
+      expect.anything()
     );
   });
 

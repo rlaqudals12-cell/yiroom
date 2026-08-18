@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { markAsRead, deleteNotification } from '@/lib/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
 export async function PATCH(
   _request: NextRequest,
@@ -19,8 +20,10 @@ export async function PATCH(
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const { id } = await params;
-    const success = await markAsRead(id);
+    const success = await markAsRead(id, db);
 
     if (!success) {
       return NextResponse.json({ error: '읽음 처리에 실패했습니다.' }, { status: 500 });
@@ -44,8 +47,10 @@ export async function DELETE(
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const { id } = await params;
-    const success = await deleteNotification(id);
+    const success = await deleteNotification(id, db);
 
     if (!success) {
       return NextResponse.json({ error: '삭제에 실패했습니다.' }, { status: 500 });

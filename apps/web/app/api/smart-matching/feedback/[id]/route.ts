@@ -7,11 +7,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { updateFeedback, deleteFeedback } from '@/lib/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
 
@@ -19,19 +17,25 @@ export async function PATCH(
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const { id } = await params;
     const body = await request.json();
 
-    const success = await updateFeedback(id, {
-      rating: body.rating,
-      sizeFit: body.sizeFit,
-      colorAccuracy: body.colorAccuracy,
-      wouldRecommend: body.wouldRecommend,
-      comment: body.comment,
-      pros: body.pros,
-      cons: body.cons,
-      photos: body.photos,
-    });
+    const success = await updateFeedback(
+      id,
+      {
+        rating: body.rating,
+        sizeFit: body.sizeFit,
+        colorAccuracy: body.colorAccuracy,
+        wouldRecommend: body.wouldRecommend,
+        comment: body.comment,
+        pros: body.pros,
+        cons: body.cons,
+        photos: body.photos,
+      },
+      db
+    );
 
     if (!success) {
       return NextResponse.json({ error: '업데이트에 실패했습니다.' }, { status: 500 });
@@ -55,8 +59,10 @@ export async function DELETE(
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const { id } = await params;
-    const success = await deleteFeedback(id);
+    const success = await deleteFeedback(id, db);
 
     if (!success) {
       return NextResponse.json({ error: '삭제에 실패했습니다.' }, { status: 500 });

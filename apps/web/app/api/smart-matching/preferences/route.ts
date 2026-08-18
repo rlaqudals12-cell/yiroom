@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { getPreferences, upsertPreferences } from '@/lib/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
@@ -16,7 +17,9 @@ export async function GET() {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
-    const preferences = await getPreferences(userId);
+    const db = createClerkSupabaseClient();
+
+    const preferences = await getPreferences(userId, db);
 
     // 설정이 없으면 기본값 반환
     if (!preferences) {
@@ -54,24 +57,30 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const body = await request.json();
 
-    const result = await upsertPreferences(userId, {
-      budget: body.budget,
-      favoriteBrands: body.favoriteBrands,
-      blockedBrands: body.blockedBrands,
-      preferredPlatforms: body.preferredPlatforms,
-      prioritizeFreeDelivery: body.prioritizeFreeDelivery,
-      prioritizeFastDelivery: body.prioritizeFastDelivery,
-      prioritizePoints: body.prioritizePoints,
-      showAlternatives: body.showAlternatives,
-      showPriceComparison: body.showPriceComparison,
-      notifyPriceDrop: body.notifyPriceDrop,
-      notifyRestock: body.notifyRestock,
-      notificationEmail: body.notificationEmail,
-      notificationPush: body.notificationPush,
-      notificationFrequency: body.notificationFrequency,
-    });
+    const result = await upsertPreferences(
+      userId,
+      {
+        budget: body.budget,
+        favoriteBrands: body.favoriteBrands,
+        blockedBrands: body.blockedBrands,
+        preferredPlatforms: body.preferredPlatforms,
+        prioritizeFreeDelivery: body.prioritizeFreeDelivery,
+        prioritizeFastDelivery: body.prioritizeFastDelivery,
+        prioritizePoints: body.prioritizePoints,
+        showAlternatives: body.showAlternatives,
+        showPriceComparison: body.showPriceComparison,
+        notifyPriceDrop: body.notifyPriceDrop,
+        notifyRestock: body.notifyRestock,
+        notificationEmail: body.notificationEmail,
+        notificationPush: body.notificationPush,
+        notificationFrequency: body.notificationFrequency,
+      },
+      db
+    );
 
     if (!result) {
       return NextResponse.json({ error: '설정 저장에 실패했습니다.' }, { status: 500 });

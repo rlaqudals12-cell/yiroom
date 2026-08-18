@@ -601,7 +601,7 @@ export async function POST(req: NextRequest) {
             imageQuality: aiResult.imageQuality || null,
             // 퍼스널 대비 실측값(ADR-116) — 있을 때만 저장 (DB 실패 합성 응답에도 보존)
             ...(contrastLevel ? { contrastLevel } : {}),
-            usedMock: true,
+            usedMock,
           },
           season_scores: {
             spring: result.seasonType === 'spring' ? result.confidence : 0,
@@ -616,7 +616,8 @@ export async function POST(req: NextRequest) {
           ...result,
           analyzedAt: now,
         },
-        usedMock: true,
+        usedMock,
+        dbSaveFailed: true,
         analysisReliability,
         imagesCount,
         gamification: gamificationResult,

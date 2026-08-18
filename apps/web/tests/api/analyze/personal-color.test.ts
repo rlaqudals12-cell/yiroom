@@ -569,7 +569,7 @@ describe('POST /api/analyze/personal-color', () => {
       expect(json.data).toEqual(mockDbResult);
     });
 
-    it('DB 저장 실패 시 분석 결과는 반환하되 dbSaveFailed 플래그를 포함한다', async () => {
+    it('Mock 분석의 DB 저장 실패는 두 출처 플래그를 각각 보존한다', async () => {
       mockSupabase.single.mockResolvedValue({ data: null, error: { message: 'DB Error' } });
 
       const response = await POST(
@@ -582,6 +582,22 @@ describe('POST /api/analyze/personal-color', () => {
 
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
+      expect(json.dbSaveFailed).toBe(true);
+      expect(json.usedMock).toBe(true);
+      expect(json.data.image_analysis.usedMock).toBe(true);
+    });
+
+    it('실 AI 성공 후 DB만 실패하면 결과를 Mock으로 위장하지 않는다', async () => {
+      vi.mocked(analyzePersonalColor).mockResolvedValue(mockPersonalColorResult);
+      mockSupabase.single.mockResolvedValue({ data: null, error: { message: 'DB Error' } });
+
+      const response = await POST(createMockPostRequest({ imageBase64: MOCK_BASE64 }));
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.dbSaveFailed).toBe(true);
+      expect(json.usedMock).toBe(false);
+      expect(json.data.image_analysis.usedMock).toBe(false);
     });
   });
 

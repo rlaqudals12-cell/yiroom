@@ -10,6 +10,10 @@ vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn().mockResolvedValue({ userId: 'test-user-id' }),
 }));
 
+vi.mock('@/lib/supabase/server', () => ({
+  createClerkSupabaseClient: vi.fn(() => ({ from: vi.fn() })),
+}));
+
 vi.mock('@/lib/smart-matching', () => ({
   getSizeHistory: vi.fn(),
   getSizeHistoryByBrand: vi.fn(),
@@ -74,7 +78,7 @@ describe('GET /api/smart-matching/size-history', () => {
     await response.json();
 
     expect(response.status).toBe(200);
-    expect(getSizeHistoryByBrand).toHaveBeenCalledWith('test-user-id', 'nike');
+    expect(getSizeHistoryByBrand).toHaveBeenCalledWith('test-user-id', 'nike', expect.anything());
   });
 
   it('카테고리별 사이즈 기록을 조회한다', async () => {
@@ -97,7 +101,11 @@ describe('GET /api/smart-matching/size-history', () => {
     const response = await GET(request);
 
     expect(response.status).toBe(200);
-    expect(getSizeHistoryByCategory).toHaveBeenCalledWith('test-user-id', 'bottom');
+    expect(getSizeHistoryByCategory).toHaveBeenCalledWith(
+      'test-user-id',
+      'bottom',
+      expect.anything()
+    );
   });
 });
 

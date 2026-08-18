@@ -11,8 +11,11 @@ import { mapSizeHistoryRow } from '@/types/smart-matching';
 /**
  * 사용자의 전체 사이즈 기록 조회
  */
-export async function getSizeHistory(clerkUserId: string): Promise<UserSizeHistory[]> {
-  const { data, error } = await supabase
+export async function getSizeHistory(
+  clerkUserId: string,
+  db = supabase
+): Promise<UserSizeHistory[]> {
+  const { data, error } = await db
     .from('user_size_history')
     .select('*')
     .eq('clerk_user_id', clerkUserId)
@@ -30,9 +33,10 @@ export async function getSizeHistory(clerkUserId: string): Promise<UserSizeHisto
  */
 export async function getSizeHistoryByBrand(
   clerkUserId: string,
-  brandId: string
+  brandId: string,
+  db = supabase
 ): Promise<UserSizeHistory[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('user_size_history')
     .select('*')
     .eq('clerk_user_id', clerkUserId)
@@ -51,9 +55,10 @@ export async function getSizeHistoryByBrand(
  */
 export async function getSizeHistoryByCategory(
   clerkUserId: string,
-  category: string
+  category: string,
+  db = supabase
 ): Promise<UserSizeHistory[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('user_size_history')
     .select('*')
     .eq('clerk_user_id', clerkUserId)
@@ -70,17 +75,20 @@ export async function getSizeHistoryByCategory(
 /**
  * 사이즈 기록 추가
  */
-export async function addSizeHistory(input: {
-  clerkUserId: string;
-  brandId: string;
-  brandName: string;
-  category: string;
-  size: string;
-  fit?: SizeFit;
-  productId?: string;
-  purchaseDate?: Date;
-}): Promise<UserSizeHistory | null> {
-  const { data, error } = await supabase
+export async function addSizeHistory(
+  input: {
+    clerkUserId: string;
+    brandId: string;
+    brandName: string;
+    category: string;
+    size: string;
+    fit?: SizeFit;
+    productId?: string;
+    purchaseDate?: Date;
+  },
+  db = supabase
+): Promise<UserSizeHistory | null> {
+  const { data, error } = await db
     .from('user_size_history')
     .insert({
       clerk_user_id: input.clerkUserId,
@@ -106,8 +114,12 @@ export async function addSizeHistory(input: {
 /**
  * 사이즈 핏 피드백 업데이트
  */
-export async function updateSizeFit(historyId: string, fit: SizeFit): Promise<boolean> {
-  const { error } = await supabase.from('user_size_history').update({ fit }).eq('id', historyId);
+export async function updateSizeFit(
+  historyId: string,
+  fit: SizeFit,
+  db = supabase
+): Promise<boolean> {
+  const { error } = await db.from('user_size_history').update({ fit }).eq('id', historyId);
 
   if (error) {
     smartMatchingLogger.error('사이즈기록 핏 업데이트 실패:', error);
@@ -120,8 +132,8 @@ export async function updateSizeFit(historyId: string, fit: SizeFit): Promise<bo
 /**
  * 사이즈 기록 삭제
  */
-export async function deleteSizeHistory(historyId: string): Promise<boolean> {
-  const { error } = await supabase.from('user_size_history').delete().eq('id', historyId);
+export async function deleteSizeHistory(historyId: string, db = supabase): Promise<boolean> {
+  const { error } = await db.from('user_size_history').delete().eq('id', historyId);
 
   if (error) {
     smartMatchingLogger.error('사이즈기록 삭제 실패:', error);
@@ -163,9 +175,10 @@ export async function getLatestSizeByBrand(
  */
 export async function getPerfectFitHistory(
   clerkUserId: string,
-  category?: string
+  category?: string,
+  db = supabase
 ): Promise<UserSizeHistory[]> {
-  let query = supabase
+  let query = db
     .from('user_size_history')
     .select('*')
     .eq('clerk_user_id', clerkUserId)

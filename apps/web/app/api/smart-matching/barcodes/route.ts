@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { findByBarcode, createBarcode } from '@/lib/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,6 +15,8 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
+
+    const db = createClerkSupabaseClient();
 
     const body = await request.json();
     const { barcode, action, productData } = body;
@@ -24,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     // 조회 모드
     if (action === 'lookup' || !action) {
-      const result = await findByBarcode(barcode);
+      const result = await findByBarcode(barcode, db);
 
       if (!result) {
         return NextResponse.json({
@@ -43,34 +46,43 @@ export async function POST(request: NextRequest) {
     // 등록 모드
     if (action === 'register') {
       // 중복 체크
-      const existing = await findByBarcode(barcode);
+      const existing = await findByBarcode(barcode, db);
       if (existing) {
-        return NextResponse.json({
-          success: false,
-          error: '이미 등록된 바코드입니다.',
-          data: existing,
-        }, { status: 409 });
+        return NextResponse.json(
+          {
+            success: false,
+            error: '이미 등록된 바코드입니다.',
+            data: existing,
+          },
+          { status: 409 }
+        );
       }
 
-      const result = await createBarcode({
-        barcode,
-        barcodeType: productData?.barcodeType,
-        productId: productData?.productId,
-        productName: productData?.productName,
-        brand: productData?.brand,
-        category: productData?.category,
-        imageUrl: productData?.imageUrl,
-        source: 'user_report',
-      });
+      const result = await createBarcode(
+        {
+          barcode,
+          barcodeType: productData?.barcodeType,
+          productId: productData?.productId,
+          productName: productData?.productName,
+          brand: productData?.brand,
+          category: productData?.category,
+          imageUrl: productData?.imageUrl,
+          source: 'user_report',
+        },
+        db
+      );
 
       if (!result) {
         return NextResponse.json({ error: '바코드 등록에 실패했습니다.' }, { status: 500 });
       }
 
-      return NextResponse.json({
-        success: true,
-        data: result,
-      }, { status: 201 });
+      return NextResponse.json(
+        {
+          success: true,
+          data: result,
+        },
+        { status: 201 }
+      );
     }
 
     return NextResponse.json({ error: '유효하지 않은 action입니다.' }, { status: 400 });

@@ -12,6 +12,7 @@ import {
   getSizeHistoryByCategory,
   addSizeHistory,
 } from '@/lib/smart-matching';
+import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,6 +22,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const { searchParams } = new URL(request.url);
     const brandId = searchParams.get('brandId');
     const category = searchParams.get('category');
@@ -28,11 +31,11 @@ export async function GET(request: NextRequest) {
     let history;
 
     if (brandId) {
-      history = await getSizeHistoryByBrand(userId, brandId);
+      history = await getSizeHistoryByBrand(userId, brandId, db);
     } else if (category) {
-      history = await getSizeHistoryByCategory(userId, category);
+      history = await getSizeHistoryByCategory(userId, category, db);
     } else {
-      history = await getSizeHistory(userId);
+      history = await getSizeHistory(userId, db);
     }
 
     return NextResponse.json(history);
@@ -50,6 +53,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
+    const db = createClerkSupabaseClient();
+
     const body = await request.json();
 
     if (!body.brandId || !body.brandName || !body.category || !body.size) {
@@ -59,16 +64,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await addSizeHistory({
-      clerkUserId: userId,
-      brandId: body.brandId,
-      brandName: body.brandName,
-      category: body.category,
-      size: body.size,
-      fit: body.fit,
-      productId: body.productId,
-      purchaseDate: body.purchaseDate ? new Date(body.purchaseDate) : undefined,
-    });
+    const result = await addSizeHistory(
+      {
+        clerkUserId: userId,
+        brandId: body.brandId,
+        brandName: body.brandName,
+        category: body.category,
+        size: body.size,
+        fit: body.fit,
+        productId: body.productId,
+        purchaseDate: body.purchaseDate ? new Date(body.purchaseDate) : undefined,
+      },
+      db
+    );
 
     if (!result) {
       return NextResponse.json({ error: '기록 저장에 실패했습니다.' }, { status: 500 });
