@@ -8,16 +8,29 @@ import { createReportShare, getSharedReport } from '@/lib/share/report';
 
 // 테이블별 fixture — from(table) 체인의 maybeSingle이 이 값을 반환
 const fixtures: Record<string, unknown> = {};
+const latestFixtures: Record<string, unknown> = {};
 let insertedRows: Array<Record<string, unknown>> = [];
 
 vi.mock('@/lib/supabase/service-role', () => ({
   createServiceRoleClient: () => ({
     from: (table: string) => {
+      const state = { isLatest: false };
       const builder = {
         select: () => builder,
         eq: () => builder,
+        lte: () => builder,
+        in: () => Promise.resolve({ data: [], error: null }),
         is: () => builder,
-        maybeSingle: () => Promise.resolve({ data: fixtures[table] ?? null, error: null }),
+        order: () => {
+          state.isLatest = true;
+          return builder;
+        },
+        limit: () => builder,
+        maybeSingle: () =>
+          Promise.resolve({
+            data: (state.isLatest ? latestFixtures[table] : fixtures[table]) ?? null,
+            error: null,
+          }),
         insert: (row: Record<string, unknown>) => {
           insertedRows.push({ table, ...row });
           return Promise.resolve({ error: null });
@@ -32,6 +45,7 @@ const VALID_TOKEN = 'a'.repeat(32);
 
 beforeEach(() => {
   for (const key of Object.keys(fixtures)) delete fixtures[key];
+  for (const key of Object.keys(latestFixtures)) delete latestFixtures[key];
   insertedRows = [];
 });
 
@@ -70,7 +84,7 @@ describe('getSharedReport', () => {
   });
 
   it('사진·식별 필드가 결과 타입에 존재하지 않는다 (화이트리스트 추출)', async () => {
-    fixtures['report_shares'] = { session_id: 's1' };
+    fixtures['report_shares'] = { session_id: 's1', clerk_user_id: 'user_1' };
     fixtures['integrated_analysis_sessions'] = {
       created_at: '2026-07-08T00:00:00Z',
       persona: { oneLine: '부드러운 여름의 사람', narrative: '...' },
@@ -112,7 +126,7 @@ describe('getSharedReport', () => {
    * 문자열 팔레트는 전부 버려 색이 하나도 안 나왔다.
    */
   function seedIntegratedSession(): void {
-    fixtures['report_shares'] = { session_id: 's1' };
+    fixtures['report_shares'] = { session_id: 's1', clerk_user_id: 'user_1' };
     fixtures['integrated_analysis_sessions'] = {
       created_at: '2026-08-17T00:00:00Z',
       persona: { oneLine: '따뜻한 가을의 사람' },
@@ -322,17 +336,25 @@ describe('getSharedReport', () => {
     });
   });
 
-  it('누락 축은 null로 우아하게 생략된다 (partial 세션)', async () => {
-    fixtures['report_shares'] = { session_id: 's1' };
+  it('partial 세션도 소유자와 같은 최신 프로필 축을 공유한다', async () => {
+    fixtures['report_shares'] = { session_id: 's1', clerk_user_id: 'user_1' };
     fixtures['integrated_analysis_sessions'] = {
       created_at: '2026-07-08T00:00:00Z',
       persona: null,
     };
     fixtures['skin_analyses'] = { skin_type: 'dry', overall_score: null };
+    latestFixtures['personal_color_assessments'] = {
+      id: 'pc-old',
+      season: 'Autumn',
+      undertone: 'warm',
+      best_colors: ['#A0522D'],
+      image_analysis: { usedMock: true },
+    };
 
     const report = await getSharedReport(VALID_TOKEN);
-    expect(report!.personalColor).toBeNull();
+    expect(report!.personalColor?.season).toBe('Autumn');
     expect(report!.skin?.skinType).toBe('dry');
     expect(report!.body).toBeNull();
+    expect(report!.fallbackAxes).toContain('personal_color');
   });
 });

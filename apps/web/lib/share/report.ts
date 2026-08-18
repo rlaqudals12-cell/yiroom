@@ -13,6 +13,8 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { normalizeColors } from '@/lib/color/normalize-colors';
+import { fetchIntegratedProfileSnapshot } from '@/lib/analysis/integrated/profile-snapshot';
 
 /** 공개 리포트가 고지하는 축 코드 (세션 used_fallback과 동일 taxonomy) */
 export type PublicAxisCode = 'personal_color' | 'skin' | 'body' | 'hair' | 'makeup';
@@ -29,6 +31,8 @@ export interface PublicStyleReport {
    * 소유자 화면(AxisFallbackNotice)과 **같은 근거**(세션 used_fallback)를 쓴다.
    */
   fallbackAxes: PublicAxisCode[];
+  /** 출처 표식이 없어 AI/샘플 어느 쪽인지 확인할 수 없는 낮은 신뢰도 축. */
+  unknownAxes: PublicAxisCode[];
   personalColor: {
     season: string;
     undertone: string | null;
@@ -95,40 +99,6 @@ export async function createReportShare(
   return { token };
 }
 
-const HEX_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
-
-/**
- * 색 하나를 {hex,name}으로 정규화 — 저장 형상 3종을 모두 수용한다.
- *
- * 왜: `best_colors`의 실제 저장 형상은 경로마다 다르다.
- *  - 단독 AI 경로: `{hex, name}` 객체 (방어적으로 `{color}` 폴백도 존재)
- *  - 통합 경로(axis-adapters): **hex 문자열 배열** (`palette.mainColors: string[]`)
- * 객체만 받던 옛 구현은 통합 사용자의 팔레트를 통째로 버렸다.
- * 색 이름은 있을 때만 담는다 — 없는 이름을 지어내지 않는다.
- */
-function normalizeColor(item: unknown): { hex: string; name: string } | null {
-  let hex: string | null = null;
-  let name = '';
-  if (typeof item === 'string') {
-    hex = item;
-  } else if (typeof item === 'object' && item !== null) {
-    const c = item as { hex?: unknown; color?: unknown; name?: unknown };
-    if (typeof c.hex === 'string') hex = c.hex;
-    else if (typeof c.color === 'string') hex = c.color;
-    if (typeof c.name === 'string') name = c.name;
-  }
-  if (!hex || !HEX_PATTERN.test(hex)) return null;
-  return { hex, name };
-}
-
-function normalizeColors(raw: unknown, max: number): Array<{ hex: string; name: string }> {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .map(normalizeColor)
-    .filter((c): c is { hex: string; name: string } => c !== null)
-    .slice(0, max);
-}
-
 /**
  * 메이크업 추천이 담긴 텍스트만 뽑는다 — 저장 형상이 **배열이 아니라 객체**다.
  *
@@ -167,44 +137,6 @@ function normalizeMakeupRecommendations(raw: unknown, max: number): string[] {
   return out.slice(0, max);
 }
 
-/** JSONB 안의 boolean 플래그를 안전하게 읽는다 (형상이 깨져 있어도 throw 금지) */
-function readFlag(raw: unknown, key: string): boolean {
-  if (typeof raw !== 'object' || raw === null) return false;
-  return (raw as Record<string, unknown>)[key] === true;
-}
-
-/**
- * 축별 Mock 대체 여부를 수집한다.
- *
- * 정본은 세션의 `used_fallback`(축 코드 배열) — 소유자 화면과 같은 근거다.
- * 행에 남은 축별 플래그(PC `image_analysis.usedFallback`, S/H `recommendations.usedFallback`,
- * M `recommendations.usedMock`)를 합집합으로 교차 검증한다 — 세션 집계가 비어 있어도
- * 축 단위 진실이 남아 있으면 고지가 누락되지 않는다. (체형은 행 플래그가 없어 세션값만)
- */
-function collectFallbackAxes(
-  sessionUsedFallback: unknown,
-  rowFlags: Array<{ axis: PublicAxisCode; used: boolean }>
-): PublicAxisCode[] {
-  const valid: readonly PublicAxisCode[] = [
-    'personal_color',
-    'skin',
-    'body',
-    'hair',
-    'makeup',
-  ] as const;
-  const axes = new Set<PublicAxisCode>();
-  if (Array.isArray(sessionUsedFallback)) {
-    for (const code of sessionUsedFallback) {
-      if (typeof code === 'string' && (valid as readonly string[]).includes(code)) {
-        axes.add(code as PublicAxisCode);
-      }
-    }
-  }
-  for (const { axis, used } of rowFlags) if (used) axes.add(axis);
-  // 표시 순서를 taxonomy 순서로 고정 (Set 삽입 순서에 의존하지 않음)
-  return valid.filter((axis) => axes.has(axis));
-}
-
 /** 토큰으로 공개 리포트 조회 — 무효/철회 토큰은 null */
 export async function getSharedReport(token: string): Promise<PublicStyleReport | null> {
   if (!/^[a-f0-9]{32}$/.test(token)) return null;
@@ -213,7 +145,7 @@ export async function getSharedReport(token: string): Promise<PublicStyleReport 
 
   const { data: share } = await supabase
     .from('report_shares')
-    .select('session_id')
+    .select('session_id, clerk_user_id')
     .eq('token', token)
     .is('revoked_at', null)
     .maybeSingle();
@@ -221,46 +153,42 @@ export async function getSharedReport(token: string): Promise<PublicStyleReport 
 
   const sessionId = share.session_id as string;
 
-  const [sessionRes, pcRes, skinRes, bodyRes, hairRes, makeupRes] = await Promise.all([
-    supabase
-      .from('integrated_analysis_sessions')
-      .select('created_at, persona, used_fallback')
-      .eq('id', sessionId)
-      .maybeSingle(),
-    supabase
-      .from('personal_color_assessments')
-      .select('season, undertone, best_colors, image_analysis')
-      .eq('session_id', sessionId)
-      .maybeSingle(),
-    supabase
-      .from('skin_analyses')
-      .select('skin_type, overall_score, foundation_recommendation, recommendations')
-      .eq('session_id', sessionId)
-      .maybeSingle(),
-    supabase
-      .from('body_analyses')
-      .select('body_type, style_recommendations')
-      .eq('session_id', sessionId)
-      .maybeSingle(),
-    supabase
-      .from('hair_analyses')
-      .select('hair_type, scalp_type, face_shape, recommendations')
-      .eq('session_id', sessionId)
-      .maybeSingle(),
-    supabase
-      .from('makeup_analyses')
-      .select('undertone, recommendations')
-      .eq('session_id', sessionId)
-      .maybeSingle(),
-  ]);
+  const sessionRes = await supabase
+    .from('integrated_analysis_sessions')
+    .select('created_at, persona, used_fallback, clerk_user_id')
+    .eq('id', sessionId)
+    .maybeSingle();
 
   if (!sessionRes.data) return null;
 
+  const clerkUserId = String(sessionRes.data.clerk_user_id ?? share.clerk_user_id ?? '');
+  if (!clerkUserId) return null;
+
+  // 공개 경로는 service-role이므로 필요한 컬럼만 읽고, owner filter를 모든 축에 강제한다.
+  const snapshot = await fetchIntegratedProfileSnapshot(supabase, {
+    sessionId,
+    clerkUserId,
+    sessionUsedFallback: sessionRes.data.used_fallback,
+    sessionCreatedAt: String(sessionRes.data.created_at),
+    selectColumns: {
+      personal_color: 'id, session_id, created_at, season, undertone, best_colors, image_analysis',
+      skin: 'id, session_id, created_at, skin_type, overall_score, foundation_recommendation, recommendations',
+      body: 'id, session_id, created_at, body_type, style_recommendations',
+      hair: 'id, session_id, created_at, hair_type, scalp_type, face_shape, recommendations',
+      makeup: 'id, session_id, created_at, undertone, recommendations',
+    },
+  });
+  const pc = snapshot.axes.personal_color;
+  const skin = snapshot.axes.skin;
+  const body = snapshot.axes.body;
+  const hair = snapshot.axes.hair;
+  const makeup = snapshot.axes.makeup;
+
   // best_colors: hex 문자열 배열(통합) · {hex,name} 객체 배열(단독) 모두 수용
-  const bestColors = normalizeColors(pcRes.data?.best_colors, 10);
+  const bestColors = normalizeColors(pc?.best_colors, 10);
 
   // style_recommendations: JSONB — 문자열 배열(tops/bottoms 등 중첩)에서 팁 추출
-  const styleRec = bodyRes.data?.style_recommendations as unknown;
+  const styleRec = body?.style_recommendations;
   const styleTips: string[] = [];
   if (Array.isArray(styleRec)) {
     for (const s of styleRec) if (typeof s === 'string') styleTips.push(s);
@@ -271,15 +199,7 @@ export async function getSharedReport(token: string): Promise<PublicStyleReport 
   }
 
   // recommendations는 배열이 아니라 JSONB 객체다 — 캐스팅+filter는 런타임 크래시였다
-  const makeupRec = normalizeMakeupRecommendations(makeupRes.data?.recommendations, 3);
-
-  // 축별 Mock 고지 — 세션 집계(정본) ∪ 행에 남은 축별 플래그
-  const fallbackAxes = collectFallbackAxes(sessionRes.data.used_fallback, [
-    { axis: 'personal_color', used: readFlag(pcRes.data?.image_analysis, 'usedFallback') },
-    { axis: 'skin', used: readFlag(skinRes.data?.recommendations, 'usedFallback') },
-    { axis: 'hair', used: readFlag(hairRes.data?.recommendations, 'usedFallback') },
-    { axis: 'makeup', used: readFlag(makeupRes.data?.recommendations, 'usedMock') },
-  ]);
+  const makeupRec = normalizeMakeupRecommendations(makeup?.recommendations, 3);
 
   // persona는 {oneLine, narrative, ...} JSONB — 한 줄 문구만 안전 추출
   const personaRaw = sessionRes.data.persona as { oneLine?: unknown } | string | null;
@@ -293,34 +213,35 @@ export async function getSharedReport(token: string): Promise<PublicStyleReport 
   return {
     createdAt: sessionRes.data.created_at as string,
     persona,
-    fallbackAxes,
-    personalColor: pcRes.data?.season
+    fallbackAxes: snapshot.fallbackAxes,
+    unknownAxes: snapshot.unknownAxes,
+    personalColor: pc?.season
       ? {
-          season: pcRes.data.season as string,
-          undertone: (pcRes.data.undertone as string | null) ?? null,
+          season: pc.season as string,
+          undertone: (pc.undertone as string | null) ?? null,
           bestColors,
         }
       : null,
-    skin: skinRes.data?.skin_type
+    skin: skin?.skin_type
       ? {
-          skinType: skinRes.data.skin_type as string,
-          overallScore: (skinRes.data.overall_score as number | null) ?? null,
-          foundation: (skinRes.data.foundation_recommendation as string | null) ?? null,
+          skinType: skin.skin_type as string,
+          overallScore: (skin.overall_score as number | null) ?? null,
+          foundation: (skin.foundation_recommendation as string | null) ?? null,
         }
       : null,
-    body: bodyRes.data?.body_type
-      ? { bodyType: bodyRes.data.body_type as string, styleTips: styleTips.slice(0, 4) }
+    body: body?.body_type
+      ? { bodyType: body.body_type as string, styleTips: styleTips.slice(0, 4) }
       : null,
-    hair: hairRes.data
+    hair: hair
       ? {
-          hairType: (hairRes.data.hair_type as string | null) ?? null,
-          scalpType: (hairRes.data.scalp_type as string | null) ?? null,
-          faceShape: (hairRes.data.face_shape as string | null) ?? null,
+          hairType: (hair.hair_type as string | null) ?? null,
+          scalpType: (hair.scalp_type as string | null) ?? null,
+          faceShape: (hair.face_shape as string | null) ?? null,
         }
       : null,
-    makeup: makeupRes.data
+    makeup: makeup
       ? {
-          undertone: (makeupRes.data.undertone as string | null) ?? null,
+          undertone: (makeup.undertone as string | null) ?? null,
           recommendations: makeupRec,
         }
       : null,

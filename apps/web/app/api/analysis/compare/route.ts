@@ -11,6 +11,8 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
+import { signPrivateImageUrls } from '@/lib/storage';
+import { normalizeColors } from '@/lib/color/normalize-colors';
 import type {
   AnalysisType,
   AnalysisCompareResponse,
@@ -112,12 +114,12 @@ function generateInsights(
       insights.push('신뢰도가 낮아졌어요. 자연광에서 다시 촬영해보세요.');
     }
 
-    // 베스트 컬러 비교
-    const beforeBest = (before.best_colors as Array<{ hex: string }>) || [];
-    const afterBest = (after.best_colors as Array<{ hex: string }>) || [];
+    // 단독 분석 객체 배열과 통합 분석 string[]의 실제 색상 차이를 같은 형상으로 비교한다.
+    const beforeBest = normalizeColors(before.best_colors);
+    const afterBest = normalizeColors(after.best_colors);
     if (beforeBest.length > 0 && afterBest.length > 0) {
-      const beforeHexes = new Set(beforeBest.map((c) => c.hex));
-      const afterHexes = new Set(afterBest.map((c) => c.hex));
+      const beforeHexes = new Set(beforeBest.map((c) => c.hex.toLowerCase()));
+      const afterHexes = new Set(afterBest.map((c) => c.hex.toLowerCase()));
       const commonCount = [...afterHexes].filter((h) => beforeHexes.has(h)).length;
       if (commonCount === afterHexes.size) {
         insights.push('추천 컬러 팔레트가 동일해요. 안정적인 결과예요.');
@@ -193,28 +195,29 @@ export async function GET(request: Request) {
     const tableName = tableMap[type];
 
     // 두 분석 조회
-    const { data: fromData, error: fromError } = await supabase
+    const { data: analyses, error: analysesError } = await supabase
       .from(tableName)
       .select('*')
-      .eq('id', fromId)
       .eq('clerk_user_id', userId)
-      .single();
+      .in('id', [fromId, toId]);
 
-    if (fromError || !fromData) {
+    if (analysesError) {
+      console.error('[Analysis Compare] Failed to load analyses:', analysesError);
+      return NextResponse.json({ error: 'Failed to load analyses' }, { status: 500 });
+    }
+
+    // Supabase는 .in() 결과 순서를 보장하지 않으므로 요청 ID로 다시 매핑한다.
+    const fromData = analyses?.find((analysis) => analysis.id === fromId);
+    const toData = analyses?.find((analysis) => analysis.id === toId);
+
+    if (!fromData) {
       return NextResponse.json(
         { error: 'From analysis not found or unauthorized' },
         { status: 404 }
       );
     }
 
-    const { data: toData, error: toError } = await supabase
-      .from(tableName)
-      .select('*')
-      .eq('id', toId)
-      .eq('clerk_user_id', userId)
-      .single();
-
-    if (toError || !toData) {
+    if (!toData) {
       return NextResponse.json({ error: 'To analysis not found or unauthorized' }, { status: 404 });
     }
 
@@ -441,6 +444,23 @@ export async function GET(request: Request) {
     } else {
       return NextResponse.json({ error: 'Unsupported analysis type' }, { status: 400 });
     }
+
+    const imageBucketMap: Record<AnalysisType, string> = {
+      skin: 'skin-images',
+      body: 'body-images',
+      'personal-color': 'personal-color-images',
+      hair: 'hair-images',
+      makeup: 'makeup-images',
+    };
+    const [beforeImageUrl, afterImageUrl] = await signPrivateImageUrls(
+      supabase,
+      imageBucketMap[type],
+      [beforeItem.imageUrl, afterItem.imageUrl]
+    );
+
+    // 서명 실패와 integrated:// 세션 표식은 경로 원문 대신 이미지 없음으로 응답한다.
+    beforeItem.imageUrl = beforeImageUrl ?? undefined;
+    afterItem.imageUrl = afterImageUrl ?? undefined;
 
     const overallChange = afterItem.overallScore - beforeItem.overallScore;
     const period = calculatePeriod(beforeItem.date, afterItem.date);

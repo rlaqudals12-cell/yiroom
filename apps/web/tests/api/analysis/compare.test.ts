@@ -12,12 +12,16 @@ vi.mock('@clerk/nextjs/server', () => ({
 }));
 
 // Mock Supabase - 체이닝 지원
-const mockSingle = vi.fn();
+const mockIn = vi.fn();
+const mockCreateSignedUrls = vi.fn();
 const mockSupabase = {
   from: vi.fn(() => mockSupabase),
   select: vi.fn(() => mockSupabase),
   eq: vi.fn(() => mockSupabase),
-  single: mockSingle,
+  in: mockIn,
+  storage: {
+    from: vi.fn(() => ({ createSignedUrls: mockCreateSignedUrls })),
+  },
 };
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -75,7 +79,7 @@ describe('Analysis Compare API', () => {
     });
 
     it('존재하지 않는 from ID는 404를 반환한다', async () => {
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockIn.mockResolvedValueOnce({ data: [], error: null });
 
       const request = createRequest(
         'http://localhost/api/analysis/compare?type=skin&from=invalid-uuid&to=uuid2'
@@ -101,9 +105,7 @@ describe('Analysis Compare API', () => {
         sensitivity: 42,
       };
 
-      mockSingle
-        .mockResolvedValueOnce({ data: fromData, error: null })
-        .mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockIn.mockResolvedValueOnce({ data: [fromData], error: null });
 
       const request = createRequest(
         'http://localhost/api/analysis/compare?type=skin&from=uuid1&to=invalid-uuid'
@@ -144,9 +146,7 @@ describe('Analysis Compare API', () => {
         sensitivity: 42,
       };
 
-      mockSingle
-        .mockResolvedValueOnce({ data: fromData, error: null })
-        .mockResolvedValueOnce({ data: toData, error: null });
+      mockIn.mockResolvedValueOnce({ data: [toData, fromData], error: null });
 
       const request = createRequest(
         'http://localhost/api/analysis/compare?type=skin&from=uuid1&to=uuid2'
@@ -162,6 +162,88 @@ describe('Analysis Compare API', () => {
       expect(data.changes.period).toBe('2주'); // 14일
       expect(data.changes.details.hydration).toBe(10); // 75 - 65
       expect(data.insights.length).toBeGreaterThan(0);
+      expect(mockIn).toHaveBeenCalledTimes(1);
+      expect(mockIn).toHaveBeenCalledWith('id', ['uuid1', 'uuid2']);
+    });
+
+    it('비공개 이미지 경로는 버킷별 한 번에 서명하고 원문 경로를 노출하지 않는다', async () => {
+      const fromData = {
+        id: 'uuid1',
+        created_at: '2025-01-01T10:00:00Z',
+        image_url: 'user-123/skin/before.jpg',
+        overall_score: 72,
+        skin_type: 'dry',
+      };
+      const toData = {
+        id: 'uuid2',
+        created_at: '2025-01-02T10:00:00Z',
+        image_url: 'user-123/skin/after.jpg',
+        overall_score: 73,
+        skin_type: 'dry',
+      };
+
+      mockIn.mockResolvedValueOnce({ data: [fromData, toData], error: null });
+      mockCreateSignedUrls.mockResolvedValueOnce({
+        data: [
+          {
+            path: fromData.image_url,
+            signedUrl: 'https://storage.example/signed-before.jpg',
+          },
+          { path: toData.image_url, signedUrl: 'https://storage.example/signed-after.jpg' },
+        ],
+        error: null,
+      });
+
+      const response = await GET(
+        createRequest('http://localhost/api/analysis/compare?type=skin&from=uuid1&to=uuid2')
+      );
+      const data = await response.json();
+
+      expect(mockSupabase.storage.from).toHaveBeenCalledWith('skin-images');
+      expect(mockCreateSignedUrls).toHaveBeenCalledTimes(1);
+      expect(mockCreateSignedUrls).toHaveBeenCalledWith(
+        [fromData.image_url, toData.image_url],
+        expect.any(Number)
+      );
+      expect(data.before.imageUrl).toBe('https://storage.example/signed-before.jpg');
+      expect(data.after.imageUrl).toBe('https://storage.example/signed-after.jpg');
+      expect(JSON.stringify(data)).not.toContain(fromData.image_url);
+      expect(JSON.stringify(data)).not.toContain(toData.image_url);
+    });
+
+    it('통합 분석 sentinel과 서명 실패 경로는 이미지 없음으로 처리한다', async () => {
+      const fromData = {
+        id: 'hair-1',
+        created_at: '2025-01-01T10:00:00Z',
+        image_url: 'integrated://face/session-1',
+        overall_score: 72,
+        hair_type: 'straight',
+      };
+      const toData = {
+        id: 'hair-2',
+        created_at: '2025-01-02T10:00:00Z',
+        image_url: 'user-123/hair/after.jpg',
+        overall_score: 73,
+        hair_type: 'straight',
+      };
+
+      mockIn.mockResolvedValueOnce({ data: [fromData, toData], error: null });
+      mockCreateSignedUrls.mockResolvedValueOnce({
+        data: [{ path: toData.image_url, signedUrl: null, error: 'not found' }],
+        error: null,
+      });
+
+      const response = await GET(
+        createRequest('http://localhost/api/analysis/compare?type=hair&from=hair-1&to=hair-2')
+      );
+      const data = await response.json();
+
+      expect(mockSupabase.storage.from).toHaveBeenCalledWith('hair-images');
+      expect(mockCreateSignedUrls).toHaveBeenCalledWith([toData.image_url], expect.any(Number));
+      expect(data.before.imageUrl).toBeUndefined();
+      expect(data.after.imageUrl).toBeUndefined();
+      expect(JSON.stringify(data)).not.toContain('integrated://');
+      expect(JSON.stringify(data)).not.toContain(toData.image_url);
     });
 
     it('체형 분석 비교 결과를 반환한다', async () => {
@@ -191,9 +273,7 @@ describe('Analysis Compare API', () => {
         ratio: 0.82,
       };
 
-      mockSingle
-        .mockResolvedValueOnce({ data: fromData, error: null })
-        .mockResolvedValueOnce({ data: toData, error: null });
+      mockIn.mockResolvedValueOnce({ data: [fromData, toData], error: null });
 
       const request = createRequest(
         'http://localhost/api/analysis/compare?type=body&from=body-1&to=body-2'
@@ -228,9 +308,7 @@ describe('Analysis Compare API', () => {
         confidence: 92,
       };
 
-      mockSingle
-        .mockResolvedValueOnce({ data: fromData, error: null })
-        .mockResolvedValueOnce({ data: toData, error: null });
+      mockIn.mockResolvedValueOnce({ data: [fromData, toData], error: null });
 
       const request = createRequest(
         'http://localhost/api/analysis/compare?type=personal-color&from=pc1&to=pc2'
@@ -243,6 +321,68 @@ describe('Analysis Compare API', () => {
       expect(data.before.id).toBe('pc1');
       expect(data.after.id).toBe('pc2');
       expect(data.changes.period).toBe('2주');
+    });
+
+    it('string[] best_colors의 실제 팔레트 차이를 비교 인사이트에 보존한다', async () => {
+      const fromData = {
+        id: 'pc-string-1',
+        created_at: '2025-01-01T10:00:00Z',
+        season: 'Autumn',
+        undertone: 'warm',
+        confidence: 90,
+        best_colors: ['#112233', '#445566'],
+      };
+      const toData = {
+        id: 'pc-string-2',
+        created_at: '2025-01-15T10:00:00Z',
+        season: 'Autumn',
+        undertone: 'warm',
+        confidence: 90,
+        best_colors: ['#112233', '#778899'],
+      };
+      mockIn.mockResolvedValueOnce({ data: [fromData, toData], error: null });
+
+      const response = await GET(
+        createRequest(
+          'http://localhost/api/analysis/compare?type=personal-color&from=pc-string-1&to=pc-string-2'
+        )
+      );
+      const data = await response.json();
+
+      expect(data.insights).toContain('추천 컬러 일부가 변화했어요. 새로운 팔레트를 확인해보세요.');
+      expect(data.insights).not.toContain('추천 컬러 팔레트가 동일해요. 안정적인 결과예요.');
+    });
+
+    it('hex 대소문자만 다른 같은 팔레트를 변화로 오인하지 않는다', async () => {
+      const fromData = {
+        id: 'pc-case-1',
+        created_at: '2025-01-01T10:00:00Z',
+        season: 'Autumn',
+        undertone: 'warm',
+        confidence: 90,
+        best_colors: ['#aabbcc'],
+      };
+      const toData = {
+        id: 'pc-case-2',
+        created_at: '2025-01-15T10:00:00Z',
+        season: 'Autumn',
+        undertone: 'warm',
+        confidence: 90,
+        best_colors: ['#AABBCC'],
+      };
+      mockIn.mockResolvedValueOnce({ data: [fromData, toData], error: null });
+
+      const response = await GET(
+        createRequest(
+          'http://localhost/api/analysis/compare?type=personal-color&from=pc-case-1&to=pc-case-2'
+        )
+      );
+      const data = await response.json();
+
+      expect(data.insights).toContain('추천 컬러 팔레트가 동일해요. 안정적인 결과예요.');
+      expect(data.insights).not.toContain(
+        '추천 컬러 일부가 변화했어요. 새로운 팔레트를 확인해보세요.'
+      );
     });
 
     it('개선 인사이트가 생성된다', async () => {
@@ -272,9 +412,7 @@ describe('Analysis Compare API', () => {
         sensitivity: 45,
       };
 
-      mockSingle
-        .mockResolvedValueOnce({ data: fromData, error: null })
-        .mockResolvedValueOnce({ data: toData, error: null });
+      mockIn.mockResolvedValueOnce({ data: [fromData, toData], error: null });
 
       const request = createRequest(
         'http://localhost/api/analysis/compare?type=skin&from=uuid1&to=uuid2'
@@ -317,9 +455,7 @@ describe('Analysis Compare API', () => {
         sensitivity: 39,
       };
 
-      mockSingle
-        .mockResolvedValueOnce({ data: fromData, error: null })
-        .mockResolvedValueOnce({ data: toData3Days, error: null });
+      mockIn.mockResolvedValueOnce({ data: [fromData, toData3Days], error: null });
 
       const request = createRequest(
         'http://localhost/api/analysis/compare?type=skin&from=uuid1&to=uuid2'

@@ -14,6 +14,15 @@ const palette = [
 ];
 
 describe('composeDailyOutfit', () => {
+  it('통합 분석이 저장한 hex 문자열 배열을 개인 베스트 컬러로 사용한다', () => {
+    const integratedBestColors = ['#123456', '#A1B2C3'];
+
+    const out = composeDailyOutfit(integratedBestColors, new Date('2026-07-08'));
+
+    expect(out).not.toBeNull();
+    expect(integratedBestColors).toContain(out!.colors[0].hex);
+  });
+
   it('상의·하의·신발·가방·포인트 5블록을 순서대로 반환한다', () => {
     const out = composeDailyOutfit(palette, new Date('2026-07-08'));
     expect(out).not.toBeNull();

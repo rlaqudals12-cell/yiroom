@@ -15,12 +15,15 @@ type ServiceClient = ReturnType<typeof createServiceRoleClient>;
 
 /**
  * 사용자 소유 이미지가 저장될 수 있는 전체 버킷 (계정삭제·크론 공통 정본)
- * prod 8버킷 대조 + 식단(food-images) 포함. 존재하지 않는 버킷은 조용히 건너뛴다.
+ * 실제 업로드 경로와 prod 버킷을 대조한 목록. 버킷 조회 실패는 파기 실패로 처리한다.
  */
 export const USER_STORAGE_BUCKETS = [
   'skin-images', // S축 피부 (생체)
   'body-images', // C축 체형 (생체)
   'personal-color-images', // PC축 퍼스널컬러 (생체)
+  'hair-images', // H축 헤어·두피 (생체)
+  'makeup-images', // M축 메이크업 얼굴 (생체)
+  'posture-images', // 자세 분석 전면·측면 (생체)
   'food-images', // 식단 기록 이미지
   'integrated-sessions', // 통합분석 얼굴·체형 캡처 (생체, 중첩 경로)
   'twins', // AI 아바타 (얼굴 유래 생체)
@@ -28,6 +31,9 @@ export const USER_STORAGE_BUCKETS = [
   'feed-images', // 피드 업로드
   'uploads', // 기타 업로드
 ] as const;
+
+/** Supabase Storage list/remove API 한 번에 다루는 최대 파일 수. */
+const STORAGE_PAGE_SIZE = 1000;
 
 export interface PurgeResult {
   /** 삭제된 파일 총 개수 */
@@ -45,26 +51,42 @@ async function collectUserFiles(
   bucket: string,
   prefix: string
 ): Promise<string[]> {
-  const { data, error } = await supabase.storage.from(bucket).list(prefix, { limit: 1000 });
-  if (error || !data || data.length === 0) return [];
-
   const paths: string[] = [];
-  for (const entry of data) {
-    const entryPath = `${prefix}/${entry.name}`;
-    if (entry.id === null) {
-      // 폴더 — 재귀로 하위 파일 수집
-      paths.push(...(await collectUserFiles(supabase, bucket, entryPath)));
-    } else {
-      paths.push(entryPath);
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await supabase.storage.from(bucket).list(prefix, {
+      limit: STORAGE_PAGE_SIZE,
+      offset,
+      // 페이지 사이에서 순서가 바뀌어 누락·중복되지 않도록 정렬 기준을 고정한다.
+      sortBy: { column: 'name', order: 'asc' },
+    });
+    // 왜: 어느 페이지든 list 실패를 빈 폴더로 오인하면 실제 파일이 남아도 파기 성공으로
+    // 보고되어 Clerk 계정까지 지워진다. 전체 수집이 끝나기 전에는 remove를 시작하지 않는다.
+    if (error) throw error;
+    if (!data) throw new Error(`Storage list returned no data for ${bucket}`);
+
+    for (const entry of data) {
+      const entryPath = `${prefix}/${entry.name}`;
+      if (entry.id === null) {
+        // 폴더 — 재귀로 하위 파일 수집
+        paths.push(...(await collectUserFiles(supabase, bucket, entryPath)));
+      } else {
+        paths.push(entryPath);
+      }
     }
+
+    if (data.length < STORAGE_PAGE_SIZE) break;
+    offset += STORAGE_PAGE_SIZE;
   }
+
   return paths;
 }
 
 /**
  * 사용자(userId=clerk_user_id)의 모든 버킷 이미지를 재귀 파기한다.
  *
- * - 버킷이 없거나 비어있으면 조용히 건너뛴다.
+ * - 비어있는 버킷만 건너뛴다. list 오류는 잔존 파일 여부를 알 수 없으므로 실패다.
  * - 개별 버킷 실패는 전체를 막지 않고 `failedBuckets`로 수집해 호출자가 감사에 기록하도록 한다.
  *
  * @param supabase Service Role 클라이언트 (RLS 우회)
@@ -82,14 +104,16 @@ export async function purgeUserStorage(
       const filePaths = await collectUserFiles(supabase, bucket, userId);
       if (filePaths.length === 0) continue;
 
-      const { error } = await supabase.storage.from(bucket).remove(filePaths);
-      if (error) {
-        failedBuckets.push(`storage:${bucket}`);
-      } else {
-        deleted += filePaths.length;
+      // Storage API 요청 크기를 제한하고, 어느 청크든 실패하면 버킷 실패로 드러낸다.
+      for (let offset = 0; offset < filePaths.length; offset += STORAGE_PAGE_SIZE) {
+        const chunk = filePaths.slice(offset, offset + STORAGE_PAGE_SIZE);
+        const { error } = await supabase.storage.from(bucket).remove(chunk);
+        if (error) throw error;
+        deleted += chunk.length;
       }
     } catch {
-      // 버킷이 없거나 접근 불가 — 무시하고 다음 버킷 계속
+      // 개별 버킷 실패는 계속 수집하되, 호출자가 계정 삭제를 중단할 수 있게 드러낸다.
+      failedBuckets.push(`storage:${bucket}`);
     }
   }
 

@@ -13,7 +13,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import type { PublicStyleReport } from '@/lib/share/report';
 
-vi.mock('lucide-react', () => ({ AlertTriangle: () => null }));
+vi.mock('lucide-react', () => ({ AlertTriangle: () => null, CircleHelp: () => null }));
 
 vi.mock('next/link', () => ({
   default: ({ children, href }: { children: React.ReactNode; href: string }) => (
@@ -35,6 +35,7 @@ function baseReport(overrides: Partial<PublicStyleReport> = {}): PublicStyleRepo
     createdAt: '2026-08-17T00:00:00Z',
     persona: '따뜻한 가을의 사람',
     fallbackAxes: [],
+    unknownAxes: [],
     personalColor: {
       season: 'autumn',
       undertone: 'warm',
@@ -115,6 +116,17 @@ describe('공개 스타일 리포트 페이지', () => {
 
     expect(screen.queryByText(/AI 분석 기반/)).toBeNull();
     expect(screen.getByText(/샘플\(예시\)로 대체된 축이 포함/)).toBeInTheDocument();
+  });
+
+  it('출처 불명 축은 실측으로 단정하지 않고 낮은 신뢰도로 고지한다', async () => {
+    getSharedReport.mockResolvedValue(baseReport({ unknownAxes: ['body'] }));
+
+    await renderPage();
+
+    const notice = screen.getByTestId('shared-report-unknown-notice');
+    expect(notice).toHaveTextContent('체형');
+    expect(notice).toHaveTextContent('신뢰도');
+    expect(screen.queryByText(/AI 분석 기반/)).toBeNull();
   });
 
   it('무효 토큰은 notFound로 처리한다', async () => {

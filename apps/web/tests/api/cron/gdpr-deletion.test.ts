@@ -8,6 +8,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
+const mockDeleteClerkUser = vi.hoisted(() => vi.fn());
+
 // Supabase mock
 const mockFrom = vi.fn();
 const mockStorage = {
@@ -30,7 +32,7 @@ vi.mock('@clerk/nextjs/server', () => ({
     Promise.resolve({
       users: {
         updateUser: vi.fn().mockResolvedValue({}),
-        deleteUser: vi.fn().mockResolvedValue({}),
+        deleteUser: mockDeleteClerkUser,
       },
     }),
 }));
@@ -50,6 +52,11 @@ vi.mock('@/lib/utils/redact-pii', () => ({
 describe('GDPR Deletion Cron APIs', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockDeleteClerkUser.mockResolvedValue({});
+    mockStorage.from.mockReturnValue({
+      list: vi.fn().mockResolvedValue({ data: [], error: null }),
+      remove: vi.fn().mockResolvedValue({ error: null }),
+    });
     vi.stubEnv('NODE_ENV', 'development');
   });
 
@@ -429,6 +436,152 @@ describe('GDPR Deletion Cron APIs', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.processed).toBe(1);
+    });
+
+    it('행 파기가 실패하면 users와 Clerk 삭제를 모두 중단한다', async () => {
+      const { GET } = await import('@/app/api/cron/hard-delete-users/route');
+      const usersDeleteEq = vi.fn().mockResolvedValue({ error: null });
+      const usersToDelete = [
+        { id: 'uuid-1', clerk_user_id: 'user-123', deleted_at: '2025-01-01T00:00:00Z' },
+      ];
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'users') {
+          return {
+            select: vi.fn().mockReturnValue({
+              lt: vi.fn().mockReturnValue({
+                not: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({ data: usersToDelete, error: null }),
+                }),
+              }),
+              count: vi.fn().mockResolvedValue({ count: 1 }),
+            }),
+            delete: vi.fn().mockReturnValue({ eq: usersDeleteEq }),
+          };
+        }
+        if (table === 'deletion_audit_log' || table === 'audit_logs') {
+          return { insert: vi.fn().mockResolvedValue({ error: null }) };
+        }
+        return {
+          delete: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({
+              error:
+                table === 'skin_analyses' ? { code: '42501', message: 'permission denied' } : null,
+            }),
+          }),
+        };
+      });
+
+      const response = await GET(
+        new NextRequest('http://localhost:3000/api/cron/hard-delete-users')
+      );
+      const json = await response.json();
+
+      expect(json.processed).toBe(0);
+      expect(json.failed).toBe(1);
+      expect(usersDeleteEq).not.toHaveBeenCalled();
+      expect(mockDeleteClerkUser).not.toHaveBeenCalled();
+    });
+
+    it('스토리지 열거가 실패하면 users와 Clerk 삭제를 모두 중단한다', async () => {
+      const { GET } = await import('@/app/api/cron/hard-delete-users/route');
+      const usersDeleteEq = vi.fn().mockResolvedValue({ error: null });
+      const usersToDelete = [
+        { id: 'uuid-1', clerk_user_id: 'user-123', deleted_at: '2025-01-01T00:00:00Z' },
+      ];
+      mockStorage.from.mockImplementation((bucket: string) => ({
+        list: vi
+          .fn()
+          .mockResolvedValue(
+            bucket === 'skin-images'
+              ? { data: null, error: { message: 'storage unavailable' } }
+              : { data: [], error: null }
+          ),
+        remove: vi.fn().mockResolvedValue({ error: null }),
+      }));
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'users') {
+          return {
+            select: vi.fn().mockReturnValue({
+              lt: vi.fn().mockReturnValue({
+                not: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({ data: usersToDelete, error: null }),
+                }),
+              }),
+              count: vi.fn().mockResolvedValue({ count: 1 }),
+            }),
+            delete: vi.fn().mockReturnValue({ eq: usersDeleteEq }),
+          };
+        }
+        if (table === 'deletion_audit_log' || table === 'audit_logs') {
+          return { insert: vi.fn().mockResolvedValue({ error: null }) };
+        }
+        return {
+          delete: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
+      });
+
+      const response = await GET(
+        new NextRequest('http://localhost:3000/api/cron/hard-delete-users')
+      );
+      const json = await response.json();
+
+      expect(json.failed).toBe(1);
+      expect(usersDeleteEq).not.toHaveBeenCalled();
+      expect(mockDeleteClerkUser).not.toHaveBeenCalled();
+    });
+
+    it('Clerk 삭제 실패를 실패로 기록하고 users 행을 남겨 재시도할 수 있게 한다', async () => {
+      const { GET } = await import('@/app/api/cron/hard-delete-users/route');
+      const usersDeleteEq = vi.fn().mockResolvedValue({ error: null });
+      const auditInsert = vi.fn().mockResolvedValue({ error: null });
+      const usersToDelete = [
+        { id: 'uuid-1', clerk_user_id: 'user-123', deleted_at: '2025-01-01T00:00:00Z' },
+      ];
+      mockDeleteClerkUser.mockRejectedValue(new Error('Clerk unavailable'));
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'users') {
+          return {
+            select: vi.fn().mockReturnValue({
+              lt: vi.fn().mockReturnValue({
+                not: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({ data: usersToDelete, error: null }),
+                }),
+              }),
+              count: vi.fn().mockResolvedValue({ count: 1 }),
+            }),
+            delete: vi.fn().mockReturnValue({ eq: usersDeleteEq }),
+          };
+        }
+        if (table === 'deletion_audit_log') return { insert: auditInsert };
+        if (table === 'audit_logs') {
+          return { insert: vi.fn().mockResolvedValue({ error: null }) };
+        }
+        return {
+          delete: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
+      });
+
+      const response = await GET(
+        new NextRequest('http://localhost:3000/api/cron/hard-delete-users')
+      );
+      const json = await response.json();
+
+      expect(json.processed).toBe(0);
+      expect(json.failed).toBe(1);
+      expect(usersDeleteEq).not.toHaveBeenCalled();
+      expect(auditInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'HARD_DELETE_FAILED',
+          details: expect.objectContaining({ failed_tables: expect.arrayContaining(['clerk']) }),
+        })
+      );
     });
   });
 });

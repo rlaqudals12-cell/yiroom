@@ -29,6 +29,7 @@
 
 import { hexToLab, labToHex, calculateChroma, calculateHue, calculateCIEDE2000 } from '@/lib/color';
 import { analogous } from './harmony';
+import { normalizeColors } from './normalize-colors';
 
 export type OutfitRole = '상의' | '하의' | '신발' | '가방' | '포인트';
 
@@ -336,12 +337,12 @@ function pickMutedBag(
  *   미지정이면 팔레트 b* 평균으로 폴백(결정론 유지).
  */
 export function composeDailyOutfit(
-  bestColors: ReadonlyArray<{ name?: string; hex?: string }>,
+  bestColors: ReadonlyArray<unknown>,
   date: Date = new Date(),
   contrast?: OutfitContrast,
   season?: string | null
 ): DailyOutfitPalette | null {
-  const valid = bestColors.filter((c) => isHex(c?.hex));
+  const valid = normalizeColors(bestColors).filter((color) => isHex(color.hex));
   if (valid.length === 0) return null;
 
   // 뉴트럴 언더톤 — 진단 시즌 우선, 없으면 팔레트에서 폴백(둘 다 결정론)

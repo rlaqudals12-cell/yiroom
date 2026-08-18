@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * 이용약관 페이지 (한/영 지원)
  * SDD-LEGAL-SUPPORT.md §3.1
@@ -10,9 +8,7 @@
  * 서버 연령 게이트와 일치.
  */
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -275,14 +271,15 @@ Any disputes arising from Service use shall be subject to the exclusive jurisdic
   },
 ];
 
-export default function TermsPage() {
-  const searchParams = useSearchParams();
-  const initialLang = searchParams.get('lang') === 'en' ? 'en' : 'ko';
-  const [lang, setLang] = useState<Lang>(initialLang);
+interface TermsPageProps {
+  searchParams?: Promise<{ lang?: string | string[] }>;
+}
+
+export function TermsContent({ lang = 'ko' }: { lang?: Lang }) {
   const sections = lang === 'ko' ? TERMS_KO : TERMS_EN;
 
   return (
-    <div className="min-h-screen bg-background" data-testid="terms-page">
+    <div className="min-h-screen bg-background" data-testid="terms-page" lang={lang}>
       {/* 헤더 */}
       {/* 글래스(backdrop-blur) 소거 — 솔리드 지면 + 헤어라인 (깊이 레시피) */}
       <div className="sticky top-0 z-10 bg-background border-b px-4 py-3">
@@ -301,8 +298,11 @@ export default function TermsPage() {
             </h1>
           </div>
           <div className="flex gap-1.5">
-            <button
-              onClick={() => setLang('ko')}
+            <Link
+              href="?lang=ko"
+              lang="ko"
+              prefetch={false}
+              aria-current={lang === 'ko' ? 'page' : undefined}
               className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
                 lang === 'ko'
                   ? 'bg-primary text-primary-foreground'
@@ -311,9 +311,12 @@ export default function TermsPage() {
               aria-label="한국어로 보기"
             >
               한국어
-            </button>
-            <button
-              onClick={() => setLang('en')}
+            </Link>
+            <Link
+              href="?lang=en"
+              lang="en"
+              prefetch={false}
+              aria-current={lang === 'en' ? 'page' : undefined}
               className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
                 lang === 'en'
                   ? 'bg-primary text-primary-foreground'
@@ -322,7 +325,7 @@ export default function TermsPage() {
               aria-label="View in English"
             >
               EN
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -378,4 +381,11 @@ export default function TermsPage() {
       </div>
     </div>
   );
+}
+
+export default async function TermsPage({ searchParams }: TermsPageProps = {}) {
+  const params = searchParams ? await searchParams : {};
+  const lang: Lang = params.lang === 'en' ? 'en' : 'ko';
+
+  return <TermsContent lang={lang} />;
 }

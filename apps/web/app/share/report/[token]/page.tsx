@@ -8,7 +8,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, CircleHelp } from 'lucide-react';
 import { getSharedReport, type PublicAxisCode } from '@/lib/share/report';
 import { LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
 
@@ -76,12 +76,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const ogUrl =
     `/api/og/report?label=${encodeURIComponent(label)}` +
     (colorsParam ? `&colors=${encodeURIComponent(colorsParam)}` : '');
+  const hasUnverifiedSource =
+    (report?.fallbackAxes.length ?? 0) > 0 || (report?.unknownAxes.length ?? 0) > 0;
+  const description = hasUnverifiedSource
+    ? '퍼스널컬러·피부·체형·헤어·메이크업을 담은 참고용 스타일 리포트'
+    : 'AI가 분석한 나만의 스타일 리포트 — 이룸에서 무료로';
   return {
     title: `${label} | 이룸`,
     description: '퍼스널컬러·피부·체형·헤어·메이크업 진단을 담은 스타일 리포트',
     openGraph: {
       title: `${label} | 이룸`,
-      description: 'AI가 분석한 나만의 스타일 리포트 — 이룸에서 무료로',
+      description,
       images: [{ url: ogUrl, width: 1200, height: 630 }],
     },
   };
@@ -101,6 +106,7 @@ export default async function SharedReportPage({ params }: PageProps) {
   });
   // 링크를 받은 사람은 소유자보다 맥락이 없다 — 샘플 대체를 숨기면 그대로 개인 진단으로 읽힌다
   const fallbackLabels = report.fallbackAxes.map((axis) => AXIS_LABELS[axis]);
+  const unknownLabels = report.unknownAxes.map((axis) => AXIS_LABELS[axis]);
 
   return (
     <div data-testid="shared-report-page" className="min-h-screen bg-background">
@@ -116,7 +122,7 @@ export default async function SharedReportPage({ params }: PageProps) {
           {/* 전 축이 샘플이면 "AI 분석 기반"은 거짓 — 고지 배너가 실제 상태를 말한다 */}
           <p className="text-xs text-muted-foreground">
             {date}
-            {fallbackLabels.length === 0 && ' · AI 분석 기반'}
+            {fallbackLabels.length === 0 && unknownLabels.length === 0 && ' · AI 분석 기반'}
           </p>
         </header>
 
@@ -135,6 +141,32 @@ export default async function SharedReportPage({ params }: PageProps) {
                   <span className="font-medium">{fallbackLabels.join(', ')}</span> 축은 AI 분석
                   서비스를 일시적으로 이용할 수 없어 샘플(예시) 결과를 표시하고 있어요. 실제 분석
                   결과가 아니므로 참고용으로만 봐주세요.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 출처 불명은 확인된 Mock과 다른 사실이므로 별도 낮은 신뢰도 고지로 분리한다. */}
+        {unknownLabels.length > 0 && (
+          <div
+            className="rounded-2xl border bg-card p-4"
+            data-testid="shared-report-unknown-notice"
+            role="note"
+          >
+            <div className="flex items-start gap-3">
+              <CircleHelp
+                aria-hidden="true"
+                className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+              />
+              <div className="flex-1 space-y-1.5">
+                <p className="text-sm font-semibold text-foreground">
+                  일부 축은 분석 출처를 확인하기 어려워요
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium">{unknownLabels.join(', ')}</span> 축은 저장된 기록에
+                  출처 표식이 없어 AI 분석 결과인지 샘플 결과인지 확인할 수 없어요. 신뢰도가 낮은
+                  정보로 참고해 주세요. 정확한 결과가 필요하면 해당 축을 다시 분석해 주세요.
                 </p>
               </div>
             </div>
@@ -305,8 +337,19 @@ export default async function SharedReportPage({ params }: PageProps) {
         </section>
 
         <p className="text-center text-[10px] text-muted-foreground">
-          {fallbackLabels.length > 0
-            ? '이 리포트에는 샘플(예시)로 대체된 축이 포함돼 있어요 · 사진 등 개인 정보는 포함되지 않아요 · yiroom'
+          {fallbackLabels.length > 0 || unknownLabels.length > 0
+            ? [
+                fallbackLabels.length > 0
+                  ? '이 리포트에는 샘플(예시)로 대체된 축이 포함돼 있어요'
+                  : null,
+                unknownLabels.length > 0
+                  ? '출처를 확인할 수 없는 낮은 신뢰도 축이 포함돼 있어요'
+                  : null,
+                '사진 등 개인 정보는 포함되지 않아요',
+                'yiroom',
+              ]
+                .filter(Boolean)
+                .join(' · ')
             : '이 리포트는 AI 분석 결과이며 사진 등 개인 정보는 포함되지 않아요 · yiroom'}
         </p>
       </div>

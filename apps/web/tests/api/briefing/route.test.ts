@@ -135,6 +135,33 @@ describe('GET /api/briefing', () => {
     expect(body.data.hasAnalyses).toBe(true);
   });
 
+  it('통합 분석의 문자열 best_colors를 홈 스와치와 오늘의 배색까지 보존한다', async () => {
+    queueAnalyses({
+      pc: [
+        {
+          id: 'pc-integrated',
+          season: 'winter',
+          created_at: new Date().toISOString(),
+          best_colors: ['#123456', '#ABCDEF'],
+          image_analysis: { source: 'integrated' },
+        },
+      ],
+    });
+
+    const res = await GET();
+    const body = await res.json();
+
+    expect(body.data.myColors).toEqual({
+      analysisId: 'pc-integrated',
+      colors: [
+        { name: '', hex: '#123456' },
+        { name: '', hex: '#ABCDEF' },
+      ],
+    });
+    expect(body.data.todayStyle.outfit.colors).toHaveLength(5);
+    expect(body.data.todayStyle.outfit.colors[0].hex).toMatch(/^#(?:123456|ABCDEF)$/i);
+  });
+
   it('분석이 없으면 hasAnalyses=false, myColors=null, outfit=null', async () => {
     queueAnalyses({});
     const res = await GET();

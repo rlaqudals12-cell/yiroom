@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { User, Palette, Shirt, Star, Loader2 } from 'lucide-react';
-import { BottomNav } from '@/components/BottomNav';
 import { FadeInUp } from '@/components/animations';
 import { getBodyShapeLabel } from '@/lib/body';
 import { cn } from '@/lib/utils';
@@ -23,6 +22,7 @@ import { colorNameToHex } from '@/lib/inventory/color-bridge';
 // 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
 import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
 import { hexToLab, calculateHue } from '@/lib/color';
+import { normalizeColors } from '@/lib/color/normalize-colors';
 import type { InventoryItem, InventoryItemDB } from '@/types/inventory';
 import type { PersonalColorSeason } from '@/lib/color-recommendations';
 
@@ -152,17 +152,13 @@ export default function StylePage() {
     if (['Spring', 'Summer', 'Autumn', 'Winter'].includes(pcData.season)) {
       setRawSeason(pcData.season as PersonalColorSeason);
     }
-    const bestColors = pcData.best_colors as Array<{
-      name?: string;
-      hex?: string;
-      color?: string;
-    }> | null;
-    if (bestColors && bestColors.length > 0) {
-      // 전체 표시(slice 제거) — 진단 팔레트를 자르지 않고 세그먼트 바에 모두 늘어놓는다
+    const bestColors = normalizeColors(pcData.best_colors);
+    if (bestColors.length > 0) {
+      // 단독 분석 객체 배열과 통합 분석 string[]을 동일한 정본 정규화기로 처리한다.
       setColorPalette(
-        bestColors.map((c) => ({
-          name: c.name ?? '',
-          color: c.hex ?? c.color ?? '#CCCCCC',
+        bestColors.map((color) => ({
+          name: color.name,
+          color: color.hex,
         }))
       );
     }
@@ -300,7 +296,7 @@ export default function StylePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="style-page">
+    <div className="min-h-screen bg-background" data-testid="style-page">
       {/* 페이지 제목 (스크린리더용) */}
       <h1 className="sr-only">스타일 - 체형 맞춤 코디 추천</h1>
 
@@ -586,8 +582,6 @@ export default function StylePage() {
           </section>
         </FadeInUp>
       </div>
-
-      <BottomNav />
     </div>
   );
 }

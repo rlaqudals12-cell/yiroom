@@ -1,18 +1,10 @@
-'use client';
-
-import { useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 
 type Lang = 'ko' | 'en';
 
-export function PrivacyContent() {
-  const searchParams = useSearchParams();
-  const initialLang = searchParams.get('lang') === 'en' ? 'en' : 'ko';
-  const [lang, setLang] = useState<Lang>(initialLang);
-
+export function PrivacyContent({ lang }: { lang: Lang }) {
   return (
-    <div className="min-h-screen bg-background" data-testid="privacy-page">
+    <div className="min-h-screen bg-background" data-testid="privacy-page" lang={lang}>
       <div className="mx-auto max-w-3xl px-4 py-12">
         {/* 언어 토글 */}
         <div className="flex items-center justify-between mb-8">
@@ -20,8 +12,11 @@ export function PrivacyContent() {
             {lang === 'ko' ? '개인정보처리방침' : 'Privacy Policy'}
           </h1>
           <div className="flex gap-2">
-            <button
-              onClick={() => setLang('ko')}
+            <Link
+              href="?lang=ko"
+              lang="ko"
+              prefetch={false}
+              aria-current={lang === 'ko' ? 'page' : undefined}
               className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                 lang === 'ko'
                   ? 'bg-primary text-primary-foreground'
@@ -30,9 +25,12 @@ export function PrivacyContent() {
               aria-label="한국어로 보기"
             >
               한국어
-            </button>
-            <button
-              onClick={() => setLang('en')}
+            </Link>
+            <Link
+              href="?lang=en"
+              lang="en"
+              prefetch={false}
+              aria-current={lang === 'en' ? 'page' : undefined}
               className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                 lang === 'en'
                   ? 'bg-primary text-primary-foreground'
@@ -41,7 +39,7 @@ export function PrivacyContent() {
               aria-label="View in English"
             >
               English
-            </button>
+            </Link>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { getDateLocale } from '@/lib/utils/date-format';
@@ -27,7 +27,6 @@ import {
   getTrendDirection,
   getTrendColorClass,
 } from '@/lib/utils/conditional-helpers';
-import { BottomNav } from '@/components/BottomNav';
 import type {
   AnalysisType,
   AnalysisCompareResponse,
@@ -72,6 +71,16 @@ const TYPE_COLORS: Record<AnalysisType, string> = {
   'personal-color': 'from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30',
   hair: 'from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30',
   makeup: 'from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30',
+};
+
+const SUPPORTED_TYPES: AnalysisType[] = ['skin', 'body', 'personal-color', 'hair'];
+
+const TYPE_HISTORY_ROUTES: Record<AnalysisType, string> = {
+  skin: '/analysis/skin/history',
+  body: '/analysis/body/history',
+  'personal-color': '/analysis/personal-color/history',
+  hair: '/analysis/hair/history',
+  makeup: '/analysis/makeup/history',
 };
 
 // 변화 아이템 컴포넌트
@@ -297,54 +306,75 @@ function CompareContent() {
   const toId = searchParams.get('to');
 
   // 상태
-  const [activeType, setActiveType] = useState<AnalysisType>(typeParam);
+  // URL을 비교 축의 정본으로 사용해 뒤로가기·외부 링크 이동에서도 최신 축을 조회한다.
+  const activeType = typeParam;
   const [compareData, setCompareData] = useState<AnalysisCompareResponse | null>(null);
   const [historyData, setHistoryData] = useState<AnalysisHistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const supportedTypes: AnalysisType[] = ['skin', 'body', 'personal-color', 'hair'];
+  const requestKeyRef = useRef('');
 
   // 비교 데이터 로드
   useEffect(() => {
+    const requestKey = `${activeType}:${fromId ?? ''}:${toId ?? ''}`;
+    requestKeyRef.current = requestKey;
+
     if (!fromId || !toId) {
       setError('비교할 분석 정보가 없습니다.');
+      setCompareData(null);
+      setHistoryData(null);
       setLoading(false);
       return;
     }
+
+    const controller = new AbortController();
 
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // 비교 데이터 조회
-        const compareRes = await fetch(
-          `/api/analysis/compare?type=${activeType}&from=${fromId}&to=${toId}`
-        );
+        // 서로 독립적인 비교·이력 조회는 병렬 실행한다.
+        const [compareRes, historyRes] = await Promise.all([
+          fetch(`/api/analysis/compare?type=${activeType}&from=${fromId}&to=${toId}`, {
+            signal: controller.signal,
+          }),
+          fetch(`/api/analysis/history?type=${activeType}&period=6m&limit=20`, {
+            signal: controller.signal,
+          }),
+        ]);
         if (!compareRes.ok) {
           throw new Error('비교 데이터를 불러오지 못했습니다.');
         }
-        const compareResult: AnalysisCompareResponse = await compareRes.json();
-        setCompareData(compareResult);
+        const [compareResult, historyResult] = await Promise.all([
+          compareRes.json() as Promise<AnalysisCompareResponse>,
+          historyRes.ok
+            ? (historyRes.json() as Promise<AnalysisHistoryResponse>)
+            : Promise.resolve(null),
+        ]);
 
-        // 이력 데이터 조회 (타임라인 차트용)
-        const historyRes = await fetch(
-          `/api/analysis/history?type=${activeType}&period=6m&limit=20`
-        );
-        if (historyRes.ok) {
-          const historyResult: AnalysisHistoryResponse = await historyRes.json();
-          setHistoryData(historyResult);
+        if (controller.signal.aborted || requestKeyRef.current !== requestKey) {
+          return;
         }
+
+        setCompareData(compareResult);
+        setHistoryData(historyResult);
       } catch (err) {
+        if (controller.signal.aborted || requestKeyRef.current !== requestKey) {
+          return;
+        }
         console.error('[Compare] Error:', err);
         setError('비교 데이터를 불러오지 못했습니다.');
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted && requestKeyRef.current === requestKey) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchData();
+    void fetchData();
+
+    return () => controller.abort();
   }, [activeType, fromId, toId]);
 
   // 공유 핸들러
@@ -371,13 +401,11 @@ function CompareContent() {
     });
   };
 
-  // 타입 변경 시 URL 업데이트 (선택사항)
+  // 축마다 기록 ID가 서로 다른 테이블에 속한다. 다른 축을 고를 때 현재 from/to를
+  // 재사용하면 반드시 404가 되므로, 해당 축의 기록 화면에서 새 두 건을 선택하게 한다.
   const handleTypeChange = (type: AnalysisType) => {
-    setActiveType(type);
-    // URL 파라미터 유지하면서 type만 변경
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('type', type);
-    router.replace(`/analysis/compare?${params.toString()}`);
+    if (type === activeType) return;
+    router.push(TYPE_HISTORY_ROUTES[type]);
   };
 
   // 로딩 상태
@@ -420,7 +448,7 @@ function CompareContent() {
     })) || [];
 
   return (
-    <div className="min-h-screen bg-background pb-20" data-testid="analysis-compare-page">
+    <div className="min-h-screen bg-background" data-testid="analysis-compare-page">
       {/* 헤더 */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between p-4">
@@ -449,7 +477,7 @@ function CompareContent() {
           className="w-full"
         >
           <TabsList className="w-full grid grid-cols-4">
-            {supportedTypes.map((type) => (
+            {SUPPORTED_TYPES.map((type) => (
               <TabsTrigger key={type} value={type}>
                 {TYPE_LABELS[type]}
               </TabsTrigger>
@@ -566,8 +594,6 @@ function CompareContent() {
           새로운 {TYPE_LABELS[activeType]} 분석하기
         </Button>
       </div>
-
-      <BottomNav />
     </div>
   );
 }

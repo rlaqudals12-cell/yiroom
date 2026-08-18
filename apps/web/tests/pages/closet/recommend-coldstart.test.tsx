@@ -102,6 +102,23 @@ describe('ClosetRecommendPage 콜드스타트(빈 옷장 진단 제안)', () => 
     expect(screen.getByTestId('closet-empty-cta')).toHaveTextContent('사진 여러 장 한 번에 등록');
   });
 
+  it('통합 분석의 문자열 best_colors를 시즌 공용색보다 우선한다', async () => {
+    state.pc = {
+      data: {
+        season: 'spring',
+        best_colors: ['#123456'],
+        image_analysis: null,
+      },
+      error: null,
+    };
+
+    render(<ClosetRecommendPage />);
+
+    const blocks = await screen.findAllByTestId('coldstart-outfit-block');
+    expect(blocks).toHaveLength(5);
+    expect(blocks[0].querySelector('[style]')).toHaveStyle({ backgroundColor: '#123456' });
+  });
+
   it('빈 옷장 + 체형 진단만 있어도 체형 스타일 가이드를 제안한다', async () => {
     state.body = { data: { body_type: 'W' }, error: null };
 

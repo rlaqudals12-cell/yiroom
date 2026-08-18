@@ -72,6 +72,17 @@ async function logDeletionAudit(
 }
 
 /**
+ * 이미 Clerk에서 사라진 계정은 멱등한 삭제 성공으로 취급한다.
+ * 왜: Clerk 삭제 뒤 users 행 삭제가 실패하면 다음 크론에서 다시 시도해야 한다.
+ */
+function isClerkUserMissing(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+
+  const candidate = error as { status?: unknown; statusCode?: unknown };
+  return candidate.status === 404 || candidate.statusCode === 404;
+}
+
+/**
  * 사용자 데이터 완전 삭제 (Hard Delete)
  * 테이블 파기는 공용 유틸(purgeUserRows)에 위임 — 계정 즉시삭제와 목록·로직 공유.
  */
@@ -106,7 +117,57 @@ async function hardDeleteUser(
       failedTables.push(...purge.failedBuckets);
     }
 
-    // 3. users 테이블에서 완전 삭제
+    // 3. 잔존 데이터가 있으면 식별자(users·Clerk)를 보존해 다음 크론 재시도를 보장한다.
+    if (failedTables.length > 0) {
+      await logDeletionAudit(supabase, userId, 'HARD_DELETE_FAILED', {
+        clerk_user_id: clerkUserId,
+        attempted_at: now,
+        deleted_tables: deletedTables,
+        failed_tables: failedTables,
+        clerk_deleted: false,
+      });
+      console.error(
+        `[GDPR-HARD-DELETE] Residual data for user ${redactPii.userId(clerkUserId)}: ${failedTables.join(', ')}`
+      );
+      return false;
+    }
+
+    // 4. Clerk 계정을 먼저 삭제한다. 실패하면 users 행을 남겨 다음 크론에서 재시도한다.
+    let clerkDeleted = false;
+    let clerkAlreadyMissing = false;
+    try {
+      const client = await clerkClient();
+      await client.users.deleteUser(clerkUserId);
+      clerkDeleted = true;
+    } catch (clerkError) {
+      if (isClerkUserMissing(clerkError)) {
+        // 직전 시도에서 Clerk만 성공하고 users 삭제가 실패한 재시도 경로다.
+        clerkDeleted = true;
+        clerkAlreadyMissing = true;
+      } else {
+        console.error('[GDPR-HARD-DELETE] Failed to delete Clerk user:', clerkError);
+        failedTables.push('clerk');
+      }
+    }
+
+    if (!clerkDeleted) {
+      await logDeletionAudit(supabase, userId, 'HARD_DELETE_FAILED', {
+        clerk_user_id: clerkUserId,
+        attempted_at: now,
+        deleted_tables: deletedTables,
+        failed_tables: failedTables,
+        clerk_deleted: false,
+      });
+      return false;
+    }
+
+    await logDeletionAudit(supabase, userId, 'CLERK_DELETED', {
+      clerk_user_id: clerkUserId,
+      deleted_at: now,
+      already_missing: clerkAlreadyMissing,
+    });
+
+    // 5. 외부 계정 삭제가 확인된 뒤 재시도 기준점인 users 행을 마지막에 지운다.
     const { error: userDeleteError } = await supabase.from('users').delete().eq('id', userId);
 
     if (userDeleteError) {
@@ -116,24 +177,7 @@ async function hardDeleteUser(
       deletedTables.push('users');
     }
 
-    // 4. Clerk 계정 완전 삭제
-    let clerkDeleted = false;
-    try {
-      const client = await clerkClient();
-      await client.users.deleteUser(clerkUserId);
-      clerkDeleted = true;
-
-      // Clerk 삭제 감사 로그
-      await logDeletionAudit(supabase, userId, 'CLERK_DELETED', {
-        clerk_user_id: clerkUserId,
-        deleted_at: now,
-      });
-    } catch (clerkError) {
-      console.error('[GDPR-HARD-DELETE] Failed to delete Clerk user:', clerkError);
-      // Clerk 삭제 실패해도 다른 데이터는 이미 삭제됨
-    }
-
-    // 5. 최종 감사 로그 (Hard Delete 완료 또는 실패)
+    // 6. 최종 감사 로그 (Hard Delete 완료 또는 실패)
     if (failedTables.length === 0) {
       await logDeletionAudit(supabase, userId, 'HARD_DELETED', {
         clerk_user_id: clerkUserId,

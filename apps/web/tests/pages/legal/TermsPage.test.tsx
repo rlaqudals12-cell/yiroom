@@ -1,16 +1,18 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import TermsPage from '@/app/(main)/terms/page';
+import ServerTermsPage, { TermsContent as TermsPage } from '@/app/(main)/terms/page';
 
 // Mock Next.js Link
 vi.mock('next/link', () => ({
   default: ({
     children,
     href,
+    prefetch: _prefetch,
     ...props
   }: {
     children: React.ReactNode;
     href: string;
+    prefetch?: boolean;
     'aria-label'?: string;
   }) => (
     <a href={href} {...props}>
@@ -20,6 +22,13 @@ vi.mock('next/link', () => ({
 }));
 
 describe('TermsPage', () => {
+  it('lang=en 쿼리는 서버에서 영어 문서를 선택한다', async () => {
+    render(await ServerTermsPage({ searchParams: Promise.resolve({ lang: 'en' }) }));
+
+    expect(screen.getByRole('heading', { name: /Terms of Service/ })).toBeInTheDocument();
+    expect(screen.getByTestId('terms-page')).toHaveAttribute('lang', 'en');
+  });
+
   it('renders the page with correct test id', () => {
     render(<TermsPage />);
     expect(screen.getByTestId('terms-page')).toBeInTheDocument();

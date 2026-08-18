@@ -3,6 +3,8 @@
  * @see lib/api/storage-purge.ts
  */
 import { describe, it, expect, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { purgeUserStorage, USER_STORAGE_BUCKETS } from '@/lib/api/storage-purge';
 
 interface ListResult {
@@ -22,22 +24,132 @@ function makeStorageMock(
   const remove = vi.fn(async (paths: string[]) =>
     removeImpl ? removeImpl(paths) : { error: null }
   );
+  const listCalls: Array<{
+    bucket: string;
+    prefix: string;
+    options: { limit?: number; offset?: number; sortBy?: { column: string; order: string } };
+  }> = [];
   const from = vi.fn((bucket: string) => ({
     list: vi.fn(
-      async (prefix: string) => listMap[`${bucket}:${prefix}`] ?? { data: [], error: null }
+      async (
+        prefix: string,
+        options: {
+          limit?: number;
+          offset?: number;
+          sortBy?: { column: string; order: string };
+        } = {}
+      ) => {
+        listCalls.push({ bucket, prefix, options });
+        const offsetKey = `${bucket}:${prefix}:${options.offset ?? 0}`;
+        const firstPageKey = `${bucket}:${prefix}`;
+        return (
+          listMap[offsetKey] ??
+          ((options.offset ?? 0) === 0 ? listMap[firstPageKey] : undefined) ?? {
+            data: [],
+            error: null,
+          }
+        );
+      }
     ),
     remove,
   }));
   // service-role 클라이언트는 storage만 사용하므로 최소 형태로 캐스팅
   const supabase = { storage: { from } } as never;
-  return { supabase, remove, from };
+  return { supabase, remove, from, listCalls };
 }
 
 describe('purgeUserStorage', () => {
-  it('생체 버킷(integrated-sessions·twins)을 파기 대상에 포함한다', () => {
-    expect(USER_STORAGE_BUCKETS).toContain('integrated-sessions');
-    expect(USER_STORAGE_BUCKETS).toContain('twins');
-    expect(USER_STORAGE_BUCKETS).toContain('skin-images');
+  it('실제 업로드 코드가 쓰는 모든 사용자 버킷을 파기 대상에 포함한다', () => {
+    const uploadBucketContracts = [
+      ['skin-images', 'app/api/analyze/skin/route.ts'],
+      ['body-images', 'app/api/analyze/body/route.ts'],
+      ['personal-color-images', 'app/api/analyze/personal-color/route.ts'],
+      ['hair-images', 'app/api/analyze/hair/route.ts'],
+      ['makeup-images', 'app/api/analyze/makeup/route.ts'],
+      ['posture-images', 'app/api/analyze/posture/route.ts'],
+      ['integrated-sessions', 'lib/analysis/integrated/internal/storage-uploader.ts'],
+      ['twins', 'lib/visual-expression/twin/internal/store.ts'],
+      ['inventory-images', 'app/api/inventory/upload/route.ts'],
+    ] as const;
+
+    for (const [bucket, sourcePath] of uploadBucketContracts) {
+      // 소스와 기대값이 따로 표류하지 않도록 실제 업로드 파일에도 버킷명이 있는지 함께 고정한다.
+      const source = readFileSync(join(process.cwd(), sourcePath), 'utf8');
+      expect(source, `${sourcePath}가 더 이상 ${bucket}을 사용하지 않음`).toContain(bucket);
+      expect(USER_STORAGE_BUCKETS, `${bucket} 파기 대상 누락`).toContain(bucket);
+    }
+  });
+
+  it('1001개 파일을 다음 페이지까지 수집하고 1000개 이하로 나눠 삭제한다', async () => {
+    const firstPage = Array.from({ length: 1000 }, (_, index) => ({
+      name: `file-${String(index).padStart(4, '0')}.jpg`,
+      id: `id-${index}`,
+    }));
+    const { supabase, remove, listCalls } = makeStorageMock({
+      'skin-images:user-1:0': { data: firstPage, error: null },
+      'skin-images:user-1:1000': {
+        data: [{ name: 'file-1000.jpg', id: 'id-1000' }],
+        error: null,
+      },
+    });
+
+    const result = await purgeUserStorage(supabase, 'user-1');
+
+    expect(result).toEqual({ deleted: 1001, failedBuckets: [] });
+    expect(
+      listCalls
+        .filter((call) => call.bucket === 'skin-images' && call.prefix === 'user-1')
+        .map((call) => call.options.offset ?? 0)
+    ).toEqual([0, 1000]);
+    expect(remove).toHaveBeenCalledTimes(2);
+    expect(remove.mock.calls[0]?.[0]).toHaveLength(1000);
+    expect(remove.mock.calls[1]?.[0]).toEqual(['user-1/file-1000.jpg']);
+  });
+
+  it('후속 페이지 list가 실패하면 앞 페이지 파일도 지우지 않고 버킷 실패로 닫는다', async () => {
+    const firstPage = Array.from({ length: 1000 }, (_, index) => ({
+      name: `file-${String(index).padStart(4, '0')}.jpg`,
+      id: `id-${index}`,
+    }));
+    const { supabase, remove } = makeStorageMock({
+      'skin-images:user-1:0': { data: firstPage, error: null },
+      'skin-images:user-1:1000': {
+        data: null,
+        error: { message: 'second page unavailable' },
+      },
+    });
+
+    const result = await purgeUserStorage(supabase, 'user-1');
+
+    expect(result.deleted).toBe(0);
+    expect(result.failedBuckets).toContain('storage:skin-images');
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it('후속 remove 청크가 실패하면 성공으로 위장하지 않고 버킷 실패를 남긴다', async () => {
+    const firstPage = Array.from({ length: 1000 }, (_, index) => ({
+      name: `file-${String(index).padStart(4, '0')}.jpg`,
+      id: `id-${index}`,
+    }));
+    const { supabase, remove } = makeStorageMock(
+      {
+        'skin-images:user-1:0': { data: firstPage, error: null },
+        'skin-images:user-1:1000': {
+          data: [{ name: 'file-1000.jpg', id: 'id-1000' }],
+          error: null,
+        },
+      },
+      (paths) => ({
+        error: paths.includes('user-1/file-1000.jpg') ? { message: 'second remove failed' } : null,
+      })
+    );
+
+    const result = await purgeUserStorage(supabase, 'user-1');
+
+    // 첫 청크의 실제 삭제 수는 보존하되 실패 표식으로 계정 파기 흐름은 fail-closed 된다.
+    expect(result.deleted).toBe(1000);
+    expect(result.failedBuckets).toContain('storage:skin-images');
+    expect(remove).toHaveBeenCalledTimes(2);
   });
 
   it('버킷의 평면 파일을 모두 삭제하고 개수를 반환한다', async () => {
@@ -83,15 +195,29 @@ describe('purgeUserStorage', () => {
     expect(result.failedBuckets).toContain('storage:skin-images');
   });
 
-  it('버킷 list 오류/부재 시 조용히 건너뛰고 예외를 던지지 않는다', async () => {
+  it('버킷 list 오류를 파기 실패로 기록한다', async () => {
     const { supabase, remove } = makeStorageMock({
-      'skin-images:user-1': { data: null, error: { message: 'bucket not found' } },
+      'skin-images:user-1': { data: null, error: { message: 'storage unavailable' } },
     });
 
     const result = await purgeUserStorage(supabase, 'user-1');
 
     expect(result.deleted).toBe(0);
-    expect(result.failedBuckets).toEqual([]);
+    // 회귀: list 실패를 빈 목록으로 취급하면 이미지 잔존 상태에서 계정 삭제가 성공한다.
+    expect(result.failedBuckets).toContain('storage:skin-images');
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it('중첩 폴더 list 오류도 해당 버킷의 파기 실패로 기록한다', async () => {
+    const { supabase, remove } = makeStorageMock({
+      'twins:user-1': { data: [{ name: 'sessionA', id: null }], error: null },
+      'twins:user-1/sessionA': { data: null, error: { message: 'nested list failed' } },
+    });
+
+    const result = await purgeUserStorage(supabase, 'user-1');
+
+    expect(result.deleted).toBe(0);
+    expect(result.failedBuckets).toContain('storage:twins');
     expect(remove).not.toHaveBeenCalled();
   });
 });

@@ -29,6 +29,7 @@ import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { getShelfItems } from '@/lib/scan/product-shelf';
 import { getTodayDailyCapsule } from '@/lib/capsule';
+import { normalizeColors } from '@/lib/color/normalize-colors';
 import {
   getCurrentHourInTimezone,
   getDateKeyInTimezone,
@@ -56,23 +57,6 @@ function withCors(response: NextResponse): NextResponse {
 // 입력 수집 헬퍼 (useAnalysisStatus의 서버판 — best_colors/추이 정규화 동일)
 // ─────────────────────────────────────────────────────────────
 
-/** DB best_colors(JSONB) 항목 하나를 {name,hex}로 정규화 (AI 원본 {name,hex}, color 폴백) */
-function normalizeColorItem(c: unknown): { name: string; hex: string } | null {
-  if (typeof c !== 'object' || c === null) return null;
-  const item = c as { name?: unknown; hex?: unknown; color?: unknown };
-  let hex: string | null = null;
-  if (typeof item.hex === 'string') hex = item.hex;
-  else if (typeof item.color === 'string') hex = item.color;
-  if (!hex) return null;
-  return { name: typeof item.name === 'string' ? item.name : '', hex };
-}
-
-/** best_colors 배열 → 유효한 {name,hex}만 */
-function normalizeBestColors(raw: unknown): Array<{ name: string; hex: string }> {
-  if (!Array.isArray(raw)) return [];
-  return raw.map(normalizeColorItem).filter((c): c is { name: string; hex: string } => c !== null);
-}
-
 /** image_analysis JSONB에서 실측 대비 레벨만 안전 추출 (없거나 무효면 undefined — 추측 없음) */
 function extractContrastLevel(raw: unknown): 'low' | 'medium' | 'high' | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
@@ -90,7 +74,8 @@ function buildPcSummary(row: {
   best_colors: unknown;
   image_analysis: unknown;
 }): AnalysisSummary {
-  const bestColors = normalizeBestColors(row.best_colors);
+  // 단독 분석의 객체 배열과 통합 분석의 hex 문자열 배열을 같은 공용 계약으로 읽는다.
+  const bestColors = normalizeColors(row.best_colors);
   const contrastLevel = extractContrastLevel(row.image_analysis);
   return {
     id: row.id,

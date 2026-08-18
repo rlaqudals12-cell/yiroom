@@ -53,6 +53,7 @@ import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/invento
 import { BEST_COLORS, LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
 import { BODY_TYPES_3 } from '@/lib/mock/body-analysis';
 import { composeDailyOutfit } from '@/lib/color/daily-outfit';
+import { normalizeColors, type NormalizedColor } from '@/lib/color/normalize-colors';
 
 /** PC image_analysis JSONB에서 실측 대비 레벨만 안전 추출(없으면 undefined — 추측 없음). */
 function readContrastLevel(raw: unknown): 'low' | 'medium' | 'high' | undefined {
@@ -120,7 +121,7 @@ export default function ClosetRecommendPage() {
   const [bodyType, setBodyType] = useState<BodyType3 | null>(null);
   // 콜드스타트(빈 옷장) 진단 제안용 — PC 베스트 컬러(개인 팔레트)·퍼스널 대비.
   // 브리핑 '오늘의 배색'과 동일 소스라 옷장이 비어도 같은 배색을 이어서 보여준다.
-  const [pcBestColors, setPcBestColors] = useState<Array<{ name?: string; hex?: string }>>([]);
+  const [pcBestColors, setPcBestColors] = useState<NormalizedColor[]>([]);
   const [pcContrast, setPcContrast] = useState<'low' | 'medium' | 'high' | undefined>(undefined);
 
   // 날씨 — Open-Meteo 실연동(키 불필요). ADR-098의 WEATHER 게이팅은 "독립 날씨
@@ -166,9 +167,7 @@ export default function ClosetRecommendPage() {
         }
         // 빈 옷장 콜드스타트 배색에 사용 — 실제 옷이 아니라 색 가이드용(브리핑과 동일 소스)
         const rawBest = (colorData as { best_colors?: unknown } | null)?.best_colors;
-        setPcBestColors(
-          Array.isArray(rawBest) ? (rawBest as Array<{ name?: string; hex?: string }>) : []
-        );
+        setPcBestColors(normalizeColors(rawBest));
         setPcContrast(
           readContrastLevel((colorData as { image_analysis?: unknown } | null)?.image_analysis)
         );
