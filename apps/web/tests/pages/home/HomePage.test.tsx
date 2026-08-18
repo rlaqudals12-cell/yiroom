@@ -14,6 +14,8 @@
  * 테스트에서는 i18n 키 이름으로 검증한다.
  */
 
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
@@ -117,5 +119,21 @@ describe('HomeBriefingSkeleton', () => {
     expect(screen.getByTestId('home-briefing-skeleton-hero')).toBeInTheDocument();
     expect(screen.getByTestId('home-briefing-skeleton-support')).toBeInTheDocument();
     expect(screen.getAllByRole('status')).toHaveLength(1);
+  });
+});
+
+describe('HomePage 레이아웃 계약', () => {
+  it('데스크톱 본문과 라우트 로딩을 모두 진단지 읽기 폭 48rem으로 제한한다', () => {
+    const pageSource = readFileSync(
+      path.join(process.cwd(), 'app', '(main)', 'home', 'page.tsx'),
+      'utf8'
+    );
+    const loadingSource = readFileSync(
+      path.join(process.cwd(), 'app', '(main)', 'home', 'loading.tsx'),
+      'utf8'
+    );
+
+    expect(pageSource).toContain('mx-auto w-full max-w-3xl px-4');
+    expect(loadingSource).toContain('mx-auto w-full max-w-3xl px-4');
   });
 });

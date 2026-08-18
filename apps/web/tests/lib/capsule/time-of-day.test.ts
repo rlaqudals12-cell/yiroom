@@ -5,7 +5,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { getActiveTimeGroup, getTimeGroupPriority } from '@/lib/capsule/time-of-day';
+import {
+  getActiveTimeGroup,
+  getTimeGroupPriority,
+  selectCurrentCapsuleAction,
+} from '@/lib/capsule/time-of-day';
 
 describe('getActiveTimeGroup', () => {
   it('11시 미만은 아침(morning)이다', () => {
@@ -38,5 +42,31 @@ describe('getTimeGroupPriority', () => {
     for (const hour of [0, 10, 11, 16, 17, 23]) {
       expect(getTimeGroupPriority(hour)[0]).toBe(getActiveTimeGroup(hour));
     }
+  });
+});
+
+describe('selectCurrentCapsuleAction', () => {
+  const items = [
+    { id: 'morning', isChecked: false, timeOfDay: 'morning' as const },
+    { id: 'anytime', isChecked: false, timeOfDay: 'anytime' as const },
+    { id: 'evening', isChecked: false, timeOfDay: 'evening' as const },
+  ];
+
+  it('현재 시간대의 첫 미완료 행동을 우선한다', () => {
+    expect(selectCurrentCapsuleAction(items, 9)?.id).toBe('morning');
+    expect(selectCurrentCapsuleAction(items, 13)?.id).toBe('anytime');
+    expect(selectCurrentCapsuleAction(items, 20)?.id).toBe('evening');
+  });
+
+  it('현재 그룹이 끝났으면 다음 시간대의 미완료 행동을 고른다', () => {
+    const morningDone = items.map((item) =>
+      item.id === 'morning' ? { ...item, isChecked: true } : item
+    );
+    expect(selectCurrentCapsuleAction(morningDone, 9)?.id).toBe('anytime');
+  });
+
+  it('모든 행동을 마쳤으면 완료 행 재노출 없이 null을 반환한다', () => {
+    const completed = items.map((item) => ({ ...item, isChecked: true }));
+    expect(selectCurrentCapsuleAction(completed, 20)).toBeNull();
   });
 });
