@@ -17,33 +17,38 @@ test.describe('핵심 플로우 - 홈 허브', () => {
     await page.goto(ROUTES.NEW_HOME);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 홈에 최소 1개의 모듈 진입점 존재 확인
-      const moduleLinks = page.locator(
-        'a[href*="beauty"], a[href*="analysis"], a[href*="workout"], a[href*="nutrition"], a[href*="diary"]'
-      );
-      const count = await moduleLinks.count();
-      expect(count).toBeGreaterThan(0);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    // 홈에 최소 1개의 활성 모듈 진입점이 있어야 한다.
+    const moduleLinks = page.locator('a[href*="beauty"], a[href*="analysis"], a[href*="diary"]');
+    await expect(moduleLinks.first()).toBeVisible();
   });
 
   test('홈에서 피부 일기로 진입 가능하다', async ({ page }) => {
     await page.goto(ROUTES.NEW_HOME);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      const diaryLink = page.locator('a[href*="diary"]');
-      const hasDiaryLink = await diaryLink
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (hasDiaryLink) {
-        await diaryLink.first().click();
-        await waitForLoadingToFinish(page);
-        expect(page.url()).toMatch(/diary/);
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    const diaryLink = page.locator('a[href*="diary"]');
+    const hasDiaryLink = await diaryLink
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (!hasDiaryLink) {
+      test.skip(true, '피부 일기 CTA가 포함된 홈 브리핑 fixture가 필요함');
+      return;
+    }
+
+    await diaryLink.first().click();
+    await waitForLoadingToFinish(page);
+    expect(page.url()).toMatch(/diary/);
   });
 });
 
@@ -57,25 +62,20 @@ test.describe('핵심 플로우 - 소셜 피드', () => {
     await waitForLoadingToFinish(page);
 
     const url = page.url();
-    expect(url).toMatch(/feed|sign-in/);
+    expect(url).toMatch(/home|sign-in/);
   });
 
   test('피드에서 게시물 카드가 표시되거나 빈 상태가 보인다', async ({ page }) => {
     await page.goto(ROUTES.FEED);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 피드 카드 또는 빈 상태
-      const feedContent = page.locator(
-        '[data-testid*="feed"], [data-testid*="post"], article, [data-testid*="empty"]'
-      );
-      const hasContent = await feedContent
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-      // 피드가 비어있거나 게시물이 있거나 — 크래시만 아니면 OK
-      expect(hasContent || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page).toHaveURL(/\/home/);
+    await expect(page.locator('[data-testid*="feed"]')).toHaveCount(0);
   });
 
   test('리더보드 페이지가 정상적으로 로드된다', async ({ page }) => {
@@ -104,48 +104,30 @@ test.describe('핵심 플로우 - 뷰티 캡슐', () => {
     await page.goto(ROUTES.BEAUTY);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 탭 목록 확인
-      const tabs = page.locator('[role="tablist"]');
-      const hasTabs = await tabs
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (hasTabs) {
-        // 탭 버튼 찾기 (추천, 케어, 트렌드)
-        const tabButtons = page.locator('[role="tab"]');
-        const tabCount = await tabButtons.count();
-
-        if (tabCount >= 2) {
-          // 두 번째 탭 클릭
-          await tabButtons.nth(1).click();
-          await waitForLoadingToFinish(page);
-
-          // 페이지 안 깨짐 확인
-          expect(page.url()).toMatch(/beauty/);
-        }
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    const tabs = page.locator('[role="tablist"]');
+    const tabButtons = tabs.getByRole('tab');
+    await expect(tabs.first()).toBeVisible();
+    expect(await tabButtons.count()).toBeGreaterThanOrEqual(2);
+    await tabButtons.nth(1).click();
+    await waitForLoadingToFinish(page);
+    expect(page.url()).toMatch(/beauty/);
   });
 
-  test('뷰티 → 카테고리 상세 진입 플로우', async ({ page }) => {
-    await page.goto(ROUTES.BEAUTY);
+  test('뷰티 카테고리 상세 경로는 단일 뷰티 화면으로 통합된다', async ({ page }) => {
+    await page.goto('/beauty/category/skincare');
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      const categoryLink = page.locator('a[href*="beauty/category"]');
-      const hasLink = await categoryLink
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (hasLink) {
-        await categoryLink.first().click();
-        await waitForLoadingToFinish(page);
-        expect(page.url()).toMatch(/beauty\/category/);
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page).toHaveURL(/\/beauty(?:\?|$)/);
   });
 });
 
@@ -174,21 +156,18 @@ test.describe('핵심 플로우 - 스타일/옷장', () => {
     await page.goto(ROUTES.CLOSET);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      const addButton = page.locator(
-        'a[href*="closet/add"], button:has-text("추가"), button:has-text("등록")'
-      );
-      const hasAdd = await addButton
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (hasAdd) {
-        await addButton.first().click();
-        await waitForLoadingToFinish(page);
-        expect(page.url()).toMatch(/closet|add|sign-in/);
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    const addButton = page.locator(
+      'a[href*="closet/add"], button:has-text("추가"), button:has-text("등록")'
+    );
+    await expect(addButton.first()).toBeVisible();
+    await addButton.first().click();
+    await waitForLoadingToFinish(page);
+    expect(page.url()).toMatch(/closet|add|sign-in/);
   });
 });
 
@@ -217,18 +196,24 @@ test.describe('핵심 플로우 - AI 코치', () => {
     await page.goto(ROUTES.COACH);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      const chatInput = page.locator(
-        'input[placeholder*="질문"], textarea[placeholder*="질문"], input[placeholder*="메시지"], textarea[placeholder*="메시지"]'
-      );
-      const hasInput = await chatInput
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      // 채팅 입력이 있거나 온보딩이 먼저 나올 수 있음
-      expect(hasInput || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    const chatInput = page.locator(
+      'input[placeholder*="질문"], textarea[placeholder*="질문"], input[placeholder*="메시지"], textarea[placeholder*="메시지"]'
+    );
+    const hasInput = await chatInput
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (!hasInput) {
+      test.skip(true, '채팅 입력이 활성화된 사용자 상태 fixture가 필요함');
+      return;
+    }
+
+    await expect(chatInput.first()).toBeVisible();
   });
 });
 
@@ -315,39 +300,37 @@ test.describe('핵심 플로우 - 크로스 모듈', () => {
     await page.goto(ROUTES.BEAUTY);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 2. 분석 링크 찾기
-      const analysisLink = page.locator('a[href*="analysis"]');
-      const hasLink = await analysisLink
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (hasLink) {
-        await analysisLink.first().click();
-        await waitForLoadingToFinish(page);
-        expect(page.url()).toMatch(/analysis/);
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    // 사용자 상태에 따라 분석 후속 CTA가 없는 뷰티 화면도 있다.
+    const analysisLink = page.locator('a[href*="analysis"]');
+    const hasLink = await analysisLink
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (!hasLink) {
+      test.skip(true, '분석 후속 CTA가 포함된 뷰티 사용자 상태 fixture가 필요함');
+      return;
+    }
+
+    await analysisLink.first().click();
+    await waitForLoadingToFinish(page);
+    expect(page.url()).toMatch(/analysis/);
   });
 
-  test('홈 → 웰니스 → 기록 순환 플로우', async ({ page }) => {
+  test('홈은 비활성 기록 진입점을 노출하지 않는다', async ({ page }) => {
     await page.goto(ROUTES.NEW_HOME);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      const recordLink = page.locator('a[href*="record"]');
-      const hasLink = await recordLink
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (hasLink) {
-        await recordLink.first().click();
-        await waitForLoadingToFinish(page);
-        expect(page.url()).toMatch(/record/);
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page.locator('a[href^="/record"]')).toHaveCount(0);
   });
 });
 

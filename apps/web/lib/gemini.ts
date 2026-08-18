@@ -1749,8 +1749,9 @@ ${backImageBase64 ? '- 후면: 어깨뼈 대칭, 허리 곡선, 척추 정렬 �
 
     geminiLogger.info(`[C-1] Starting analysis with ${imageCount} image(s)`);
 
-    // 타임아웃 (다각도는 10초, 단일은 3초) + 재시도 (최대 2회) 적용
-    const timeoutMs = hasMultiAngle ? 10000 : 3000;
+    // 저장소 지연 프로필의 C-1 p99가 3.5초라 3초면 정상 상위 꼬리 응답까지 잘린다.
+    // 단일은 5초로 여유를 두고, 입력량이 많은 다각도 10초 계약은 유지한다.
+    const timeoutMs = hasMultiAngle ? 10000 : 5000;
     const result = await withRetry(
       () =>
         withTimeout(
@@ -1921,7 +1922,7 @@ ${input.rightImageBase64 ? '- 우측: 측면 피부색, 볼 색조 분석 (좌�
       `[PC-1] Starting analysis with ${imageCount} face image(s)${input.wristImageBase64 ? ' + wrist' : ''}`
     );
 
-    // 타임아웃 (30초) + 재시도 (최대 5회) 적용 - 안정성 강화
+    // Vercel 단독 라우트의 60초 실행 상한을 고려해 재시도는 최대 2회(총 3시도)로 제한한다.
     const result = await withRetry(
       () =>
         withTimeout(
@@ -1932,7 +1933,7 @@ ${input.rightImageBase64 ? '- 우측: 측면 피부색, 볼 색조 분석 (좌�
           30000,
           '[PC-1] Gemini timeout'
         ),
-      5,
+      2,
       2000
     );
     const text = result.text;

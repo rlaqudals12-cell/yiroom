@@ -199,6 +199,12 @@ describe('i18n messages', () => {
       checkNonEmptyStrings(jaMessages);
       checkNonEmptyStrings(zhMessages);
     });
+
+    it('간체 중국어 메시지에 유니코드 대체 문자가 없어야 함', () => {
+      expect(JSON.stringify(zhMessages)).not.toContain('\uFFFD');
+      expect((zhMessages.common as Record<string, string>).close).toBe('关闭');
+      expect((zhMessages.settings as Record<string, string>).dataManagement).toBe('数据管理');
+    });
   });
 
   // 2026-08 랜딩 리뷰 확정 수리 — 히어로 과약속 제거 + 같은 목적지 CTA 문구 통일

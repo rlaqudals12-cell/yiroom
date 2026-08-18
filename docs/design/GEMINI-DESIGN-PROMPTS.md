@@ -1,5 +1,7 @@
 # 이룸 Gemini 디자인 프롬프트 모음
 
+> ⚠️ 폐기됨(2026-08) — 다크 지면·핑크 그라데이션은 구세대. 현행 정본 = docs/adr/ADR-120
+
 > **Version**: 1.1
 > **Created**: 2026-01-21
 > **Updated**: 2026-01-29 (YIROOM IDENTITY v3 Pink 색상 통합)
@@ -48,6 +50,7 @@ Language: Korean text only
 ## 1️⃣ Empty State 일러스트레이션
 
 ### 1.1 첫 분석 대기
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -66,6 +69,7 @@ Style: Single-weight line art, geometric
 ```
 
 ### 1.2 분석 기록 없음
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -83,6 +87,7 @@ Text reference: "아직 기록이 없어요"
 ```
 
 ### 1.3 제품 추천 없음
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -100,6 +105,7 @@ Text reference: "맞춤 추천을 받으려면 분석을 완료하세요"
 ```
 
 ### 1.4 위시리스트 비어있음
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -117,6 +123,7 @@ Text reference: "저장한 제품이 없어요"
 ```
 
 ### 1.5 네트워크 에러
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -135,6 +142,7 @@ Text reference: "연결을 확인해주세요"
 ```
 
 ### 1.6 일반 에러
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -156,6 +164,7 @@ Text reference: "문제가 발생했어요"
 ## 2️⃣ 온보딩 화면
 
 ### 2.1 온보딩 1 - 환영
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -176,6 +185,7 @@ Illustration style: Glowing face outline with data visualization elements
 ```
 
 ### 2.2 온보딩 2 - AI 분석 소개
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -196,6 +206,7 @@ Illustration: Face with zone markers and analysis points
 ```
 
 ### 2.3 온보딩 3 - 맞춤 추천
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -220,6 +231,7 @@ Illustration: Personalized dashboard preview with cards
 ## 3️⃣ 분석 플로우 화면
 
 ### 3.1 카메라 가이드 오버레이
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -240,6 +252,7 @@ Style: Clean, guiding, not obstructive
 ```
 
 ### 3.2 분석 중 로딩
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -259,6 +272,7 @@ Mood: High-tech, trustworthy, premium
 ```
 
 ### 3.3 분석 단계 표시
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -284,6 +298,7 @@ Style: Clear progress indication, professional
 ## 4️⃣ 결과/축하 화면
 
 ### 4.1 분석 완료 축하
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -305,6 +320,7 @@ Mood: Celebratory, rewarding, exciting
 ```
 
 ### 4.2 퍼스널컬러 결과
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -327,6 +343,7 @@ Module color: Purple (#A78BFA) accents
 ```
 
 ### 4.3 피부 분석 결과
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -351,6 +368,7 @@ Module color: Pink (#F472B6) accents
 ```
 
 ### 4.4 체형 분석 결과
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -377,6 +395,7 @@ Module color: Blue (#60A5FA) accents
 ## 5️⃣ 대시보드/메인 화면
 
 ### 5.1 메인 대시보드
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -406,6 +425,7 @@ Style: Card-based, premium spacing, breathing room
 ```
 
 ### 5.2 분석 허브
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -437,6 +457,7 @@ Style: Large cards, clear visual distinction per module
 ## 6️⃣ 제품/추천 화면
 
 ### 6.1 제품 추천 그리드
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -463,6 +484,7 @@ Style: E-commerce feel but premium dark theme
 ```
 
 ### 6.2 제품 상세
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -494,6 +516,7 @@ Style: Immersive product showcase
 ## 7️⃣ 마케팅/앱스토어
 
 ### 7.1 앱스토어 스크린샷 1 - Hero
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -516,6 +539,7 @@ Style: Clean, Apple App Store feature-ready
 ```
 
 ### 7.2 앱스토어 스크린샷 2 - 피부 분석
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -538,6 +562,7 @@ Layout:
 ```
 
 ### 7.3 앱스토어 스크린샷 3 - 퍼스널컬러
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -557,6 +582,7 @@ Layout:
 ```
 
 ### 7.4 소셜 공유 카드
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -584,6 +610,7 @@ Style: Shareable, branded, curiosity-inducing
 ## 8️⃣ UI 요소
 
 ### 8.1 모듈 아이콘 세트
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -614,6 +641,7 @@ Deliver as: Individual PNG files with transparency
 ```
 
 ### 8.2 뱃지/업적 세트
+
 ```
 [MASTER CONTEXT 포함]
 
@@ -640,6 +668,7 @@ Deliver as: Individual PNG files with transparency
 ## 📋 생성 체크리스트
 
 ### Empty States (6개)
+
 - [ ] 첫 분석 대기
 - [ ] 분석 기록 없음
 - [ ] 제품 추천 없음
@@ -648,36 +677,43 @@ Deliver as: Individual PNG files with transparency
 - [ ] 일반 에러
 
 ### 온보딩 (3개)
+
 - [ ] 환영 화면
 - [ ] AI 분석 소개
 - [ ] 맞춤 추천 소개
 
 ### 분석 플로우 (3개)
+
 - [ ] 카메라 가이드
 - [ ] 분석 중 로딩
 - [ ] 분석 단계 표시
 
 ### 결과 화면 (4개)
+
 - [ ] 분석 완료 축하
 - [ ] 퍼스널컬러 결과
 - [ ] 피부 분석 결과
 - [ ] 체형 분석 결과
 
 ### 메인 화면 (2개)
+
 - [ ] 대시보드
 - [ ] 분석 허브
 
 ### 제품 화면 (2개)
+
 - [ ] 제품 그리드
 - [ ] 제품 상세
 
 ### 마케팅 (4개)
+
 - [ ] 앱스토어 스크린샷 1
 - [ ] 앱스토어 스크린샷 2
 - [ ] 앱스토어 스크린샷 3
 - [ ] 소셜 공유 카드
 
 ### UI 요소 (2개)
+
 - [ ] 모듈 아이콘 세트
 - [ ] 뱃지 세트
 

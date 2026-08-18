@@ -19,24 +19,26 @@ test.describe('FAQ - 페이지 렌더링', () => {
     await page.goto(ROUTES.HELP_FAQ);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      const header = page.locator('h1:has-text("자주 묻는 질문")');
-      const isVisible = await header.isVisible().catch(() => false);
-
-      expect(isVisible || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    const header = page.locator('h1:has-text("자주 묻는 질문")');
+    await expect(header).toBeVisible();
   });
 
   test('FAQ 설명 텍스트가 표시된다', async ({ page }) => {
     await page.goto(ROUTES.HELP_FAQ);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      const description = page.locator('text=이룸 사용 중 궁금한 점');
-      const isVisible = await description.isVisible().catch(() => false);
-
-      expect(isVisible || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    const description = page.locator('text=이룸 사용 중 궁금한 점');
+    await expect(description).toBeVisible();
   });
 });
 
@@ -47,7 +49,10 @@ test.describe('FAQ - 아코디언', () => {
   });
 
   test('FAQ 아코디언이 렌더링된다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const faqAccordion = page.locator('[data-testid="faq-accordion"]');
     const emptyState = page.locator('text=등록된 FAQ가 없습니다');
@@ -60,72 +65,78 @@ test.describe('FAQ - 아코디언', () => {
   });
 
   test('FAQ 아이템 클릭 시 아코디언이 열린다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const faqItem = page.locator('[data-testid^="faq-item-"]').first();
     const hasItem = await faqItem.isVisible().catch(() => false);
 
-    if (hasItem) {
-      // 아코디언 트리거 클릭
-      const trigger = faqItem.locator('button[aria-expanded]');
-      const hasTrigger = await trigger.isVisible().catch(() => false);
-
-      if (hasTrigger) {
-        await trigger.click();
-        await page.waitForTimeout(300);
-
-        const afterExpanded = await trigger.getAttribute('aria-expanded');
-        expect(afterExpanded).toBe('true');
-      }
+    if (!hasItem) {
+      test.skip(true, '아코디언 동작을 검증할 FAQ fixture가 없음');
+      return;
     }
+
+    // 아코디언 트리거 클릭
+    const trigger = faqItem.locator('button[aria-expanded]');
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await page.waitForTimeout(300);
+
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
   });
 
   test('FAQ 아코디언이 다시 클릭 시 닫힌다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const faqItem = page.locator('[data-testid^="faq-item-"]').first();
     const hasItem = await faqItem.isVisible().catch(() => false);
 
-    if (hasItem) {
-      const trigger = faqItem.locator('button[aria-expanded]');
-      const hasTrigger = await trigger.isVisible().catch(() => false);
-
-      if (hasTrigger) {
-        // 열기
-        await trigger.click();
-        await page.waitForTimeout(300);
-
-        // 닫기
-        await trigger.click();
-        await page.waitForTimeout(300);
-
-        const isExpanded = await trigger.getAttribute('aria-expanded');
-        expect(isExpanded).toBe('false');
-      }
+    if (!hasItem) {
+      test.skip(true, '아코디언 동작을 검증할 FAQ fixture가 없음');
+      return;
     }
+
+    const trigger = faqItem.locator('button[aria-expanded]');
+    await expect(trigger).toBeVisible();
+
+    // 열기
+    await trigger.click();
+    await page.waitForTimeout(300);
+
+    // 닫기
+    await trigger.click();
+    await page.waitForTimeout(300);
+
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('열린 아코디언에 답변이 표시된다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const faqItem = page.locator('[data-testid^="faq-item-"]').first();
     const hasItem = await faqItem.isVisible().catch(() => false);
 
-    if (hasItem) {
-      const trigger = faqItem.locator('button[aria-expanded]');
-      const hasTrigger = await trigger.isVisible().catch(() => false);
-
-      if (hasTrigger) {
-        await trigger.click();
-        await page.waitForTimeout(300);
-
-        // 아코디언 콘텐츠 확인
-        const content = faqItem.locator('[data-state="open"]');
-        const hasContent = await content.isVisible().catch(() => false);
-
-        expect(hasContent || true).toBe(true);
-      }
+    if (!hasItem) {
+      test.skip(true, '답변을 검증할 FAQ fixture가 없음');
+      return;
     }
+
+    const trigger = faqItem.locator('button[aria-expanded]');
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await page.waitForTimeout(300);
+
+    // 아코디언 콘텐츠 확인
+    const content = faqItem.locator('[data-slot="accordion-content"][data-state="open"]');
+    await expect(content).toBeVisible();
   });
 });
 
@@ -136,85 +147,81 @@ test.describe('FAQ - 검색', () => {
   });
 
   test('검색 입력 필드가 존재한다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const searchInput = page.locator('[data-testid="faq-search-input"]');
-    const isVisible = await searchInput.isVisible().catch(() => false);
-
-    if (isVisible) {
-      await expect(searchInput).toBeVisible();
-    }
+    await expect(searchInput).toBeVisible();
   });
 
   test('검색어 입력 시 결과가 필터링된다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const searchInput = page.locator('[data-testid="faq-search-input"]');
-    const isVisible = await searchInput.isVisible().catch(() => false);
+    await expect(searchInput).toBeVisible();
 
-    if (isVisible) {
-      // 검색 전 FAQ 아이템 수 확인
-      const beforeItems = page.locator('[data-testid^="faq-item-"]');
-      const beforeCount = await beforeItems.count();
-
-      if (beforeCount > 0) {
-        // 검색어 입력
-        await searchInput.fill('이룸');
-        await page.waitForTimeout(300);
-
-        // 필터링 결과 확인 (결과가 있거나 없거나)
-        const afterItems = page.locator('[data-testid^="faq-item-"]');
-        const emptyState = page.locator('[data-testid="faq-empty"]');
-
-        const hasResults = (await afterItems.count()) > 0;
-        const hasEmpty = await emptyState.isVisible().catch(() => false);
-
-        expect(hasResults || hasEmpty).toBe(true);
-      }
+    // 검색 전 FAQ 아이템 수 확인
+    const beforeItems = page.locator('[data-testid^="faq-item-"]');
+    const beforeCount = await beforeItems.count();
+    if (beforeCount === 0) {
+      test.skip(true, '검색 필터링을 검증할 FAQ fixture가 없음');
+      return;
     }
+
+    // 검색어 입력
+    await searchInput.fill('이룸');
+    await page.waitForTimeout(300);
+
+    // 필터링 결과 확인 (결과가 있거나 없거나)
+    const afterItems = page.locator('[data-testid^="faq-item-"]');
+    const emptyState = page.locator('[data-testid="faq-empty"]');
+
+    const hasResults = (await afterItems.count()) > 0;
+    const hasEmpty = await emptyState.isVisible().catch(() => false);
+
+    expect(hasResults || hasEmpty).toBe(true);
   });
 
   test('검색 결과가 없을 때 빈 상태가 표시된다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const searchInput = page.locator('[data-testid="faq-search-input"]');
-    const isVisible = await searchInput.isVisible().catch(() => false);
+    await expect(searchInput).toBeVisible();
 
-    if (isVisible) {
-      // 존재하지 않을 검색어 입력
-      await searchInput.fill('xyzabc123notexist');
-      await page.waitForTimeout(300);
+    // 존재하지 않을 검색어 입력
+    await searchInput.fill('xyzabc123notexist');
+    await page.waitForTimeout(300);
 
-      const emptyState = page.locator('[data-testid="faq-empty"]');
-      const hasEmpty = await emptyState.isVisible().catch(() => false);
-
-      // 검색 결과가 없으면 빈 상태 표시
-      if (hasEmpty) {
-        const emptyText = await emptyState.textContent();
-        expect(emptyText).toContain('검색 결과가 없습니다');
-      }
-    }
+    const emptyState = page.locator('[data-testid="faq-empty"]');
+    await expect(emptyState).toContainText('검색 결과가 없습니다');
   });
 
   test('검색어 삭제 시 전체 목록이 표시된다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const searchInput = page.locator('[data-testid="faq-search-input"]');
-    const isVisible = await searchInput.isVisible().catch(() => false);
+    await expect(searchInput).toBeVisible();
 
-    if (isVisible) {
-      // 검색어 입력 후 삭제
-      await searchInput.fill('테스트');
-      await page.waitForTimeout(200);
-      await searchInput.clear();
-      await page.waitForTimeout(300);
+    const faqItems = page.locator('[data-testid^="faq-item-"]');
+    const initialCount = await faqItems.count();
+    // 검색어 입력 후 삭제
+    await searchInput.fill('테스트');
+    await page.waitForTimeout(200);
+    await searchInput.clear();
+    await page.waitForTimeout(300);
 
-      // 전체 목록 또는 빈 상태 확인
-      const faqItems = page.locator('[data-testid^="faq-item-"]');
-      const count = await faqItems.count();
-
-      expect(count >= 0).toBe(true);
-    }
+    await expect(faqItems).toHaveCount(initialCount);
   });
 });
 
@@ -225,18 +232,20 @@ test.describe('FAQ - 카테고리 필터', () => {
   });
 
   test('카테고리 버튼들이 존재한다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const allButton = page.locator('[data-testid="faq-category-all"]');
-    const isVisible = await allButton.isVisible().catch(() => false);
-
-    if (isVisible) {
-      await expect(allButton).toBeVisible();
-    }
+    await expect(allButton).toBeVisible();
   });
 
   test('카테고리 선택 시 FAQ가 필터링된다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     // 카테고리 버튼 찾기 (all 제외)
     const categoryButtons = page.locator(
@@ -244,35 +253,47 @@ test.describe('FAQ - 카테고리 필터', () => {
     );
     const count = await categoryButtons.count();
 
-    if (count > 0) {
-      const firstCategory = categoryButtons.first();
-      await firstCategory.click();
-      await page.waitForTimeout(300);
-
-      // 필터링 결과 확인
-      const faqItems = page.locator('[data-testid^="faq-item-"]');
-      const itemCount = await faqItems.count();
-
-      expect(itemCount >= 0).toBe(true);
+    if (count === 0) {
+      test.skip(true, '필터링할 FAQ 카테고리 fixture가 없음');
+      return;
     }
+
+    const faqItems = page.locator('[data-testid^="faq-item-"]');
+    const initialCount = await faqItems.count();
+    const firstCategory = categoryButtons.first();
+    await firstCategory.click();
+    await page.waitForTimeout(300);
+
+    const itemCount = await faqItems.count();
+
+    expect(itemCount).toBeGreaterThan(0);
+    expect(itemCount).toBeLessThanOrEqual(initialCount);
   });
 
   test('전체 카테고리 선택 시 모든 FAQ가 표시된다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const allButton = page.locator('[data-testid="faq-category-all"]');
-    const isVisible = await allButton.isVisible().catch(() => false);
+    await expect(allButton).toBeVisible();
 
-    if (isVisible) {
-      await allButton.click();
-      await page.waitForTimeout(300);
-
-      // 전체 목록 확인
-      const faqItems = page.locator('[data-testid^="faq-item-"]');
-      const count = await faqItems.count();
-
-      expect(count >= 0).toBe(true);
+    const faqItems = page.locator('[data-testid^="faq-item-"]');
+    const initialCount = await faqItems.count();
+    const firstCategory = page
+      .locator('[data-testid^="faq-category-"]:not([data-testid="faq-category-all"])')
+      .first();
+    if (!(await firstCategory.isVisible().catch(() => false))) {
+      test.skip(true, '필터링할 FAQ 카테고리가 없음');
+      return;
     }
+    await firstCategory.click();
+    await page.waitForTimeout(300);
+    await allButton.click();
+    await page.waitForTimeout(300);
+
+    await expect(faqItems).toHaveCount(initialCount);
   });
 });
 
@@ -283,48 +304,54 @@ test.describe('FAQ - 피드백', () => {
   });
 
   test('도움됨 버튼이 아코디언 내에 존재한다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const faqItem = page.locator('[data-testid^="faq-item-"]').first();
     const hasItem = await faqItem.isVisible().catch(() => false);
 
-    if (hasItem) {
-      const trigger = faqItem.locator('button[aria-expanded]');
-      await trigger.click();
-      await page.waitForTimeout(300);
-
-      const helpfulButton = page.locator('[data-testid^="faq-helpful-"]').first();
-      const isVisible = await helpfulButton.isVisible().catch(() => false);
-
-      expect(typeof isVisible).toBe('boolean');
+    if (!hasItem) {
+      test.skip(true, '도움됨 버튼을 검증할 FAQ fixture가 없음');
+      return;
     }
+
+    const trigger = faqItem.locator('button[aria-expanded]');
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await page.waitForTimeout(300);
+
+    const helpfulButton = page.locator('[data-testid^="faq-helpful-"]').first();
+    await expect(helpfulButton).toBeVisible();
   });
 
   test('피드백 버튼 클릭 시 감사 메시지가 표시된다', async ({ page }) => {
-    if (page.url().includes('sign-in')) return;
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
+    }
 
     const faqItem = page.locator('[data-testid^="faq-item-"]').first();
     const hasItem = await faqItem.isVisible().catch(() => false);
 
-    if (hasItem) {
-      const trigger = faqItem.locator('button[aria-expanded]');
-      await trigger.click();
-      await page.waitForTimeout(300);
-
-      const helpfulButton = page.locator('[data-testid^="faq-helpful-"]').first();
-      const isVisible = await helpfulButton.isVisible().catch(() => false);
-
-      if (isVisible) {
-        await helpfulButton.click();
-        await page.waitForTimeout(500);
-
-        // 토스트 또는 감사 메시지 확인
-        const thankYou = page.locator('text=감사합니다');
-        const hasThanks = await thankYou.isVisible().catch(() => false);
-
-        expect(hasThanks || true).toBe(true);
-      }
+    if (!hasItem) {
+      test.skip(true, '피드백 동작을 검증할 FAQ fixture가 없음');
+      return;
     }
+
+    const trigger = faqItem.locator('button[aria-expanded]');
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await page.waitForTimeout(300);
+
+    const helpfulButton = page.locator('[data-testid^="faq-helpful-"]').first();
+    await expect(helpfulButton).toBeVisible();
+    await helpfulButton.click();
+    await page.waitForTimeout(500);
+
+    // 클릭 즉시 아코디언 안에 폐루프 확인 문구가 표시된다.
+    await expect(faqItem.getByText('피드백을 주셔서 감사합니다!', { exact: true })).toBeVisible();
   });
 });
 
@@ -333,31 +360,31 @@ test.describe('FAQ - 문의하기 링크', () => {
     await page.goto(ROUTES.HELP_FAQ);
     await waitForLoadingToFinish(page);
 
-    if (page.url().includes('sign-in')) return;
-
-    const feedbackLink = page.locator('a[href="/help/feedback"]');
-    const isVisible = await feedbackLink.isVisible().catch(() => false);
-
-    if (isVisible) {
-      await expect(feedbackLink).toBeVisible();
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    const feedbackLink = page.getByRole('link', { name: '문의하기', exact: true });
+    await expect(feedbackLink).toBeVisible();
+    await expect(feedbackLink).toHaveAttribute('href', '/help/feedback');
   });
 
   test('문의하기 클릭 시 피드백 페이지로 이동한다', async ({ page }) => {
     await page.goto(ROUTES.HELP_FAQ);
     await waitForLoadingToFinish(page);
 
-    if (page.url().includes('sign-in')) return;
-
-    const feedbackLink = page.locator('a[href="/help/feedback"]');
-    const isVisible = await feedbackLink.isVisible().catch(() => false);
-
-    if (isVisible) {
-      await feedbackLink.click();
-      await waitForLoadingToFinish(page);
-
-      expect(page.url()).toContain('/help/feedback');
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    const feedbackLink = page.getByRole('link', { name: '문의하기', exact: true });
+    await expect(feedbackLink).toBeVisible();
+    await feedbackLink.click();
+    await waitForLoadingToFinish(page);
+
+    await expect(page).toHaveURL(/\/help\/feedback/);
   });
 });
 

@@ -15,11 +15,6 @@ const TEST_USER = {
 };
 
 test.describe('피부 분석 플로우', () => {
-  test.beforeEach(async ({ page }) => {
-    // Clerk 테스팅 토큰 설정
-    await setupClerkTestingToken({ page });
-  });
-
   test('피부 분석 페이지가 정상적으로 로드된다', async ({ page }) => {
     await page.goto(ROUTES.ANALYSIS_SKIN);
     await waitForLoadingToFinish(page);
@@ -46,7 +41,9 @@ test.describe('피부 분석 플로우', () => {
 
 test.describe('피부 분석 - 인증된 사용자', () => {
   test.beforeEach(async ({ page }) => {
-    await setupClerkTestingToken({ page });
+    if (process.env.CLERK_TESTING_TOKEN) {
+      await setupClerkTestingToken({ page });
+    }
   });
 
   test('로그인 후 피부 분석 페이지에 접근할 수 있다', async ({ page }) => {
@@ -63,111 +60,23 @@ test.describe('피부 분석 - 인증된 사용자', () => {
       return;
     }
 
-    // 피부 분석 페이지로 이동
-    await page.goto(ROUTES.ANALYSIS_SKIN);
+    // 기존 결과 자동 이동을 막고 새 분석의 첫 상태를 검증한다.
+    await page.goto(`${ROUTES.ANALYSIS_SKIN}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    // 페이지가 정상 로드됨
-    const url = page.url();
-    expect(url).toContain('/skin');
-
-    // 분석 시작 버튼 또는 업로드 영역이 표시됨
-    const startButton = page.locator(
-      '[data-testid="analyze-button"], button:has-text("분석"), button:has-text("시작")'
-    );
-    const uploadArea = page.locator('[data-testid="upload-area"], input[type="file"]');
-
-    const hasStartButton = await startButton
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-    const hasUploadArea = await uploadArea
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    expect(hasStartButton || hasUploadArea).toBeTruthy();
-  });
-
-  test('사진 업로드 영역이 표시된다', async ({ page }) => {
-    const accessSuccess = await gotoWithAuth(page, ROUTES.ANALYSIS_SKIN);
-
-    if (!accessSuccess) {
-      test.skip(true, '인증된 상태로 페이지 접근 실패');
-      return;
-    }
-
-    // 파일 업로드 입력 또는 드래그앤드롭 영역 확인
-    const fileInput = page.locator('input[type="file"]');
-    const uploadDropzone = page.locator(
-      '[data-testid="upload-dropzone"], [data-testid="image-upload"]'
-    );
-    const uploadLabel = page.locator('label:has-text("업로드"), button:has-text("사진 선택")');
-
-    const hasFileInput = await fileInput
-      .first()
-      .isVisible()
-      .catch(() => false);
-    const hasDropzone = await uploadDropzone
-      .first()
-      .isVisible()
-      .catch(() => false);
-    const hasUploadLabel = await uploadLabel
-      .first()
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasFileInput || hasDropzone || hasUploadLabel).toBeTruthy();
-  });
-
-  test('피부 타입 선택 옵션이 표시된다', async ({ page }) => {
-    const accessSuccess = await gotoWithAuth(page, ROUTES.ANALYSIS_SKIN);
-
-    if (!accessSuccess) {
-      test.skip(true, '인증된 상태로 페이지 접근 실패');
-      return;
-    }
-
-    // 피부타입 선택 버튼 확인 (건성, 지성, 복합성, 중성)
-    const skinTypeOptions = page.locator(
-      'button:has-text("건성"), button:has-text("지성"), button:has-text("복합성"), button:has-text("중성"), [data-testid*="skin-type"]'
-    );
-
-    const hasOptions = await skinTypeOptions
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    // 피부타입 선택 UI가 있거나, 분석 단계에서 표시될 수 있음
-    expect(hasOptions || true).toBe(true);
-  });
-
-  test('분석 가이드/안내가 표시된다', async ({ page }) => {
-    const accessSuccess = await gotoWithAuth(page, ROUTES.ANALYSIS_SKIN);
-
-    if (!accessSuccess) {
-      test.skip(true, '인증된 상태로 페이지 접근 실패');
-      return;
-    }
-
-    // 분석 가이드 텍스트 확인
-    const guideElements = page.locator(
-      'text=자연광, text=조명, text=메이크업, text=사진, [data-testid="analysis-guide"]'
-    );
-
-    const hasGuide = await guideElements
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    // 가이드가 표시되거나 단순화된 UI
-    expect(hasGuide || true).toBe(true);
+    await expect(page).toHaveURL(/\/analysis\/skin\?forceNew=true/);
+    await expect(page.getByTestId('skin-analysis-page')).toBeVisible();
+    await expect(page.getByTestId('skin-lighting-guide')).toBeVisible();
   });
 });
 
 test.describe('피부 분석 결과', () => {
+  test.skip(true, '실제 피부 분석 결과 fixture가 준비된 환경에서만 검증');
+
   test.beforeEach(async ({ page }) => {
-    await setupClerkTestingToken({ page });
+    if (process.env.CLERK_TESTING_TOKEN) {
+      await setupClerkTestingToken({ page });
+    }
   });
 
   test('분석 결과 페이지 구조가 올바르다', async ({ page }) => {
@@ -210,7 +119,7 @@ test.describe('피부 분석 결과', () => {
       .catch(() => false);
 
     // 점수 관련 요소가 하나라도 있으면 성공
-    expect(hasScore || hasScoreDisplay || hasProgress || true).toBe(true);
+    expect(hasScore || hasScoreDisplay || hasProgress).toBe(true);
   });
 
   test('분석 결과에서 탭 UI가 작동한다', async ({ page }) => {
@@ -241,7 +150,7 @@ test.describe('피부 분석 결과', () => {
       if (hasBasicTab) {
         await basicTab.first().click();
         await page.waitForTimeout(500);
-        expect(true).toBe(true);
+        await expect(basicTab.first()).toHaveAttribute('data-state', 'active');
       }
 
       // 상세 시각화 탭
@@ -260,43 +169,15 @@ test.describe('피부 분석 결과', () => {
       }
     }
   });
-
-  test('이전 분석과 비교 시 델타 배지가 표시된다', async ({ page }) => {
-    if (!hasTestUserCredentials()) {
-      test.skip(true, '테스트 사용자 정보 없음');
-      return;
-    }
-
-    const accessSuccess = await gotoWithAuth(page, '/analysis/skin/result/test-id');
-
-    if (!accessSuccess) {
-      test.skip(true, '인증된 상태로 페이지 접근 실패');
-      return;
-    }
-
-    // 델타/변화량 배지 확인
-    const deltaBadge = page.locator(
-      '[data-testid="score-change-badge"], [data-testid="delta-badge"]'
-    );
-    const changeIndicator = page.locator('text=/[+-]\\d+/, .text-green-600, .text-red-600');
-
-    const hasDelta = await deltaBadge
-      .first()
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-    const hasChangeIndicator = await changeIndicator
-      .first()
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-
-    // 델타 표시가 있거나 없을 수 있음 (첫 분석인 경우)
-    expect(hasDelta || hasChangeIndicator || true).toBe(true);
-  });
 });
 
 test.describe('피부 분석 - 제품 추천 연동', () => {
+  test.skip(true, '추천 제품을 포함한 실제 피부 분석 결과 fixture가 필요함');
+
   test.beforeEach(async ({ page }) => {
-    await setupClerkTestingToken({ page });
+    if (process.env.CLERK_TESTING_TOKEN) {
+      await setupClerkTestingToken({ page });
+    }
   });
 
   test('분석 결과에서 추천 제품 섹션이 표시된다', async ({ page }) => {
@@ -332,7 +213,7 @@ test.describe('피부 분석 - 제품 추천 연동', () => {
       .catch(() => false);
 
     // 제품 추천 섹션이 있거나 별도 페이지로 분리됨
-    expect(hasRecommended || hasProductSection || hasProductCards || true).toBe(true);
+    expect(hasRecommended || hasProductSection || hasProductCards).toBe(true);
   });
 
   test('추천 제품 클릭 시 제품 상세 페이지로 이동한다', async ({ page }) => {
@@ -350,7 +231,7 @@ test.describe('피부 분석 - 제품 추천 연동', () => {
 
     // 제품 카드 또는 링크 클릭
     const productLink = page
-      .locator('[data-testid="product-card"] a, [data-testid="product-link"]')
+      .locator('a:has([data-testid="product-card"]), [data-testid="product-link"]')
       .first();
     const hasProductLink = await productLink.isVisible({ timeout: 5000 }).catch(() => false);
 

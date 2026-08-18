@@ -22,20 +22,6 @@ test.describe('Hybrid UX - Beauty 도메인', () => {
     const url = page.url();
     expect(url).toMatch(/beauty|category|sign-in/);
   });
-
-  test('Beauty 페이지에서 분홍색 테마가 적용된다', async ({ page }) => {
-    await page.goto(ROUTES.BEAUTY);
-    await waitForLoadingToFinish(page);
-
-    // Beauty 도메인 색상 확인 (pink 테마)
-    const pinkElements = page.locator('[class*="pink"], [class*="rose"]');
-    const count = await pinkElements.count();
-    // 페이지에 핑크 색상 요소가 있거나 로그인 페이지로 리다이렉트
-    const url = page.url();
-    if (!url.includes('sign-in')) {
-      expect(count).toBeGreaterThanOrEqual(0);
-    }
-  });
 });
 
 test.describe('Hybrid UX - Style 도메인', () => {
@@ -54,19 +40,6 @@ test.describe('Hybrid UX - Style 도메인', () => {
     const url = page.url();
     expect(url).toMatch(/style|category|sign-in/);
   });
-
-  test('Style 페이지에서 인디고 테마가 적용된다', async ({ page }) => {
-    await page.goto(ROUTES.STYLE);
-    await waitForLoadingToFinish(page);
-
-    // Style 도메인 색상 확인 (indigo 테마)
-    const indigoElements = page.locator('[class*="indigo"], [class*="violet"]');
-    const count = await indigoElements.count();
-    const url = page.url();
-    if (!url.includes('sign-in')) {
-      expect(count).toBeGreaterThanOrEqual(0);
-    }
-  });
 });
 
 test.describe('Hybrid UX - 검색', () => {
@@ -83,16 +56,12 @@ test.describe('Hybrid UX - 검색', () => {
     await waitForLoadingToFinish(page);
 
     const url = page.url();
-    if (!url.includes('sign-in')) {
-      const searchInput = page.locator('input[type="text"], input[type="search"]');
-      const isVisible = await searchInput
-        .first()
-        .isVisible()
-        .catch(() => false);
-      if (isVisible) {
-        await expect(searchInput.first()).toBeVisible();
-      }
+    if (url.includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page.getByRole('combobox', { name: '검색어 입력' })).toBeVisible();
   });
 });
 
@@ -102,7 +71,7 @@ test.describe('Hybrid UX - 피드/룩북', () => {
     await waitForLoadingToFinish(page);
 
     const url = page.url();
-    expect(url).toMatch(/feed|sign-in/);
+    expect(url).toMatch(/home|sign-in/);
   });
 
   test('연말 리뷰 페이지가 정상적으로 로드된다', async ({ page }) => {
@@ -138,7 +107,7 @@ test.describe('Hybrid UX - 기록/레코드', () => {
     await waitForLoadingToFinish(page);
 
     const url = page.url();
-    expect(url).toMatch(/record|sign-in/);
+    expect(url).toMatch(/home|sign-in/);
   });
 
   test('기록 리포트 페이지가 정상적으로 로드된다', async ({ page }) => {
@@ -146,7 +115,7 @@ test.describe('Hybrid UX - 기록/레코드', () => {
     await waitForLoadingToFinish(page);
 
     const url = page.url();
-    expect(url).toMatch(/record|report|sign-in/);
+    expect(url).toMatch(/home|sign-in/);
   });
 });
 

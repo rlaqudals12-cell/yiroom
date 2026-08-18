@@ -49,295 +49,115 @@ test.describe('분석 - 페이지 접근 @smoke @analysis', () => {
 });
 
 test.describe('분석 - 퍼스널컬러', () => {
-  test('분석 시작 버튼이 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_PERSONAL_COLOR);
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      // 분석 시작 버튼 또는 재분석 버튼 찾기
-      const startButton = page.locator('button:has-text("분석"), button:has-text("시작")');
-      const hasButton = await startButton
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (hasButton) {
-        await expect(startButton.first()).toBeVisible();
-      }
-    }
-  });
-
-  test('사진 업로드 영역이 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_PERSONAL_COLOR);
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      // 파일 업로드 입력 찾기
-      const uploadInput = page.locator('input[type="file"]');
-      const uploadArea = page.locator('[data-testid*="upload"], [aria-label*="업로드"]');
-
-      const hasUpload =
-        (await uploadInput.isVisible().catch(() => false)) ||
-        (await uploadArea
-          .first()
-          .isVisible()
-          .catch(() => false));
-
-      expect(hasUpload || true).toBe(true);
-    }
-  });
-
   test('조명 가이드가 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_PERSONAL_COLOR);
+    await page.goto(`${ROUTES.ANALYSIS_PERSONAL_COLOR}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 조명 가이드 텍스트 확인
-      const lightingGuide = page.locator('text=조명, text=빛');
-      const hasGuide = await lightingGuide
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasGuide || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page.getByTestId('lighting-guide')).toBeVisible();
   });
 });
 
 test.describe('분석 - 피부', () => {
   test('피부 분석 UI가 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_SKIN);
+    await page.goto(`${ROUTES.ANALYSIS_SKIN}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 피부 분석 관련 요소 확인
-      const skinElements = page.locator('text=피부, text=분석');
-      const hasElements = await skinElements
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasElements || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
-  });
 
-  test('피부타입 선택 옵션이 있다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_SKIN);
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      // 피부타입 선택 버튼 찾기
-      const skinTypeButtons = page.locator(
-        'button:has-text("건성"), button:has-text("지성"), button:has-text("복합성")'
-      );
-      const hasButtons = await skinTypeButtons
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasButtons || true).toBe(true);
-    }
+    await expect(page.getByTestId('skin-analysis-page')).toBeVisible();
+    await expect(page.getByTestId('skin-lighting-guide')).toBeVisible();
   });
 });
 
 test.describe('분석 - 체형', () => {
   test('체형 분석 UI가 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_BODY);
+    await page.goto(`${ROUTES.ANALYSIS_BODY}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 체형 분석 관련 요소 확인
-      const bodyElements = page.locator('text=체형, text=분석');
-      const hasElements = await bodyElements
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasElements || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page.getByTestId('body-analysis-page')).toBeVisible();
+    await expect(page.getByTestId('body-photography-guide')).toBeVisible();
   });
 
   test('신체 정보 입력 필드가 있다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_BODY);
+    await page.goto(`${ROUTES.ANALYSIS_BODY}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 키/몸무게 입력 필드 찾기
-      const heightInput = page.locator('input[placeholder*="키"], input[aria-label*="키"]');
-      const weightInput = page.locator('input[placeholder*="몸무게"], input[aria-label*="몸무게"]');
-
-      const hasInputs =
-        (await heightInput.isVisible().catch(() => false)) ||
-        (await weightInput.isVisible().catch(() => false));
-
-      expect(hasInputs || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await page.getByRole('button', { name: '촬영하기' }).click();
+    await expect(page.getByTestId('body-input-form')).toBeVisible();
+    const heightInput = page.locator('input[placeholder*="키"], input[aria-label*="키"]');
+    const weightInput = page.locator('input[placeholder*="몸무게"], input[aria-label*="몸무게"]');
+    await expect(heightInput.first()).toBeVisible();
+    await expect(weightInput.first()).toBeVisible();
   });
 });
 
 test.describe('분석 - 헤어 (H-1)', () => {
   test('헤어 분석 UI가 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_HAIR);
+    await page.goto(`${ROUTES.ANALYSIS_HAIR}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 헤어 분석 관련 요소 확인
-      const hairElements = page.locator('text=헤어, text=분석');
-      const hasElements = await hairElements
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasElements || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page.getByRole('heading', { name: /헤어 분석/ })).toBeVisible();
   });
 
-  test('분석 시작 버튼이 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_HAIR);
+  test('단일 사진 안내가 표시된다', async ({ page }) => {
+    await page.goto(`${ROUTES.ANALYSIS_HAIR}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 분석 시작 버튼 찾기
-      const startButton = page.locator('button:has-text("분석"), button:has-text("시작")');
-      const hasButton = await startButton
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (hasButton) {
-        await expect(startButton.first()).toBeVisible();
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
-  });
 
-  test('사진 업로드 영역이 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_HAIR);
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      // 파일 업로드 입력 찾기
-      const uploadInput = page.locator('input[type="file"]');
-      const uploadArea = page.locator('[data-testid*="upload"], [aria-label*="업로드"]');
-
-      const hasUpload =
-        (await uploadInput.isVisible().catch(() => false)) ||
-        (await uploadArea
-          .first()
-          .isVisible()
-          .catch(() => false));
-
-      expect(hasUpload || true).toBe(true);
-    }
-  });
-
-  test('헤어 타입 선택 옵션이 있다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_HAIR);
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      // 헤어 타입 선택 버튼 찾기
-      const hairTypeButtons = page.locator(
-        'button:has-text("직모"), button:has-text("곱슬"), button:has-text("웨이브")'
-      );
-      const hasButtons = await hairTypeButtons
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasButtons || true).toBe(true);
-    }
+    await expect(page.getByTestId('hair-single-photo-notice')).toBeVisible();
   });
 });
 
 test.describe('분석 - 메이크업 (M-1)', () => {
   test('메이크업 분석 UI가 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_MAKEUP);
+    await page.goto(`${ROUTES.ANALYSIS_MAKEUP}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 메이크업 분석 관련 요소 확인
-      const makeupElements = page.locator('text=메이크업, text=분석');
-      const hasElements = await makeupElements
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasElements || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page.getByRole('heading', { name: /메이크업 분석/ })).toBeVisible();
   });
 
   test('분석 시작 버튼이 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_MAKEUP);
+    await page.goto(`${ROUTES.ANALYSIS_MAKEUP}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 분석 시작 버튼 찾기
-      const startButton = page.locator('button:has-text("분석"), button:has-text("시작")');
-      const hasButton = await startButton
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (hasButton) {
-        await expect(startButton.first()).toBeVisible();
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
-  });
 
-  test('사진 업로드 영역이 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_MAKEUP);
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      // 파일 업로드 입력 찾기
-      const uploadInput = page.locator('input[type="file"]');
-      const uploadArea = page.locator('[data-testid*="upload"], [aria-label*="업로드"]');
-
-      const hasUpload =
-        (await uploadInput.isVisible().catch(() => false)) ||
-        (await uploadArea
-          .first()
-          .isVisible()
-          .catch(() => false));
-
-      expect(hasUpload || true).toBe(true);
-    }
-  });
-
-  test('언더톤 선택 옵션이 있다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_MAKEUP);
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      // 언더톤 선택 버튼 찾기
-      const undertoneButtons = page.locator(
-        'button:has-text("웜톤"), button:has-text("쿨톤"), button:has-text("뉴트럴")'
-      );
-      const hasButtons = await undertoneButtons
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasButtons || true).toBe(true);
-    }
-  });
-
-  test('피부 고민 선택 옵션이 있다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_MAKEUP);
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      // 피부 고민 선택 버튼 찾기
-      const concernButtons = page.locator(
-        'button:has-text("모공"), button:has-text("잡티"), button:has-text("건조"), button:has-text("유분")'
-      );
-      const hasButtons = await concernButtons
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasButtons || true).toBe(true);
-    }
+    await expect(page.getByTestId('makeup-upload-button')).toBeVisible();
   });
 });
 
@@ -369,6 +189,7 @@ test.describe('분석 - JavaScript 에러 없음 @smoke @analysis', () => {
 });
 
 test.describe('분석 결과 - 탭 UI (S-1+, PC-1+)', () => {
+  test.skip(true, '실제 분석 결과 fixture가 없는 mock ID로는 탭 계약을 검증할 수 없음');
   // 결과 페이지는 인증 + 분석 결과가 필요하므로 기본 UI 존재 여부만 확인
 
   test('피부 분석 결과 페이지 구조가 올바르다', async ({ page }) => {
@@ -467,6 +288,8 @@ test.describe('분석 결과 - 탭 UI (S-1+, PC-1+)', () => {
 });
 
 test.describe('분석 결과 - 헤어 (H-1)', () => {
+  test.skip(true, '실제 헤어 분석 결과 fixture가 준비된 환경에서만 검증');
+
   test('헤어 분석 결과 페이지 구조가 올바르다', async ({ page }) => {
     const mockId = 'test-hair-analysis-id';
     await page.goto(`/analysis/hair/result/${mockId}`);
@@ -491,7 +314,7 @@ test.describe('분석 결과 - 헤어 (H-1)', () => {
           .first()
           .isVisible()
           .catch(() => false);
-        expect(hasBasicTab || true).toBe(true);
+        expect(hasBasicTab).toBe(true);
       }
     }
   });
@@ -514,6 +337,8 @@ test.describe('분석 결과 - 헤어 (H-1)', () => {
 });
 
 test.describe('분석 결과 - 메이크업 (M-1)', () => {
+  test.skip(true, '실제 메이크업 분석 결과 fixture가 준비된 환경에서만 검증');
+
   test('메이크업 분석 결과 페이지 구조가 올바르다', async ({ page }) => {
     const mockId = 'test-makeup-analysis-id';
     await page.goto(`/analysis/makeup/result/${mockId}`);
@@ -540,7 +365,7 @@ test.describe('분석 결과 - 메이크업 (M-1)', () => {
           .first()
           .isVisible()
           .catch(() => false);
-        expect(hasBasicTab || true).toBe(true);
+        expect(hasBasicTab).toBe(true);
       }
     }
   });
@@ -563,6 +388,8 @@ test.describe('분석 결과 - 메이크업 (M-1)', () => {
 });
 
 test.describe('분석 히스토리 - 페이지 접근', () => {
+  test.skip(true, '기간별 기록을 포함한 실제 분석 히스토리 fixture가 필요함');
+
   test('헤어 분석 히스토리 페이지가 로드된다', async ({ page }) => {
     await page.goto('/analysis/hair/history');
     await waitForLoadingToFinish(page);
@@ -593,7 +420,7 @@ test.describe('분석 히스토리 - 페이지 접근', () => {
           .first()
           .isVisible()
           .catch(() => false);
-        expect(hasMonthTab || true).toBe(true);
+        expect(hasMonthTab).toBe(true);
       }
     }
   });
@@ -612,7 +439,7 @@ test.describe('분석 히스토리 - 페이지 접근', () => {
           .first()
           .isVisible()
           .catch(() => false);
-        expect(hasMonthTab || true).toBe(true);
+        expect(hasMonthTab).toBe(true);
       }
     }
   });
@@ -699,31 +526,28 @@ test.describe('분석 비교 - Compare 페이지', () => {
     await page.goto('/analysis/hair/compare');
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 비교할 분석 정보가 없을 때 에러 메시지 확인
-      const errorMessage = page.locator('text=비교할 분석 정보가 없습니다');
-      const backButton = page.locator('button:has-text("돌아가기")');
-
-      const hasError = await errorMessage.isVisible().catch(() => false);
-      const hasBackButton = await backButton.isVisible().catch(() => false);
-
-      expect(hasError || hasBackButton || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    const errorMessage = page.locator('text=비교할 분석 정보가 없습니다');
+    const backButton = page.locator('button:has-text("돌아가기")');
+    await expect(errorMessage.or(backButton)).toBeVisible();
   });
 
   test('메이크업 비교 페이지에서 에러 메시지가 표시된다 (파라미터 없이)', async ({ page }) => {
     await page.goto('/analysis/makeup/compare');
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      const errorMessage = page.locator('text=비교할 분석 정보가 없습니다');
-      const backButton = page.locator('button:has-text("돌아가기")');
-
-      const hasError = await errorMessage.isVisible().catch(() => false);
-      const hasBackButton = await backButton.isVisible().catch(() => false);
-
-      expect(hasError || hasBackButton || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    const errorMessage = page.locator('text=비교할 분석 정보가 없습니다');
+    const backButton = page.locator('button:has-text("돌아가기")');
+    await expect(errorMessage.or(backButton)).toBeVisible();
   });
 });
 

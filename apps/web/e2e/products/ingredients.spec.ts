@@ -1,141 +1,77 @@
 /**
- * E2E Test: 제품 성분 분석 UI
- * @description 제품 상세 페이지의 성분 분석 섹션 테스트
+ * E2E Test: 화장품 상세의 성분 분석 계약
  */
 
-import { test, expect } from '@playwright/test';
-import { waitForLoadingToFinish } from '../fixtures';
+import { test, expect, type Page } from '@playwright/test';
+import { ROUTES, waitForLoadingToFinish } from '../fixtures';
+
+const SKINCARE_PRODUCTS_ROUTE = `${ROUTES.PRODUCTS}?category=skincare`;
+
+async function openFirstSkincareDetail(page: Page): Promise<boolean> {
+  await page.goto(SKINCARE_PRODUCTS_ROUTE);
+  await waitForLoadingToFinish(page);
+
+  if (page.url().includes('sign-in')) {
+    test.skip(true, '인증된 제품 목록 fixture가 필요함');
+    return false;
+  }
+
+  const productLink = page.locator('a:has([data-testid="product-card"])').first();
+  if (!(await productLink.isVisible({ timeout: 5000 }).catch(() => false))) {
+    test.skip(true, '성분 분석을 검증할 스킨케어 제품 fixture가 없음');
+    return false;
+  }
+
+  const targetHref = await productLink.getAttribute('href');
+  expect(targetHref).toMatch(/^\/beauty\/[^/]+/);
+  await productLink.click();
+  await waitForLoadingToFinish(page);
+  await expect(page).toHaveURL(/\/beauty\/[^/]+/);
+  return true;
+}
 
 test.describe('제품 성분 분석 UI', () => {
-  test('화장품 상세 페이지에 성분 분석 섹션 표시', async ({ page }) => {
-    // 화장품 목록 페이지로 이동
-    await page.goto('/products/cosmetics');
-    await waitForLoadingToFinish(page);
+  test('화장품 상세에 성분 분석 또는 정직한 빈 상태를 표시한다', async ({ page }) => {
+    if (!(await openFirstSkincareDetail(page))) return;
 
-    // 첫 번째 제품 클릭 (또는 인증 필요 시 로그인 페이지로 리다이렉트)
-    const url = page.url();
-    if (url.includes('sign-in')) {
-      // 인증 필요 - 테스트 스킵
-      test.skip();
-      return;
-    }
-
-    // 제품 카드 클릭
-    const productCard = page.locator('[data-testid="product-card"], .product-card a').first();
-    const hasProduct = await productCard.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasProduct) {
-      await productCard.click();
-      await waitForLoadingToFinish(page);
-
-      // 성분 분석 섹션 확인
-      const ingredientSection = page.locator('[data-testid="ingredient-analysis-section"]');
-      const hasSection = await ingredientSection.isVisible({ timeout: 10000 }).catch(() => false);
-
-      // 섹션이 있거나, 성분 데이터가 없는 경우 모두 허용
-      if (hasSection) {
-        await expect(ingredientSection).toBeVisible();
-      }
-    }
+    const ingredientSection = page.getByTestId('ingredient-analysis-section');
+    const emptyState = page.getByTestId('ingredient-empty-scan-cta');
+    await expect(ingredientSection.or(emptyState)).toBeVisible();
   });
 
-  test('EWG 등급 도움말 토글', async ({ page }) => {
-    await page.goto('/products/cosmetics');
-    await waitForLoadingToFinish(page);
+  test('성분 데이터가 있으면 EWG 등급 도움말을 연다', async ({ page }) => {
+    if (!(await openFirstSkincareDetail(page))) return;
 
-    const url = page.url();
-    if (url.includes('sign-in')) {
-      test.skip();
+    const ingredientSection = page.getByTestId('ingredient-analysis-section');
+    if (!(await ingredientSection.isVisible({ timeout: 10000 }).catch(() => false))) {
+      test.skip(true, 'EWG 도움말을 검증할 성분 데이터 fixture가 없음');
       return;
     }
 
-    const productCard = page.locator('[data-testid="product-card"], .product-card a').first();
-    const hasProduct = await productCard.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasProduct) {
-      await productCard.click();
-      await waitForLoadingToFinish(page);
-
-      // 도움말 버튼 클릭
-      const helpButton = page.locator('[aria-label="EWG 등급 설명"]');
-      const hasHelp = await helpButton.isVisible({ timeout: 5000 }).catch(() => false);
-
-      if (hasHelp) {
-        await helpButton.click();
-
-        // 도움말 내용 표시 확인
-        const helpContent = page.locator('text=EWG 등급이란?');
-        await expect(helpContent).toBeVisible({ timeout: 3000 });
-      }
-    }
+    const helpButton = page.getByRole('button', { name: 'EWG 등급 설명' });
+    await expect(helpButton).toBeVisible();
+    await helpButton.click();
+    await expect(page.getByText('EWG 등급이란?')).toBeVisible();
   });
 
-  test('성분 목록 더보기 기능', async ({ page }) => {
-    await page.goto('/products/cosmetics');
-    await waitForLoadingToFinish(page);
+  test('숨겨진 성분이 있으면 더보기로 목록을 확장한다', async ({ page }) => {
+    if (!(await openFirstSkincareDetail(page))) return;
 
-    const url = page.url();
-    if (url.includes('sign-in')) {
-      test.skip();
+    const ingredientSection = page.getByTestId('ingredient-analysis-section');
+    if (!(await ingredientSection.isVisible({ timeout: 10000 }).catch(() => false))) {
+      test.skip(true, '성분 목록을 검증할 데이터 fixture가 없음');
       return;
     }
 
-    const productCard = page.locator('[data-testid="product-card"], .product-card a').first();
-    const hasProduct = await productCard.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasProduct) {
-      await productCard.click();
-      await waitForLoadingToFinish(page);
-
-      // 더보기 버튼 클릭 (있는 경우)
-      const moreButton = page.locator('button:has-text("더보기"), button:has-text("전체 보기")');
-      const hasMore = await moreButton.isVisible({ timeout: 5000 }).catch(() => false);
-
-      if (hasMore) {
-        await moreButton.click();
-        await waitForLoadingToFinish(page);
-
-        // 더 많은 성분이 표시되었는지 확인
-        const ingredientCards = page.locator('[data-testid="ingredient-card"]');
-        const count = await ingredientCards.count();
-        expect(count).toBeGreaterThan(0);
-      }
-    }
-  });
-});
-
-test.describe('성분 분석 스켈레톤', () => {
-  test('로딩 중 스켈레톤 표시', async ({ page }) => {
-    // 네트워크 속도 조절로 로딩 상태 확인
-    await page.route('**/api/**', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      await route.continue();
-    });
-
-    await page.goto('/products/cosmetics');
-    await waitForLoadingToFinish(page);
-
-    const url = page.url();
-    if (url.includes('sign-in')) {
-      test.skip();
+    const moreButton = ingredientSection.getByRole('button', { name: /더보기/ });
+    if (!(await moreButton.isVisible().catch(() => false))) {
+      test.skip(true, '기본 노출 수를 넘는 성분 데이터 fixture가 없음');
       return;
     }
 
-    const productCard = page.locator('[data-testid="product-card"], .product-card a').first();
-    const hasProduct = await productCard.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasProduct) {
-      await productCard.click();
-
-      // 스켈레톤 또는 로딩 상태 확인
-      const skeleton = page.locator('.animate-pulse');
-      const hasSkeleton = await skeleton
-        .first()
-        .isVisible({ timeout: 2000 })
-        .catch(() => false);
-
-      // 스켈레톤이 있거나 빠르게 로드되어 없을 수도 있음
-      expect(hasSkeleton || true).toBeTruthy();
-    }
+    const cards = ingredientSection.getByTestId('ingredient-card');
+    const beforeCount = await cards.count();
+    await moreButton.click();
+    await expect.poll(() => cards.count()).toBeGreaterThan(beforeCount);
   });
 });

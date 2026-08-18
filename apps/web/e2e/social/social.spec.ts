@@ -35,15 +35,19 @@ test.describe('소셜 - 친구 페이지', () => {
     await page.goto(ROUTES.FRIENDS_SEARCH);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      const searchInput = page.locator('input[type="search"], input[placeholder*="검색"]');
-      const hasInput = await searchInput.isVisible().catch(() => false);
-
-      if (hasInput) {
-        await searchInput.fill('테스트');
-        await expect(searchInput).toHaveValue('테스트');
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
+      return;
     }
+
+    const searchInput = page.locator('input[type="search"], input[placeholder*="검색"]');
+    if (!(await searchInput.isVisible().catch(() => false))) {
+      test.skip(true, '친구 검색 입력 fixture가 없습니다.');
+      return;
+    }
+
+    await searchInput.fill('테스트');
+    await expect(searchInput).toHaveValue('테스트');
   });
 });
 
@@ -56,95 +60,79 @@ test.describe('소셜 - 리더보드', () => {
     expect(url).toMatch(/leaderboard|sign-in/);
   });
 
-  test('리더보드 탭이 표시된다', async ({ page }) => {
+  test('리더보드 기본 탭만 표시되고 비활성 웰니스 탭은 숨겨진다', async ({ page }) => {
     await page.goto(ROUTES.LEADERBOARD);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 운동/영양 탭 확인
-      const workoutTab = page.locator('button[role="tab"]:has-text("운동")');
-      const nutritionTab = page.locator('button[role="tab"]:has-text("영양")');
-
-      const hasWorkoutTab = await workoutTab.isVisible().catch(() => false);
-      const hasNutritionTab = await nutritionTab.isVisible().catch(() => false);
-
-      expect(hasWorkoutTab || hasNutritionTab || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
+      return;
     }
+
+    await expect(page.getByRole('tab', { name: /경험치|XP/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /레벨|Lv/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /웰니스|WS/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /운동/ })).toHaveCount(0);
+    await expect(page.getByRole('tab', { name: /영양/ })).toHaveCount(0);
   });
 
   test('내 순위 카드가 표시된다', async ({ page }) => {
     await page.goto(ROUTES.LEADERBOARD);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 내 순위 카드 확인
-      const myRankCard = page.locator('[data-testid="my-rank-card"], text=내 순위');
-      const hasCard = await myRankCard
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasCard || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
+      return;
     }
+
+    await expect(page.getByText('현재 위치', { exact: true })).toBeVisible();
+    await expect(page.getByText('누적 XP', { exact: true })).toBeVisible();
   });
 });
 
-test.describe('소셜 - 피드', () => {
-  test('피드 페이지가 로드된다', async ({ page }) => {
+test.describe('소셜 - 피드 게이트', () => {
+  test('비활성 피드는 홈으로 이동한다', async ({ page }) => {
     await page.goto(ROUTES.FEED);
     await waitForLoadingToFinish(page);
 
     const url = page.url();
-    expect(url).toMatch(/feed|sign-in/);
+    expect(url).toMatch(/home|sign-in/);
   });
 
-  test('피드 활동 카드가 표시된다', async ({ page }) => {
+  test('비활성 피드 UI는 노출하지 않는다', async ({ page }) => {
     await page.goto(ROUTES.FEED);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 활동 카드 또는 빈 상태 확인
-      const activityCard = page.locator('[data-testid*="activity"], [data-testid*="feed"]');
-      const emptyState = page.locator('text=활동이 없습니다, text=친구를 추가');
-
-      const hasContent =
-        (await activityCard
-          .first()
-          .isVisible()
-          .catch(() => false)) ||
-        (await emptyState
-          .first()
-          .isVisible()
-          .catch(() => false));
-
-      expect(hasContent || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
+      return;
     }
+
+    await expect(page).toHaveURL(/\/home/);
+    await expect(page.locator('[data-testid*="feed"]')).toHaveCount(0);
   });
 });
 
-test.describe('소셜 - 웰니스', () => {
-  test('웰니스 페이지가 로드된다', async ({ page }) => {
+test.describe('소셜 - 웰니스 게이트', () => {
+  test('비활성 웰니스는 홈으로 이동한다', async ({ page }) => {
     await page.goto(ROUTES.WELLNESS);
     await waitForLoadingToFinish(page);
 
     const url = page.url();
-    expect(url).toMatch(/wellness|sign-in/);
+    expect(url).toMatch(/home|sign-in/);
   });
 
-  test('웰니스 스코어가 표시된다', async ({ page }) => {
+  test('비활성 웰니스 UI는 노출하지 않는다', async ({ page }) => {
     await page.goto(ROUTES.WELLNESS);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 웰니스 스코어 확인
-      const scoreElement = page.locator('text=웰니스, text=점수, [data-testid*="wellness"]');
-      const hasScore = await scoreElement
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasScore || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
+      return;
     }
+
+    await expect(page).toHaveURL(/\/home/);
+    await expect(page.locator('[data-testid*="wellness"]')).toHaveCount(0);
   });
 });
 
@@ -154,20 +142,29 @@ test.describe('소셜 - 공유 버튼', () => {
     await page.goto('/analysis/personal-color');
     await waitForLoadingToFinish(page);
 
-    // 로그인 필요 시 스킵
     if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
+      return;
+    }
+
+    const resultSurface = page.locator(
+      '[data-testid="personal-color-result-page"], [data-testid="analysis-result"]'
+    );
+    if (
+      !(await resultSurface
+        .first()
+        .isVisible()
+        .catch(() => false))
+    ) {
+      test.skip(true, '공유 가능한 분석 결과 fixture가 없음');
       return;
     }
 
     // 공유 버튼 확인
-    const shareButton = page.locator('[data-testid="share-button"], button:has-text("공유")');
-    const hasShareButton = await shareButton
-      .first()
-      .isVisible()
-      .catch(() => false);
-
-    // 공유 버튼이 있거나 페이지가 로드됨을 확인
-    expect(hasShareButton || true).toBe(true);
+    const shareButton = page
+      .locator('[data-testid="share-button"], button:has-text("공유")')
+      .first();
+    await expect(shareButton).toBeVisible();
   });
 
   test('ShareButtons 컴포넌트가 소셜 공유 아이콘을 렌더링한다', async ({ page }) => {
@@ -175,6 +172,7 @@ test.describe('소셜 - 공유 버튼', () => {
     await waitForLoadingToFinish(page);
 
     if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
       return;
     }
 
@@ -182,18 +180,19 @@ test.describe('소셜 - 공유 버튼', () => {
     const shareButtons = page.locator('[data-testid="share-buttons"]');
     const hasShareButtons = await shareButtons.isVisible().catch(() => false);
 
-    if (hasShareButtons) {
-      // X, 카카오, 클립보드 버튼 확인
-      const xButton = page.locator('button[aria-label*="X"]');
-      const kakaoButton = page.locator('button[aria-label*="카카오"]');
-      const copyButton = page.locator('button[aria-label*="복사"]');
-
-      const hasX = await xButton.isVisible().catch(() => false);
-      const hasKakao = await kakaoButton.isVisible().catch(() => false);
-      const hasCopy = await copyButton.isVisible().catch(() => false);
-
-      expect(hasX || hasKakao || hasCopy || true).toBe(true);
+    if (!hasShareButtons) {
+      test.skip(true, '공유 가능한 분석 결과 fixture가 없음');
+      return;
     }
+
+    // X, 카카오, 클립보드 버튼 확인
+    const xButton = page.locator('button[aria-label*="X"]');
+    const kakaoButton = page.locator('button[aria-label*="카카오"]');
+    const copyButton = page.locator('button[aria-label*="복사"]');
+    const hasX = await xButton.isVisible().catch(() => false);
+    const hasKakao = await kakaoButton.isVisible().catch(() => false);
+    const hasCopy = await copyButton.isVisible().catch(() => false);
+    expect(hasX || hasKakao || hasCopy).toBe(true);
   });
 });
 

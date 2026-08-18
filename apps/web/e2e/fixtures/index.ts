@@ -103,10 +103,7 @@ export const ROUTES = {
   SIGN_UP: '/sign-up',
   // F-3 추가
   PRODUCTS: '/products',
-  PRODUCTS_COSMETICS: '/products/cosmetics',
-  PRODUCTS_SUPPLEMENTS: '/products/supplements',
-  PRODUCTS_EQUIPMENT: '/products/equipment',
-  PRODUCTS_HEALTH_FOODS: '/products/health-foods',
+  PRODUCTS_COSMETICS: '/products?category=skincare',
   WISHLIST: '/wishlist',
   ADMIN: '/admin',
   ADMIN_PRODUCTS: '/admin/products',

@@ -1,388 +1,133 @@
 /**
- * E2E Test: 제품 추천
- * F-3 Task 3.1
+ * E2E Test: 제품 목록·상세의 현재 라우트 계약
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { ROUTES, waitForLoadingToFinish } from '../fixtures';
+
+const SKINCARE_PRODUCTS_ROUTE = `${ROUTES.PRODUCTS}?category=skincare`;
+const MAKEUP_PRODUCTS_ROUTE = `${ROUTES.PRODUCTS}?category=makeup`;
+
+async function assertProductsRoute(page: Page, category?: string) {
+  if (page.url().includes('sign-in')) {
+    await expect(page).toHaveURL(/\/sign-in/);
+    return false;
+  }
+
+  await expect(page).toHaveURL(/\/products/);
+  if (category) {
+    expect(new URL(page.url()).searchParams.get('category')).toBe(category);
+  }
+  return true;
+}
+
+async function requireProductsRoute(page: Page, category?: string) {
+  if (page.url().includes('sign-in')) {
+    test.skip(true, '인증된 제품 UI fixture가 필요함');
+    return false;
+  }
+  return assertProductsRoute(page, category);
+}
 
 test.describe('제품 추천 - 페이지 접근', () => {
   test('제품 메인 페이지가 로드된다', async ({ page }) => {
     await page.goto(ROUTES.PRODUCTS);
     await waitForLoadingToFinish(page);
-
-    // 페이지 로드 확인
-    const url = page.url();
-    expect(url).toMatch(/products|sign-in/);
+    await assertProductsRoute(page);
   });
 
-  test('화장품 카테고리 페이지가 로드된다', async ({ page }) => {
-    await page.goto(ROUTES.PRODUCTS_COSMETICS);
+  test('스킨케어 카테고리는 쿼리 필터로 열린다', async ({ page }) => {
+    await page.goto(SKINCARE_PRODUCTS_ROUTE);
     await waitForLoadingToFinish(page);
-
-    const url = page.url();
-    expect(url).toMatch(/cosmetics|products|sign-in/);
+    await assertProductsRoute(page, 'skincare');
   });
 
-  test('영양제 카테고리 페이지가 로드된다', async ({ page }) => {
-    await page.goto(ROUTES.PRODUCTS_SUPPLEMENTS);
+  test('메이크업 카테고리는 쿼리 필터로 열린다', async ({ page }) => {
+    await page.goto(MAKEUP_PRODUCTS_ROUTE);
     await waitForLoadingToFinish(page);
-
-    const url = page.url();
-    expect(url).toMatch(/supplements|products|sign-in/);
-  });
-
-  test('운동기구 카테고리 페이지가 로드된다', async ({ page }) => {
-    await page.goto(ROUTES.PRODUCTS_EQUIPMENT);
-    await waitForLoadingToFinish(page);
-
-    const url = page.url();
-    expect(url).toMatch(/equipment|products|sign-in/);
-  });
-
-  test('건강식품 카테고리 페이지가 로드된다', async ({ page }) => {
-    await page.goto(ROUTES.PRODUCTS_HEALTH_FOODS);
-    await waitForLoadingToFinish(page);
-
-    const url = page.url();
-    expect(url).toMatch(/health-foods|products|sign-in/);
+    await assertProductsRoute(page, 'makeup');
   });
 });
 
-test.describe('제품 추천 - 검색 기능', () => {
-  test('검색창이 표시된다', async ({ page }) => {
+test.describe('제품 추천 - 검색과 필터', () => {
+  test('검색어를 URL과 결과 상태에 반영한다', async ({ page }) => {
     await page.goto(ROUTES.PRODUCTS);
     await waitForLoadingToFinish(page);
-
-    // 검색 입력 필드 확인
-    const searchInput = page.locator(
-      'input[type="search"], input[placeholder*="검색"], input[aria-label*="검색"]'
-    );
-    const hasSearch = await searchInput
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    // 검색 기능이 있으면 확인
-    if (hasSearch) {
-      await expect(searchInput.first()).toBeVisible();
-    }
-  });
-
-  test('검색어 입력 후 결과가 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.PRODUCTS);
-    await waitForLoadingToFinish(page);
+    if (!(await requireProductsRoute(page))) return;
 
     const searchInput = page.locator(
       'input[type="search"], input[placeholder*="검색"], input[aria-label*="검색"]'
     );
-    const hasSearch = await searchInput
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
+    await expect(searchInput.first()).toBeVisible();
+    await searchInput.first().fill('비타민');
+    await expect.poll(() => new URL(page.url()).searchParams.get('search')).toBe('비타민');
 
-    if (hasSearch) {
-      // 검색어 입력
-      await searchInput.first().fill('비타민');
-      await page.keyboard.press('Enter');
-      await waitForLoadingToFinish(page);
-
-      // 결과 확인 (제품 목록 또는 없음 메시지)
-      const results = page.locator(
-        '[data-testid="product-card"], [data-testid="product-item"], .product-card'
-      );
-      const noResults = page.locator('text=검색 결과가 없습니다, text=결과 없음');
-
-      const hasResults = await results
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-      const hasNoResults = await noResults
-        .first()
-        .isVisible({ timeout: 2000 })
-        .catch(() => false);
-
-      expect(hasResults || hasNoResults).toBeTruthy();
-    }
+    const results = page.locator('[data-testid="product-card"]');
+    const emptyState = page.getByText(/검색 결과가 없습니다|표시할 제품이 없습니다/);
+    await expect(results.first().or(emptyState.first())).toBeVisible();
   });
-});
 
-test.describe('제품 추천 - 필터링', () => {
-  test('카테고리 필터가 동작한다', async ({ page }) => {
+  test('카테고리 탭이 스킨케어 쿼리를 선택한다', async ({ page }) => {
     await page.goto(ROUTES.PRODUCTS);
     await waitForLoadingToFinish(page);
+    if (!(await requireProductsRoute(page))) return;
 
-    // 필터 버튼 또는 메뉴 확인
-    const filterButton = page.locator('button:has-text("필터"), [data-testid="filter-button"]');
-    const hasFilter = await filterButton
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    if (hasFilter) {
-      await filterButton.first().click();
-      await waitForLoadingToFinish(page);
-
-      // 필터 옵션 표시되는지 확인
-      const filterOptions = page.locator(
-        '[role="menu"], [data-testid="filter-options"], .filter-panel'
-      );
-      const hasFilterOptions = await filterOptions
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false);
-
-      expect(hasFilterOptions).toBeTruthy();
-    }
+    const skincareTab = page.getByRole('tab', { name: '스킨케어' });
+    await expect(skincareTab).toBeVisible();
+    await skincareTab.click();
+    await expect.poll(() => new URL(page.url()).searchParams.get('category')).toBe('skincare');
+    await expect(skincareTab).toHaveAttribute('data-state', 'active');
   });
 });
 
-test.describe('제품 추천 - 상세 페이지', () => {
-  test('제품 카드 클릭 시 상세 페이지로 이동한다', async ({ page }) => {
-    await page.goto(ROUTES.PRODUCTS_COSMETICS);
+test.describe('제품 추천 - 상세와 비교', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(SKINCARE_PRODUCTS_ROUTE);
     await waitForLoadingToFinish(page);
+  });
 
-    // 제품 카드 클릭
-    const productCard = page
-      .locator('[data-testid="product-card"], [data-testid="product-item"], .product-card a')
-      .first();
-    const hasProduct = await productCard.isVisible({ timeout: 5000 }).catch(() => false);
+  test('제품 카드에서 상세 페이지로 이동한다', async ({ page }) => {
+    if (!(await requireProductsRoute(page, 'skincare'))) return;
 
-    if (hasProduct) {
-      await productCard.click();
-      await waitForLoadingToFinish(page);
-
-      // 상세 페이지로 이동 확인
-      const url = page.url();
-      const productDetail = page.locator('[data-testid="product-detail"], .product-detail');
-      const hasDetail =
-        url.includes('/products/') ||
-        (await productDetail.isVisible({ timeout: 3000 }).catch(() => false));
-
-      expect(hasDetail).toBeTruthy();
+    const productLink = page.locator('a:has([data-testid="product-card"])').first();
+    if (!(await productLink.isVisible({ timeout: 5000 }).catch(() => false))) {
+      test.skip(true, '상세 이동을 검증할 제품 fixture가 없음');
+      return;
     }
+
+    const targetHref = await productLink.getAttribute('href');
+    expect(targetHref).toMatch(/^\/beauty\/[^/]+/);
+    await productLink.click();
+    await waitForLoadingToFinish(page);
+    expect(new URL(page.url()).pathname).toBe(new URL(targetHref!, page.url()).pathname);
+  });
+
+  test('목록 카드의 비교 버튼이 실제 비교 상태를 바꾼다', async ({ page }) => {
+    if (!(await requireProductsRoute(page, 'skincare'))) return;
+
+    const productCard = page.getByTestId('product-card').first();
+    if (!(await productCard.isVisible({ timeout: 5000 }).catch(() => false))) {
+      test.skip(true, '비교 동작을 검증할 제품 fixture가 없음');
+      return;
+    }
+
+    await productCard.hover();
+    const compareButton = productCard.getByRole('button', { name: '비교 목록에 추가' });
+    await expect(compareButton).toBeVisible();
+    await compareButton.click();
+    await expect(productCard.getByRole('button', { name: '비교 목록에서 제거' })).toBeVisible();
   });
 });
 
-test.describe('제품 비교 기능', () => {
-  test('제품 상세 페이지에서 비교 버튼이 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.PRODUCTS_COSMETICS);
-    await waitForLoadingToFinish(page);
+test('제품 목록에서 critical JavaScript 에러가 발생하지 않는다', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
 
-    // 제품 카드 클릭
-    const productCard = page
-      .locator('[data-testid="product-card"], [data-testid="product-item"], .product-card a')
-      .first();
-    const hasProduct = await productCard.isVisible({ timeout: 5000 }).catch(() => false);
+  await page.goto(ROUTES.PRODUCTS);
+  await waitForLoadingToFinish(page);
 
-    if (hasProduct) {
-      await productCard.click();
-      await waitForLoadingToFinish(page);
-
-      // 비교 버튼 확인
-      const compareButton = page.locator('button[aria-label*="비교"], button:has-text("비교")');
-      const hasCompare = await compareButton
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false);
-
-      expect(hasCompare || true).toBe(true);
-    }
-  });
-
-  test('비교 버튼 클릭 시 비교 목록에 추가된다', async ({ page }) => {
-    await page.goto(ROUTES.PRODUCTS_COSMETICS);
-    await waitForLoadingToFinish(page);
-
-    // 제품 상세 페이지로 이동
-    const productCard = page
-      .locator('[data-testid="product-card"], [data-testid="product-item"], .product-card a')
-      .first();
-    const hasProduct = await productCard.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasProduct) {
-      await productCard.click();
-      await waitForLoadingToFinish(page);
-
-      // 비교 버튼 클릭
-      const compareButton = page.locator('button[aria-label*="비교"], button:has-text("비교")');
-      const hasCompare = await compareButton
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false);
-
-      if (hasCompare) {
-        await compareButton.first().click();
-        await page.waitForTimeout(500);
-
-        // 토스트 메시지 또는 플로팅 버튼 확인
-        const toast = page.locator('text=비교 목록');
-        const floatingButton = page.locator('button:has(.lucide-git-compare)');
-
-        const hasToast = await toast
-          .first()
-          .isVisible({ timeout: 2000 })
-          .catch(() => false);
-        const hasFloating = await floatingButton
-          .first()
-          .isVisible({ timeout: 2000 })
-          .catch(() => false);
-
-        expect(hasToast || hasFloating || true).toBe(true);
-      }
-    }
-  });
-
-  test('비교 플로팅 버튼 클릭 시 비교 시트가 열린다', async ({ page }) => {
-    await page.goto(ROUTES.PRODUCTS_COSMETICS);
-    await waitForLoadingToFinish(page);
-
-    // 제품 상세 페이지로 이동
-    const productCard = page
-      .locator('[data-testid="product-card"], [data-testid="product-item"], .product-card a')
-      .first();
-    const hasProduct = await productCard.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasProduct) {
-      await productCard.click();
-      await waitForLoadingToFinish(page);
-
-      // 비교 버튼 클릭
-      const compareButton = page.locator('button[aria-label*="비교"], button:has-text("비교")');
-      const hasCompare = await compareButton
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false);
-
-      if (hasCompare) {
-        await compareButton.first().click();
-        await page.waitForTimeout(500);
-
-        // 플로팅 버튼 클릭
-        const floatingButton = page.locator(
-          '.fixed button:has(.lucide-git-compare), button.rounded-full:has(.lucide-git-compare)'
-        );
-        const hasFloating = await floatingButton
-          .first()
-          .isVisible({ timeout: 2000 })
-          .catch(() => false);
-
-        if (hasFloating) {
-          await floatingButton.first().click();
-          await page.waitForTimeout(500);
-
-          // 비교 시트 확인
-          const compareSheet = page.locator(
-            '[role="dialog"]:has-text("제품 비교"), .sheet-content:has-text("제품 비교")'
-          );
-          const hasSheet = await compareSheet
-            .first()
-            .isVisible({ timeout: 2000 })
-            .catch(() => false);
-
-          expect(hasSheet || true).toBe(true);
-        }
-      }
-    }
-  });
-
-  test('비교 시트에서 제품 정보가 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.PRODUCTS_COSMETICS);
-    await waitForLoadingToFinish(page);
-
-    // 제품 상세 페이지로 이동
-    const productCard = page
-      .locator('[data-testid="product-card"], [data-testid="product-item"], .product-card a')
-      .first();
-    const hasProduct = await productCard.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasProduct) {
-      await productCard.click();
-      await waitForLoadingToFinish(page);
-
-      // 비교 버튼 클릭
-      const compareButton = page.locator('button[aria-label*="비교"], button:has-text("비교")');
-      const hasCompare = await compareButton
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false);
-
-      if (hasCompare) {
-        await compareButton.first().click();
-        await page.waitForTimeout(500);
-
-        // 플로팅 버튼 클릭
-        const floatingButton = page.locator(
-          '.fixed button:has(.lucide-git-compare), button.rounded-full:has(.lucide-git-compare)'
-        );
-        const hasFloating = await floatingButton
-          .first()
-          .isVisible({ timeout: 2000 })
-          .catch(() => false);
-
-        if (hasFloating) {
-          await floatingButton.first().click();
-          await page.waitForTimeout(500);
-
-          // 비교 테이블에서 항목 확인
-          const compareTable = page.locator('table');
-          const productNameRow = page.locator('td:has-text("제품명"), th:has-text("제품명")');
-          const priceRow = page.locator('td:has-text("가격"), th:has-text("가격")');
-
-          const hasTable = await compareTable
-            .first()
-            .isVisible({ timeout: 2000 })
-            .catch(() => false);
-          const hasProductName = await productNameRow
-            .first()
-            .isVisible({ timeout: 2000 })
-            .catch(() => false);
-          const hasPriceRow = await priceRow
-            .first()
-            .isVisible({ timeout: 2000 })
-            .catch(() => false);
-
-          expect(hasTable || hasProductName || hasPriceRow || true).toBe(true);
-        }
-      }
-    }
-  });
-
-  test('비교 페이지에서 JavaScript 에러가 발생하지 않는다', async ({ page }) => {
-    const errors: string[] = [];
-    page.on('pageerror', (error) => {
-      errors.push(error.message);
-    });
-
-    await page.goto(ROUTES.PRODUCTS_COSMETICS);
-    await waitForLoadingToFinish(page);
-
-    // 제품 상세 페이지로 이동 및 비교 버튼 클릭
-    const productCard = page
-      .locator('[data-testid="product-card"], [data-testid="product-item"], .product-card a')
-      .first();
-    const hasProduct = await productCard.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (hasProduct) {
-      await productCard.click();
-      await waitForLoadingToFinish(page);
-
-      const compareButton = page.locator('button[aria-label*="비교"], button:has-text("비교")');
-      const hasCompare = await compareButton
-        .first()
-        .isVisible({ timeout: 3000 })
-        .catch(() => false);
-
-      if (hasCompare) {
-        await compareButton.first().click();
-        await page.waitForTimeout(1000);
-      }
-    }
-
-    // 크리티컬 에러만 필터링
-    const criticalErrors = errors.filter(
-      (e) => !e.includes('hydration') && !e.includes('ResizeObserver')
-    );
-    expect(criticalErrors).toHaveLength(0);
-  });
+  const criticalErrors = errors.filter(
+    (error) => !error.includes('hydration') && !error.includes('ResizeObserver')
+  );
+  expect(criticalErrors).toHaveLength(0);
 });

@@ -19,19 +19,22 @@ test.describe('도움말 - FAQ', () => {
     await page.goto(ROUTES.HELP_FAQ);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 아코디언 항목 찾기
-      const accordionTrigger = page.locator('[data-testid*="accordion"], button[aria-expanded]');
-      const hasAccordion = await accordionTrigger.first().isVisible().catch(() => false);
-
-      if (hasAccordion) {
-        await accordionTrigger.first().click();
-        await page.waitForTimeout(300);
-
-        const isExpanded = await accordionTrigger.first().getAttribute('aria-expanded');
-        expect(isExpanded).toBe('true');
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
+      return;
     }
+
+    // 아코디언 항목 찾기
+    const accordionTrigger = page
+      .locator('[data-testid^="faq-item-"] button[aria-expanded]')
+      .first();
+    if (!(await accordionTrigger.isVisible().catch(() => false))) {
+      test.skip(true, 'FAQ 아코디언 fixture가 없습니다.');
+      return;
+    }
+
+    await accordionTrigger.click();
+    await expect(accordionTrigger).toHaveAttribute('aria-expanded', 'true');
   });
 });
 
@@ -48,16 +51,15 @@ test.describe('도움말 - 공지사항', () => {
     await page.goto(ROUTES.ANNOUNCEMENTS);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 공지사항 카드 또는 빈 상태 확인
-      const announcementCard = page.locator('[data-testid*="announcement"]');
-      const emptyState = page.locator('text=공지사항이 없습니다');
-
-      const hasContent = await announcementCard.first().isVisible().catch(() => false) ||
-                         await emptyState.isVisible().catch(() => false);
-
-      expect(hasContent || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
+      return;
     }
+
+    // 공지사항 카드 또는 빈 상태 확인
+    const announcementCard = page.locator('[data-testid*="announcement"]');
+    const emptyState = page.getByText('공지사항이 없습니다');
+    await expect(announcementCard.first().or(emptyState)).toBeVisible();
   });
 });
 
@@ -82,26 +84,30 @@ test.describe('AI 코치/채팅', () => {
     await page.goto(ROUTES.CHAT);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 채팅 입력 필드 찾기
-      const chatInput = page.locator('input[placeholder*="메시지"], textarea[placeholder*="메시지"]');
-      const hasInput = await chatInput.isVisible().catch(() => false);
-
-      expect(hasInput || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
+      return;
     }
+
+    // 채팅 입력 필드 찾기
+    const chatInput = page.locator('input[placeholder*="메시지"], textarea[placeholder*="메시지"]');
+    await expect(chatInput).toBeVisible();
   });
 
   test('추천 질문이 표시된다', async ({ page }) => {
     await page.goto(ROUTES.CHAT);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 추천 질문 버튼 찾기
-      const suggestedQuestions = page.locator('button:has-text("추천"), [data-testid*="suggested"]');
-      const hasQuestions = await suggestedQuestions.first().isVisible().catch(() => false);
-
-      expect(hasQuestions || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/sign-in/);
+      return;
     }
+
+    // 추천 질문 버튼 찾기
+    const suggestedQuestions = page
+      .locator('button:has-text("추천"), [data-testid*="suggested"]')
+      .first();
+    await expect(suggestedQuestions).toBeVisible();
   });
 });
 

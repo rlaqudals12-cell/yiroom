@@ -44,76 +44,40 @@ test.describe('PC-1 분석 페이지 - UI 검증', () => {
   });
 
   test('페이지 제목이 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_PERSONAL_COLOR);
+    await page.goto(`${ROUTES.ANALYSIS_PERSONAL_COLOR}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 퍼스널 컬러 진단 제목 확인
-      const title = page.locator('h1:has-text("퍼스널 컬러")');
-      const hasTitle = await title.isVisible().catch(() => false);
-
-      if (hasTitle) {
-        await expect(title).toBeVisible();
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
-  });
 
-  test('사진 업로드 영역이 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_PERSONAL_COLOR);
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      // 파일 업로드 또는 카메라 촬영 관련 요소 확인
-      const uploadInput = page.locator('input[type="file"]');
-      const uploadArea = page.locator(
-        '[data-testid*="upload"], [aria-label*="업로드"], button:has-text("촬영"), button:has-text("갤러리")'
-      );
-
-      const hasUpload =
-        (await uploadInput.isVisible().catch(() => false)) ||
-        (await uploadArea
-          .first()
-          .isVisible()
-          .catch(() => false));
-
-      // 로딩/기존결과 확인 중일 수 있으므로 존재 여부만 확인
-      expect(hasUpload || true).toBe(true);
-    }
+    await expect(page.getByRole('heading', { name: /퍼스널 컬러/ })).toBeVisible();
   });
 
   test('분석 관련 버튼이 표시된다', async ({ page }) => {
-    await page.goto(ROUTES.ANALYSIS_PERSONAL_COLOR);
+    await page.goto(`${ROUTES.ANALYSIS_PERSONAL_COLOR}?forceNew=true`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 촬영, 갤러리, 분석 시작 등 버튼 확인
-      const actionButtons = page.locator(
-        'button:has-text("촬영"), button:has-text("시작"), button:has-text("분석"), button:has-text("갤러리")'
-      );
-      const hasButtons = await actionButtons
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      // 기존 결과 리디렉트 중일 수 있으므로 존재 여부만 확인
-      expect(hasButtons || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page.getByRole('button', { name: '촬영 시작하기' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /갤러리에서 선택/ })).toBeVisible();
   });
 
   test('조명 가이드가 표시된다', async ({ page }) => {
     await page.goto(ROUTES.ANALYSIS_PERSONAL_COLOR + '?forceNew=true');
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 가이드 텍스트 확인 (조명, 촬영 등)
-      const guideText = page.locator('text=조명, text=촬영, text=가이드');
-      const hasGuide = await guideText
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasGuide || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page.getByTestId('lighting-guide')).toBeVisible();
   });
 });
 
@@ -121,6 +85,7 @@ test.describe('PC-1 분석 페이지 - UI 검증', () => {
 // 2. 결과 페이지 2탭 구조
 // --------------------------------------------------------------------------
 test.describe('PC-1 결과 페이지 - 2탭 구조', () => {
+  test.skip(true, '실제 퍼스널컬러 결과 fixture가 준비된 환경에서만 검증');
   const RESULT_URL = '/analysis/personal-color/result/test-analysis';
 
   test('결과 페이지가 로드된다', async ({ page }) => {
@@ -165,7 +130,7 @@ test.describe('PC-1 결과 페이지 - 2탭 구조', () => {
         // 기본 분석 탭 콘텐츠가 표시되는지 확인
         const basicTabContent = page.locator('[data-testid="basic-tab"]');
         const hasBasicContent = await basicTabContent.isVisible().catch(() => false);
-        expect(hasBasicContent || true).toBe(true);
+        expect(hasBasicContent).toBe(true);
       }
     }
   });
@@ -190,7 +155,7 @@ test.describe('PC-1 결과 페이지 - 2탭 구조', () => {
         // 드레이핑 탭 콘텐츠 영역 확인
         const drapingContent = page.locator('[data-testid="draping-tab"]');
         const hasContent = await drapingContent.isVisible().catch(() => false);
-        expect(hasContent || true).toBe(true);
+        expect(hasContent).toBe(true);
       }
     }
   });
@@ -231,6 +196,7 @@ test.describe('PC-1 결과 페이지 - 2탭 구조', () => {
 // 3. 색상 입혀보기 탭 컨텐츠
 // --------------------------------------------------------------------------
 test.describe('PC-1 결과 페이지 - 색상 입혀보기 탭', () => {
+  test.skip(true, '저장된 분석 사진을 포함한 결과 fixture가 필요함');
   const RESULT_URL = '/analysis/personal-color/result/test-analysis';
 
   test('"색상 입혀보기" 탭에서 드레이핑 비교 섹션이 표시된다', async ({ page }) => {
@@ -255,7 +221,7 @@ test.describe('PC-1 결과 페이지 - 색상 입혀보기 탭', () => {
         // 이미지가 없을 수 있으므로 섹션은 조건부로 확인
         // 이미지 없이 접근 시 "색상 입혀보기" 안내 메시지가 표시됨
         if (hasSection) {
-          expect(hasBestCanvas || true).toBe(true);
+          expect(hasBestCanvas).toBe(true);
         }
       }
     }
@@ -277,7 +243,7 @@ test.describe('PC-1 결과 페이지 - 색상 입혀보기 탭', () => {
             .locator('[data-testid="draping-section"]')
             .isVisible()
             .catch(() => false);
-          expect(hasSection || true).toBe(true);
+          expect(hasSection).toBe(true);
         } else {
           // 사진이 없는 결과 → 입구에서 차단 (빈 탭으로 들여보내지 않는다)
           await expect(drapingTab).toBeDisabled();
@@ -331,18 +297,16 @@ test.describe('PC-1 결과 페이지 - 에러 처리', () => {
     await page.goto(`/analysis/personal-color/result/${nonExistentId}`);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 에러 상태에서 행동 유도 버튼 확인
-      const actionButtons = page.locator(
-        'button:has-text("새로 분석하기"), button:has-text("다시 시도"), a:has-text("대시보드")'
-      );
-      const hasAction = await actionButtons
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      expect(hasAction || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    // 에러 상태에서 행동 유도 버튼 확인
+    const actionButtons = page.locator(
+      'button:has-text("새로 분석하기"), button:has-text("다시 시도"), a:has-text("대시보드")'
+    );
+    await expect(actionButtons.first()).toBeVisible();
   });
 });
 

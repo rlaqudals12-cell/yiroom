@@ -29,38 +29,27 @@ test.describe('완전 분석 플로우 - 퍼스널컬러 (PC-1)', () => {
     const startButton = page.locator(
       'button:has-text("분석"), button:has-text("시작"), button:has-text("진단")'
     );
-    const hasStartButton = await startButton.first().isVisible().catch(() => false);
+    const hasStartButton = await startButton
+      .first()
+      .isVisible()
+      .catch(() => false);
 
     // 3. 업로드 영역 확인
     const uploadArea = page.locator(
       'input[type="file"], [data-testid*="upload"], [aria-label*="업로드"]'
     );
-    const hasUpload = await uploadArea.first().isVisible().catch(() => false);
+    const hasUpload = await uploadArea
+      .first()
+      .isVisible()
+      .catch(() => false);
 
     expect(hasStartButton || hasUpload).toBe(true);
 
     // JavaScript 에러 없음 확인
     const criticalErrors = errors.filter(
-      (e) =>
-        !e.includes('hydration') &&
-        !e.includes('ResizeObserver') &&
-        !e.includes('MediaPipe')
+      (e) => !e.includes('hydration') && !e.includes('ResizeObserver') && !e.includes('MediaPipe')
     );
     expect(criticalErrors).toHaveLength(0);
-  });
-
-  test('퍼스널컬러 분석 결과 페이지 UI가 정상이다', async ({ page }) => {
-    await page.goto('/analysis/personal-color/result/mock-id');
-    await waitForLoadingToFinish(page);
-
-    if (!page.url().includes('sign-in')) {
-      // 결과 페이지 요소 확인
-      const resultElements = page.locator(
-        '[data-testid*="result"], h1, h2, text=퍼스널컬러, text=시즌'
-      );
-      const hasResult = await resultElements.first().isVisible().catch(() => false);
-      expect(hasResult || true).toBe(true);
-    }
   });
 });
 
@@ -83,20 +72,21 @@ test.describe('완전 분석 플로우 - 피부 (S-1)', () => {
     const skinUI = page.locator(
       'text=피부, text=분석, button:has-text("시작"), input[type="file"]'
     );
-    const hasUI = await skinUI.first().isVisible().catch(() => false);
+    const hasUI = await skinUI
+      .first()
+      .isVisible()
+      .catch(() => false);
     expect(hasUI).toBe(true);
 
     // 에러 없음
     const criticalErrors = errors.filter(
-      (e) =>
-        !e.includes('hydration') &&
-        !e.includes('ResizeObserver') &&
-        !e.includes('MediaPipe')
+      (e) => !e.includes('hydration') && !e.includes('ResizeObserver') && !e.includes('MediaPipe')
     );
     expect(criticalErrors).toHaveLength(0);
   });
 
   test('피부 분석 결과 탭 네비게이션이 작동한다', async ({ page }) => {
+    test.skip(true, '실제 피부 분석 결과 fixture가 준비된 환경에서만 검증');
     await page.goto('/analysis/skin/result/mock-id');
     await waitForLoadingToFinish(page);
 
@@ -141,8 +131,11 @@ test.describe('완전 분석 플로우 - 체형 (C-1)', () => {
     const bodyUI = page.locator(
       'text=체형, text=분석, input[type="number"], input[placeholder*="키"], input[placeholder*="몸무게"]'
     );
-    const hasUI = await bodyUI.first().isVisible().catch(() => false);
-    expect(hasUI || true).toBe(true);
+    const hasUI = await bodyUI
+      .first()
+      .isVisible()
+      .catch(() => false);
+    expect(hasUI).toBe(true);
 
     // 에러 없음
     const criticalErrors = errors.filter(
@@ -171,15 +164,15 @@ test.describe('완전 분석 플로우 - 헤어 (H-1)', () => {
     const hairUI = page.locator(
       'text=헤어, text=분석, button:has-text("시작"), input[type="file"]'
     );
-    const hasUI = await hairUI.first().isVisible().catch(() => false);
-    expect(hasUI || true).toBe(true);
+    const hasUI = await hairUI
+      .first()
+      .isVisible()
+      .catch(() => false);
+    expect(hasUI).toBe(true);
 
     // 에러 없음
     const criticalErrors = errors.filter(
-      (e) =>
-        !e.includes('hydration') &&
-        !e.includes('ResizeObserver') &&
-        !e.includes('MediaPipe')
+      (e) => !e.includes('hydration') && !e.includes('ResizeObserver') && !e.includes('MediaPipe')
     );
     expect(criticalErrors).toHaveLength(0);
   });
@@ -212,15 +205,15 @@ test.describe('완전 분석 플로우 - 메이크업 (M-1)', () => {
     const makeupUI = page.locator(
       'text=메이크업, text=분석, button:has-text("시작"), input[type="file"]'
     );
-    const hasUI = await makeupUI.first().isVisible().catch(() => false);
-    expect(hasUI || true).toBe(true);
+    const hasUI = await makeupUI
+      .first()
+      .isVisible()
+      .catch(() => false);
+    expect(hasUI).toBe(true);
 
     // 에러 없음
     const criticalErrors = errors.filter(
-      (e) =>
-        !e.includes('hydration') &&
-        !e.includes('ResizeObserver') &&
-        !e.includes('MediaPipe')
+      (e) => !e.includes('hydration') && !e.includes('ResizeObserver') && !e.includes('MediaPipe')
     );
     expect(criticalErrors).toHaveLength(0);
   });
@@ -231,26 +224,37 @@ test.describe('분석 → 제품 추천 연동', () => {
     await page.goto('/analysis/skin/result/mock-id');
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 추천 제품 섹션 찾기
-      const recommendSection = page.locator(
-        '[data-testid*="recommend"], text=추천, text=제품, section:has-text("추천")'
-      );
-      const hasRecommend = await recommendSection.first().isVisible().catch(() => false);
-
-      if (hasRecommend) {
-        // 제품 링크 클릭
-        const productLink = page.locator('a[href*="products"]');
-        const hasLink = await productLink.first().isVisible().catch(() => false);
-
-        if (hasLink) {
-          await productLink.first().click();
-          await waitForLoadingToFinish(page);
-
-          expect(page.url()).toMatch(/products|sign-in/);
-        }
-      }
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    // 추천 제품을 포함한 실제 분석 결과가 있는 환경에서만 상호작용을 검증한다.
+    const recommendSection = page.locator(
+      '[data-testid*="recommend"], text=추천, text=제품, section:has-text("추천")'
+    );
+    const hasRecommend = await recommendSection
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (!hasRecommend) {
+      test.skip(true, '추천 제품을 포함한 실제 피부 분석 결과 fixture가 필요함');
+      return;
+    }
+
+    const productLink = page.locator('a[href*="/products/"], a[href*="/beauty/"]');
+    const hasLink = await productLink
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (!hasLink) {
+      test.skip(true, '추천 결과에 연결된 제품 fixture가 필요함');
+      return;
+    }
+
+    await productLink.first().click();
+    await waitForLoadingToFinish(page);
+    expect(page.url()).toMatch(/products|beauty|sign-in/);
   });
 });
 
@@ -292,12 +296,12 @@ test.describe('분석 플로우 - 반응형 UI', () => {
     await page.goto(ROUTES.ANALYSIS_PERSONAL_COLOR);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      // 모바일 UI 요소 확인
-      const mobileUI = page.locator('button, input[type="file"]');
-      const hasMobileUI = await mobileUI.first().isVisible().catch(() => false);
-      expect(hasMobileUI || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page.locator('[data-testid="personal-color-analysis-page"]')).toBeVisible();
   });
 
   test('태블릿에서 분석 페이지가 정상 렌더링된다', async ({ page }) => {
@@ -305,11 +309,12 @@ test.describe('분석 플로우 - 반응형 UI', () => {
     await page.goto(ROUTES.ANALYSIS_SKIN);
     await waitForLoadingToFinish(page);
 
-    if (!page.url().includes('sign-in')) {
-      const tabletUI = page.locator('button, input');
-      const hasTabletUI = await tabletUI.first().isVisible().catch(() => false);
-      expect(hasTabletUI || true).toBe(true);
+    if (page.url().includes('sign-in')) {
+      await expect(page).toHaveURL(/\/sign-in/);
+      return;
     }
+
+    await expect(page.locator('[data-testid="skin-analysis-page"]')).toBeVisible();
   });
 });
 
@@ -325,14 +330,17 @@ test.describe('분석 플로우 - 접근성', () => {
       await page.goto(route);
       await waitForLoadingToFinish(page);
 
-      if (!page.url().includes('sign-in')) {
-        // Tab 키로 첫 번째 포커스 가능한 요소로 이동
-        await page.keyboard.press('Tab');
-
-        // 포커스된 요소 확인
-        const focusedElement = await page.evaluate(() => document.activeElement?.tagName);
-        expect(['BUTTON', 'INPUT', 'A', 'SELECT']).toContain(focusedElement);
+      if (page.url().includes('sign-in')) {
+        await expect(page).toHaveURL(/\/sign-in/);
+        return;
       }
+
+      // Tab 키로 첫 번째 포커스 가능한 요소로 이동
+      await page.keyboard.press('Tab');
+
+      // 포커스된 요소 확인
+      const focusedElement = await page.evaluate(() => document.activeElement?.tagName);
+      expect(['BUTTON', 'INPUT', 'A', 'SELECT']).toContain(focusedElement);
     });
   }
 });
