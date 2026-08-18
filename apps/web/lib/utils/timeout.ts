@@ -33,7 +33,143 @@ export const AI_TIMEOUT = {
   PERSONAL_COLOR: 30000,
   /** 빠른 응답 필요 (1.5초) */
   FAST: 1500,
+  /** 통합 분석 라우트 전체 예산 — Vercel 60초 상한에서 응답 전송 여유 8초 예약 */
+  INTEGRATED_ROUTE: 52_000,
+  /** 통합 분석 Gemini 축별 단일 시도 상한 */
+  INTEGRATED_AXIS_ATTEMPT: 25_000,
+  /** 통합 분석 persona Gemini 상한 — 초과 시 결정론 폴백 */
+  INTEGRATED_PERSONA: 4_000,
 } as const;
+
+/** 절대 실행 예산이 소진됐음을 구분하는 오류. */
+export class DeadlineExceededError extends Error {
+  constructor(message = 'Execution deadline exceeded') {
+    super(message);
+    this.name = 'DeadlineExceededError';
+  }
+}
+
+/**
+ * 하나의 요청이 공유하는 단조시계 기반 절대 deadline.
+ * 하위 단계는 새 상대 타이머를 만들지 않고 이 객체의 잔여 예산만 소비한다.
+ */
+export interface ExecutionDeadline {
+  readonly expiresAt: number;
+  readonly signal: AbortSignal;
+  remainingMs(reserveMs?: number): number;
+  expired(reserveMs?: number): boolean;
+  throwIfExpired(reserveMs?: number, message?: string): void;
+  clear(): void;
+  abort(reason?: unknown): void;
+}
+
+/**
+ * 요청 전체가 공유할 절대 deadline을 만든다.
+ * `performance.now()`는 시스템 시각 변경의 영향을 받지 않는 단조시계다.
+ */
+export function createExecutionDeadline(totalMs: number): ExecutionDeadline {
+  if (!Number.isFinite(totalMs) || totalMs < 0) {
+    throw new RangeError('Deadline duration must be a non-negative finite number');
+  }
+
+  const controller = new AbortController();
+  const expiresAt = performance.now() + totalMs;
+  let timeoutId: ReturnType<typeof setTimeout> | null = setTimeout(() => {
+    timeoutId = null;
+    controller.abort(new DeadlineExceededError());
+  }, totalMs);
+
+  const clear = () => {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  };
+
+  const remainingMs = (reserveMs = 0) =>
+    Math.max(0, Math.ceil(expiresAt - performance.now() - Math.max(0, reserveMs)));
+
+  return {
+    expiresAt,
+    signal: controller.signal,
+    remainingMs,
+    expired: (reserveMs = 0) => controller.signal.aborted || remainingMs(reserveMs) <= 0,
+    throwIfExpired: (reserveMs = 0, message = 'Execution deadline exceeded') => {
+      if (controller.signal.aborted || remainingMs(reserveMs) <= 0) {
+        throw new DeadlineExceededError(message);
+      }
+    },
+    clear,
+    abort: (reason = new DeadlineExceededError('Execution aborted')) => {
+      clear();
+      if (!controller.signal.aborted) controller.abort(reason);
+    },
+  };
+}
+
+/**
+ * 부모 deadline의 끝에서 일정 시간을 예약한 하위 단계용 view.
+ * 별도 타이머나 시작 시각을 만들지 않으며 부모 signal을 그대로 공유한다.
+ */
+export function reserveExecutionDeadline(
+  deadline: ExecutionDeadline,
+  reserveMs: number
+): ExecutionDeadline {
+  const reserved = Math.max(0, reserveMs);
+  return {
+    expiresAt: deadline.expiresAt - reserved,
+    signal: deadline.signal,
+    remainingMs: (extraReserveMs = 0) => deadline.remainingMs(reserved + extraReserveMs),
+    expired: (extraReserveMs = 0) => deadline.expired(reserved + extraReserveMs),
+    throwIfExpired: (extraReserveMs = 0, message = 'Execution deadline exceeded') =>
+      deadline.throwIfExpired(reserved + extraReserveMs, message),
+    // view는 부모 타이머를 소유하지 않는다.
+    clear: () => {},
+    abort: (reason?: unknown) => deadline.abort(reason),
+  };
+}
+
+export interface DeadlineOptions {
+  /** 이 단계 자체의 상대 상한. 절대 deadline보다 길 수 없다. */
+  maxMs?: number;
+  /** 다음 단계에 반드시 남겨둘 시간. */
+  reserveMs?: number;
+}
+
+/**
+ * Promise를 요청의 절대 deadline 안에서만 기다린다.
+ * stage max와 reserve가 있어도 기준 시각은 언제나 부모 deadline 하나다.
+ */
+export async function withDeadline<T>(
+  promise: PromiseLike<T>,
+  deadline: ExecutionDeadline,
+  errorMessage = 'Execution deadline exceeded',
+  options: DeadlineOptions = {}
+): Promise<T> {
+  const remaining = deadline.remainingMs(options.reserveMs ?? 0);
+  const maxMs = options.maxMs ?? remaining;
+  const timeoutMs = Math.min(remaining, Math.max(0, maxMs));
+
+  if (deadline.signal.aborted || timeoutMs <= 0) {
+    throw new DeadlineExceededError(errorMessage);
+  }
+
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let onAbort: (() => void) | null = null;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    const rejectDeadline = () => reject(new DeadlineExceededError(errorMessage));
+    onAbort = rejectDeadline;
+    deadline.signal.addEventListener('abort', rejectDeadline, { once: true });
+    timeoutId = setTimeout(rejectDeadline, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([Promise.resolve(promise), timeoutPromise]);
+  } finally {
+    if (timeoutId !== null) clearTimeout(timeoutId);
+    if (onAbort) deadline.signal.removeEventListener('abort', onAbort);
+  }
+}
 
 /**
  * 재시도 설정
@@ -93,6 +229,8 @@ export interface RetryOptions {
   shouldRetry?: (error: unknown) => boolean;
   /** 재시도 시 호출되는 콜백 */
   onRetry?: (attempt: number, error: unknown) => void;
+  /** 여러 시도와 대기가 함께 소비할 상위 절대 deadline */
+  deadline?: ExecutionDeadline;
 }
 
 /**
@@ -102,25 +240,30 @@ export interface RetryOptions {
  * @param options - 재시도 옵션
  * @returns 함수 결과
  */
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions = {}
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const {
     maxRetries = RETRY_CONFIG.MAX_RETRIES,
     delayMs = RETRY_CONFIG.DELAY_MS,
     exponential = RETRY_CONFIG.EXPONENTIAL,
     shouldRetry = () => true,
     onRetry,
+    deadline,
   } = options;
 
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    deadline?.throwIfExpired(0, 'Retry deadline exceeded');
     try {
       return await fn();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
+
+      // 단계별 max 타임아웃은 부모 예산이 남아 있으면 재시도할 수 있다.
+      // 부모 자체가 끝났거나 부모 없는 호출이 명시적 deadline 오류를 냈을 때만 즉시 중단한다.
+      if (deadline?.expired() || (!deadline && error instanceof DeadlineExceededError)) {
+        throw deadline?.expired() ? new DeadlineExceededError('Retry deadline exceeded') : error;
+      }
 
       // 재시도 불가 에러인지 확인
       if (!shouldRetry(error)) {
@@ -136,10 +279,20 @@ export async function withRetry<T>(
       onRetry?.(attempt + 1, error);
 
       // 대기 (지수 백오프)
-      const waitTime = exponential
-        ? delayMs * Math.pow(2, attempt)
-        : delayMs;
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      const waitTime = exponential ? delayMs * Math.pow(2, attempt) : delayMs;
+      let waitTimer: ReturnType<typeof setTimeout> | null = null;
+      const waitPromise = new Promise<void>((resolve) => {
+        waitTimer = setTimeout(resolve, waitTime);
+      });
+      try {
+        if (deadline) {
+          await withDeadline(waitPromise, deadline, 'Retry delay exceeded deadline');
+        } else {
+          await waitPromise;
+        }
+      } finally {
+        if (waitTimer !== null) clearTimeout(waitTimer);
+      }
     }
   }
 
@@ -193,10 +346,10 @@ export async function withTimeoutAndFallback<T>(
   } = options;
 
   try {
-    const result = await withRetry(
-      () => withTimeout(primaryFn(), timeout, 'AI analysis timeout'),
-      { maxRetries, delayMs }
-    );
+    const result = await withRetry(() => withTimeout(primaryFn(), timeout, 'AI analysis timeout'), {
+      maxRetries,
+      delayMs,
+    });
 
     return {
       result,

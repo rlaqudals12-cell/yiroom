@@ -15,8 +15,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { IntegratedAnalysisInput } from '@/lib/analysis/integrated';
 
 // 저장 직전 INSERT 페이로드를 캡처 (createServiceRoleClient는 여러 번 호출되지만 같은 배열에 누적)
-const { capturedInserts } = vi.hoisted(() => ({
+const { capturedInserts, singleImpl } = vi.hoisted(() => ({
   capturedInserts: [] as Array<{ table: string; payload: Record<string, unknown> }>,
+  singleImpl: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/service-role', () => ({
@@ -27,7 +28,7 @@ vi.mock('@/lib/supabase/service-role', () => ({
           capturedInserts.push({ table, payload });
           return {
             select: () => ({
-              single: async () => ({ data: { id: 'test-id-123' }, error: null }),
+              single: () => singleImpl(),
             }),
           };
         },
@@ -64,6 +65,7 @@ import { getBodyShapeInfo, generateMockBodyAnalysisResult } from '@/lib/analysis
 import { recommendHairstyles, generateMockHairAnalysisResult } from '@/lib/analysis/hair';
 import { generateMockResult as generateMockPC } from '@/lib/analysis/personal-color-v2';
 import { buildFallbackSeed } from '@/lib/utils/seeded-random';
+import { createExecutionDeadline } from '@/lib/utils/timeout';
 
 // prod CHECK 제약이 허용하는 값 (실제 personal_color_assessments 제약과 동일)
 const ALLOWED_SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
@@ -87,12 +89,15 @@ function baseInput(): IntegratedAnalysisInput {
 describe('axis-adapters — DB 저장 규격 (스키마 계약)', () => {
   beforeEach(() => {
     capturedInserts.length = 0;
+    singleImpl.mockReset();
+    singleImpl.mockResolvedValue({ data: { id: 'test-id-123' }, error: null });
     // mock 모드: Gemini 호출 없이 Mock 결과로 INSERT 경로만 검증
     vi.stubEnv('FORCE_MOCK_AI', 'true');
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.useRealTimers();
   });
 
   describe('PC(퍼스널컬러) — season/undertone 대문자 규격', () => {
@@ -141,6 +146,26 @@ describe('axis-adapters — DB 저장 규격 (스키마 계약)', () => {
         // persona-composer는 season === 'spring' | 'autumn' 소문자 비교로 웜/쿨을 가른다
         expect(result.data.season).toBe(result.data.season.toLowerCase());
       }
+    });
+
+    it('DB 저장이 멈춰도 상위 deadline에서 AI_TIMEOUT 축 결과로 끝난다', async () => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+      singleImpl.mockImplementation(() => new Promise(() => {}));
+      const deadline = createExecutionDeadline(2_000);
+
+      const promise = runPersonalColorAxis(
+        'sess-save-timeout',
+        'clerk-1',
+        baseInput(),
+        undefined,
+        deadline
+      );
+      await vi.advanceTimersByTimeAsync(2_000);
+      const result = await promise;
+
+      expect(result.success).toBe(false);
+      if (!result.success) expect(result.error.code).toBe('AI_TIMEOUT');
+      deadline.clear();
     });
   });
 

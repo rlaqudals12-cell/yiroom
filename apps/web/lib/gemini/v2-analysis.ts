@@ -15,7 +15,14 @@ import {
   outputLanguageDirective,
 } from '@/lib/gemini/client';
 import type { GeminiCallParams, OutputLocale } from '@/lib/gemini/client';
-import { withTimeout, withRetry, createAbortTimeout } from '@/lib/utils/timeout';
+import {
+  AI_TIMEOUT,
+  withTimeout,
+  withDeadline,
+  withRetry,
+  createAbortTimeout,
+  type ExecutionDeadline,
+} from '@/lib/utils/timeout';
 import { z } from 'zod';
 import type {
   SkinZoneType,
@@ -65,10 +72,8 @@ const geminiV2Config = {
  * 예전 값(30s × 2 + 1s = 61s)은 함수 상한을 넘겨, 재시도가 완주하기 전에
  * 게이트웨이가 504로 끊어 "타임아웃 폴백"조차 못 하고 요청 전체가 죽었다.
  */
-const V2_CALL_TIMEOUT_MS = 25_000;
-
-/** 축당 총 예산 상한 (검증·회귀 테스트용 상수 — maxDuration=60s보다 반드시 작아야 한다) */
-export const V2_CALL_BUDGET_MS = 55_000;
+/** 하위 호환용 파생값. 런타임 정본은 `AI_TIMEOUT.INTEGRATED_AXIS_ATTEMPT`다. */
+export const V2_CALL_BUDGET_MS = AI_TIMEOUT.INTEGRATED_AXIS_ATTEMPT * 2 + 1000;
 
 /** 재시도: 1회(총 2시도), 고정 1초 대기 — 지수 백오프는 예산을 넘긴다 */
 const V2_RETRY_OPTIONS = { maxRetries: 1, delayMs: 1000, exponential: false } as const;
@@ -89,25 +94,38 @@ const V2_RETRY_OPTIONS = { maxRetries: 1, delayMs: 1000, exponential: false } as
  */
 async function callGeminiWithBudget(
   params: GeminiCallParams,
-  timeoutMessage: string
+  timeoutMessage: string,
+  deadline?: ExecutionDeadline
 ): Promise<{ text: string }> {
-  return withRetry(async () => {
-    const { controller, clear } = createAbortTimeout(V2_CALL_TIMEOUT_MS);
-    try {
-      return await withTimeout(
-        generateContent({
+  return withRetry(
+    async () => {
+      const attemptTimeout = deadline
+        ? Math.min(AI_TIMEOUT.INTEGRATED_AXIS_ATTEMPT, deadline.remainingMs())
+        : AI_TIMEOUT.INTEGRATED_AXIS_ATTEMPT;
+      deadline?.throwIfExpired(0, timeoutMessage);
+
+      const { controller, clear } = createAbortTimeout(attemptTimeout);
+      const abortFromParent = () => controller.abort(deadline?.signal.reason);
+      deadline?.signal.addEventListener('abort', abortFromParent, { once: true });
+      try {
+        const request = generateContent({
           ...params,
           config: { ...params.config, abortSignal: controller.signal },
-        }),
-        V2_CALL_TIMEOUT_MS,
-        timeoutMessage
-      );
-    } finally {
-      // 성공이든 실패든 타이머 해제 + 미완 요청 중단 (이미 끝난 요청엔 무해)
-      clear();
-      controller.abort();
-    }
-  }, V2_RETRY_OPTIONS);
+        });
+        return deadline
+          ? await withDeadline(request, deadline, timeoutMessage, {
+              maxMs: AI_TIMEOUT.INTEGRATED_AXIS_ATTEMPT,
+            })
+          : await withTimeout(request, AI_TIMEOUT.INTEGRATED_AXIS_ATTEMPT, timeoutMessage);
+      } finally {
+        // 성공이든 실패든 타이머 해제 + 미완 요청 중단 (이미 끝난 요청엔 무해)
+        clear();
+        controller.abort();
+        deadline?.signal.removeEventListener('abort', abortFromParent);
+      }
+    },
+    { ...V2_RETRY_OPTIONS, deadline }
+  );
 }
 
 /**
@@ -326,7 +344,8 @@ export async function analyzeSkinV2WithGemini(
   imageBase64: string,
   priorHint?: string | null,
   locale: OutputLocale = 'ko',
-  fallbackSeed?: string
+  fallbackSeed?: string,
+  deadline?: ExecutionDeadline
 ): Promise<{ result: SkinAnalysisV2Result; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -360,7 +379,8 @@ ${outputLanguageDirective(locale)}`,
         ],
         config: geminiV2Config,
       },
-      '[S-2 Gemini] Timeout'
+      '[S-2 Gemini] Timeout',
+      deadline
     );
 
     const text = geminiResult.text;
@@ -487,7 +507,8 @@ export type GeminiPersonalColorV2Response = z.infer<typeof GeminiPersonalColorV2
  * @returns 피부색 RGB 및 기본 분석 정보
  */
 export async function extractSkinColorWithGemini(
-  imageBase64: string
+  imageBase64: string,
+  deadline?: ExecutionDeadline
 ): Promise<{ data: GeminiPersonalColorV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -503,7 +524,8 @@ export async function extractSkinColorWithGemini(
         contents: [{ text: PERSONAL_COLOR_V2_PROMPT }, imagePart],
         config: geminiV2Config,
       },
-      '[PC-2 Gemini] Timeout'
+      '[PC-2 Gemini] Timeout',
+      deadline
     );
 
     const text = geminiResult.text;
@@ -629,7 +651,8 @@ export type GeminiBodyV2Response = z.infer<typeof GeminiBodyV2ResponseSchema>;
 export async function analyzeBodyWithGemini(
   imageBase64: string,
   priorHint?: string | null,
-  locale: OutputLocale = 'ko'
+  locale: OutputLocale = 'ko',
+  deadline?: ExecutionDeadline
 ): Promise<{ data: GeminiBodyV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -659,7 +682,8 @@ ${outputLanguageDirective(locale)}`,
         ],
         config: geminiV2Config,
       },
-      '[C-2 Gemini] Timeout'
+      '[C-2 Gemini] Timeout',
+      deadline
     );
 
     const text = geminiResult.text;
@@ -836,7 +860,8 @@ export type GeminiHairV2Response = z.infer<typeof GeminiHairV2ResponseSchema>;
 export async function analyzeHairWithGemini(
   imageBase64: string,
   priorHint?: string | null,
-  locale: OutputLocale = 'ko'
+  locale: OutputLocale = 'ko',
+  deadline?: ExecutionDeadline
 ): Promise<{ data: GeminiHairV2Response | null; usedFallback: boolean }> {
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
@@ -866,7 +891,8 @@ ${outputLanguageDirective(locale)}`,
         ],
         config: geminiV2Config,
       },
-      '[H-1 Gemini] Timeout'
+      '[H-1 Gemini] Timeout',
+      deadline
     );
 
     const text = geminiResult.text;

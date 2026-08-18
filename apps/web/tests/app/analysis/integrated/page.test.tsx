@@ -68,8 +68,19 @@ vi.mock('@/app/(main)/analysis/integrated/_components/ImageUploadSection', () =>
   ),
 }));
 vi.mock('@/app/(main)/analysis/integrated/_components/PendingAnalysisBanner', () => ({
-  PendingAnalysisBanner: ({ requestId }: { requestId: string }) => (
-    <div data-testid="mock-pending-banner">{requestId}</div>
+  PendingAnalysisBanner: ({
+    requestId,
+    onAbandon,
+  }: {
+    requestId: string;
+    onAbandon: () => void;
+  }) => (
+    <div data-testid="mock-pending-banner">
+      {requestId}
+      <button type="button" onClick={onAbandon}>
+        mock-abandon
+      </button>
+    </div>
   ),
 }));
 vi.mock('@/app/(main)/analysis/integrated/_components/QuestionnaireForm', () => ({
@@ -281,6 +292,28 @@ describe('IntegratedAnalysisInputPage — 이탈 복구 마커', () => {
     expect(sessionStorage.getItem(PENDING_KEY)).toBeNull();
   });
 
+  it.each(['pending', 'failed'] as const)(
+    '재사용된 %s 세션은 완료로 오인하지 않고 복구 마커를 유지한다',
+    async (status) => {
+      stubFetch({
+        status: 200,
+        json: {
+          success: true,
+          result: { sessionId: 'sess-existing', status, reused: true },
+        },
+      });
+      render(<IntegratedAnalysisInputPage />);
+
+      await submitWithFace();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('mock-pending-banner')).toBeInTheDocument();
+      });
+      expect(pushMock).not.toHaveBeenCalled();
+      expect(sessionStorage.getItem(PENDING_KEY)).toMatch(UUID_RE);
+    }
+  );
+
   // 회귀 방지(외부 리뷰 #3): 타임아웃·5xx·네트워크 예외는 서버에서 분석이 끝났을 수 있다.
   // 마커를 지우면 이미 저장된 결과로 돌아갈 길이 사라져 사용자가 5축을 다시 태운다.
   it('게이트웨이 타임아웃(504)에는 마커를 남긴다 — 서버에서 끝났을 수 있다', async () => {
@@ -340,6 +373,35 @@ describe('IntegratedAnalysisInputPage — 이탈 복구 마커', () => {
     expect(screen.getByTestId('mock-pending-banner')).toHaveTextContent(
       '11111111-2222-4333-8444-555555555555'
     );
+  });
+
+  it('기존 요청 판정 전에는 재제출을 막고 명시적으로 포기한 뒤에만 새 ID를 만든다', async () => {
+    const oldRequestId = '11111111-2222-4333-8444-555555555555';
+    sessionStorage.setItem(PENDING_KEY, oldRequestId);
+    const fetchMock = stubFetch({
+      status: 200,
+      json: { success: true, result: { sessionId: 'sess-new' } },
+    });
+    render(<IntegratedAnalysisInputPage />);
+    fireEvent.click(screen.getByTestId('mock-set-face'));
+
+    expect(screen.getByRole('button', { name: '내 정체성 알아보기' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'mock-abandon' }));
+    fireEvent.click(screen.getByRole('button', { name: '내 정체성 알아보기' }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.clientRequestId).not.toBe(oldRequestId);
+  });
+
+  it('타임아웃 뒤 같은 화면에서도 pending 요청을 유지해 즉시 재제출하지 못한다', async () => {
+    stubFetch({ status: 504, jsonThrows: true });
+    render(<IntegratedAnalysisInputPage />);
+
+    await submitWithFace();
+
+    await waitFor(() => expect(screen.getByTestId('mock-pending-banner')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '내 정체성 알아보기' })).toBeDisabled();
   });
 
   it('마커가 없으면 복구 배너를 띄우지 않는다', () => {

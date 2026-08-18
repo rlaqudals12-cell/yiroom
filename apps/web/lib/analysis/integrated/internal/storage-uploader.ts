@@ -13,6 +13,7 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { DeadlineExceededError, type ExecutionDeadline } from '@/lib/utils/timeout';
 
 const BUCKET_NAME = 'integrated-sessions';
 
@@ -60,9 +61,11 @@ export async function uploadSessionImages(
   sessionId: string,
   clerkUserId: string,
   faceBase64: string,
-  bodyBase64: string | null
+  bodyBase64: string | null,
+  deadline?: ExecutionDeadline
 ): Promise<UploadedImageUrls> {
   const supabase = createServiceRoleClient();
+  deadline?.throwIfExpired(0, '[Integrated storage] upload deadline exceeded');
 
   // 얼굴 이미지 업로드 (필수)
   const face = dataUrlToBuffer(faceBase64);
@@ -80,9 +83,19 @@ export async function uploadSessionImages(
     throw new Error(`[Storage] Face upload failed: ${faceError.message}`);
   }
 
+  if (deadline?.expired()) {
+    // 상위는 이미 응답 복구로 넘어갔으므로 늦게 성공한 업로드를 고아로 남기지 않는다.
+    void supabase.storage
+      .from(BUCKET_NAME)
+      .remove([facePath])
+      .catch(() => {});
+    throw new DeadlineExceededError('[Integrated storage] face upload completed too late');
+  }
+
   // 전신 이미지 업로드 (선택)
   let bodyImageUrl: string | null = null;
   if (bodyBase64) {
+    deadline?.throwIfExpired(0, '[Integrated storage] body upload deadline exceeded');
     const body = dataUrlToBuffer(bodyBase64);
     const bodyExt = extensionFromMime(body.contentType);
     const bodyPath = `${clerkUserId}/${sessionId}/body.${bodyExt}`;
@@ -101,6 +114,14 @@ export async function uploadSessionImages(
         .remove([facePath])
         .catch(() => {});
       throw new Error(`[Storage] Body upload failed: ${bodyError.message}`);
+    }
+
+    if (deadline?.expired()) {
+      void supabase.storage
+        .from(BUCKET_NAME)
+        .remove([facePath, bodyPath])
+        .catch(() => {});
+      throw new DeadlineExceededError('[Integrated storage] body upload completed too late');
     }
 
     bodyImageUrl = bodyPath;

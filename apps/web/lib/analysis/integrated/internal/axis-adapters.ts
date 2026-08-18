@@ -39,6 +39,12 @@ import {
   type FaceShapeType,
 } from '@/lib/analysis/hair';
 import { buildFallbackSeed } from '@/lib/utils/seeded-random';
+import {
+  DeadlineExceededError,
+  reserveExecutionDeadline,
+  withDeadline,
+  type ExecutionDeadline,
+} from '@/lib/utils/timeout';
 import { buildSkinEnrichment } from './skin-enrichment';
 import {
   extractSkinColorWithGemini,
@@ -83,9 +89,28 @@ function normalizeError(
   };
 }
 
+function unexpectedErrorCode(error: unknown): AxisErrorCode {
+  return error instanceof DeadlineExceededError ? 'AI_TIMEOUT' : 'UNKNOWN';
+}
+
 /** FORCE_MOCK_AI 환경변수 체크 (출시 전까진 true) */
 function isMockMode(): boolean {
   return process.env.FORCE_MOCK_AI === 'true';
+}
+
+/** Gemini/prior 뒤 결과 저장에 남겨둘 최소 시간. */
+const AXIS_SAVE_RESERVE_MS = 2_000;
+
+async function awaitAxisStage<T>(
+  promise: PromiseLike<T>,
+  deadline: ExecutionDeadline | undefined,
+  message: string
+): Promise<T> {
+  return deadline ? withDeadline(promise, deadline, message) : Promise.resolve(promise);
+}
+
+function aiDeadline(deadline?: ExecutionDeadline): ExecutionDeadline | undefined {
+  return deadline ? reserveExecutionDeadline(deadline, AXIS_SAVE_RESERVE_MS) : undefined;
 }
 
 /**
@@ -148,7 +173,8 @@ export async function runPersonalColorAxis(
   sessionId: string,
   clerkUserId: string,
   input: IntegratedAnalysisInput,
-  capture?: CaptureConditions
+  capture?: CaptureConditions,
+  deadline?: ExecutionDeadline
 ): Promise<AxisResult<PersonalColorAxisData>> {
   try {
     // Phase F.3 (ADR-104 #3): 실제 Gemini → Lab 분석. FORCE_MOCK_AI=true이거나 실패 시 Mock.
@@ -179,7 +205,10 @@ export async function runPersonalColorAxis(
       avoidColors = mock.palette.avoidColors ?? [];
       usedFallback = true;
     } else {
-      const geminiResult = await extractSkinColorWithGemini(input.faceImageBase64);
+      const geminiResult = await extractSkinColorWithGemini(
+        input.faceImageBase64,
+        aiDeadline(deadline)
+      );
       if (geminiResult.data && !geminiResult.usedFallback) {
         const { r, g, b } = geminiResult.data.skinRgb;
         const skinLab = rgbToLab(r, g, b);
@@ -211,38 +240,42 @@ export async function runPersonalColorAxis(
     }
 
     const supabase = createServiceRoleClient();
-    const { data, error } = await supabase
-      .from('personal_color_assessments')
-      .insert({
-        clerk_user_id: clerkUserId,
-        session_id: sessionId,
-        questionnaire_answers: {},
-        face_image_url: sessionImageSentinel(sessionId, 'face'),
-        // DB CHECK 제약은 대문자 시작만 허용 → 저장 직전 변환 (반환 데이터는 소문자 유지)
-        season: mapSeasonToDb(classification.season),
-        undertone: mapUndertoneToDb(classification.undertone),
-        // 12톤 서브타입은 전용 컬럼에도 저장 — 단독 진단지(result page)가 읽는 정본 위치다.
-        // image_analysis.subtype만 채우던 시절엔 통합 사용자가 심화 진단지에서 시즌 폴백으로 떨어졌다.
-        season_subtype: mapSubtypeToDb(classification.subtype),
-        confidence: classification.confidence,
-        image_analysis: {
-          version: 2,
-          source: 'integrated',
-          tone: classification.tone,
-          subtype: classification.subtype,
-          // 퍼스널 대비 실측값(ADR-116) — 클라이언트 실측이 전달됐을 때만 저장(없으면 생략).
-          // 단독 PC 경로(image_analysis.contrastLevel)와 동일 키 → 결과/홈 소비 코드 재사용.
-          ...(input.measuredContrastLevel ? { contrastLevel: input.measuredContrastLevel } : {}),
-          // 촬영 조건 — PC는 색 판정이라 조명(색온도)에 특히 민감하다.
-          // 세션 간 웜↔쿨 플립이 관측될 때 원인이 사진인지 모델인지 이 값 없이는 구분 불가.
-          ...(capture ? { capture } : {}),
-          usedFallback,
-        },
-        best_colors: mainColors,
-        worst_colors: avoidColors,
-      })
-      .select('id')
-      .single();
+    const { data, error } = await awaitAxisStage(
+      supabase
+        .from('personal_color_assessments')
+        .insert({
+          clerk_user_id: clerkUserId,
+          session_id: sessionId,
+          questionnaire_answers: {},
+          face_image_url: sessionImageSentinel(sessionId, 'face'),
+          // DB CHECK 제약은 대문자 시작만 허용 → 저장 직전 변환 (반환 데이터는 소문자 유지)
+          season: mapSeasonToDb(classification.season),
+          undertone: mapUndertoneToDb(classification.undertone),
+          // 12톤 서브타입은 전용 컬럼에도 저장 — 단독 진단지(result page)가 읽는 정본 위치다.
+          // image_analysis.subtype만 채우던 시절엔 통합 사용자가 심화 진단지에서 시즌 폴백으로 떨어졌다.
+          season_subtype: mapSubtypeToDb(classification.subtype),
+          confidence: classification.confidence,
+          image_analysis: {
+            version: 2,
+            source: 'integrated',
+            tone: classification.tone,
+            subtype: classification.subtype,
+            // 퍼스널 대비 실측값(ADR-116) — 클라이언트 실측이 전달됐을 때만 저장(없으면 생략).
+            // 단독 PC 경로(image_analysis.contrastLevel)와 동일 키 → 결과/홈 소비 코드 재사용.
+            ...(input.measuredContrastLevel ? { contrastLevel: input.measuredContrastLevel } : {}),
+            // 촬영 조건 — PC는 색 판정이라 조명(색온도)에 특히 민감하다.
+            // 세션 간 웜↔쿨 플립이 관측될 때 원인이 사진인지 모델인지 이 값 없이는 구분 불가.
+            ...(capture ? { capture } : {}),
+            usedFallback,
+          },
+          best_colors: mainColors,
+          worst_colors: avoidColors,
+        })
+        .select('id')
+        .single(),
+      deadline,
+      '[Integrated personal color] save timeout'
+    );
 
     if (error) {
       return {
@@ -268,7 +301,11 @@ export async function runPersonalColorAxis(
   } catch (error) {
     return {
       success: false,
-      error: normalizeError('UNKNOWN', error, '퍼스널컬러 분석 중 오류가 발생했어요.'),
+      error: normalizeError(
+        unexpectedErrorCode(error),
+        error,
+        '퍼스널컬러 분석 중 오류가 발생했어요.'
+      ),
     };
   }
 }
@@ -281,7 +318,8 @@ export async function runSkinAxis(
   sessionId: string,
   clerkUserId: string,
   input: IntegratedAnalysisInput,
-  capture?: CaptureConditions
+  capture?: CaptureConditions,
+  deadline?: ExecutionDeadline
 ): Promise<AxisResult<SkinAxisData>> {
   try {
     // Phase F.3: 실제 Gemini 우선, 실패 시 Mock
@@ -296,14 +334,19 @@ export async function runSkinAxis(
       usedFallback = true;
     } else {
       // Level 3: 직전 분석 앵커 주입 (없으면 null → Level 2와 동일)
-      const skinPrior = await getSkinPriorHint(clerkUserId);
+      const skinPrior = await awaitAxisStage(
+        getSkinPriorHint(clerkUserId),
+        aiDeadline(deadline),
+        '[Integrated skin] prior lookup timeout'
+      );
       // locale 전달 → concerns 등 자유 텍스트가 사용자 언어로 (기본 'ko', 회귀 0)
       // seed 전달 → Gemini 실패 시 내부 Mock 폴백도 같은 사진이면 같은 결과
       const gemini = await analyzeSkinV2WithGemini(
         input.faceImageBase64,
         skinPrior,
         input.options.locale,
-        fallbackSeed
+        fallbackSeed,
+        aiDeadline(deadline)
       );
       result = gemini.result;
       usedFallback = gemini.usedFallback;
@@ -327,52 +370,60 @@ export async function runSkinAxis(
     // 대부분 skinType+지표에서 결정론적으로 파생 — 풍부화 실패는 무시하고 기본 저장은 진행(무손실 보강).
     let enrichment: Awaited<ReturnType<typeof buildSkinEnrichment>> | null = null;
     try {
-      enrichment = await buildSkinEnrichment(
-        supabase,
-        clerkUserId,
-        result.skinType,
-        metrics,
-        result.primaryConcerns ?? []
+      enrichment = await awaitAxisStage(
+        buildSkinEnrichment(
+          supabase,
+          clerkUserId,
+          result.skinType,
+          metrics,
+          result.primaryConcerns ?? []
+        ),
+        aiDeadline(deadline),
+        '[Integrated skin] enrichment timeout'
       );
     } catch {
       enrichment = null;
     }
 
-    const { data, error } = await supabase
-      .from('skin_analyses')
-      .insert({
-        clerk_user_id: clerkUserId,
-        session_id: sessionId,
-        image_url: sessionImageSentinel(sessionId, 'face'),
-        skin_type: result.skinType,
-        ...metrics,
-        overall_score: result.vitalityScore,
-        recommendations: {
-          version: 2,
-          source: 'integrated',
-          selfReported: input.questionnaire.skin,
-          primaryConcerns: result.primaryConcerns,
-          zones: result.zoneAnalysis?.zones,
-          // 촬영 조건 — 피부 추이 비교의 전제. 조명·흐림이 다른 두 사진의 점수 차이를
-          // "개선/악화"로 표시하면 노이즈를 사실로 파는 셈이 된다(정직성 계약 위반).
-          // 단독 경로(`/api/analyze/skin`)가 recommendations.imageQuality에 남기는 것과
-          // 같은 층위 — 통합 경로에만 빠져 있어 주 진입점의 조건이 통째로 휘발하고 있었다.
-          ...(capture ? { capture } : {}),
-          usedFallback,
-          ...(enrichment?.recommendationExtras ?? {}),
-        },
-        // 단독 분석과 동일한 상세 저장 필드 (풍부화 성공 시에만)
-        ...(enrichment
-          ? {
-              products: enrichment.products,
-              ingredient_warnings: enrichment.ingredient_warnings,
-              personal_color_season: enrichment.personal_color_season,
-              foundation_recommendation: enrichment.foundation_recommendation,
-            }
-          : {}),
-      })
-      .select('id')
-      .single();
+    const { data, error } = await awaitAxisStage(
+      supabase
+        .from('skin_analyses')
+        .insert({
+          clerk_user_id: clerkUserId,
+          session_id: sessionId,
+          image_url: sessionImageSentinel(sessionId, 'face'),
+          skin_type: result.skinType,
+          ...metrics,
+          overall_score: result.vitalityScore,
+          recommendations: {
+            version: 2,
+            source: 'integrated',
+            selfReported: input.questionnaire.skin,
+            primaryConcerns: result.primaryConcerns,
+            zones: result.zoneAnalysis?.zones,
+            // 촬영 조건 — 피부 추이 비교의 전제. 조명·흐림이 다른 두 사진의 점수 차이를
+            // "개선/악화"로 표시하면 노이즈를 사실로 파는 셈이 된다(정직성 계약 위반).
+            // 단독 경로(`/api/analyze/skin`)가 recommendations.imageQuality에 남기는 것과
+            // 같은 층위 — 통합 경로에만 빠져 있어 주 진입점의 조건이 통째로 휘발하고 있었다.
+            ...(capture ? { capture } : {}),
+            usedFallback,
+            ...(enrichment?.recommendationExtras ?? {}),
+          },
+          // 단독 분석과 동일한 상세 저장 필드 (풍부화 성공 시에만)
+          ...(enrichment
+            ? {
+                products: enrichment.products,
+                ingredient_warnings: enrichment.ingredient_warnings,
+                personal_color_season: enrichment.personal_color_season,
+                foundation_recommendation: enrichment.foundation_recommendation,
+              }
+            : {}),
+        })
+        .select('id')
+        .single(),
+      deadline,
+      '[Integrated skin] save timeout'
+    );
 
     if (error) {
       return {
@@ -395,7 +446,7 @@ export async function runSkinAxis(
   } catch (error) {
     return {
       success: false,
-      error: normalizeError('UNKNOWN', error, '피부 분석 중 오류가 발생했어요.'),
+      error: normalizeError(unexpectedErrorCode(error), error, '피부 분석 중 오류가 발생했어요.'),
     };
   }
 }
@@ -407,7 +458,8 @@ export async function runSkinAxis(
 export async function runBodyAxis(
   sessionId: string,
   clerkUserId: string,
-  input: IntegratedAnalysisInput
+  input: IntegratedAnalysisInput,
+  deadline?: ExecutionDeadline
 ): Promise<AxisResult<BodyAxisData>> {
   try {
     // 전신 사진도 없고 자가입력도 없으면 축 실패 (MISSING_INPUT)
@@ -469,12 +521,17 @@ export async function runBodyAxis(
         measured.waistWidth > 0 ? measured.shoulderWidth / measured.waistWidth : undefined;
       measurementSource = 'measured';
     } else if (!isMockMode() && hasBodyImage && input.bodyImageBase64) {
-      const bodyPrior = await getBodyPriorHint(clerkUserId);
+      const bodyPrior = await awaitAxisStage(
+        getBodyPriorHint(clerkUserId),
+        aiDeadline(deadline),
+        '[Integrated body] prior lookup timeout'
+      );
       // locale 전달 → 스타일링 추천 자유 텍스트가 사용자 언어로 (기본 'ko', 회귀 0)
       const gemini = await analyzeBodyWithGemini(
         input.bodyImageBase64,
         bodyPrior,
-        input.options.locale
+        input.options.locale,
+        aiDeadline(deadline)
       );
       if (gemini.data && !gemini.usedFallback) {
         bodyShape = gemini.data.bodyShape;
@@ -514,23 +571,27 @@ export async function runBodyAxis(
     const bodyType3 = bodyShapeToType3(bodyShape);
 
     const supabase = createServiceRoleClient();
-    const { data, error } = await supabase
-      .from('body_analyses')
-      .insert({
-        clerk_user_id: clerkUserId,
-        session_id: sessionId,
-        image_url: hasBodyImage
-          ? sessionImageSentinel(sessionId, 'body')
-          : sessionImageSentinel(sessionId, 'face'), // 자가입력 모드
-        height: body.heightCm ?? null,
-        weight: body.weightKg ?? null,
-        body_type: bodyType3,
-        ratio: shoulderToWaistRatio ?? null,
-        style_recommendations: stylingRecommendations,
-        strengths: characteristics,
-      })
-      .select('id')
-      .single();
+    const { data, error } = await awaitAxisStage(
+      supabase
+        .from('body_analyses')
+        .insert({
+          clerk_user_id: clerkUserId,
+          session_id: sessionId,
+          image_url: hasBodyImage
+            ? sessionImageSentinel(sessionId, 'body')
+            : sessionImageSentinel(sessionId, 'face'), // 자가입력 모드
+          height: body.heightCm ?? null,
+          weight: body.weightKg ?? null,
+          body_type: bodyType3,
+          ratio: shoulderToWaistRatio ?? null,
+          style_recommendations: stylingRecommendations,
+          strengths: characteristics,
+        })
+        .select('id')
+        .single(),
+      deadline,
+      '[Integrated body] save timeout'
+    );
 
     if (error) {
       return {
@@ -567,7 +628,7 @@ export async function runBodyAxis(
   } catch (error) {
     return {
       success: false,
-      error: normalizeError('UNKNOWN', error, '체형 분석 중 오류가 발생했어요.'),
+      error: normalizeError(unexpectedErrorCode(error), error, '체형 분석 중 오류가 발생했어요.'),
     };
   }
 }
@@ -579,7 +640,8 @@ export async function runBodyAxis(
 export async function runHairAxis(
   sessionId: string,
   clerkUserId: string,
-  input: IntegratedAnalysisInput
+  input: IntegratedAnalysisInput,
+  deadline?: ExecutionDeadline
 ): Promise<AxisResult<HairAxisData>> {
   try {
     /**
@@ -603,12 +665,17 @@ export async function runHairAxis(
       faceShape = hairFallbackShape();
       usedFallback = true;
     } else {
-      const hairPrior = await getHairPriorHint(clerkUserId);
+      const hairPrior = await awaitAxisStage(
+        getHairPriorHint(clerkUserId),
+        aiDeadline(deadline),
+        '[Integrated hair] prior lookup timeout'
+      );
       // locale 전달 → 스타일 추천 자유 텍스트가 사용자 언어로 (기본 'ko', 회귀 0)
       const gemini = await analyzeHairWithGemini(
         input.faceImageBase64,
         hairPrior,
-        input.options.locale
+        input.options.locale,
+        aiDeadline(deadline)
       );
       if (gemini.data && !gemini.usedFallback) {
         faceShape = gemini.data.faceShape;
@@ -629,25 +696,29 @@ export async function runHairAxis(
     //  - `style_recommendations` 컬럼은 존재하지 않음 → 스타일 추천은 recommendations(jsonb)에 담는다.
     // 왜: 과거엔 없는 컬럼(style_recommendations)을 넣고 NOT NULL scalp_type을 누락해
     // 헤어 INSERT가 100% 실패(PGRST204/23502) → 헤어 축이 늘 partial이었다 (2026-07-12 수리).
-    const { data, error } = await supabase
-      .from('hair_analyses')
-      .insert({
-        clerk_user_id: clerkUserId,
-        session_id: sessionId,
-        image_url: sessionImageSentinel(sessionId, 'face'),
-        face_shape: faceShape,
-        hair_type: input.questionnaire.hair.curlType ?? 'straight',
-        hair_thickness: input.questionnaire.hair.density ?? 'medium',
-        scalp_type: 'normal', // 통합 문진엔 두피 항목이 없음 — 중립 기본값
-        recommendations: {
-          version: 2,
-          source: 'integrated',
-          styleRecommendations,
-          usedFallback,
-        },
-      })
-      .select('id')
-      .single();
+    const { data, error } = await awaitAxisStage(
+      supabase
+        .from('hair_analyses')
+        .insert({
+          clerk_user_id: clerkUserId,
+          session_id: sessionId,
+          image_url: sessionImageSentinel(sessionId, 'face'),
+          face_shape: faceShape,
+          hair_type: input.questionnaire.hair.curlType ?? 'straight',
+          hair_thickness: input.questionnaire.hair.density ?? 'medium',
+          scalp_type: 'normal', // 통합 문진엔 두피 항목이 없음 — 중립 기본값
+          recommendations: {
+            version: 2,
+            source: 'integrated',
+            styleRecommendations,
+            usedFallback,
+          },
+        })
+        .select('id')
+        .single(),
+      deadline,
+      '[Integrated hair] save timeout'
+    );
 
     if (error) {
       return {
@@ -670,7 +741,7 @@ export async function runHairAxis(
   } catch (error) {
     return {
       success: false,
-      error: normalizeError('UNKNOWN', error, '헤어 분석 중 오류가 발생했어요.'),
+      error: normalizeError(unexpectedErrorCode(error), error, '헤어 분석 중 오류가 발생했어요.'),
     };
   }
 }

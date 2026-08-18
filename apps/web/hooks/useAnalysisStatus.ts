@@ -5,6 +5,7 @@ import { useUser } from '@clerk/nextjs';
 import { computeSkinTrend } from '@yiroom/shared';
 import { getBodyShapeLabel } from '@/lib/body';
 import { getPersonalColorSeasonLabel } from '@/lib/color-recommendations';
+import { normalizeColors } from '@/lib/color/normalize-colors';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 
 // computeSkinTrend는 @yiroom/shared로 승격 (웹·앱 공유 — ADR-109 Phase 4A).
@@ -57,23 +58,6 @@ export interface AnalysisSummary {
   contrastLevel?: 'low' | 'medium' | 'high';
 }
 
-// DB best_colors(JSONB 배열) 항목 하나를 {name,hex}로 정규화 (AI 원본 {name,hex}, 방어적으로 color 폴백)
-function normalizeColorItem(c: unknown): { name: string; hex: string } | null {
-  if (typeof c !== 'object' || c === null) return null;
-  const item = c as { name?: unknown; hex?: unknown; color?: unknown };
-  let hex: string | null = null;
-  if (typeof item.hex === 'string') hex = item.hex;
-  else if (typeof item.color === 'string') hex = item.color;
-  if (!hex) return null;
-  return { name: typeof item.name === 'string' ? item.name : '', hex };
-}
-
-// DB best_colors 배열을 유효한 {name,hex}만 정규화
-function normalizeBestColors(raw: unknown): Array<{ name: string; hex: string }> {
-  if (!Array.isArray(raw)) return [];
-  return raw.map(normalizeColorItem).filter((c): c is { name: string; hex: string } => c !== null);
-}
-
 // image_analysis JSONB에서 실측 대비 레벨만 안전 추출 (없거나 무효면 undefined — 추측 없음)
 function extractContrastLevel(raw: unknown): 'low' | 'medium' | 'high' | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
@@ -89,7 +73,8 @@ function buildPersonalColorSummary(row: {
   best_colors: unknown;
   image_analysis?: unknown;
 }): AnalysisSummary {
-  const bestColors = normalizeBestColors(row.best_colors);
+  // 단독 분석의 객체 배열과 통합 분석의 hex 문자열 배열을 같은 공용 계약으로 읽는다.
+  const bestColors = normalizeColors(row.best_colors);
   const contrastLevel = extractContrastLevel(row.image_analysis);
   return {
     id: row.id,

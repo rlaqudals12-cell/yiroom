@@ -23,6 +23,13 @@ import {
   type OutputLocale,
 } from '@/lib/gemini/client';
 import { objectParticle } from '@/lib/utils/korean';
+import {
+  AI_TIMEOUT,
+  createAbortTimeout,
+  withDeadline,
+  withTimeout,
+  type ExecutionDeadline,
+} from '@/lib/utils/timeout';
 import { getBodyShapeLabel } from '@/lib/body';
 import { skinTypeKo, faceShapeKo, bodyDescKo, seasonKo, toneKo, undertoneKo } from '../labels';
 import type {
@@ -316,7 +323,8 @@ export interface ComposePersonaInput {
  */
 export async function composePersona(
   axes: ComposePersonaInput,
-  locale: OutputLocale = 'ko'
+  locale: OutputLocale = 'ko',
+  deadline?: ExecutionDeadline
 ): Promise<PersonaProfile | null> {
   const summary = summarizeAxes(axes);
   const count = successAxisCount(summary);
@@ -334,15 +342,29 @@ export async function composePersona(
   }
 
   // Gemini 호출
+  const personaTimeout = deadline
+    ? Math.min(AI_TIMEOUT.INTEGRATED_PERSONA, deadline.remainingMs())
+    : AI_TIMEOUT.INTEGRATED_PERSONA;
+  if (personaTimeout <= 0) return generateMockPersona(summary);
+
+  const { controller, clear } = createAbortTimeout(personaTimeout);
+  const abortFromParent = () => controller.abort(deadline?.signal.reason);
+  deadline?.signal.addEventListener('abort', abortFromParent, { once: true });
   try {
     const prompt = buildPrompt(summary, locale);
-    const response = await generateContent({
+    const request = generateContent({
       contents: prompt,
       config: {
         temperature: 0.8, // 창의적 표현 허용 (분석이 아닌 내러티브이므로)
         maxOutputTokens: 600,
+        abortSignal: controller.signal,
       },
     });
+    const response = deadline
+      ? await withDeadline(request, deadline, '[PersonaComposer] Timeout', {
+          maxMs: AI_TIMEOUT.INTEGRATED_PERSONA,
+        })
+      : await withTimeout(request, AI_TIMEOUT.INTEGRATED_PERSONA, '[PersonaComposer] Timeout');
 
     const parsed = parseJsonResponse<unknown>(response.text);
     const validated = validateResponse(parsed, locale);
@@ -361,5 +383,9 @@ export async function composePersona(
   } catch (error) {
     console.error('[PersonaComposer] Gemini error, using mock fallback:', error);
     return generateMockPersona(summary);
+  } finally {
+    clear();
+    controller.abort();
+    deadline?.signal.removeEventListener('abort', abortFromParent);
   }
 }

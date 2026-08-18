@@ -12,7 +12,10 @@
  */
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
-import { AXIS_TABLES } from '../types';
+import {
+  fetchIntegratedProfileSnapshot,
+  type AxisProvenance,
+} from '@/lib/analysis/integrated/profile-snapshot';
 import type { AxisCode, IntegratedSessionRow } from '../types';
 
 export interface AxisDbRecord {
@@ -44,14 +47,10 @@ export interface ResultPageData {
    * "결과 없음"으로 위장하면 사용자는 하지도 않은 분석을 다시 하게 된다 — 구분해서 노출한다.
    */
   axesFetchFailed: AxisCode[];
-}
-
-const ALL_AXES: AxisCode[] = ['personal_color', 'skin', 'body', 'hair', 'makeup'];
-
-/** 조회 결과 한 축분 — 레코드와 조회 실패를 구분해서 담는다 */
-interface AxisFetch {
-  record: AxisDbRecord | null;
-  failed: boolean;
+  /** 확인된 Mock과 출처 불명을 섞지 않는 공용 provenance 결과. */
+  fallbackAxes: AxisCode[];
+  unknownAxes: AxisCode[];
+  axisProvenance: Record<AxisCode, AxisProvenance | null>;
 }
 
 /**
@@ -79,79 +78,26 @@ export async function fetchIntegratedResult(sessionId: string): Promise<ResultPa
     return null;
   }
 
-  // 2. 5축 결과 병렬 조회 (session_id FK 기반)
-  const settled = await Promise.all(
-    ALL_AXES.map(async (axis): Promise<AxisFetch> => {
-      const { data, error } = await supabase
-        .from(AXIS_TABLES[axis])
-        .select('*')
-        .eq('session_id', sessionId)
-        .maybeSingle();
-
-      if (error) {
-        // 오류를 "미분석"으로 접지 않는다 — 축별 조회 실패를 그대로 표면화
-        console.error(`[ResultFetcher] ${axis} fetch error:`, error.message);
-        return { record: null, failed: true };
-      }
-      return { record: (data as AxisDbRecord | null) ?? null, failed: false };
-    })
-  );
-
-  const axes = {} as Record<ResultAxisKey, AxisDbRecord | null>;
-  const axesFetchFailed: AxisCode[] = [];
-  const missingAxes: AxisCode[] = [];
-
-  ALL_AXES.forEach((axis, i) => {
-    const { record, failed } = settled[i];
-    axes[AXIS_KEY_BY_CODE[axis]] = record;
-    if (failed) axesFetchFailed.push(axis);
-    else if (!record) missingAxes.push(axis);
+  // 2. 소유자·공개 공유가 같은 cutoff/폴백 해석을 쓰는 공용 프로필 스냅샷.
+  // 세션 생성 이후의 새 진단은 과거 partial 세션에 끼워 넣지 않는다.
+  const snapshot = await fetchIntegratedProfileSnapshot(supabase, {
+    sessionId,
+    clerkUserId: String(session.clerk_user_id),
+    sessionUsedFallback: session.used_fallback,
+    sessionCreatedAt: String(session.created_at),
   });
-
-  // 3. 프로필 폴백 — 이번 세션에 없는 축을 사용자의 최신 진단으로 채운다.
-  //
-  // 왜: ADR-109 선택 재분석은 "고른 축만 다시 분석하고 나머지는 프로필 최신값 유지"를
-  // 약속한다. 그런데 축 결과는 session_id FK로만 조회되므로, 재분석에서 제외한 축은
-  // 새 세션에 행이 없어 결과 화면에서 통째로 사라졌다(= 약속 위반). 조회 실패 축은
-  // 채우지 않는다 — 일시적 장애를 옛 데이터로 덮으면 이번 회차 결과로 오인된다.
-  const axesFromProfile: AxisCode[] = [];
-  if (missingAxes.length > 0) {
-    const fallbacks = await Promise.all(missingAxes.map((axis) => fetchLatestAxisRecord(axis)));
-    missingAxes.forEach((axis, i) => {
-      const record = fallbacks[i];
-      if (record) {
-        axes[AXIS_KEY_BY_CODE[axis]] = record;
-        axesFromProfile.push(axis);
-      }
-    });
+  const axes = {} as Record<ResultAxisKey, AxisDbRecord | null>;
+  for (const [axis, key] of Object.entries(AXIS_KEY_BY_CODE) as Array<[AxisCode, ResultAxisKey]>) {
+    axes[key] = snapshot.axes[axis] as AxisDbRecord | null;
   }
 
   return {
     session: session as IntegratedSessionRow,
     axes,
-    axesFromProfile,
-    axesFetchFailed,
+    axesFromProfile: snapshot.axesFromProfile,
+    axesFetchFailed: snapshot.axesFetchFailed,
+    fallbackAxes: snapshot.fallbackAxes,
+    unknownAxes: snapshot.unknownAxes,
+    axisProvenance: snapshot.provenance,
   };
-}
-
-/**
- * 사용자의 최신 축 진단 1건 (RLS로 본인 행만 반환).
- *
- * 실측된 본인 진단만 반영한다(지어내지 않음). 조회 실패는 null — 폴백을 포기할 뿐
- * 결과 페이지 전체를 깨뜨리지 않는다.
- */
-export async function fetchLatestAxisRecord(axis: AxisCode): Promise<AxisDbRecord | null> {
-  const supabase = await createClerkSupabaseClient();
-  const { data, error } = await supabase
-    .from(AXIS_TABLES[axis])
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error(`[ResultFetcher] ${axis} profile fallback fetch error:`, error.message);
-    return null;
-  }
-  return (data as AxisDbRecord | null) ?? null;
 }

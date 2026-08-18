@@ -283,4 +283,27 @@ describe('runMakeupComposer — 측정하지 않은 값을 진단으로 저장�
     expect(recommendations().usedMock).toBe(false);
     expect(lastMakeupPayload().analysis_reliability).toBe('medium');
   });
+
+  it('승계 축 출처가 unknown이면 Mock으로 단정하지 않고 낮은 신뢰도를 보존한다', async () => {
+    const unknownPc: AxisResult<typeof pcWarm> = {
+      success: true,
+      data: pcWarm,
+      usedFallback: false,
+      fallbackState: 'unknown',
+    };
+
+    const result = await runMakeupComposer(
+      'session-8',
+      'user_1',
+      unknownPc,
+      axisOk(skinDryHigh),
+      hairMeasured
+    );
+
+    expect(result.success && result.fallbackState).toBe('unknown');
+    expect(result.success && result.usedFallback).toBe(false);
+    expect(recommendations().usedMock).toBe(false);
+    expect(recommendations().fallbackState).toBe('unknown');
+    expect(lastMakeupPayload().analysis_reliability).toBe('low');
+  });
 });

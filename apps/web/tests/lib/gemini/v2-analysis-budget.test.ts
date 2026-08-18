@@ -21,6 +21,7 @@ vi.mock('@/lib/gemini/client', async (importOriginal) => {
 });
 
 import { extractSkinColorWithGemini, V2_CALL_BUDGET_MS } from '@/lib/gemini/v2-analysis';
+import { createExecutionDeadline } from '@/lib/utils/timeout';
 
 /** 라우트 상한 (app/api/analyze/integrated/route.ts의 maxDuration) */
 const ROUTE_MAX_DURATION_MS = 60_000;
@@ -50,7 +51,7 @@ describe('v2 분석 호출 예산', () => {
   });
 
   it('성공 응답이면 타임아웃 타이머를 남기지 않는다 (함수 종료 지연 제거)', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
     generateContentMock.mockResolvedValue({ text: VALID_PC_RESPONSE });
 
     const promise = extractSkinColorWithGemini(IMAGE);
@@ -89,5 +90,38 @@ describe('v2 분석 호출 예산', () => {
     // 실패해도 폴백 계약은 유지 (ADR-007)
     expect(result.usedFallback).toBe(true);
     expect(result.data).toBeNull();
+  });
+
+  it('상위 절대 deadline의 잔여 시간만 쓰고 재시도 대기까지 넘기지 않는다', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    generateContentMock.mockImplementation(() => new Promise(() => {}));
+    const deadline = createExecutionDeadline(10_000);
+
+    const promise = extractSkinColorWithGemini(IMAGE, deadline);
+    await vi.advanceTimersByTimeAsync(10_000);
+    const result = await promise;
+
+    expect(result.usedFallback).toBe(true);
+    expect(result.data).toBeNull();
+    // 첫 시도가 남은 전 예산을 썼으므로 새 25초 타이머로 재시작하면 안 된다.
+    expect(generateContentMock).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+    deadline.clear();
+  });
+
+  it('두 번째 시도는 25초를 리셋하지 않고 첫 시도와 대기 뒤 남은 4초만 쓴다', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    generateContentMock.mockImplementation(() => new Promise(() => {}));
+    const deadline = createExecutionDeadline(30_000);
+
+    const promise = extractSkinColorWithGemini(IMAGE, deadline);
+    await vi.advanceTimersByTimeAsync(30_000);
+    const result = await promise;
+
+    expect(result.usedFallback).toBe(true);
+    expect(generateContentMock).toHaveBeenCalledTimes(2);
+    expect(performance.now()).toBe(30_000);
+    expect(vi.getTimerCount()).toBe(0);
+    deadline.clear();
   });
 });

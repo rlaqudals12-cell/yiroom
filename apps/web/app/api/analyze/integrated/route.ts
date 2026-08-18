@@ -34,6 +34,13 @@ import {
   type IntegratedAnalysisResult,
   type CaptureConditions,
 } from '@/lib/analysis/integrated';
+import { findSessionByClientRequestId } from '@/lib/analysis/integrated/internal/session-store';
+import {
+  AI_TIMEOUT,
+  createExecutionDeadline,
+  withDeadline,
+  type ExecutionDeadline,
+} from '@/lib/utils/timeout';
 
 /**
  * ADR-103 CORS 허용 — 모바일 앱이 웹 API 호출 가능하도록 이 라우트만 개방.
@@ -74,13 +81,22 @@ export async function OPTIONS(): Promise<NextResponse> {
  */
 async function recordAnalysisActivity(
   userId: string,
-  result: IntegratedAnalysisResult
+  result: IntegratedAnalysisResult,
+  deadline?: ExecutionDeadline
 ): Promise<void> {
   const realAxes = result.axesCompleted.filter((axis) => !result.usedFallback.includes(axis));
   if (result.status === 'failed' || realAxes.length === 0) return;
 
   try {
-    await trackActivity(createServiceRoleClient(), userId, 'analysis', result.sessionId);
+    const activity = trackActivity(createServiceRoleClient(), userId, 'analysis', result.sessionId);
+    if (deadline) {
+      await withDeadline(activity, deadline, 'Activity tracking deadline exceeded', {
+        maxMs: 750,
+        reserveMs: 500,
+      });
+    } else {
+      await activity;
+    }
   } catch (error) {
     console.error('[API /analyze/integrated] activity tracking failed:', error);
   }
@@ -104,7 +120,7 @@ async function recordAnalysisActivity(
  * - 500 INTERNAL_ERROR
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity -- API route handler
-export async function POST(req: NextRequest): Promise<NextResponse> {
+async function executePost(req: NextRequest, deadline: ExecutionDeadline): Promise<NextResponse> {
   try {
     // 1. 인증
     const { userId } = await auth();
@@ -112,13 +128,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return withCors(unauthorizedError());
     }
 
-    // 2. Rate Limit (통합은 5축 = 보수적으로 개별 API와 동일 한도 적용)
-    const rateLimitResult = applyRateLimit(req, userId);
-    if (!rateLimitResult.success) {
-      return withCors(rateLimitResult.response!);
-    }
-
-    // 3. Body 파싱 + Zod 검증
+    // 2. Body 파싱 + Zod 검증 — clientRequestId를 읽어 멱등 조회를 먼저 해야 한다.
     let body: unknown;
     try {
       body = await req.json();
@@ -131,6 +141,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const firstIssue = parsed.error.issues[0];
       const message = firstIssue?.message ?? '입력값이 올바르지 않아요.';
       return withCors(validationError(message));
+    }
+
+    // 같은 요청의 재전송은 과금·저장·활동 기록을 반복하지 않고 기존 세션을 재사용한다.
+    // service-role 조회 장애는 throw되어 fail-closed — 중복 분석을 새로 시작하지 않는다.
+    if (parsed.data.clientRequestId) {
+      const existing = await findSessionByClientRequestId(userId, parsed.data.clientRequestId);
+      if (existing) {
+        return withCors(
+          NextResponse.json({
+            success: true,
+            result: {
+              sessionId: existing.id,
+              status: existing.status,
+              reused: true,
+            },
+          })
+        );
+      }
+    }
+
+    // 3. Rate Limit — 기존 요청 재조회는 새 분석이 아니므로 한도를 소비하지 않는다.
+    const rateLimitResult = applyRateLimit(req, userId);
+    if (!rateLimitResult.success) {
+      return withCors(rateLimitResult.response!);
     }
 
     // 3.4 연령 확인 게이트 (fail-closed) — 생체분석(품질 게이트·5축 분석) 전 만 14세 이상 서버 강제
@@ -178,26 +212,32 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const result: IntegratedAnalysisResult = await runIntegratedAnalysis(
       parsed.data,
       userId,
-      capture
+      capture,
+      deadline
     );
 
     // 4.4 등급 활동 기록 — 통합 분석 완료는 뷰티 사용자의 대표 활동이다.
     // activity_logs 호출처가 숨김 모듈(운동·영양)뿐이라 분석·옷장·루틴만 쓰는 사용자는
     // 영구 Lv.1·0회로 남았다(DB CHECK 제약은 'analysis'를 이미 허용 — 배선만 빠져 있었음).
     // 전 축 실패이거나 모든 성공 축이 Mock 폴백이면 실제 판정이 0이므로 활동으로 치지 않는다.
-    await recordAnalysisActivity(userId, result);
+    await recordAnalysisActivity(userId, result, deadline);
 
     // 4.5 모바일 앱 퍼널 계측 — 웹은 클라이언트 track()이 이미 잡으므로 모바일 요청만 서버 track (중복 방지).
     // 계측 실패가 분석 응답을 깨면 안 되므로 방어적으로 무시.
     if (req.headers.get('x-yiroom-client') === 'mobile') {
       try {
         const { track } = await import('@vercel/analytics/server');
-        await track('integrated_analysis_complete', {
-          platform: 'mobile',
-          mode: parsed.data.mode ?? 'full',
-          axisCount: parsed.data.mode === 'update' ? (parsed.data.axes?.length ?? 5) : 5,
-          status: result.status,
-        });
+        await withDeadline(
+          track('integrated_analysis_complete', {
+            platform: 'mobile',
+            mode: parsed.data.mode ?? 'full',
+            axisCount: parsed.data.mode === 'update' ? (parsed.data.axes?.length ?? 5) : 5,
+            status: result.status,
+          }),
+          deadline,
+          'Analytics tracking deadline exceeded',
+          { maxMs: 750, reserveMs: 250 }
+        );
       } catch {
         // no-op
       }
@@ -221,5 +261,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         error instanceof Error ? error.message : '통합 분석 중 예상치 못한 오류가 발생했어요.'
       )
     );
+  }
+}
+
+/**
+ * 라우트 진입 순간부터 인증·게이트·분석·저장·계측이 하나의 52초 예산을 공유한다.
+ * 플랫폼 60초 상한보다 먼저 정중한 오류 봉투+CORS를 돌려줄 시간을 남긴다.
+ */
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const deadline = createExecutionDeadline(AI_TIMEOUT.INTEGRATED_ROUTE);
+  try {
+    return await withDeadline(
+      executePost(req, deadline),
+      deadline,
+      '통합 분석 처리 시간이 초과되었어요.'
+    );
+  } catch (error) {
+    console.error('[API /analyze/integrated] route deadline exceeded:', error);
+    return withCors(
+      internalError('분석 처리 시간이 길어졌어요. 잠시 후 기존 요청을 다시 확인해주세요.')
+    );
+  } finally {
+    // 응답 뒤 남은 하위 Gemini 호출이 과금·서버 자원을 계속 쓰지 않게 중단한다.
+    deadline.abort();
   }
 }

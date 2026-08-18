@@ -36,6 +36,9 @@ import {
   carryLatestHair,
   carryLatestPersonalColor,
   carryLatestSkin,
+  toBodyAxisData,
+  toHairAxisData,
+  toMakeupAxisData,
   toPersonalColorAxisData,
   toSkinAxisData,
 } from '@/lib/analysis/integrated/internal/profile-fallback';
@@ -95,6 +98,31 @@ describe('toSkinAxisData', () => {
   });
 });
 
+describe('persona 승계용 저장 레코드 변환', () => {
+  it('체형·헤어 핵심 판정을 축 데이터로 변환한다', () => {
+    expect(toBodyAxisData({ id: 'b-1', body_type: 'N' })).toMatchObject({ bodyType: 'N' });
+    expect(toHairAxisData({ id: 'h-1', face_shape: 'heart', hair_type: 'wavy' })).toMatchObject({
+      faceShape: 'heart',
+      hairType: 'wavy',
+    });
+  });
+
+  it('메이크업 통합·단독 저장 형상을 읽되 빈 추천은 성공 축으로 만들지 않는다', () => {
+    expect(
+      toMakeupAxisData({
+        id: 'm-integrated',
+        recommendations: { baseRecommendation: '세미 매트 베이스' },
+      })
+    ).toMatchObject({ baseRecommendation: '세미 매트 베이스' });
+    expect(
+      toMakeupAxisData({ id: 'm-standalone', recommendations: { insight: '맑은 베이스' } })
+    ).toMatchObject({ baseRecommendation: '맑은 베이스' });
+    expect(
+      toMakeupAxisData({ id: 'm-empty', recommendations: { usedFallback: false } })
+    ).toBeNull();
+  });
+});
+
 describe('carryLatest* — 승계 조회', () => {
   it('본인 행만 조회한다 (service_role은 RLS를 우회하므로 직접 필터)', async () => {
     scenario.rows.personal_color_assessments = {
@@ -117,13 +145,13 @@ describe('carryLatest* — 승계 조회', () => {
     await expect(carryLatestHair('user_42')).resolves.toBeNull();
   });
 
-  it('저장 당시 Mock 폴백이었으면 폴백 표시를 함께 승계한다', async () => {
+  it('신규 usedFallback과 레거시 usedMock을 모두 폴백으로 승계한다', async () => {
     scenario.rows.personal_color_assessments = {
-      data: { id: 'pc-1', season: 'Summer', image_analysis: { usedFallback: true } },
+      data: { id: 'pc-1', season: 'Summer', image_analysis: { usedMock: true } },
       error: null,
     };
     scenario.rows.skin_analyses = {
-      data: { id: 's-1', skin_type: 'dry', recommendations: { usedFallback: true } },
+      data: { id: 's-1', skin_type: 'dry', recommendations: { usedMock: true } },
       error: null,
     };
     scenario.rows.hair_analyses = {
@@ -134,6 +162,52 @@ describe('carryLatest* — 승계 조회', () => {
     expect((await carryLatestPersonalColor('u'))?.usedFallback).toBe(true);
     expect((await carryLatestSkin('u'))?.usedFallback).toBe(true);
     expect((await carryLatestHair('u'))?.usedFallback).toBe(false);
+  });
+
+  it('신규 usedFallback=false가 상충하는 레거시 usedMock=true보다 우선한다', async () => {
+    scenario.rows.personal_color_assessments = {
+      data: {
+        id: 'pc-canonical',
+        season: 'Summer',
+        image_analysis: { usedFallback: false, usedMock: true },
+      },
+      error: null,
+    };
+
+    const carried = await carryLatestPersonalColor('u');
+
+    expect(carried?.usedFallback).toBe(false);
+    expect(carried?.provenance).toBe('not_used');
+  });
+
+  it('행 표식이 없어도 원본 세션의 used_fallback으로 출처를 복원한다', async () => {
+    scenario.rows.personal_color_assessments = {
+      data: { id: 'pc-origin', session_id: 'origin-session', season: 'Summer' },
+      error: null,
+    };
+    scenario.rows.integrated_analysis_sessions = {
+      data: { used_fallback: [] },
+      error: null,
+    };
+
+    const carried = await carryLatestPersonalColor('u');
+
+    expect(carried?.provenance).toBe('not_used');
+    expect(carried?.confidence).toBe('normal');
+  });
+
+  it('폴백 표식과 원본 세션이 모두 없으면 unknown+낮은 신뢰도로 승계한다', async () => {
+    scenario.rows.personal_color_assessments = {
+      data: { id: 'pc-v2', season: 'Winter', image_analysis: { version: 2 } },
+      error: null,
+    };
+
+    const carried = await carryLatestPersonalColor('u');
+
+    expect(carried?.provenance).toBe('unknown');
+    expect(carried?.confidence).toBe('low');
+    // unknown을 Mock 사용(true)으로 지어내지도, 실측 확정으로 낮추지도 않는다.
+    expect(carried?.usedFallback).toBe(false);
   });
 
   it('조회 오류는 승계를 포기할 뿐 예외로 흐름을 깨지 않는다', async () => {

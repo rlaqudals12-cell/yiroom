@@ -8,7 +8,7 @@
  * @note internal import는 테스트 예외로 허용 (BOUNDARIES.md 참조)
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type {
   AxisResult,
   BodyAxisData,
@@ -28,9 +28,8 @@ const mocks = vi.hoisted(() => ({
   runBodyAxis: vi.fn(),
   runHairAxis: vi.fn(),
   runMakeupComposer: vi.fn(),
-  carryLatestPersonalColor: vi.fn(),
-  carryLatestSkin: vi.fn(),
-  carryLatestHair: vi.fn(),
+  fetchProfileSnapshot: vi.fn(),
+  composePersona: vi.fn(),
 }));
 
 vi.mock('@/lib/analysis/integrated/internal/storage-uploader', () => ({
@@ -57,14 +56,12 @@ vi.mock('@/lib/analysis/integrated/internal/makeup-composer', () => ({
   runMakeupComposer: mocks.runMakeupComposer,
 }));
 
-vi.mock('@/lib/analysis/integrated/internal/profile-fallback', () => ({
-  carryLatestPersonalColor: mocks.carryLatestPersonalColor,
-  carryLatestSkin: mocks.carryLatestSkin,
-  carryLatestHair: mocks.carryLatestHair,
+vi.mock('@/lib/analysis/integrated/profile-snapshot', () => ({
+  fetchIntegratedProfileSnapshot: mocks.fetchProfileSnapshot,
 }));
 
 vi.mock('@/lib/analysis/integrated/internal/persona-composer', () => ({
-  composePersona: vi.fn(async () => null),
+  composePersona: mocks.composePersona,
 }));
 
 vi.mock('@/lib/supabase/service-role', () => ({
@@ -81,6 +78,7 @@ vi.mock('@/lib/gamification', () => ({
 
 import { runIntegratedAnalysis } from '@/lib/analysis/integrated/orchestrator';
 import { SessionFinalizeError } from '@/lib/analysis/integrated/orchestrator';
+import { createExecutionDeadline } from '@/lib/utils/timeout';
 
 const USER = 'user_test_1';
 
@@ -124,78 +122,149 @@ const makeupOk: AxisResult<MakeupAxisData> = {
   data: { baseRecommendation: '추천' },
 };
 
+const EMPTY_AXES = {
+  personal_color: null,
+  skin: null,
+  body: null,
+  hair: null,
+  makeup: null,
+};
+
+function snapshotWith(
+  axes: Partial<Record<keyof typeof EMPTY_AXES, Record<string, unknown>>> = {},
+  fallbackStates: Partial<Record<keyof typeof EMPTY_AXES, 'used' | 'not_used' | 'unknown'>> = {}
+) {
+  const mergedAxes = { ...EMPTY_AXES, ...axes };
+  const provenance = Object.fromEntries(
+    Object.entries(mergedAxes).map(([axis, record]) => [
+      axis,
+      record
+        ? {
+            source: 'profile',
+            fallbackState: fallbackStates[axis as keyof typeof EMPTY_AXES] ?? 'not_used',
+            confidence: 'normal',
+            recordId: String(record.id ?? ''),
+            sourceSessionId: null,
+            sourceCreatedAt: null,
+          }
+        : null,
+    ])
+  );
+  return {
+    axes: mergedAxes,
+    provenance,
+    axesFromProfile: Object.keys(axes),
+    axesFetchFailed: [],
+    fallbackAxes: Object.entries(fallbackStates)
+      .filter(([, state]) => state === 'used')
+      .map(([axis]) => axis),
+    unknownAxes: Object.entries(fallbackStates)
+      .filter(([, state]) => state === 'unknown')
+      .map(([axis]) => axis),
+  };
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.createSession.mockResolvedValue({ created_at: '2026-08-17T00:00:00.000Z' });
+  mocks.createSession.mockResolvedValue({
+    created_at: '2026-08-17T00:00:00.000Z',
+    used_fallback: [],
+  });
   mocks.finalizeSession.mockResolvedValue({});
   mocks.runPersonalColorAxis.mockResolvedValue(pcOk);
   mocks.runSkinAxis.mockResolvedValue(skinOk);
   mocks.runBodyAxis.mockResolvedValue(bodyOk);
   mocks.runHairAxis.mockResolvedValue(hairOk);
   mocks.runMakeupComposer.mockResolvedValue(makeupOk);
-  mocks.carryLatestPersonalColor.mockResolvedValue(null);
-  mocks.carryLatestSkin.mockResolvedValue(null);
-  mocks.carryLatestHair.mockResolvedValue(null);
+  mocks.fetchProfileSnapshot.mockResolvedValue(snapshotWith());
+  mocks.composePersona.mockResolvedValue(null);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe('runIntegratedAnalysis — 선택 재분석 축 승계 (외부 리뷰 #1)', () => {
-  it('메이크업만 재분석해도 저장된 최신 PC·S를 승계해 composer가 실행된다', async () => {
-    mocks.carryLatestPersonalColor.mockResolvedValue({
-      data: { season: 'autumn', tone: 'true-autumn', undertone: 'warm', confidence: 90 },
-      usedFallback: false,
-    });
-    mocks.carryLatestSkin.mockResolvedValue({
-      data: { skinType: 'oily', overallScore: 62 },
-      usedFallback: false,
-    });
-    mocks.carryLatestHair.mockResolvedValue({
-      data: { faceShape: 'heart' },
-      usedFallback: false,
-    });
+  it('메이크업만 재분석해도 같은 스냅샷의 PC·S·H를 composer와 persona가 재사용한다', async () => {
+    mocks.fetchProfileSnapshot.mockResolvedValue(
+      snapshotWith({
+        personal_color: {
+          id: 'pc-old',
+          season: 'autumn',
+          undertone: 'warm',
+          confidence: 90,
+          image_analysis: { tone: 'true-autumn' },
+        },
+        skin: { id: 'skin-old', skin_type: 'oily', overall_score: 62 },
+        body: { id: 'body-old', body_type: 'N' },
+        hair: { id: 'hair-old', face_shape: 'heart' },
+      })
+    );
 
     await runIntegratedAnalysis(baseInput({ mode: 'update', axes: ['makeup'] }), USER);
 
-    // 제외 축은 실행되지 않는다 (cadence locking 유지)
     expect(mocks.runPersonalColorAxis).not.toHaveBeenCalled();
     expect(mocks.runSkinAxis).not.toHaveBeenCalled();
-
     expect(mocks.runMakeupComposer).toHaveBeenCalledTimes(1);
     const [, , pcArg, skinArg, hairArg] = mocks.runMakeupComposer.mock.calls[0];
     expect(pcArg).toEqual({
       success: true,
       usedFallback: false,
-      data: { season: 'autumn', tone: 'true-autumn', undertone: 'warm', confidence: 90 },
+      fallbackState: 'not_used',
+      data: {
+        id: 'pc-old',
+        season: 'autumn',
+        tone: 'true-autumn',
+        undertone: 'warm',
+        confidence: 90,
+        palette: [],
+      },
     });
     expect(skinArg).toEqual({
       success: true,
       usedFallback: false,
-      data: { skinType: 'oily', overallScore: 62 },
+      fallbackState: 'not_used',
+      data: { id: 'skin-old', skinType: 'oily', overallScore: 62 },
     });
-    // 얼굴형도 실측 승계 — 재분석할수록 결과가 빈약해지지 않는다
     expect(hairArg).toEqual({
       success: true,
       usedFallback: false,
-      data: { faceShape: 'heart' },
+      fallbackState: 'not_used',
+      data: { id: 'hair-old', faceShape: 'heart', hairType: undefined },
     });
+    const [personaAxes] = mocks.composePersona.mock.calls[0];
+    expect(personaAxes.personalColor).toBe(pcArg);
+    expect(personaAxes.skin).toBe(skinArg);
+    expect(personaAxes.hair).toBe(hairArg);
+    expect(personaAxes.body).toMatchObject({ success: true, data: { bodyType: 'N' } });
+    expect(personaAxes.makeup).toBe(makeupOk);
   });
 
   it('승계한 진단이 Mock이었으면 폴백 표시도 함께 승계한다 (정직성)', async () => {
-    mocks.carryLatestPersonalColor.mockResolvedValue({
-      data: { season: 'winter', tone: 'true-winter', undertone: 'cool', confidence: 40 },
-      usedFallback: true,
-    });
-    mocks.carryLatestSkin.mockResolvedValue({
-      data: { skinType: 'normal', overallScore: 70 },
-      usedFallback: false,
-    });
+    mocks.fetchProfileSnapshot.mockResolvedValue(
+      snapshotWith(
+        {
+          personal_color: {
+            id: 'pc-mock',
+            season: 'winter',
+            undertone: 'cool',
+            confidence: 40,
+            image_analysis: { tone: 'true-winter' },
+          },
+          skin: { id: 'skin-old', skin_type: 'normal', overall_score: 70 },
+        },
+        { personal_color: 'used' }
+      )
+    );
 
     await runIntegratedAnalysis(baseInput({ mode: 'update', axes: ['makeup'] }), USER);
 
     const [, , pcArg] = mocks.runMakeupComposer.mock.calls[0];
     expect(pcArg.usedFallback).toBe(true);
+    expect(pcArg.fallbackState).toBe('used');
   });
 
-  it('승계할 실측 진단이 없으면 센티널을 유지해 composer가 정직하게 실패한다', async () => {
+  it('승계할 진단이 없으면 센티널을 유지해 composer가 정직하게 실패한다', async () => {
     mocks.runMakeupComposer.mockResolvedValue({
       success: false,
       error: {
@@ -217,25 +286,119 @@ describe('runIntegratedAnalysis — 선택 재분석 축 승계 (외부 리뷰 #
     expect(result.axesFailed).toContain('makeup');
   });
 
-  it('이번에 재실행한 축은 승계하지 않고 실행 결과를 그대로 쓴다', async () => {
+  it('이번에 재실행한 축은 과거 스냅샷으로 덮지 않는다', async () => {
+    mocks.fetchProfileSnapshot.mockResolvedValue(
+      snapshotWith({
+        personal_color: { id: 'pc-old', season: 'winter' },
+        skin: { id: 'skin-old', skin_type: 'oily', overall_score: 10 },
+      })
+    );
     await runIntegratedAnalysis(
       baseInput({ mode: 'update', axes: ['personal_color', 'skin', 'makeup'] }),
       USER
     );
 
-    expect(mocks.carryLatestPersonalColor).not.toHaveBeenCalled();
-    expect(mocks.carryLatestSkin).not.toHaveBeenCalled();
     const [, , pcArg, skinArg] = mocks.runMakeupComposer.mock.calls[0];
     expect(pcArg).toBe(pcOk);
     expect(skinArg).toBe(skinOk);
   });
 
-  it('makeup 미선택이면 승계 조회조차 하지 않는다 (불필요한 DB 왕복 없음)', async () => {
+  it('skin-only는 새 skin과 승계 4축을 합쳐 persona를 만들되 완료 집계는 skin만 유지한다', async () => {
+    mocks.fetchProfileSnapshot.mockResolvedValue(
+      snapshotWith({
+        personal_color: { id: 'pc-old', season: 'summer', undertone: 'cool' },
+        body: { id: 'body-old', body_type: 'W' },
+        hair: { id: 'hair-old', face_shape: 'round' },
+        makeup: {
+          id: 'makeup-old',
+          recommendations: { baseRecommendation: '가벼운 베이스' },
+        },
+      })
+    );
+
+    const result = await runIntegratedAnalysis(baseInput({ mode: 'update', axes: ['skin'] }), USER);
+
+    const [personaAxes] = mocks.composePersona.mock.calls[0];
+    expect(personaAxes.skin).toBe(skinOk);
+    expect(personaAxes.personalColor).toMatchObject({ success: true });
+    expect(personaAxes.body).toMatchObject({ success: true, data: { bodyType: 'W' } });
+    expect(personaAxes.hair).toMatchObject({ success: true, data: { faceShape: 'round' } });
+    expect(personaAxes.makeup).toMatchObject({
+      success: true,
+      data: { baseRecommendation: '가벼운 베이스' },
+    });
+    expect(result.axesCompleted).toEqual(['skin']);
+    expect(result.axesFailed).toEqual([]);
+    expect(mocks.runMakeupComposer).not.toHaveBeenCalled();
+    expect(mocks.fetchProfileSnapshot).toHaveBeenCalledTimes(1);
+  });
+
+  it('승계할 축 하나라도 조회에 실패하면 축소된 persona를 이번 세션 실측처럼 저장하지 않는다', async () => {
+    mocks.fetchProfileSnapshot.mockResolvedValue({
+      ...snapshotWith({
+        personal_color: { id: 'pc-old', season: 'summer', undertone: 'cool' },
+        body: { id: 'body-old', body_type: 'W' },
+        makeup: {
+          id: 'makeup-old',
+          recommendations: { baseRecommendation: '가벼운 베이스' },
+        },
+      }),
+      axesFetchFailed: ['hair'],
+    });
+
     await runIntegratedAnalysis(baseInput({ mode: 'update', axes: ['skin'] }), USER);
 
-    expect(mocks.runMakeupComposer).not.toHaveBeenCalled();
-    expect(mocks.carryLatestPersonalColor).not.toHaveBeenCalled();
-    expect(mocks.carryLatestHair).not.toHaveBeenCalled();
+    expect(mocks.composePersona).not.toHaveBeenCalled();
+    expect(mocks.finalizeSession).toHaveBeenCalledWith(expect.objectContaining({ persona: null }));
+  });
+
+  it('승계 snapshot 전체 조회가 실패해도 선택 축만으로 persona를 축소 재합성하지 않는다', async () => {
+    mocks.fetchProfileSnapshot.mockRejectedValue(new Error('snapshot unavailable'));
+
+    await runIntegratedAnalysis(baseInput({ mode: 'update', axes: ['skin'] }), USER);
+
+    expect(mocks.composePersona).not.toHaveBeenCalled();
+    expect(mocks.finalizeSession).toHaveBeenCalledWith(expect.objectContaining({ persona: null }));
+  });
+
+  it('선택한 축 실패는 과거 스냅샷으로 덮지 않는다', async () => {
+    const skinFailure: AxisResult<SkinAxisData> = {
+      success: false,
+      error: {
+        code: 'AI_SERVICE_ERROR',
+        message: 'skin failed',
+        userMessage: '피부 분석에 실패했어요.',
+        retryable: true,
+      },
+    };
+    mocks.runSkinAxis.mockResolvedValue(skinFailure);
+    mocks.fetchProfileSnapshot.mockResolvedValue(
+      snapshotWith({ skin: { id: 'skin-old', skin_type: 'oily', overall_score: 99 } })
+    );
+
+    const result = await runIntegratedAnalysis(
+      baseInput({ mode: 'update', axes: ['skin', 'body'] }),
+      USER
+    );
+
+    const [personaAxes] = mocks.composePersona.mock.calls[0];
+    expect(personaAxes.skin).toBe(skinFailure);
+    expect(result.axesCompleted).toEqual(['body']);
+    expect(result.axesFailed).toEqual(['skin']);
+  });
+
+  it('full 분석은 프로필 스냅샷을 조회하지 않고 새 5축만 persona에 쓴다', async () => {
+    await runIntegratedAnalysis(baseInput(), USER);
+
+    expect(mocks.fetchProfileSnapshot).not.toHaveBeenCalled();
+    const [personaAxes] = mocks.composePersona.mock.calls[0];
+    expect(personaAxes).toEqual({
+      personalColor: pcOk,
+      skin: skinOk,
+      body: bodyOk,
+      hair: hairOk,
+      makeup: makeupOk,
+    });
   });
 });
 
@@ -273,6 +436,24 @@ describe('runIntegratedAnalysis — finalize 일관성 경계 (외부 리뷰 #2)
     await expect(runIntegratedAnalysis(baseInput(), USER)).rejects.toThrow('composer exploded');
     expect(mocks.markSessionFailed).toHaveBeenCalledTimes(1);
   });
+
+  it('finalize 재시도도 부모 deadline을 새로 시작하지 않고 응답 여유 전에 끝난다', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    mocks.finalizeSession
+      .mockRejectedValueOnce(new Error('transient'))
+      .mockImplementationOnce(() => new Promise(() => {}));
+    const deadline = createExecutionDeadline(8_000);
+
+    const promise = runIntegratedAnalysis(baseInput(), USER, undefined, deadline);
+    const assertion = expect(promise).rejects.toBeInstanceOf(SessionFinalizeError);
+    await vi.advanceTimersByTimeAsync(7_500);
+    await assertion;
+
+    expect(mocks.finalizeSession).toHaveBeenCalledTimes(2);
+    expect(mocks.markSessionFailed).not.toHaveBeenCalled();
+    expect(performance.now()).toBeLessThan(8_000);
+    deadline.clear();
+  });
 });
 
 describe('runIntegratedAnalysis — 이탈 복구 상관 ID (외부 리뷰 #3)', () => {
@@ -290,5 +471,31 @@ describe('runIntegratedAnalysis — 이탈 복구 상관 ID (외부 리뷰 #3)',
 
     const arg = mocks.createSession.mock.calls[0][0];
     expect(arg).not.toHaveProperty('clientRequestId');
+  });
+});
+
+describe('runIntegratedAnalysis — route-wide 절대 deadline', () => {
+  it.each([
+    ['full 5축', baseInput()],
+    ['단일 축 재분석', baseInput({ mode: 'update', axes: ['personal_color'] })],
+    ['makeup-only 재분석', baseInput({ mode: 'update', axes: ['makeup'] })],
+  ])('%s 조합도 하위 작업이 멈추면 부모 상한 전에 실패 세션을 finalize한다', async (_, input) => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    const never = () => new Promise<never>(() => {});
+    mocks.runPersonalColorAxis.mockImplementation(never);
+    mocks.runSkinAxis.mockImplementation(never);
+    mocks.runBodyAxis.mockImplementation(never);
+    mocks.runHairAxis.mockImplementation(never);
+    mocks.runMakeupComposer.mockImplementation(never);
+    const deadline = createExecutionDeadline(12_000);
+
+    const promise = runIntegratedAnalysis(input, USER, undefined, deadline);
+    await vi.advanceTimersByTimeAsync(8_000);
+    const result = await promise;
+
+    expect(result.status).toBe('failed');
+    expect(mocks.finalizeSession).toHaveBeenCalledTimes(1);
+    expect(performance.now()).toBeLessThan(12_000);
+    deadline.clear();
   });
 });

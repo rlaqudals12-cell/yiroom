@@ -238,6 +238,15 @@ export interface AxisError {
   retryable: boolean;
 }
 
+/**
+ * 축 결과의 폴백 출처 상태.
+ *
+ * `unknown`은 폴백을 쓰지 않았다는 뜻이 아니다. 레거시 행처럼 출처 표식과 원본
+ * 세션 근거가 모두 없어서 실측 여부를 확인할 수 없는 상태이며, UI는 낮은 신뢰도로
+ * 고지해야 한다.
+ */
+export type AxisFallbackState = 'used' | 'not_used' | 'unknown';
+
 // ============================================
 // 4. 축 결과 (Discriminated Union)
 // ============================================
@@ -250,7 +259,13 @@ export interface AxisError {
  * @template T - 축별 결과 데이터 타입 (PC/S/C/H/M 각각 다름)
  */
 export type AxisResult<T> =
-  | { success: true; data: T; usedFallback: boolean }
+  | {
+      success: true;
+      data: T;
+      /** true는 확인된 Mock 폴백에만 사용한다. 출처 불명은 fallbackState로 구분한다. */
+      usedFallback: boolean;
+      fallbackState?: AxisFallbackState;
+    }
   | { success: false; error: AxisError };
 
 // ============================================

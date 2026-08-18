@@ -16,6 +16,7 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { DeadlineExceededError, withDeadline, type ExecutionDeadline } from '@/lib/utils/timeout';
 import { skinTypeKo, finishKo, coverageKo } from '../labels';
 import type {
   AxisResult,
@@ -58,13 +59,24 @@ function inheritFaceShape(hairResult?: AxisResult<HairAxisData>): {
   value: string;
   measured: boolean;
 } {
-  if (hairResult?.success && !hairResult.usedFallback) {
+  if (hairResult?.success && !hairResult.usedFallback && hairResult.fallbackState !== 'unknown') {
     const shape = String(hairResult.data.faceShape ?? '').toLowerCase();
     if (VALID_FACE_SHAPES.includes(shape)) {
       return { value: shape, measured: true };
     }
   }
   return { value: FACE_SHAPE_PLACEHOLDER, measured: false };
+}
+
+function combinedFallbackState(
+  pcResult: Extract<AxisResult<PersonalColorAxisData>, { success: true }>,
+  skinResult: Extract<AxisResult<SkinAxisData>, { success: true }>
+): 'used' | 'not_used' | 'unknown' {
+  if (pcResult.usedFallback || skinResult.usedFallback) return 'used';
+  if (pcResult.fallbackState === 'unknown' || skinResult.fallbackState === 'unknown') {
+    return 'unknown';
+  }
+  return 'not_used';
 }
 
 /** PC 결과에서 립 팔레트 도출 */
@@ -144,7 +156,8 @@ export async function runMakeupComposer(
   clerkUserId: string,
   pcResult: AxisResult<PersonalColorAxisData>,
   skinResult: AxisResult<SkinAxisData>,
-  hairResult?: AxisResult<HairAxisData>
+  hairResult?: AxisResult<HairAxisData>,
+  deadline?: ExecutionDeadline
 ): Promise<AxisResult<MakeupAxisData>> {
   // 가드: PC 또는 S가 실패했으면 M-1 실행 불가
   if (!pcResult.success || !skinResult.success) {
@@ -175,10 +188,11 @@ export async function runMakeupComposer(
      * 과거엔 usedFallback:false로 하드코딩돼, PC/S가 Mock이어도 결과 페이지가
      * 아무 고지 없이 개인 판정처럼 보였다 (정직성 계약 위반).
      */
-    const usedFallback = pcResult.usedFallback || skinResult.usedFallback;
+    const fallbackState = combinedFallbackState(pcResult, skinResult);
+    const usedFallback = fallbackState === 'used';
 
     const supabase = createServiceRoleClient();
-    const { data, error } = await supabase
+    const savePromise = supabase
       .from('makeup_analyses')
       .insert({
         clerk_user_id: clerkUserId,
@@ -202,8 +216,11 @@ export async function runMakeupComposer(
         recommendations: {
           ...composed,
           source: 'integrated',
-          /** 결과 페이지의 Mock 고지 분기 — 입력 축 폴백을 그대로 승계 */
+          /** 신규 정본. true는 확인된 Mock에만 쓰고 unknown은 별도 상태로 보존한다. */
+          usedFallback,
+          /** 단독 결과 화면의 레거시 reader가 남아 있어 제거 전까지 호환 미러를 유지한다. */
           usedMock: usedFallback,
+          fallbackState,
           /** 무엇이 실측인지 (미표기 = 단독 M-1 경로 → 전부 실측으로 간주, 하위호환) */
           measured: {
             faceShape: faceShape.measured,
@@ -212,10 +229,13 @@ export async function runMakeupComposer(
           },
         },
         // 폴백 승계 시 신뢰도도 낮춰 표기 (ADR-007 "낮은 신뢰도 + 정직한 노출")
-        analysis_reliability: usedFallback ? 'low' : 'medium',
+        analysis_reliability: fallbackState === 'not_used' ? 'medium' : 'low',
       })
       .select('id')
       .single();
+    const { data, error } = deadline
+      ? await withDeadline(savePromise, deadline, '[Integrated makeup] save timeout')
+      : await savePromise;
 
     if (error) {
       return {
@@ -233,6 +253,7 @@ export async function runMakeupComposer(
       success: true,
       // 조합 레이어 — 입력(PC·S)이 폴백이면 결과도 폴백이다 (세션 used_fallback 집계에 반영)
       usedFallback,
+      fallbackState,
       data: {
         id: data?.id as string | undefined,
         ...composed,
@@ -242,7 +263,7 @@ export async function runMakeupComposer(
     return {
       success: false,
       error: {
-        code: 'UNKNOWN',
+        code: error instanceof DeadlineExceededError ? 'AI_TIMEOUT' : 'UNKNOWN',
         message: error instanceof Error ? error.message : String(error),
         userMessage: '메이크업 추천 생성 중 오류가 발생했어요.',
         retryable: true,

@@ -16,11 +16,18 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { normalizeColors } from '@/lib/color/normalize-colors';
+import { resolveAxisProvenance, type AxisRecord } from '@/lib/analysis/integrated/profile-snapshot';
 import { AXIS_TABLES } from '../types';
-import type { AxisCode, HairAxisData, PersonalColorAxisData, SkinAxisData } from '../types';
-
-/** 축 레코드 (컬럼 구성은 축마다 다르므로 느슨한 형태로 다룬다) */
-export type AxisRecord = Record<string, unknown> & { id: string };
+import type {
+  AxisCode,
+  AxisFallbackState,
+  BodyAxisData,
+  HairAxisData,
+  MakeupAxisData,
+  PersonalColorAxisData,
+  SkinAxisData,
+} from '../types';
 
 /**
  * 사용자의 최신 축 레코드 1건 (service_role — 오케스트레이터 컨텍스트).
@@ -47,11 +54,26 @@ async function fetchLatestAxisRecordForUser(
   return (data as AxisRecord | null) ?? null;
 }
 
-/** JSONB 안의 boolean 플래그 안전 추출 (형태 보장 없음 — 없으면 false) */
-function readNestedFlag(record: AxisRecord, key: string, field: string): boolean {
-  const nested = record[key];
-  if (typeof nested !== 'object' || nested === null) return false;
-  return (nested as Record<string, unknown>)[field] === true;
+/** 승계 행을 만든 원본 세션의 폴백 집계. 조회 불가/연결 없음은 unknown 근거로 남긴다. */
+async function fetchSourceSessionFallback(
+  record: AxisRecord,
+  clerkUserId: string
+): Promise<unknown> {
+  if (typeof record.session_id !== 'string') return undefined;
+
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase
+    .from('integrated_analysis_sessions')
+    .select('used_fallback')
+    .eq('id', record.session_id)
+    .eq('clerk_user_id', clerkUserId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[ProfileFallback] source session fetch error:', error.message);
+    return undefined;
+  }
+  return data?.used_fallback;
 }
 
 /** JSONB 안의 문자열 안전 추출 (없으면 빈 문자열) */
@@ -60,25 +82,6 @@ function readNestedString(record: AxisRecord, key: string, field: string): strin
   if (typeof nested !== 'object' || nested === null) return '';
   const value = (nested as Record<string, unknown>)[field];
   return typeof value === 'string' ? value : '';
-}
-
-/**
- * best_colors JSONB → hex 문자열 배열.
- * 두 저장 형태를 모두 수용: 단독 AI 경로 `{name,hex}` / 통합 정적 경로 `"#rrggbb"`.
- */
-function extractPaletteHexes(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .map((item): string | null => {
-      if (typeof item === 'string') return item;
-      if (typeof item === 'object' && item !== null) {
-        const c = item as { hex?: unknown; color?: unknown };
-        if (typeof c.hex === 'string') return c.hex;
-        if (typeof c.color === 'string') return c.color;
-      }
-      return null;
-    })
-    .filter((hex): hex is string => hex !== null && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex));
 }
 
 /** 저장된 PC 레코드 → PersonalColorAxisData (DB는 대문자 저장, 도메인은 소문자 사용) */
@@ -90,7 +93,7 @@ export function toPersonalColorAxisData(record: AxisRecord): PersonalColorAxisDa
     tone: readNestedString(record, 'image_analysis', 'tone') || season,
     undertone: String(record.undertone ?? '').toLowerCase(),
     confidence: Number(record.confidence ?? 0),
-    palette: extractPaletteHexes(record.best_colors),
+    palette: normalizeColors(record.best_colors).map(({ hex }) => hex),
     ...(readNestedString(record, 'image_analysis', 'contrastLevel')
       ? {
           contrastLevel: readNestedString(record, 'image_analysis', 'contrastLevel') as
@@ -111,11 +114,68 @@ export function toSkinAxisData(record: AxisRecord): SkinAxisData {
   };
 }
 
+/** 저장된 체형 레코드 → persona/추천 입력. 핵심 판정이 없으면 승계하지 않는다. */
+export function toBodyAxisData(record: AxisRecord): BodyAxisData | null {
+  const bodyType = typeof record.body_type === 'string' ? record.body_type.trim() : '';
+  return bodyType ? { id: record.id, bodyType } : null;
+}
+
+/** 저장된 헤어 레코드 → HairAxisData. 얼굴형이 없으면 persona 성공 축으로 세지 않는다. */
+export function toHairAxisData(record: AxisRecord): HairAxisData | null {
+  const faceShape = typeof record.face_shape === 'string' ? record.face_shape.trim() : '';
+  if (!faceShape) return null;
+  return {
+    id: record.id,
+    faceShape,
+    hairType: typeof record.hair_type === 'string' ? record.hair_type : undefined,
+  };
+}
+
+/** 통합/단독 메이크업 JSONB에서 실제 사람이 읽는 베이스 추천만 승계한다. */
+export function toMakeupAxisData(record: AxisRecord): MakeupAxisData | null {
+  const recommendations = record.recommendations;
+  if (typeof recommendations !== 'object' || recommendations === null) return null;
+  const stored = recommendations as Record<string, unknown>;
+  const candidates = [stored.baseRecommendation, stored.insight];
+  const baseRecommendation = candidates.find(
+    (value): value is string => typeof value === 'string' && value.trim().length > 0
+  );
+  return baseRecommendation
+    ? { id: record.id, baseRecommendation: baseRecommendation.trim() }
+    : null;
+}
+
 /** 프로필에서 승계한 축 값 + 그 값이 Mock 폴백으로 만들어졌는지 여부 */
 export interface CarriedAxis<T> {
   data: T;
-  /** 원 레코드가 Mock 폴백이었으면 true — 승계 결과도 폴백으로 취급해야 정직하다 */
+  /** 확인된 Mock 대체일 때만 true. 출처 불명은 false + provenance=unknown이다. */
   usedFallback: boolean;
+  provenance: AxisFallbackState;
+  confidence: 'normal' | 'low';
+  recordId: string | null;
+  sourceSessionId: string | null;
+}
+
+async function toCarriedAxis<T>(
+  axis: AxisCode,
+  clerkUserId: string,
+  record: AxisRecord,
+  data: T
+): Promise<CarriedAxis<T>> {
+  const provenance = resolveAxisProvenance(
+    axis,
+    record,
+    'profile',
+    await fetchSourceSessionFallback(record, clerkUserId)
+  );
+  return {
+    data,
+    usedFallback: provenance.fallbackState === 'used',
+    provenance: provenance.fallbackState,
+    confidence: provenance.confidence,
+    recordId: provenance.recordId,
+    sourceSessionId: provenance.sourceSessionId,
+  };
 }
 
 /**
@@ -127,10 +187,7 @@ export async function carryLatestPersonalColor(
 ): Promise<CarriedAxis<PersonalColorAxisData> | null> {
   const record = await fetchLatestAxisRecordForUser('personal_color', clerkUserId);
   if (!record) return null;
-  return {
-    data: toPersonalColorAxisData(record),
-    usedFallback: readNestedFlag(record, 'image_analysis', 'usedFallback'),
-  };
+  return toCarriedAxis('personal_color', clerkUserId, record, toPersonalColorAxisData(record));
 }
 
 /**
@@ -142,10 +199,7 @@ export async function carryLatestSkin(
 ): Promise<CarriedAxis<SkinAxisData> | null> {
   const record = await fetchLatestAxisRecordForUser('skin', clerkUserId);
   if (!record) return null;
-  return {
-    data: toSkinAxisData(record),
-    usedFallback: readNestedFlag(record, 'recommendations', 'usedFallback'),
-  };
+  return toCarriedAxis('skin', clerkUserId, record, toSkinAxisData(record));
 }
 
 /**
@@ -160,12 +214,6 @@ export async function carryLatestHair(
 ): Promise<CarriedAxis<HairAxisData> | null> {
   const record = await fetchLatestAxisRecordForUser('hair', clerkUserId);
   if (!record) return null;
-  return {
-    data: {
-      id: typeof record.id === 'string' ? record.id : undefined,
-      faceShape: String(record.face_shape ?? ''),
-      hairType: typeof record.hair_type === 'string' ? record.hair_type : undefined,
-    },
-    usedFallback: readNestedFlag(record, 'recommendations', 'usedFallback'),
-  };
+  const data = toHairAxisData(record);
+  return data ? toCarriedAxis('hair', clerkUserId, record, data) : null;
 }

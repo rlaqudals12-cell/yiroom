@@ -11,6 +11,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { IntegratedAnalysisResult } from '@/lib/analysis/integrated';
 
+const routeMocks = vi.hoisted(() => ({
+  findSessionByClientRequestId: vi.fn(),
+}));
+
 vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn().mockResolvedValue({ userId: 'user_test' }),
 }));
@@ -57,6 +61,10 @@ vi.mock('@/lib/supabase/service-role', () => ({
   createServiceRoleClient: vi.fn(() => ({ __client: 'service-role' })),
 }));
 
+vi.mock('@/lib/analysis/integrated/internal/session-store', () => ({
+  findSessionByClientRequestId: routeMocks.findSessionByClientRequestId,
+}));
+
 import { POST } from '@/app/api/analyze/integrated/route';
 import { runIntegratedAnalysis } from '@/lib/analysis/integrated';
 import { trackActivity } from '@/lib/levels';
@@ -88,6 +96,7 @@ describe('POST /api/analyze/integrated — 등급 활동 기록', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(trackActivity).mockResolvedValue({ success: true });
+    routeMocks.findSessionByClientRequestId.mockResolvedValue(null);
   });
 
   it('분석 성공 시 analysis 활동을 세션 ID와 함께 기록한다', async () => {
@@ -166,5 +175,24 @@ describe('POST /api/analyze/integrated — 등급 활동 기록', () => {
 
     expect(res.status).toBe(200);
     expect(body.success).toBe(true);
+  });
+
+  it('같은 사용자·clientRequestId 세션이 있으면 분석을 다시 실행하지 않고 재사용한다', async () => {
+    const clientRequestId = '11111111-2222-4333-8444-555555555555';
+    routeMocks.findSessionByClientRequestId.mockResolvedValue({
+      id: 'existing-session',
+      status: 'completed',
+    });
+
+    const res = await POST(makeRequest({ mode: 'full', clientRequestId }));
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body).toMatchObject({
+      success: true,
+      result: { sessionId: 'existing-session', status: 'completed', reused: true },
+    });
+    expect(runIntegratedAnalysis).not.toHaveBeenCalled();
+    expect(trackActivity).not.toHaveBeenCalled();
   });
 });

@@ -16,38 +16,48 @@
  */
 
 import Link from 'next/link';
-import { X } from 'lucide-react';
+import { RefreshCw, X } from 'lucide-react';
 import { usePendingIntegratedSession } from '@/hooks/usePendingIntegratedSession';
 
 export interface PendingAnalysisBannerProps {
   /** 제출 시 생성한 요청 상관 ID */
   requestId: string;
-  onDismiss: () => void;
+  /** 사용자가 기존 요청 복구를 명시적으로 포기하고 새 ID를 허용할 때만 호출. */
+  onAbandon: () => void;
 }
 
 export function PendingAnalysisBanner({
   requestId,
-  onDismiss,
+  onAbandon,
 }: PendingAnalysisBannerProps): React.JSX.Element | null {
-  const { session, isLoading } = usePendingIntegratedSession(requestId);
-
-  // 조회 중에는 아무것도 단언하지 않는다 (없는 결과를 있다고 하거나 그 반대가 되지 않도록)
-  if (isLoading) return null;
+  const { session, isLoading, recoveryState, refetch } = usePendingIntegratedSession(requestId);
 
   // 결과를 보여줄 수 있는 상태 — 축 결과가 세션에 확정된 경우만
-  const recovered = session && (session.status === 'completed' || session.status === 'partial');
-  // 저장은 시작됐으나 마무리되지 않음 (진행 중이거나 세션 기록이 미완) — 완료로 포장하지 않는다
-  const unfinished = session?.status === 'pending';
+  const recovered = recoveryState === 'completed' && session;
 
   let message: string;
-  if (recovered) {
-    message = '분석은 저장됐어요. 결과를 확인해보세요.';
-  } else if (unfinished) {
-    message = '아직 마무리되지 않았어요. 잠시 후 다시 확인해주세요.';
-  } else if (session) {
-    message = '분석이 완료되지 못했어요. 다시 시도해주세요.';
-  } else {
-    message = '결과가 저장되지 않았어요. 다시 분석해주세요.';
+  switch (recoveryState) {
+    case 'checking':
+      message = '기존 요청 상태를 확인하고 있어요.';
+      break;
+    case 'not_found':
+      message = '아직 요청 세션을 찾지 못했어요. 서버에서 시작 중일 수 있어 계속 확인할게요.';
+      break;
+    case 'error':
+      message = '요청 상태를 불러오지 못했어요. 자동으로 다시 확인할게요.';
+      break;
+    case 'pending':
+      message = '아직 마무리되지 않았어요. 완료될 때까지 계속 확인할게요.';
+      break;
+    case 'completed':
+      message = '분석은 저장됐어요. 결과를 확인해보세요.';
+      break;
+    case 'failed':
+      message = '분석이 완료되지 못했어요. 기존 요청을 포기한 뒤 다시 시도해주세요.';
+      break;
+    case 'stalled':
+      message = '자동 확인을 마쳤지만 결과를 확정하지 못했어요. 직접 다시 확인할 수 있어요.';
+      break;
   }
 
   return (
@@ -63,21 +73,34 @@ export function PendingAnalysisBanner({
       {recovered && (
         <Link
           href={`/analysis/integrated/result/${session.id}`}
-          onClick={onDismiss}
+          onClick={onAbandon}
           data-testid="pending-analysis-link"
           className="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
         >
           결과 확인
         </Link>
       )}
+      {!recovered && (
+        <button
+          type="button"
+          onClick={refetch}
+          disabled={isLoading}
+          data-testid="pending-analysis-refetch"
+          className="inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1.5 text-xs text-foreground disabled:opacity-50"
+        >
+          <RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />
+          다시 확인
+        </button>
+      )}
       <button
         type="button"
-        onClick={onDismiss}
-        aria-label="알림 닫기"
+        onClick={onAbandon}
+        aria-label="기존 분석 요청 포기"
         data-testid="pending-analysis-dismiss"
-        className="shrink-0 rounded-full p-1 text-muted-foreground hover:text-foreground"
+        className="inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground"
       >
         <X className="h-4 w-4" />
+        <span>기존 요청 포기</span>
       </button>
     </div>
   );

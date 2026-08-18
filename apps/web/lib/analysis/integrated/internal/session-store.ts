@@ -133,6 +133,33 @@ export async function getSession(
 }
 
 /**
+ * 동일 사용자·클라이언트 요청 ID로 이미 만들어진 세션을 찾는다.
+ *
+ * 재전송은 새 분석을 만들지 않고 기존 세션을 돌려줘야 한다. service-role 조회이므로
+ * 사용자 필터와 JSONB 상관 키를 모두 직접 강제한다. 조회 장애는 null로 삼키지 않는다 —
+ * 중복 분석을 시작하는 것보다 요청을 실패시키는 편이 안전하다.
+ */
+export async function findSessionByClientRequestId(
+  clerkUserId: string,
+  clientRequestId: string
+): Promise<IntegratedSessionRow | null> {
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase
+    .from('integrated_analysis_sessions')
+    .select('*')
+    .eq('clerk_user_id', clerkUserId)
+    .eq(`questionnaire->>${CLIENT_REQUEST_ID_KEY}`, clientRequestId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`[SessionStore] idempotency lookup failed: ${error.message}`);
+  }
+  return (data as IntegratedSessionRow | null) ?? null;
+}
+
+/**
  * 세션을 실패 상태로 기록 (복구 불가능한 서버 오류 시).
  */
 export async function markSessionFailed(sessionId: string, axesFailed: AxisCode[]): Promise<void> {

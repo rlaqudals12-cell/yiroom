@@ -120,7 +120,11 @@ function submitBlockReason(params: {
 interface SubmitResponseBody {
   success?: boolean;
   error?: string | { userMessage?: string; message?: string };
-  result?: { sessionId?: string };
+  result?: {
+    sessionId?: string;
+    status?: 'pending' | 'partial' | 'completed' | 'failed';
+    reused?: boolean;
+  };
 }
 
 /**
@@ -208,10 +212,12 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null);
   // 분석 도중 이탈했다가 돌아온 경우 (마커가 남아 있음) — 값은 그 요청의 상관 ID
   const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
+  const [isPendingMarkerResolved, setIsPendingMarkerResolved] = useState(false);
 
   // 재진입 시 1회 확인 — 마커가 있으면 복구 배너를 띄운다
   useEffect(() => {
     setPendingRequestId(readPendingMarker());
+    setIsPendingMarkerResolved(true);
   }, []);
 
   // 분석 중 새로고침·탭 닫기 경고 — 응답을 못 받으면 결과 링크를 잃는다
@@ -226,9 +232,10 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
     return () => window.removeEventListener('beforeunload', handler);
   }, [isSubmitting]);
 
-  const dismissPending = useCallback(() => {
+  const abandonPending = useCallback(() => {
     clearPendingMarker();
     setPendingRequestId(null);
+    setError(null);
   }, []);
 
   // 분석 이력이 확정되기 전/조회에 실패한 동안은 "복귀 사용자 여부"를 알 수 없다.
@@ -246,6 +253,8 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
     faceImage !== null &&
     isAnalysisStatusResolved &&
     (!isReturning || selectedAxes.length > 0) &&
+    isPendingMarkerResolved &&
+    pendingRequestId === null &&
     !isSubmitting;
 
   // 체형 축은 전신 사진이 있을 때만 실제로 판정된다 (자가입력은 판정에 쓰이지 않음 —
@@ -267,6 +276,10 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
       setError('얼굴 사진이 필요해요.');
       return;
     }
+    if (!isPendingMarkerResolved || pendingRequestId !== null) {
+      setError('기존 분석 요청을 확인 중이에요. 새로 시작하려면 기존 요청 포기를 선택해주세요.');
+      return;
+    }
     // 재분석 0축·이력 미확정 가드 — 버튼 비활성화를 우회한 제출도 차단
     const blockReason = submitBlockReason({
       isReturning,
@@ -283,7 +296,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
     // 이탈 복구 마커 — 응답 전에 화면을 벗어나도 돌아왔을 때 이 ID로 결과를 되찾는다
     const requestId = createRequestId();
     writePendingMarker(requestId);
-    setPendingRequestId(null);
+    setPendingRequestId(requestId);
 
     try {
       const measuredBody = await measureBodyForSubmit(bodyImage);
@@ -320,6 +333,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         // 이미 저장된 결과로 돌아갈 길이 사라진다(= 사용자가 5축을 다시 태운다).
         if (DEFINITIVE_REJECT_STATUSES.includes(res.status)) {
           clearPendingMarker();
+          setPendingRequestId(null);
         }
         return;
       }
@@ -329,6 +343,15 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         setError('세션 생성에 실패했어요.');
         setIsSubmitting(false);
         // 200 + success:true인데 sessionId가 없는 응답 — 세션이 있는지 알 수 없으므로 마커 유지
+        return;
+      }
+
+      // 멱등 재전송으로 찾은 미완료/실패 세션은 이번 세션의 실측 완료가 아니다.
+      // 상관 ID를 유지해야 복구 배너가 같은 세션을 조회하고, 사용자가
+      // 명시적으로 포기하기 전에는 새 요청 ID를 만들지 않는다.
+      const reusedStatus = json.result?.reused ? json.result.status : undefined;
+      if (reusedStatus === 'pending' || reusedStatus === 'failed') {
+        setIsSubmitting(false);
         return;
       }
 
@@ -342,6 +365,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
       invalidateAnalysisCache();
       // 결과 화면으로 이동 = 복구 대상 아님
       clearPendingMarker();
+      setPendingRequestId(null);
       router.push(`/analysis/integrated/result/${sessionId}`);
     } catch (err) {
       console.error('[IntegratedInput] submit error:', err);
@@ -358,6 +382,8 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
     isPartialUpdate,
     isAnalysisStatusResolved,
     hasAnalysisStatusError,
+    isPendingMarkerResolved,
+    pendingRequestId,
     router,
     detectFaceLandmarks,
   ]);
@@ -384,7 +410,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
 
         {/* 분석 도중 이탈 → 재진입 복구 (마커가 있을 때만 조회) */}
         {pendingRequestId !== null && (
-          <PendingAnalysisBanner requestId={pendingRequestId} onDismiss={dismissPending} />
+          <PendingAnalysisBanner requestId={pendingRequestId} onAbandon={abandonPending} />
         )}
 
         {/* 분석 이력 조회 실패 — 복귀 사용자를 신규로 오인해 프로필을 덮어쓰지 않도록 제출을 막고 재시도를 준다 */}

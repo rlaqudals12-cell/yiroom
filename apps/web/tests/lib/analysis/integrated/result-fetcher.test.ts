@@ -20,6 +20,7 @@ const scenario = vi.hoisted(() => ({
   session: { data: null as unknown, error: null as { message: string } | null },
   bySession: {} as Record<string, QueryResult>,
   latest: {} as Record<string, QueryResult>,
+  lteCalls: [] as Array<{ table: string; column: string; value: unknown }>,
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -33,6 +34,11 @@ vi.mock('@/lib/supabase/server', () => ({
           if (column === 'id') return chain;
           return chain;
         },
+        lte: (column: string, value: unknown) => {
+          scenario.lteCalls.push({ table, column, value });
+          return chain;
+        },
+        in: async () => ({ data: [], error: null }),
         order: () => {
           state.isLatest = true;
           return chain;
@@ -66,6 +72,7 @@ beforeEach(() => {
   scenario.session = { data: SESSION, error: null };
   scenario.bySession = {};
   scenario.latest = {};
+  scenario.lteCalls = [];
 });
 
 describe('fetchIntegratedResult — 유지 축 프로필 폴백 (외부 리뷰 #1)', () => {
@@ -88,6 +95,78 @@ describe('fetchIntegratedResult — 유지 축 프로필 폴백 (외부 리뷰 #
     expect(result!.axesFromProfile).toEqual(expect.arrayContaining(['personal_color', 'body']));
     // 이번 세션에서 실제로 분석된 축은 폴백 목록에 없다
     expect(result!.axesFromProfile).not.toContain('skin');
+    expect(scenario.lteCalls).toContainEqual({
+      table: 'personal_color_assessments',
+      column: 'created_at',
+      value: SESSION.created_at,
+    });
+  });
+
+  it('승계한 legacy Mock과 무표식 행을 실측으로 위장하지 않는다', async () => {
+    scenario.latest = {
+      personal_color_assessments: {
+        data: { id: 'pc-v2', season: 'Winter', image_analysis: { version: 2 } },
+        error: null,
+      },
+      hair_analyses: {
+        data: { id: 'hair-mock', face_shape: 'oval', recommendations: { usedMock: true } },
+        error: null,
+      },
+    };
+
+    const result = await fetchIntegratedResult('sess-1');
+
+    expect(result!.unknownAxes).toContain('personal_color');
+    expect(result!.fallbackAxes).toContain('hair');
+    expect(result!.axisProvenance.personal_color?.confidence).toBe('low');
+  });
+
+  it('저장된 fallbackState=unknown을 usedFallback=false 때문에 실측으로 낮추지 않는다', async () => {
+    scenario.bySession = {
+      makeup_analyses: {
+        data: {
+          id: 'makeup-unknown',
+          session_id: 'sess-1',
+          recommendations: { usedFallback: false, fallbackState: 'unknown' },
+        },
+        error: null,
+      },
+    };
+
+    const result = await fetchIntegratedResult('sess-1');
+
+    expect(result!.unknownAxes).toContain('makeup');
+    expect(result!.fallbackAxes).not.toContain('makeup');
+    expect(result!.axisProvenance.makeup).toMatchObject({
+      fallbackState: 'unknown',
+      confidence: 'low',
+    });
+  });
+
+  it('저장 상태가 unknown이어도 세션의 true 폴백 증거가 있으면 used를 우선한다', async () => {
+    scenario.session = {
+      data: { ...SESSION, used_fallback: ['makeup'] },
+      error: null,
+    };
+    scenario.bySession = {
+      makeup_analyses: {
+        data: {
+          id: 'makeup-confirmed-fallback',
+          session_id: 'sess-1',
+          recommendations: { usedFallback: false, fallbackState: 'unknown' },
+        },
+        error: null,
+      },
+    };
+
+    const result = await fetchIntegratedResult('sess-1');
+
+    expect(result!.fallbackAxes).toContain('makeup');
+    expect(result!.unknownAxes).not.toContain('makeup');
+    expect(result!.axisProvenance.makeup).toMatchObject({
+      fallbackState: 'used',
+      confidence: 'low',
+    });
   });
 
   it('과거 진단조차 없으면 채우지 않는다 (지어내지 않음)', async () => {

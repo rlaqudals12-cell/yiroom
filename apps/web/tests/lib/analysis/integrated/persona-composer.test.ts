@@ -27,6 +27,7 @@ vi.mock('@/lib/gemini/client', () => ({
 }));
 
 import { composePersona } from '@/lib/analysis/integrated/internal/persona-composer';
+import { createExecutionDeadline } from '@/lib/utils/timeout';
 import type {
   AxisResult,
   PersonalColorAxisData,
@@ -119,6 +120,7 @@ describe('composePersona', () => {
 
   afterEach(() => {
     delete process.env.FORCE_MOCK_AI;
+    vi.useRealTimers();
   });
 
   it('성공 축 0개면 null 반환', async () => {
@@ -202,6 +204,23 @@ describe('composePersona', () => {
     const result = await composePersona(allSuccess());
     expect(result).not.toBeNull();
     expect(result?.usedFallback).toBe(true);
+  });
+
+  it('Gemini가 응답하지 않아도 persona 예산 안에 Mock fallback을 반환한다', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    mockIsAvailable.mockReturnValue(true);
+    mockGenerateContent.mockImplementation(() => new Promise(() => {}));
+    const deadline = createExecutionDeadline(10_000);
+
+    const promise = composePersona(allSuccess(), 'ko', deadline);
+    await vi.advanceTimersByTimeAsync(4_000);
+    const result = await promise;
+
+    expect(result?.usedFallback).toBe(true);
+    expect(mockGenerateContent).toHaveBeenCalledOnce();
+    const config = mockGenerateContent.mock.calls[0][0].config;
+    expect(config.abortSignal.aborted).toBe(true);
+    deadline.clear();
   });
 
   it('Mock fallback은 전문 용어에 풀이를 병기한다 (듀이 → 듀이(촉촉한 광))', async () => {

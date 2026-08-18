@@ -8,6 +8,9 @@ import {
   withRetry,
   withTimeoutAndFallback,
   createAbortTimeout,
+  createExecutionDeadline,
+  withDeadline,
+  DeadlineExceededError,
   AI_TIMEOUT,
   RETRY_CONFIG,
 } from '@/lib/utils/timeout';
@@ -177,5 +180,38 @@ describe('createAbortTimeout', () => {
     const { controller } = createAbortTimeout(30);
     await new Promise((resolve) => setTimeout(resolve, 80));
     expect(controller.signal.aborted).toBe(true);
+  });
+});
+
+describe('절대 실행 deadline', () => {
+  it('하나의 시작 시각에서 잔여 예산과 예약 시간을 계산한다', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    const deadline = createExecutionDeadline(52_000);
+
+    expect(deadline.remainingMs()).toBe(52_000);
+    expect(deadline.remainingMs(5_000)).toBe(47_000);
+
+    await vi.advanceTimersByTimeAsync(7_000);
+    expect(deadline.remainingMs()).toBe(45_000);
+    expect(deadline.expired(45_001)).toBe(true);
+
+    deadline.clear();
+    vi.useRealTimers();
+  });
+
+  it('deadline을 공유한 대기는 최초 상한에서 끝나고 부모 signal도 중단된다', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    const deadline = createExecutionDeadline(52_000);
+    const never = new Promise<never>(() => {});
+    const promise = withDeadline(never, deadline, '통합 분석 시간 초과');
+    const assertion = expect(promise).rejects.toBeInstanceOf(DeadlineExceededError);
+
+    await vi.advanceTimersByTimeAsync(52_000);
+    await assertion;
+
+    expect(deadline.signal.aborted).toBe(true);
+    deadline.clear();
+    expect(vi.getTimerCount()).toBe(0);
+    vi.useRealTimers();
   });
 });

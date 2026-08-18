@@ -28,6 +28,7 @@ import {
   composeCrossInsights,
   composeCuration,
   type AxisCode,
+  type AxisFallbackState,
   type AxisResult,
   type PersonalColorAxisData,
   type SkinAxisData,
@@ -73,7 +74,7 @@ import { ShareReportButton } from './_components/ShareReportButton';
 function toAxisResult<T>(
   record: AxisDbRecord | null,
   mapper: (r: AxisDbRecord) => T,
-  usedFallback: boolean,
+  fallbackState: AxisFallbackState,
   fetchFailed = false
 ): AxisResult<T> {
   if (!record) {
@@ -97,7 +98,12 @@ function toAxisResult<T>(
           },
         };
   }
-  return { success: true, usedFallback, data: mapper(record) };
+  return {
+    success: true,
+    usedFallback: fallbackState === 'used',
+    fallbackState,
+    data: mapper(record),
+  };
 }
 
 function extractNested(record: AxisDbRecord, key: string, field: string): string {
@@ -477,7 +483,15 @@ export default async function IntegratedResultPage({
     notFound();
   }
 
-  const { session, axes, axesFromProfile, axesFetchFailed } = data;
+  const {
+    session,
+    axes,
+    axesFromProfile,
+    axesFetchFailed,
+    fallbackAxes,
+    unknownAxes,
+    axisProvenance,
+  } = data;
   // 이번 세션에 없던 축은 fetcher가 사용자의 최신 진단으로 이미 채웠다 (ADR-109 "유지" 약속).
   // 여기서는 그 사실을 고지하기 위해 목록만 라벨로 바꾼다.
   const pcRecord = axes.personalColor;
@@ -492,8 +506,15 @@ export default async function IntegratedResultPage({
   const axesCompleted = (session.axes_completed ?? []) as AxisCode[];
   const axesFailed = (session.axes_failed ?? []) as AxisCode[];
   // Mock Fallback으로 대체된 축 — 정직성 고지(AxisFallbackNotice)와 축별 usedFallback에 사용
-  const usedFallbackAxes = (session.used_fallback ?? []) as AxisCode[];
+  const usedFallbackAxes = fallbackAxes;
   const usedFallbackSet = new Set<AxisCode>(usedFallbackAxes);
+  const unknownSet = new Set<AxisCode>(unknownAxes);
+  const fallbackStateFor = (axis: AxisCode): AxisFallbackState => {
+    const resolved = axisProvenance[axis]?.fallbackState;
+    if (resolved) return resolved;
+    if (usedFallbackSet.has(axis)) return 'used';
+    return unknownSet.has(axis) ? 'unknown' : 'not_used';
+  };
 
   // 성별/상황 — 추천 분기 전용 (분석 판정엔 영향 없음). questionnaire JSONB에 저장됨.
   const questionnaire = (session.questionnaire ?? {}) as Record<string, unknown>;
@@ -510,7 +531,7 @@ export default async function IntegratedResultPage({
         undertone: String(r.undertone ?? ''),
         confidence: Number(r.confidence ?? 0),
       }),
-      usedFallbackSet.has('personal_color'),
+      fallbackStateFor('personal_color'),
       fetchFailedSet.has('personal_color')
     ),
     skin: toAxisResult<SkinAxisData>(
@@ -519,7 +540,7 @@ export default async function IntegratedResultPage({
         skinType: String(r.skin_type ?? ''),
         overallScore: Number(r.overall_score ?? 0),
       }),
-      usedFallbackSet.has('skin'),
+      fallbackStateFor('skin'),
       fetchFailedSet.has('skin')
     ),
     body: toAxisResult<BodyAxisData>(
@@ -527,7 +548,7 @@ export default async function IntegratedResultPage({
       (r) => ({
         bodyType: String(r.body_type ?? ''),
       }),
-      usedFallbackSet.has('body'),
+      fallbackStateFor('body'),
       fetchFailedSet.has('body')
     ),
     hair: toAxisResult<HairAxisData>(
@@ -535,7 +556,7 @@ export default async function IntegratedResultPage({
       (r) => ({
         faceShape: String(r.face_shape ?? ''),
       }),
-      usedFallbackSet.has('hair'),
+      fallbackStateFor('hair'),
       fetchFailedSet.has('hair')
     ),
     makeup: toAxisResult<MakeupAxisData>(
@@ -543,7 +564,7 @@ export default async function IntegratedResultPage({
       (r) => ({
         baseRecommendation: extractNested(r, 'recommendations', 'baseRecommendation'),
       }),
-      usedFallbackSet.has('makeup'),
+      fallbackStateFor('makeup'),
       fetchFailedSet.has('makeup')
     ),
   };
@@ -671,9 +692,11 @@ export default async function IntegratedResultPage({
     avoidNote: reportAvoidNote,
     actionItems: actionPlan.items.map(({ title, why }) => ({ title, why })),
     note: persona?.narrative,
-    confidenceText: confidenceLabelFor(pcData, usedFallbackSet.has('personal_color'), (value) =>
-      t('reportCard.confidence', { value })
-    ),
+    confidenceText: unknownSet.has('personal_color')
+      ? t('unknownProvenance.confidenceLabel')
+      : confidenceLabelFor(pcData, usedFallbackSet.has('personal_color'), (value) =>
+          t('reportCard.confidence', { value })
+        ),
     reproducibilityText: t('reportCard.repro'),
     dateText: new Date(session.created_at).toLocaleDateString(dateLocale),
   };
@@ -705,7 +728,7 @@ export default async function IntegratedResultPage({
         <PartialSuccessBanner axesCompleted={axesCompleted} axesFailed={axesFailed} />
 
         {/* 정직성: Mock Fallback으로 대체된 축을 샘플 결과로 명시 (감사 B7) */}
-        <AxisFallbackNotice usedFallback={usedFallbackAxes} />
+        <AxisFallbackNotice usedFallback={usedFallbackAxes} unknownAxes={unknownAxes} />
 
         {/* 프로필 폴백 고지 — 이번 세션에 없던 축을 최신 진단으로 채웠음을 정직하게 표시
             (선택 재분석에서 유지한 축·단독 진단만 마친 축 모두 포함) */}
@@ -795,7 +818,11 @@ export default async function IntegratedResultPage({
         <div className="space-y-1 pt-4 text-center text-[11px] text-muted-foreground">
           {/* 재현성 실측 — 과장 없이 "같은 입력 → 같은 판정"만 (퍼스널컬러·피부에서 검증) */}
           <p>{t('footer.reproducibility')}</p>
-          <p>{t('footer.aiDisclaimer')}</p>
+          <p>
+            {usedFallbackAxes.length > 0 || unknownAxes.length > 0
+              ? t('footer.referenceDisclaimer')
+              : t('footer.aiDisclaimer')}
+          </p>
         </div>
       </div>
     </div>

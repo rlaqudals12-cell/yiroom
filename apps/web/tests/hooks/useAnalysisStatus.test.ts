@@ -90,6 +90,35 @@ describe('useAnalysisStatus', () => {
     expect(result.current.hasPersonalColor).toBe(false);
   });
 
+  it('통합 분석의 문자열 best_colors를 프로필 요약에서 버리지 않는다', async () => {
+    setTableResult('personal_color_assessments', {
+      data: [
+        {
+          ...PC_ROW,
+          id: 'pc-integrated',
+          best_colors: ['#123456', '#ABCDEF'],
+        },
+      ],
+      error: null,
+    });
+
+    const { result } = renderHook(() => useAnalysisStatus());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(
+      result.current.analyses.find((analysis) => analysis.type === 'personal-color')
+    ).toMatchObject({
+      id: 'pc-integrated',
+      bestColors: [
+        { name: '', hex: '#123456' },
+        { name: '', hex: '#ABCDEF' },
+      ],
+    });
+  });
+
   it('hasSkin, hasBody, hasHair, hasMakeup 플래그가 존재한다', async () => {
     const { result } = renderHook(() => useAnalysisStatus());
 

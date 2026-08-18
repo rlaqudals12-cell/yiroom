@@ -76,6 +76,7 @@ export type {
   AxisResult,
   AxisError,
   AxisErrorCode,
+  AxisFallbackState,
   SessionStatus,
   SkinQuestionnaire,
   HairQuestionnaire,

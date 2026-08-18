@@ -17,7 +17,7 @@
  * @see lib/analysis/integrated/types.ts CLIENT_REQUEST_ID_KEY
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
 import { CLIENT_REQUEST_ID_KEY, type IntegratedSessionRow } from '@/lib/analysis/integrated';
@@ -26,7 +26,21 @@ export interface UsePendingIntegratedSessionResult {
   session: IntegratedSessionRow | null;
   isLoading: boolean;
   error: Error | null;
+  recoveryState:
+    | 'checking'
+    | 'not_found'
+    | 'error'
+    | 'pending'
+    | 'completed'
+    | 'failed'
+    | 'stalled';
+  /** 자동 확인이 끝났거나 사용자가 즉시 확인하고 싶을 때 새 bounded 조회 창을 시작한다. */
+  refetch: () => void;
 }
+
+/** Vercel 함수 상한(60초)보다 길게 기다리되 무한 폴링하지 않는다. */
+export const PENDING_POLL_MAX_MS = 90_000;
+const POLL_DELAYS_MS = [1_000, 2_000, 4_000, 8_000, 15_000] as const;
 
 export function usePendingIntegratedSession(
   clientRequestId: string | null
@@ -36,6 +50,11 @@ export function usePendingIntegratedSession(
   const [session, setSession] = useState<IntegratedSessionRow | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [recoveryState, setRecoveryState] =
+    useState<UsePendingIntegratedSessionResult['recoveryState']>('checking');
+  const [retryToken, setRetryToken] = useState(0);
+
+  const refetch = useCallback(() => setRetryToken((value) => value + 1), []);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -43,44 +62,159 @@ export function usePendingIntegratedSession(
     if (!isSignedIn || !clientRequestId) {
       setSession(null);
       setIsLoading(false);
+      setError(null);
+      setRecoveryState('not_found');
       return;
     }
 
     let cancelled = false;
+    let waitTimer: ReturnType<typeof setTimeout> | null = null;
+    let queryTimer: ReturnType<typeof setTimeout> | null = null;
+    let releaseTimer: (() => void) | null = null;
+    let releaseQuery: (() => void) | null = null;
+    let activeController: AbortController | null = null;
+    let deadlineReached = false;
+    const deadlineAt = performance.now() + PENDING_POLL_MAX_MS;
+
+    setIsLoading(true);
+    setError(null);
+    setRecoveryState('checking');
+
+    // polling의 어느 단계(DB 조회·대기)에 있든 실제 벽시계 상한에서 종료한다.
+    const hardDeadlineTimer = setTimeout(() => {
+      if (cancelled) return;
+      deadlineReached = true;
+      setRecoveryState('stalled');
+      setIsLoading(false);
+      releaseTimer?.();
+      releaseQuery?.();
+      activeController?.abort();
+    }, PENDING_POLL_MAX_MS);
+
+    const wait = (delayMs: number): Promise<void> =>
+      new Promise((resolve) => {
+        releaseTimer = resolve;
+        waitTimer = setTimeout(() => {
+          waitTimer = null;
+          releaseTimer = null;
+          resolve();
+        }, delayMs);
+      });
+
+    const queryOnce = async () => {
+      const remainingMs = Math.max(0, deadlineAt - performance.now());
+      if (remainingMs === 0) return { kind: 'deadline' as const };
+
+      const controller = new AbortController();
+      activeController = controller;
+      const query = supabase
+        .from('integrated_analysis_sessions')
+        // 상관 ID는 questionnaire JSONB의 예약 키에 저장된다 (전용 컬럼 없음)
+        .select('*')
+        .eq(`questionnaire->>${CLIENT_REQUEST_ID_KEY}`, clientRequestId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .abortSignal(controller.signal)
+        .maybeSingle();
+
+      const outcome = await Promise.race([
+        query.then(
+          (value) => ({ kind: 'result' as const, value }),
+          (caught: unknown) => ({ kind: 'error' as const, caught })
+        ),
+        new Promise<{ kind: 'deadline' }>((resolve) => {
+          const reachDeadline = (): void => {
+            // race를 먼저 확정해야 abort rejection을 DB 오류로 오인하지 않는다.
+            resolve({ kind: 'deadline' });
+            controller.abort();
+          };
+          releaseQuery = reachDeadline;
+          queryTimer = setTimeout(reachDeadline, remainingMs);
+        }),
+      ]);
+
+      if (queryTimer) clearTimeout(queryTimer);
+      queryTimer = null;
+      releaseQuery = null;
+      if (activeController === controller) activeController = null;
+      return outcome;
+    };
+
     (async () => {
-      try {
-        const { data, error: dbError } = await supabase
-          .from('integrated_analysis_sessions')
-          // 상관 ID는 questionnaire JSONB의 예약 키에 저장된다 (전용 컬럼 없음)
-          .select('*')
-          .eq(`questionnaire->>${CLIENT_REQUEST_ID_KEY}`, clientRequestId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (cancelled) return;
-
-        if (dbError) {
-          setError(new Error(dbError.message));
-          setSession(null);
-        } else {
-          setSession((data as IntegratedSessionRow | null) ?? null);
-          setError(null);
+      let attempt = 0;
+      while (!cancelled) {
+        if (deadlineReached || performance.now() >= deadlineAt) {
+          setRecoveryState('stalled');
+          setIsLoading(false);
+          return;
         }
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e : new Error(String(e)));
+
+        try {
+          const outcome = await queryOnce();
+
+          if (cancelled) return;
+          if (deadlineReached) return;
+          if (outcome.kind === 'deadline') {
+            setRecoveryState('stalled');
+            setIsLoading(false);
+            return;
+          }
+          if (outcome.kind === 'error') throw outcome.caught;
+
+          const { data, error: dbError } = outcome.value;
+
+          if (dbError) {
+            setError(new Error(dbError.message));
+            setSession(null);
+            setRecoveryState('error');
+          } else {
+            const nextSession = (data as IntegratedSessionRow | null) ?? null;
+            setSession(nextSession);
+            setError(null);
+            if (!nextSession) {
+              setRecoveryState('not_found');
+            } else if (nextSession.status === 'pending') {
+              setRecoveryState('pending');
+            } else if (nextSession.status === 'completed' || nextSession.status === 'partial') {
+              setRecoveryState('completed');
+              setIsLoading(false);
+              return;
+            } else {
+              setRecoveryState('failed');
+              setIsLoading(false);
+              return;
+            }
+          }
+        } catch (caught) {
+          if (cancelled) return;
+          setError(caught instanceof Error ? caught : new Error(String(caught)));
           setSession(null);
+          setRecoveryState('error');
         }
-      } finally {
-        if (!cancelled) setIsLoading(false);
+
+        setIsLoading(false);
+        const remaining = Math.max(0, deadlineAt - performance.now());
+        if (remaining <= 0) {
+          setRecoveryState('stalled');
+          return;
+        }
+        const configuredDelay = POLL_DELAYS_MS[Math.min(attempt, POLL_DELAYS_MS.length - 1)];
+        attempt += 1;
+        const actualDelay = Math.min(configuredDelay, remaining);
+        await wait(actualDelay);
       }
     })();
 
     return () => {
       cancelled = true;
+      clearTimeout(hardDeadlineTimer);
+      if (waitTimer) clearTimeout(waitTimer);
+      if (queryTimer) clearTimeout(queryTimer);
+      releaseTimer?.();
+      releaseQuery?.();
+      activeController?.abort();
     };
-  }, [isLoaded, isSignedIn, supabase, clientRequestId]);
+  }, [isLoaded, isSignedIn, supabase, clientRequestId, retryToken]);
 
-  return { session, isLoading, error };
+  return { session, isLoading, error, recoveryState, refetch };
 }

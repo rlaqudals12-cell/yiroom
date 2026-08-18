@@ -17,17 +17,36 @@ import type { IntegratedSessionRow, SessionStatus } from '@/lib/analysis/integra
 const hookState: {
   session: IntegratedSessionRow | null;
   isLoading: boolean;
+  recoveryState:
+    | 'checking'
+    | 'not_found'
+    | 'error'
+    | 'pending'
+    | 'completed'
+    | 'failed'
+    | 'stalled';
+  error: Error | null;
+  refetch: ReturnType<typeof vi.fn>;
   lastRequestId: string | null;
 } = {
   session: null,
   isLoading: false,
+  recoveryState: 'not_found',
+  error: null,
+  refetch: vi.fn(),
   lastRequestId: null,
 };
 
 vi.mock('@/hooks/usePendingIntegratedSession', () => ({
   usePendingIntegratedSession: (requestId: string | null) => {
     hookState.lastRequestId = requestId;
-    return { session: hookState.session, isLoading: hookState.isLoading, error: null };
+    return {
+      session: hookState.session,
+      isLoading: hookState.isLoading,
+      error: hookState.error,
+      recoveryState: hookState.recoveryState,
+      refetch: hookState.refetch,
+    };
   },
 }));
 
@@ -64,26 +83,28 @@ describe('PendingAnalysisBanner', () => {
   beforeEach(() => {
     hookState.session = null;
     hookState.isLoading = false;
+    hookState.recoveryState = 'not_found';
+    hookState.error = null;
     hookState.lastRequestId = null;
     vi.clearAllMocks();
   });
 
-  it('조회 중에는 아무것도 단언하지 않는다', () => {
+  it('조회 중에는 결과를 단언하지 않고 확인 중 상태를 표시한다', () => {
     hookState.isLoading = true;
-    const { container } = render(
-      <PendingAnalysisBanner requestId={REQUEST_ID} onDismiss={vi.fn()} />
-    );
-    expect(container).toBeEmptyDOMElement();
+    hookState.recoveryState = 'checking';
+    render(<PendingAnalysisBanner requestId={REQUEST_ID} onAbandon={vi.fn()} />);
+    expect(screen.getByTestId('pending-analysis-banner')).toHaveTextContent('확인하고 있어요');
   });
 
   it('마커의 상관 ID로만 조회한다 (시각 추정 없음)', () => {
-    render(<PendingAnalysisBanner requestId={REQUEST_ID} onDismiss={vi.fn()} />);
+    render(<PendingAnalysisBanner requestId={REQUEST_ID} onAbandon={vi.fn()} />);
     expect(hookState.lastRequestId).toBe(REQUEST_ID);
   });
 
   it('상관 ID가 일치하는 완료 세션이면 결과 링크를 제공한다', () => {
     hookState.session = makeSession('completed');
-    render(<PendingAnalysisBanner requestId={REQUEST_ID} onDismiss={vi.fn()} />);
+    hookState.recoveryState = 'completed';
+    render(<PendingAnalysisBanner requestId={REQUEST_ID} onAbandon={vi.fn()} />);
 
     expect(screen.getByTestId('pending-analysis-banner')).toHaveTextContent(
       '진행 중이던 분석이 있어요'
@@ -96,23 +117,25 @@ describe('PendingAnalysisBanner', () => {
 
   it('부분 성공 세션도 결과 링크를 제공한다', () => {
     hookState.session = makeSession('partial');
-    render(<PendingAnalysisBanner requestId={REQUEST_ID} onDismiss={vi.fn()} />);
+    hookState.recoveryState = 'completed';
+    render(<PendingAnalysisBanner requestId={REQUEST_ID} onAbandon={vi.fn()} />);
 
     expect(screen.getByTestId('pending-analysis-link')).toBeInTheDocument();
   });
 
-  it('세션이 없으면 링크 없이 저장되지 않았다고 알린다', () => {
-    render(<PendingAnalysisBanner requestId={REQUEST_ID} onDismiss={vi.fn()} />);
+  it('세션이 아직 없으면 not-found로 구분하고 계속 확인한다고 알린다', () => {
+    render(<PendingAnalysisBanner requestId={REQUEST_ID} onAbandon={vi.fn()} />);
 
     expect(screen.queryByTestId('pending-analysis-link')).not.toBeInTheDocument();
     expect(screen.getByTestId('pending-analysis-banner')).toHaveTextContent(
-      '결과가 저장되지 않았어요'
+      '아직 요청 세션을 찾지 못했어요'
     );
   });
 
   it('아직 마무리되지 않은 세션(pending)을 완료로 포장하지 않는다', () => {
     hookState.session = makeSession('pending');
-    render(<PendingAnalysisBanner requestId={REQUEST_ID} onDismiss={vi.fn()} />);
+    hookState.recoveryState = 'pending';
+    render(<PendingAnalysisBanner requestId={REQUEST_ID} onAbandon={vi.fn()} />);
 
     expect(screen.queryByTestId('pending-analysis-link')).not.toBeInTheDocument();
     expect(screen.getByTestId('pending-analysis-banner')).toHaveTextContent(
@@ -122,7 +145,8 @@ describe('PendingAnalysisBanner', () => {
 
   it('실패 세션은 링크 없이 실패로 알린다', () => {
     hookState.session = makeSession('failed');
-    render(<PendingAnalysisBanner requestId={REQUEST_ID} onDismiss={vi.fn()} />);
+    hookState.recoveryState = 'failed';
+    render(<PendingAnalysisBanner requestId={REQUEST_ID} onAbandon={vi.fn()} />);
 
     expect(screen.queryByTestId('pending-analysis-link')).not.toBeInTheDocument();
     expect(screen.getByTestId('pending-analysis-banner')).toHaveTextContent(
@@ -130,11 +154,28 @@ describe('PendingAnalysisBanner', () => {
     );
   });
 
-  it('닫기 버튼은 onDismiss를 호출한다', () => {
-    const onDismiss = vi.fn();
-    render(<PendingAnalysisBanner requestId={REQUEST_ID} onDismiss={onDismiss} />);
+  it('기존 요청 포기 버튼은 onAbandon을 호출한다', () => {
+    const onAbandon = vi.fn();
+    render(<PendingAnalysisBanner requestId={REQUEST_ID} onAbandon={onAbandon} />);
 
     screen.getByTestId('pending-analysis-dismiss').click();
-    expect(onDismiss).toHaveBeenCalledTimes(1);
+    expect(onAbandon).toHaveBeenCalledTimes(1);
+  });
+
+  it('조회 오류는 결과 없음과 다른 문구로 표시한다', () => {
+    hookState.recoveryState = 'error';
+    hookState.error = new Error('db down');
+    render(<PendingAnalysisBanner requestId={REQUEST_ID} onAbandon={vi.fn()} />);
+
+    expect(screen.getByTestId('pending-analysis-banner')).toHaveTextContent(
+      '요청 상태를 불러오지 못했어요'
+    );
+  });
+
+  it('수동 다시 확인 버튼은 refetch를 호출한다', () => {
+    render(<PendingAnalysisBanner requestId={REQUEST_ID} onAbandon={vi.fn()} />);
+
+    screen.getByTestId('pending-analysis-refetch').click();
+    expect(hookState.refetch).toHaveBeenCalledTimes(1);
   });
 });
