@@ -1,66 +1,80 @@
 /**
- * 신체 치수 Repository
- * @description 사용자 신체 측정 데이터 관리
+ * 신체 치수 API 클라이언트
+ * @description 사용자 신체 측정 데이터 관리를 웹 정본 API에 위임
  */
 
-import { supabase } from '@/lib/supabase/client';
-import { smartMatchingLogger } from '@/lib/utils/logger';
-import type {
-  UserBodyMeasurements,
-  UserBodyMeasurementsDB,
-  PreferredFit,
-} from '@/types/smart-matching';
-import { mapMeasurementsRow } from '@/types/smart-matching';
+import type { UserBodyMeasurements, PreferredFit } from '@/types/smart-matching';
+
+import { requestSmartMatching } from './api-client';
+
+type SerializedMeasurements = Omit<UserBodyMeasurements, 'createdAt' | 'updatedAt'> & {
+  createdAt?: string;
+  updatedAt?: string;
+};
+type MeasurementsInput = Partial<
+  Omit<UserBodyMeasurements, 'clerkUserId' | 'createdAt' | 'updatedAt'>
+>;
+
+function toMeasurements(payload: SerializedMeasurements): UserBodyMeasurements | null {
+  // 왜: 웹의 기본 응답(저장 행 없음)은 타임스탬프가 없다. 이를 실측 행처럼 만들지 않는다.
+  if (!payload.createdAt || !payload.updatedAt) return null;
+
+  return {
+    ...payload,
+    createdAt: new Date(payload.createdAt),
+    updatedAt: new Date(payload.updatedAt),
+  };
+}
+
+function toMeasurementsInput(value: UserBodyMeasurements | null): MeasurementsInput {
+  if (!value) return {};
+  return {
+    height: value.height,
+    weight: value.weight,
+    bodyType: value.bodyType,
+    chest: value.chest,
+    waist: value.waist,
+    hip: value.hip,
+    shoulder: value.shoulder,
+    armLength: value.armLength,
+    inseam: value.inseam,
+    footLength: value.footLength,
+    preferredFit: value.preferredFit,
+  };
+}
 
 /**
  * 신체 치수 조회
  */
-export async function getMeasurements(clerkUserId: string): Promise<UserBodyMeasurements | null> {
-  const { data, error } = await supabase
-    .from('user_body_measurements')
-    .select('*')
-    .eq('clerk_user_id', clerkUserId)
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return mapMeasurementsRow(data as UserBodyMeasurementsDB);
+export async function getMeasurements(
+  _clerkUserId: string,
+  clerkToken?: string
+): Promise<UserBodyMeasurements | null> {
+  const payload = await requestSmartMatching<SerializedMeasurements>(
+    '/api/smart-matching/measurements',
+    clerkToken,
+    { method: 'GET' }
+  );
+  return toMeasurements(payload);
 }
 
 /**
  * 신체 치수 생성/업데이트 (Upsert)
  */
 export async function upsertMeasurements(
-  clerkUserId: string,
-  measurements: Partial<Omit<UserBodyMeasurements, 'clerkUserId' | 'createdAt' | 'updatedAt'>>
+  _clerkUserId: string,
+  measurements: MeasurementsInput,
+  clerkToken?: string
 ): Promise<UserBodyMeasurements | null> {
-  const { data, error } = await supabase
-    .from('user_body_measurements')
-    .upsert({
-      clerk_user_id: clerkUserId,
-      height: measurements.height ?? null,
-      weight: measurements.weight ?? null,
-      body_type: measurements.bodyType ?? null,
-      chest: measurements.chest ?? null,
-      waist: measurements.waist ?? null,
-      hip: measurements.hip ?? null,
-      shoulder: measurements.shoulder ?? null,
-      arm_length: measurements.armLength ?? null,
-      inseam: measurements.inseam ?? null,
-      foot_length: measurements.footLength ?? null,
-      preferred_fit: measurements.preferredFit ?? 'regular',
-    })
-    .select()
-    .single();
-
-  if (error) {
-    smartMatchingLogger.error('치수 Upsert 실패:', error);
-    return null;
-  }
-
-  return mapMeasurementsRow(data as UserBodyMeasurementsDB);
+  const payload = await requestSmartMatching<SerializedMeasurements>(
+    '/api/smart-matching/measurements',
+    clerkToken,
+    {
+      method: 'PUT',
+      body: JSON.stringify(measurements),
+    }
+  );
+  return toMeasurements(payload);
 }
 
 /**
@@ -72,25 +86,17 @@ export async function updateBasicInfo(
     height?: number;
     weight?: number;
     bodyType?: string;
-  }
+  },
+  clerkToken?: string
 ): Promise<boolean> {
-  const updates: Record<string, unknown> = {};
-
-  if (info.height !== undefined) updates.height = info.height;
-  if (info.weight !== undefined) updates.weight = info.weight;
-  if (info.bodyType !== undefined) updates.body_type = info.bodyType;
-
-  const { error } = await supabase
-    .from('user_body_measurements')
-    .update(updates)
-    .eq('clerk_user_id', clerkUserId);
-
-  if (error) {
-    smartMatchingLogger.error('치수 기본 정보 업데이트 실패:', error);
-    return false;
-  }
-
-  return true;
+  const current = await getMeasurements(clerkUserId, clerkToken);
+  return (
+    (await upsertMeasurements(
+      clerkUserId,
+      { ...toMeasurementsInput(current), ...info },
+      clerkToken
+    )) !== null
+  );
 }
 
 /**
@@ -106,29 +112,17 @@ export async function updateDetailedMeasurements(
     armLength?: number;
     inseam?: number;
     footLength?: number;
-  }
+  },
+  clerkToken?: string
 ): Promise<boolean> {
-  const updates: Record<string, unknown> = {};
-
-  if (measurements.chest !== undefined) updates.chest = measurements.chest;
-  if (measurements.waist !== undefined) updates.waist = measurements.waist;
-  if (measurements.hip !== undefined) updates.hip = measurements.hip;
-  if (measurements.shoulder !== undefined) updates.shoulder = measurements.shoulder;
-  if (measurements.armLength !== undefined) updates.arm_length = measurements.armLength;
-  if (measurements.inseam !== undefined) updates.inseam = measurements.inseam;
-  if (measurements.footLength !== undefined) updates.foot_length = measurements.footLength;
-
-  const { error } = await supabase
-    .from('user_body_measurements')
-    .update(updates)
-    .eq('clerk_user_id', clerkUserId);
-
-  if (error) {
-    smartMatchingLogger.error('치수 상세 치수 업데이트 실패:', error);
-    return false;
-  }
-
-  return true;
+  const current = await getMeasurements(clerkUserId, clerkToken);
+  return (
+    (await upsertMeasurements(
+      clerkUserId,
+      { ...toMeasurementsInput(current), ...measurements },
+      clerkToken
+    )) !== null
+  );
 }
 
 /**
@@ -136,19 +130,17 @@ export async function updateDetailedMeasurements(
  */
 export async function updatePreferredFit(
   clerkUserId: string,
-  preferredFit: PreferredFit
+  preferredFit: PreferredFit,
+  clerkToken?: string
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('user_body_measurements')
-    .update({ preferred_fit: preferredFit })
-    .eq('clerk_user_id', clerkUserId);
-
-  if (error) {
-    smartMatchingLogger.error('치수 선호 핏 업데이트 실패:', error);
-    return false;
-  }
-
-  return true;
+  const current = await getMeasurements(clerkUserId, clerkToken);
+  return (
+    (await upsertMeasurements(
+      clerkUserId,
+      { ...toMeasurementsInput(current), preferredFit },
+      clerkToken
+    )) !== null
+  );
 }
 
 /**
@@ -161,18 +153,23 @@ export async function syncFromBodyAnalysis(
     height?: number;
     weight?: number;
     bodyType?: string;
-  }
+  },
+  clerkToken?: string
 ): Promise<boolean> {
   // 기존 데이터 조회
-  const existing = await getMeasurements(clerkUserId);
+  const existing = await getMeasurements(clerkUserId, clerkToken);
 
   // 분석 결과로 업데이트 (기존 상세 치수는 유지)
-  const result = await upsertMeasurements(clerkUserId, {
-    ...existing,
-    height: analysisResult.height ?? existing?.height,
-    weight: analysisResult.weight ?? existing?.weight,
-    bodyType: analysisResult.bodyType ?? existing?.bodyType,
-  });
+  const result = await upsertMeasurements(
+    clerkUserId,
+    {
+      ...toMeasurementsInput(existing),
+      height: analysisResult.height ?? existing?.height,
+      weight: analysisResult.weight ?? existing?.weight,
+      bodyType: analysisResult.bodyType ?? existing?.bodyType,
+    },
+    clerkToken
+  );
 
   return result !== null;
 }

@@ -1,134 +1,123 @@
 /**
- * 사이즈 기록 Repository
- * @description 브랜드별 사이즈 구매/착용 기록 관리
+ * 사이즈 기록 API 클라이언트
+ * @description 브랜드별 사이즈 구매/착용 기록 관리를 웹 정본 API에 위임
  */
 
-import { supabase } from '@/lib/supabase/client';
-import { smartMatchingLogger } from '@/lib/utils/logger';
-import type { UserSizeHistory, UserSizeHistoryDB, SizeFit } from '@/types/smart-matching';
-import { mapSizeHistoryRow } from '@/types/smart-matching';
+import type { UserSizeHistory, SizeFit } from '@/types/smart-matching';
+
+import { requestSmartMatching } from './api-client';
+
+type SerializedSizeHistory = Omit<UserSizeHistory, 'purchaseDate' | 'createdAt'> & {
+  purchaseDate?: string;
+  createdAt: string;
+};
+
+function toSizeHistory(payload: SerializedSizeHistory): UserSizeHistory {
+  return {
+    ...payload,
+    purchaseDate: payload.purchaseDate ? new Date(payload.purchaseDate) : undefined,
+    createdAt: new Date(payload.createdAt),
+  };
+}
+
+async function fetchSizeHistory(query: string, clerkToken?: string): Promise<UserSizeHistory[]> {
+  const payload = await requestSmartMatching<SerializedSizeHistory[]>(
+    `/api/smart-matching/size-history${query}`,
+    clerkToken,
+    { method: 'GET' }
+  );
+  return payload.map(toSizeHistory);
+}
 
 /**
  * 사용자의 전체 사이즈 기록 조회
  */
-export async function getSizeHistory(clerkUserId: string): Promise<UserSizeHistory[]> {
-  const { data, error } = await supabase
-    .from('user_size_history')
-    .select('*')
-    .eq('clerk_user_id', clerkUserId)
-    .order('created_at', { ascending: false });
-
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as UserSizeHistoryDB[]).map(mapSizeHistoryRow);
+export async function getSizeHistory(
+  _clerkUserId: string,
+  clerkToken?: string
+): Promise<UserSizeHistory[]> {
+  return fetchSizeHistory('', clerkToken);
 }
 
 /**
  * 브랜드별 사이즈 기록 조회
  */
 export async function getSizeHistoryByBrand(
-  clerkUserId: string,
-  brandId: string
+  _clerkUserId: string,
+  brandId: string,
+  clerkToken?: string
 ): Promise<UserSizeHistory[]> {
-  const { data, error } = await supabase
-    .from('user_size_history')
-    .select('*')
-    .eq('clerk_user_id', clerkUserId)
-    .eq('brand_id', brandId)
-    .order('created_at', { ascending: false });
-
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as UserSizeHistoryDB[]).map(mapSizeHistoryRow);
+  return fetchSizeHistory(`?brandId=${encodeURIComponent(brandId)}`, clerkToken);
 }
 
 /**
  * 카테고리별 사이즈 기록 조회
  */
 export async function getSizeHistoryByCategory(
-  clerkUserId: string,
-  category: string
+  _clerkUserId: string,
+  category: string,
+  clerkToken?: string
 ): Promise<UserSizeHistory[]> {
-  const { data, error } = await supabase
-    .from('user_size_history')
-    .select('*')
-    .eq('clerk_user_id', clerkUserId)
-    .eq('category', category)
-    .order('created_at', { ascending: false });
-
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as UserSizeHistoryDB[]).map(mapSizeHistoryRow);
+  return fetchSizeHistory(`?category=${encodeURIComponent(category)}`, clerkToken);
 }
 
 /**
  * 사이즈 기록 추가
  */
-export async function addSizeHistory(input: {
-  clerkUserId: string;
-  brandId: string;
-  brandName: string;
-  category: string;
-  size: string;
-  fit?: SizeFit;
-  productId?: string;
-  purchaseDate?: Date;
-}): Promise<UserSizeHistory | null> {
-  const { data, error } = await supabase
-    .from('user_size_history')
-    .insert({
-      clerk_user_id: input.clerkUserId,
-      brand_id: input.brandId,
-      brand_name: input.brandName,
-      category: input.category,
-      size: input.size,
-      fit: input.fit ?? null,
-      product_id: input.productId ?? null,
-      purchase_date: input.purchaseDate?.toISOString().split('T')[0] ?? null,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    smartMatchingLogger.error('사이즈기록 추가 실패:', error);
-    return null;
-  }
-
-  return mapSizeHistoryRow(data as UserSizeHistoryDB);
+export async function addSizeHistory(
+  input: {
+    clerkUserId: string;
+    brandId: string;
+    brandName: string;
+    category: string;
+    size: string;
+    fit?: SizeFit;
+    productId?: string;
+    purchaseDate?: Date;
+  },
+  clerkToken?: string
+): Promise<UserSizeHistory | null> {
+  const payload = await requestSmartMatching<SerializedSizeHistory>(
+    '/api/smart-matching/size-history',
+    clerkToken,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        ...input,
+        clerkUserId: undefined,
+        purchaseDate: input.purchaseDate?.toISOString(),
+      }),
+    }
+  );
+  return toSizeHistory(payload);
 }
 
 /**
  * 사이즈 핏 피드백 업데이트
  */
-export async function updateSizeFit(historyId: string, fit: SizeFit): Promise<boolean> {
-  const { error } = await supabase.from('user_size_history').update({ fit }).eq('id', historyId);
-
-  if (error) {
-    smartMatchingLogger.error('사이즈기록 핏 업데이트 실패:', error);
-    return false;
-  }
-
-  return true;
+export async function updateSizeFit(
+  historyId: string,
+  fit: SizeFit,
+  clerkToken?: string
+): Promise<boolean> {
+  const payload = await requestSmartMatching<{ success: boolean }>(
+    `/api/smart-matching/size-history/${encodeURIComponent(historyId)}`,
+    clerkToken,
+    { method: 'PATCH', body: JSON.stringify({ fit }) }
+  );
+  return payload.success;
 }
 
 /**
  * 사이즈 기록 삭제
  */
-export async function deleteSizeHistory(historyId: string): Promise<boolean> {
-  const { error } = await supabase.from('user_size_history').delete().eq('id', historyId);
-
-  if (error) {
-    smartMatchingLogger.error('사이즈기록 삭제 실패:', error);
-    return false;
-  }
-
-  return true;
+export async function deleteSizeHistory(historyId: string, clerkToken?: string): Promise<boolean> {
+  const payload = await requestSmartMatching<{ success: boolean }>(
+    `/api/smart-matching/size-history/${encodeURIComponent(historyId)}`,
+    clerkToken,
+    { method: 'DELETE' }
+  );
+  return payload.success;
 }
 
 /**
@@ -138,23 +127,11 @@ export async function deleteSizeHistory(historyId: string): Promise<boolean> {
 export async function getLatestSizeByBrand(
   clerkUserId: string,
   brandId: string,
-  category: string
+  category: string,
+  clerkToken?: string
 ): Promise<UserSizeHistory | null> {
-  const { data, error } = await supabase
-    .from('user_size_history')
-    .select('*')
-    .eq('clerk_user_id', clerkUserId)
-    .eq('brand_id', brandId)
-    .eq('category', category)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return mapSizeHistoryRow(data as UserSizeHistoryDB);
+  const history = await getSizeHistoryByBrand(clerkUserId, brandId, clerkToken);
+  return history.find((item) => item.category === category) ?? null;
 }
 
 /**
@@ -163,23 +140,11 @@ export async function getLatestSizeByBrand(
  */
 export async function getPerfectFitHistory(
   clerkUserId: string,
-  category?: string
+  category?: string,
+  clerkToken?: string
 ): Promise<UserSizeHistory[]> {
-  let query = supabase
-    .from('user_size_history')
-    .select('*')
-    .eq('clerk_user_id', clerkUserId)
-    .eq('fit', 'perfect');
-
-  if (category) {
-    query = query.eq('category', category);
-  }
-
-  const { data, error } = await query.order('created_at', { ascending: false });
-
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as UserSizeHistoryDB[]).map(mapSizeHistoryRow);
+  const history = category
+    ? await getSizeHistoryByCategory(clerkUserId, category, clerkToken)
+    : await getSizeHistory(clerkUserId, clerkToken);
+  return history.filter((item) => item.fit === 'perfect');
 }

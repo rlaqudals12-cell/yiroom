@@ -67,6 +67,28 @@ describe('calculateMatchScore', () => {
   });
 });
 
+describe('사용자 노출 퍼스널컬러 문구', () => {
+  it('추천 이유와 코디 팁에 내부 계절 코드 대신 한국어 라벨을 쓴다', () => {
+    const top = createMockItem({
+      id: 'spring-top',
+      subCategory: 'top',
+      metadata: { color: ['코랄'], season: ['spring'], occasion: [] },
+    });
+    const bottom = createMockItem({
+      id: 'spring-bottom',
+      subCategory: 'bottom',
+      metadata: { color: ['아이보리'], season: ['spring'], occasion: [] },
+    });
+
+    const recommendations = recommendFromCloset([top], { personalColor: 'Spring' });
+    const outfit = suggestOutfitFromCloset([top, bottom], { personalColor: 'Spring' });
+    const userCopy = [...recommendations.flatMap((item) => item.reasons), ...(outfit?.tips ?? [])];
+
+    expect(userCopy.join(' ')).toContain('봄 웜톤');
+    expect(userCopy.join(' ')).not.toContain('Spring');
+  });
+});
+
 describe('getRecommendationSummary', () => {
   it('total에 옷장 전체 벌 수를 반환해야 한다 (closet 외 카테고리 제외)', () => {
     const items = [
@@ -79,8 +101,8 @@ describe('getRecommendationSummary', () => {
     expect(summary.total).toBe(2);
   });
 
-  it('0벌 카테고리는 "없어요", 1벌 카테고리는 "1벌뿐"으로 분리 안내해야 한다', () => {
-    // 상의 1벌 + 하의 2벌 → 상의=빈약(1벌뿐), 아우터·신발=부재(없어요), 하의=안내 없음
+  it('0벌 카테고리는 미등록, 1벌 카테고리는 "1벌뿐"으로 분리 안내해야 한다', () => {
+    // 상의 1벌 + 하의 2벌 → 상의=빈약(1벌뿐), 아우터·신발=미등록, 하의=안내 없음
     const splitItems: InventoryItem[] = [
       createMockItem({ id: 'top-1', subCategory: 'top' }),
       createMockItem({ id: 'bottom-1', subCategory: 'bottom' }),
@@ -88,7 +110,7 @@ describe('getRecommendationSummary', () => {
     ];
     const summary = getRecommendationSummary(splitItems, {});
 
-    const absentMessage = summary.suggestions.find((s) => s.includes('없어요'));
+    const absentMessage = summary.suggestions.find((s) => s.includes('아직 등록 안 됐어요'));
     const thinMessage = summary.suggestions.find((s) => s.includes('1벌뿐'));
 
     // 0벌(아우터·신발)은 부재 안내에만 등장
@@ -100,6 +122,46 @@ describe('getRecommendationSummary', () => {
     // 2벌 이상(하의)은 어느 안내에도 없음
     expect(absentMessage).not.toContain('하의');
     expect(thinMessage).not.toContain('하의');
+    expect(absentMessage).toBe('아우터, 신발이 아직 등록 안 됐어요');
+    expect(thinMessage).toContain('상의는 1벌뿐이에요');
+    expect(summary.suggestions.join(' ')).not.toContain('상의은');
+    expect(summary.suggestions.join(' ')).not.toContain('없어요');
+  });
+
+  it('요청하면 부재 안내만 숨기고 다른 보완 안내는 유지해야 한다', () => {
+    const summary = getRecommendationSummary([createMockItem({ subCategory: 'top' })], {
+      hideAbsentCategoryTip: true,
+    });
+
+    expect(summary.suggestions.some((s) => s.includes('아직 등록 안 됐어요'))).toBe(false);
+    expect(summary.suggestions.some((s) => s.includes('1벌뿐'))).toBe(true);
+  });
+
+  it('계절 중립 상수가 아니라 퍼스널컬러·체형 축으로 적합도를 판정해야 한다', () => {
+    const springTop = createMockItem({
+      name: '코랄 아이보리 상의',
+      metadata: { color: ['코랄', '아이보리'], season: [], occasion: [] },
+    });
+    const raw = calculateMatchScore(springTop, { personalColor: 'Spring' });
+    const summary = getRecommendationSummary([springTop], { personalColor: 'Spring' });
+
+    expect(raw.seasonScore).toBe(50);
+    expect(raw.total).toBeLessThan(70);
+    expect(summary.wellMatched).toBe(1);
+    expect(summary.needsImprovement).toBe(0);
+  });
+
+  it('보완 제안에 원시 영문 시즌을 노출하지 않는다', () => {
+    const blackTop = createMockItem({
+      name: '블랙 상의',
+      metadata: { color: ['블랙'], season: [], occasion: [] },
+    });
+
+    const summary = getRecommendationSummary([blackTop], { personalColor: 'Spring' });
+    const message = summary.suggestions.join(' ');
+
+    expect(message).toContain('봄 웜톤에 어울리는 옷');
+    expect(message).not.toContain('Spring');
   });
 });
 
@@ -245,10 +307,10 @@ describe('한글 sub_category 실데이터 형상', () => {
     // 단 '상의가 없다'류의 오집계(unknown 처리·0벌 취급)는 아니어야 한다
     const summary = getRecommendationSummary(koreanItems, {});
 
-    // 아우터 0벌은 반드시 부재('없어요') 안내에 포함
-    expect(summary.suggestions.some((s) => s.includes('아우터') && s.includes('없어요'))).toBe(
-      true
-    );
+    // 아우터 0벌은 반드시 부재(미등록) 안내에 포함
+    expect(
+      summary.suggestions.some((s) => s.includes('아우터') && s.includes('아직 등록 안 됐어요'))
+    ).toBe(true);
     // 보유 1벌인 상의는 부재가 아니라 '1벌뿐' 안내로 분류
     expect(summary.suggestions.some((s) => s.includes('상의') && s.includes('1벌뿐'))).toBe(true);
   });
@@ -312,7 +374,7 @@ describe('원피스 조립 경로', () => {
   it('원피스 보유 시 상·하의 부재를 "없어요"로 안내하지 않아야 한다', () => {
     const summary = getRecommendationSummary(dressOnly, {});
 
-    const absentMessage = summary.suggestions.find((s) => s.includes('없어요'));
+    const absentMessage = summary.suggestions.find((s) => s.includes('아직 등록 안 됐어요'));
     expect(absentMessage).not.toContain('상의');
     expect(absentMessage).not.toContain('하의');
     // 대신 원피스로 조립 가능하다는 사실 + 확장 경로를 안내

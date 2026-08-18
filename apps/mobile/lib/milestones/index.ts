@@ -298,63 +298,23 @@ export const ALL_MILESTONES: Milestone[] = [
  * 사용자 달성 마일스톤 조회
  */
 export async function getUserMilestones(
-  supabase: SupabaseClient,
-  userId: string
+  _supabase: SupabaseClient,
+  _userId: string
 ): Promise<UserMilestone[]> {
-  const { data } = await supabase
-    .from('user_milestones')
-    .select('milestone_id, achieved_at, current_value')
-    .eq('clerk_user_id', userId)
-    .order('achieved_at', { ascending: false });
-
-  if (!data) return [];
-
-  return data.map((row) => {
-    const milestone = ALL_MILESTONES.find((m) => m.id === row.milestone_id) ?? {
-      id: row.milestone_id,
-      key: row.milestone_id,
-      name: '알 수 없는 마일스톤',
-      description: '',
-      icon: '❓',
-      category: 'streak' as MilestoneCategory,
-      threshold: 0,
-      unit: '',
-    };
-
-    return {
-      milestoneId: row.milestone_id,
-      milestone,
-      achievedAt: row.achieved_at,
-      currentValue: row.current_value ?? 0,
-    };
-  });
+  return [];
 }
 
 /**
  * 마일스톤 달성 기록
  */
 export async function achieveMilestone(
-  supabase: SupabaseClient,
-  userId: string,
-  milestoneId: string,
-  currentValue: number
+  _supabase: SupabaseClient,
+  _userId: string,
+  _milestoneId: string,
+  _currentValue: number
 ): Promise<boolean> {
-  // 이미 달성 여부 확인
-  const { count } = await supabase
-    .from('user_milestones')
-    .select('id', { count: 'exact', head: true })
-    .eq('clerk_user_id', userId)
-    .eq('milestone_id', milestoneId);
-
-  if ((count ?? 0) > 0) return false;
-
-  const { error } = await supabase.from('user_milestones').insert({
-    clerk_user_id: userId,
-    milestone_id: milestoneId,
-    current_value: currentValue,
-  });
-
-  return !error;
+  // 숨김 마일스톤의 정본 테이블/API가 없으므로 달성 저장 성공을 가장하지 않는다.
+  return false;
 }
 
 // ─── 진행률 계산 ──────────────────────────────────────

@@ -50,32 +50,6 @@ export const FEEDBACK_STATUS_LABELS: Record<FeedbackStatus, string> = {
   resolved: '해결됨',
 };
 
-// ─── DB 변환 ─────────────────────────────────────────
-
-interface FeedbackRow {
-  id: string;
-  clerk_user_id: string;
-  type: string;
-  title: string;
-  content: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
-
-function toFeedback(row: FeedbackRow): Feedback {
-  return {
-    id: row.id,
-    userId: row.clerk_user_id,
-    type: row.type as FeedbackType,
-    title: row.title,
-    content: row.content,
-    status: row.status as FeedbackStatus,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
-
 // ─── 검증 ─────────────────────────────────────────────
 
 /**
@@ -106,37 +80,24 @@ export function validateFeedback(title: string, content: string, type: string): 
  * 피드백 제출
  */
 export async function submitFeedback(
-  supabase: SupabaseClient,
-  userId: string,
-  type: FeedbackType,
-  title: string,
-  content: string
+  _supabase: SupabaseClient,
+  _userId: string,
+  _type: FeedbackType,
+  _title: string,
+  _content: string
 ): Promise<boolean> {
-  const { error } = await supabase.from('feedbacks').insert({
-    clerk_user_id: userId,
-    type,
-    title: title.trim(),
-    content: content.trim(),
-    status: 'pending',
-  });
-
-  return !error;
+  // 이 레거시 함수는 호출자가 성공으로 오인하지 않도록 API 배선 전까지 명시 실패한다.
+  return false;
 }
 
 /**
  * 내 피드백 조회
  */
 export async function getMyFeedbacks(
-  supabase: SupabaseClient,
-  userId: string
+  _supabase: SupabaseClient,
+  _userId: string
 ): Promise<Feedback[]> {
-  const { data } = await supabase
-    .from('feedbacks')
-    .select('id, clerk_user_id, type, title, content, status, created_at, updated_at')
-    .eq('clerk_user_id', userId)
-    .order('created_at', { ascending: false });
-
-  return (data ?? []).map((row) => toFeedback(row as FeedbackRow));
+  return [];
 }
 
 // ─── 필터/정렬 ───────────────────────────────────────

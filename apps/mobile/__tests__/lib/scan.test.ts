@@ -288,38 +288,27 @@ describe('searchProducts', () => {
 });
 
 describe('recordScan', () => {
-  it('스캔 기록 저장', async () => {
-    const insertMock = jest.fn().mockResolvedValue({ data: null, error: null });
+  it('존재하지 않는 레거시 테이블에 저장하지 않고 명시 실패한다', async () => {
     const mockSupabase = {
-      from: jest.fn().mockReturnValue({ insert: insertMock }),
+      from: jest.fn(),
     } as any;
 
-    await recordScan(mockSupabase, 'user_123', '4006381333931', '테스트 제품');
-    expect(mockSupabase.from).toHaveBeenCalledWith('scan_history');
-    expect(insertMock).toHaveBeenCalledWith({
-      clerk_user_id: 'user_123',
-      barcode: '4006381333931',
-      product_name: '테스트 제품',
-    });
+    await expect(
+      recordScan(mockSupabase, 'user_123', '4006381333931', '테스트 제품')
+    ).rejects.toThrow('현재 지원하지 않아요');
+    expect(mockSupabase.from).not.toHaveBeenCalled();
   });
 });
 
 describe('getRecentScans', () => {
-  it('최근 스캔 목록 반환', async () => {
-    const mockScans = [
-      { id: 's1', clerk_user_id: 'user_123', barcode: '123', product_name: '크림', scanned_at: '2026-03-04' },
-    ];
-
+  it('레거시 이력은 빈 배열을 반환하고 유령 테이블을 조회하지 않는다', async () => {
     const mockSupabase = {
-      from: jest.fn().mockReturnThis(),
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockResolvedValue({ data: mockScans }),
+      from: jest.fn(),
     } as any;
 
     const result = await getRecentScans(mockSupabase, 'user_123');
-    expect(result).toEqual(mockScans);
+    expect(result).toEqual([]);
+    expect(mockSupabase.from).not.toHaveBeenCalled();
   });
 
   it('스캔 기록 없을 때 빈 배열', async () => {

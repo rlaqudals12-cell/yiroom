@@ -3,69 +3,116 @@
  */
 import { useAuth } from '@clerk/clerk-expo';
 import { useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { GlassCard, ScreenContainer } from '@/components/ui';
+import { ErrorState, GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
-import { useClerkSupabaseClient } from '@/lib/supabase';
+import {
+  getProductShelfItem,
+  updateProductShelfItem,
+  type ProductShelfItem,
+  type ProductShelfStatus,
+} from '@/lib/api/product-shelf';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 interface ShelfDetail {
   name: string;
   brand: string;
-  category: string;
-  status: string;
-  expiresAt: string | null;
+  status: ProductShelfStatus;
+  expiresAt?: string;
   ingredients: string[];
   conflicts: { ingredient: string; reason: string }[];
 }
 
-const STATUS_ACTIONS = [
-  { id: 'stored', label: '보관중', emoji: '🗄️' },
-  { id: 'in_use', label: '사용중', emoji: '✨' },
-  { id: 'finished', label: '다 씀', emoji: '✅' },
+const STATUS_ACTIONS: { id: ProductShelfStatus; label: string }[] = [
+  { id: 'owned', label: '보유중' },
+  { id: 'wishlist', label: '관심' },
+  { id: 'used_up', label: '다 씀' },
+  { id: 'archived', label: '보관' },
 ];
+
+function toShelfDetail(item: ProductShelfItem): ShelfDetail {
+  const ingredientAnalysis = item.analysisResult?.ingredientAnalysis;
+  const notes = [...(ingredientAnalysis?.caution ?? []), ...(ingredientAnalysis?.avoid ?? [])];
+  const interactions = ingredientAnalysis?.interactions ?? [];
+
+  return {
+    name: item.productName || '이름 없음',
+    brand: item.productBrand || '브랜드 미등록',
+    status: item.status,
+    expiresAt: item.expiresAt,
+    ingredients: item.productIngredients.map(
+      (ingredient) => ingredient.nameKo || ingredient.inciName
+    ),
+    conflicts: [
+      ...notes.map((note) => ({ ingredient: note.ingredient, reason: note.note })),
+      ...interactions.map((warning) => ({
+        ingredient: `${warning.ingredient1} · ${warning.ingredient2}`,
+        reason: warning.reason,
+      })),
+    ],
+  };
+}
+
+function formatExpiry(value: string | undefined): string {
+  if (!value) return '미등록';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '미등록' : date.toLocaleDateString('ko-KR');
+}
 
 export default function ShelfDetailScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, isDark } = useTheme();
-  const { userId } = useAuth();
-  const supabase = useClerkSupabaseClient();
+  const { getToken } = useAuth();
   const [detail, setDetail] = useState<ShelfDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [status, setStatus] = useState('stored');
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<ProductShelfStatus>('owned');
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  // Supabase에서 제품 상세 조회
-  useEffect(() => {
-    if (!userId || !id) return;
-    const fetchDetail = async (): Promise<void> => {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('user_inventory')
-        .select('name, brand, category, status, expires_at, metadata')
-        .eq('id', id)
-        .eq('clerk_user_id', userId)
-        .single();
-
-      if (!error && data) {
-        const meta = (data.metadata as Record<string, unknown>) ?? {};
-        setDetail({
-          name: data.name ?? '이름 없음',
-          brand: data.brand ?? '',
-          category: data.category ?? '스킨케어',
-          status: data.status ?? 'stored',
-          expiresAt: data.expires_at,
-          ingredients: (meta.ingredients as string[]) ?? [],
-          conflicts: (meta.conflicts as { ingredient: string; reason: string }[]) ?? [],
-        });
-        setStatus(data.status ?? 'stored');
-      }
+  const fetchDetail = useCallback(async (): Promise<void> => {
+    if (!id) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      const item = await getProductShelfItem(id, token);
+      const next = toShelfDetail(item);
+      setDetail(next);
+      setStatus(next.status);
+    } catch (caught) {
+      setDetail(null);
+      setError(caught instanceof Error ? caught.message : '제품 정보를 불러오지 못했어요.');
+    } finally {
       setIsLoading(false);
-    };
-    fetchDetail();
-  }, [userId, id, supabase]);
+    }
+  }, [getToken, id]);
+
+  useEffect(() => {
+    void fetchDetail();
+  }, [fetchDetail]);
+
+  const handleStatusChange = useCallback(
+    async (nextStatus: ProductShelfStatus): Promise<void> => {
+      if (!id || nextStatus === status || isUpdating) return;
+      setIsUpdating(true);
+      try {
+        const token = await getToken();
+        if (!token) throw new Error('로그인이 필요합니다.');
+        const updated = await updateProductShelfItem(id, { status: nextStatus }, token);
+        setStatus(updated.status);
+        setDetail((current) => (current ? { ...current, status: updated.status } : current));
+      } catch {
+        Alert.alert('저장 실패', '제품 상태를 바꾸지 못했어요. 잠시 후 다시 시도해주세요.');
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    [getToken, id, isUpdating, status]
+  );
 
   if (isLoading) {
     return (
@@ -90,12 +137,10 @@ export default function ShelfDetailScreen(): React.JSX.Element {
         testID="shelf-detail-screen"
         backgroundGradient="beauty"
       >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontSize: 48, marginBottom: spacing.md }}>📦</Text>
-          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.base }}>
-            제품을 찾을 수 없습니다
-          </Text>
-        </View>
+        <ErrorState
+          message={error || '제품을 찾을 수 없어요.'}
+          onRetry={() => void fetchDetail()}
+        />
       </ScreenContainer>
     );
   }
@@ -114,9 +159,7 @@ export default function ShelfDetailScreen(): React.JSX.Element {
             <Text style={{ fontSize: 36 }}>🧴</Text>
           </View>
           <Text style={[styles.name, { color: colors.foreground }]}>{detail.name}</Text>
-          <Text style={[styles.brand, { color: colors.mutedForeground }]}>
-            {detail.brand} · {detail.category}
-          </Text>
+          <Text style={[styles.brand, { color: colors.mutedForeground }]}>{detail.brand}</Text>
         </GlassCard>
       </Animated.View>
 
@@ -124,7 +167,9 @@ export default function ShelfDetailScreen(): React.JSX.Element {
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
         <GlassCard shadowSize="md" style={{ ...styles.card }}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>사용기한</Text>
-          <Text style={[styles.expiryDate, { color: colors.foreground }]}>{detail.expiresAt}</Text>
+          <Text style={[styles.expiryDate, { color: colors.foreground }]}>
+            {formatExpiry(detail.expiresAt)}
+          </Text>
         </GlassCard>
       </Animated.View>
 
@@ -133,11 +178,17 @@ export default function ShelfDetailScreen(): React.JSX.Element {
         <GlassCard shadowSize="md" style={{ ...styles.card }}>
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>주요 성분</Text>
           <View style={styles.ingredientList}>
-            {detail.ingredients.map((ing, idx) => (
-              <View key={idx} style={[styles.ingredientChip, { backgroundColor: colors.muted }]}>
-                <Text style={[styles.ingredientText, { color: colors.foreground }]}>{ing}</Text>
-              </View>
-            ))}
+            {detail.ingredients.length > 0 ? (
+              detail.ingredients.map((ing) => (
+                <View key={ing} style={[styles.ingredientChip, { backgroundColor: colors.muted }]}>
+                  <Text style={[styles.ingredientText, { color: colors.foreground }]}>{ing}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={[styles.ingredientText, { color: colors.mutedForeground }]}>
+                등록된 성분 정보가 없어요.
+              </Text>
+            )}
           </View>
         </GlassCard>
       </Animated.View>
@@ -189,9 +240,11 @@ export default function ShelfDetailScreen(): React.JSX.Element {
                   borderWidth: status === action.id ? 0 : 1,
                 },
               ]}
-              onPress={() => setStatus(action.id as 'stored' | 'in_use' | 'finished')}
+              accessibilityRole="button"
+              accessibilityState={{ selected: status === action.id, disabled: isUpdating }}
+              disabled={isUpdating}
+              onPress={() => void handleStatusChange(action.id)}
             >
-              <Text style={{ fontSize: 20 }}>{action.emoji}</Text>
               <Text
                 style={[
                   styles.actionLabel,

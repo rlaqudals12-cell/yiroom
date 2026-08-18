@@ -17,6 +17,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import {
   AnalysisLoadingState,
   AnalysisErrorState,
+  AnalysisSaveFailureNotice,
   ResultLayout,
   ColorPalette,
   ColorHarmonyGuide,
@@ -272,6 +273,11 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
         headerContent={
           <>
             <AIBadge variant="small" />
+            {result.dbSaveFailed && (
+              <AnalysisSaveFailureNotice
+                onRetry={() => router.replace('/(analysis)/personal-color')}
+              />
+            )}
             <HeaderContent
               seasonName={season.name}
               subType={season.subType}

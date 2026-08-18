@@ -16,27 +16,30 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 
 import { CapsuleProgressBar } from './CapsuleProgressBar';
 import { useConnectionExposure } from '../../hooks/useConnectionExposure';
-import type { DailySolutionProduct } from '../../lib/capsule/api';
+import type { DailyItem, DailyItemTimeOfDay, DailySolutionProduct } from '../../lib/capsule/api';
 import { capsuleItemToExposeRequest } from '../../lib/connection-awareness';
 import { useTheme } from '../../lib/theme';
 import type { ModuleCode } from '../../types/capsule';
 import { GlassCard } from '../ui/GlassCard';
 
-interface DailyItem {
-  id: string;
-  moduleCode: string;
-  name: string;
-  reason: string;
-  isChecked: boolean;
-  /** 아이템에 붙은 실제 제품 (ADR-117) — 없으면 제품 줄 미노출 */
-  solutionProduct?: DailySolutionProduct;
-}
+type DailyCardItem = Pick<
+  DailyItem,
+  | 'id'
+  | 'moduleCode'
+  | 'name'
+  | 'reason'
+  | 'isChecked'
+  | 'timeOfDay'
+  | 'groupNote'
+  | 'solution'
+  | 'solutionProduct'
+>;
 
 interface DailyCapsuleCardProps {
   /** null이면 Level 0 (생성 전) */
   capsule: {
     id: string;
-    items: DailyItem[];
+    items: DailyCardItem[];
     totalCcs: number;
     status: string;
   } | null;
@@ -63,6 +66,16 @@ const MODULE_EMOJI: Record<string, string> = {
   oral: '🦷',
   body: '🧘',
 };
+
+const TIME_GROUPS: readonly { key: DailyItemTimeOfDay; label: string }[] = [
+  { key: 'morning', label: '아침' },
+  { key: 'evening', label: '저녁' },
+  { key: 'anytime', label: '언제든' },
+];
+
+function resolveTimeOfDay(value: DailyCardItem['timeOfDay']): DailyItemTimeOfDay {
+  return value === 'morning' || value === 'evening' ? value : 'anytime';
+}
 
 export function DailyCapsuleCard({
   capsule,
@@ -124,6 +137,50 @@ export function DailyCapsuleCard({
       </GlassCard>
     );
   }
+
+  // 서버의 empty 캡슐은 분석 재료가 없다는 뜻이라 같은 생성 요청을 반복하지 않는다.
+  if (capsule.items.length === 0) {
+    return (
+      <GlassCard testID={testID} shadowSize="lg" style={{ padding: spacing.lg }}>
+        <Text
+          style={{
+            color: colors.foreground,
+            fontSize: typography.size.lg,
+            fontWeight: typography.weight.bold,
+            marginBottom: spacing.xs,
+          }}
+        >
+          아직 오늘의 루틴이 없어요
+        </Text>
+        <Text
+          style={{
+            color: colors.mutedForeground,
+            fontSize: typography.size.sm,
+            lineHeight: typography.size.sm * 1.5,
+            marginBottom: spacing.md,
+          }}
+        >
+          분석을 완료하면 내게 맞는 루틴을 만들어드려요.
+        </Text>
+        <Pressable
+          testID="capsule-empty-analyze"
+          accessibilityRole="button"
+          accessibilityLabel="통합 분석 시작하기"
+          onPress={() => router.push('/(analysis)/integrated')}
+          style={[styles.emptyButton, { backgroundColor: brand.primary, borderRadius: radii.lg }]}
+        >
+          <Text style={[styles.emptyButtonText, { fontWeight: typography.weight.bold }]}>
+            분석 시작하기
+          </Text>
+        </Pressable>
+      </GlassCard>
+    );
+  }
+
+  const groupedItems = TIME_GROUPS.map((group) => ({
+    ...group,
+    items: capsule.items.filter((item) => resolveTimeOfDay(item.timeOfDay) === group.key),
+  })).filter((group) => group.items.length > 0);
 
   // Level 1+2: 캡슐 존재
   return (
@@ -198,8 +255,24 @@ export function DailyCapsuleCard({
       {/* Level 2: 아이템 리스트 */}
       {expanded ? (
         <View style={[styles.itemList, { marginTop: spacing.md }]}>
-          {capsule.items.map((item) => (
-            <CapsuleItemWithCA key={item.id} item={item} onCheckItem={onCheckItem} />
+          {groupedItems.map((group) => (
+            <View key={group.key} testID={`capsule-time-group-${group.key}`}>
+              <Text
+                style={[
+                  styles.timeGroupLabel,
+                  {
+                    color: colors.mutedForeground,
+                    fontSize: typography.size.xs,
+                    fontWeight: typography.weight.semibold,
+                  },
+                ]}
+              >
+                {group.label}
+              </Text>
+              {group.items.map((item) => (
+                <CapsuleItemWithCA key={item.id} item={item} onCheckItem={onCheckItem} />
+              ))}
+            </View>
           ))}
         </View>
       ) : null}
@@ -294,7 +367,7 @@ function CapsuleItemWithCA({
   item,
   onCheckItem,
 }: {
-  item: DailyItem;
+  item: DailyCardItem;
   onCheckItem: (itemId: string, isChecked: boolean) => void;
 }): React.JSX.Element {
   const { colors, spacing, radii, typography, isDark } = useTheme();
@@ -322,6 +395,17 @@ function CapsuleItemWithCA({
 
   return (
     <View>
+      {item.groupNote ? (
+        <Text
+          testID="capsule-group-note"
+          style={[
+            styles.groupNote,
+            { color: colors.mutedForeground, fontSize: typography.size.xs },
+          ]}
+        >
+          {item.groupNote}
+        </Text>
+      ) : null}
       <Pressable
         onPress={handlePress}
         accessibilityRole="checkbox"
@@ -385,6 +469,14 @@ function CapsuleItemWithCA({
               {item.reason}
             </Text>
           ) : null}
+          {item.solution ? (
+            <Text
+              testID="capsule-solution"
+              style={{ color: colors.foreground, fontSize: typography.size.xs, marginTop: 4 }}
+            >
+              {item.solution}
+            </Text>
+          ) : null}
         </View>
       </Pressable>
 
@@ -420,6 +512,14 @@ const styles = StyleSheet.create({
   },
   itemList: {
     gap: 4,
+  },
+  timeGroupLabel: {
+    marginBottom: 4,
+    marginTop: 8,
+  },
+  groupNote: {
+    marginBottom: 2,
+    marginHorizontal: 8,
   },
   itemRow: {
     flexDirection: 'row',
@@ -460,5 +560,15 @@ const styles = StyleSheet.create({
   },
   productName: {
     flexShrink: 1,
+  },
+  emptyButton: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  emptyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
   },
 });

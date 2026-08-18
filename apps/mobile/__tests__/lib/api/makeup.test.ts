@@ -84,6 +84,14 @@ describe('requestMakeupAnalysis', () => {
     expect(result.usedMock).toBe(false);
   });
 
+  it('DB 저장 실패 플래그를 결과 화면까지 보존한다', async () => {
+    mockFetchOnce(200, { ...successBody(), dbSaveFailed: true });
+
+    const result = await requestMakeupAnalysis(VALID_INPUT, 'token-1', BASE_URL);
+
+    expect(result.dbSaveFailed).toBe(true);
+  });
+
   it('웹 넓은 enum(downturned·small)을 모바일 값으로 접는다', async () => {
     mockFetchOnce(
       200,

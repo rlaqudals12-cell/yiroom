@@ -207,7 +207,7 @@ export default function RecommendScreen() {
     if (!outfit || isSaving) return;
 
     if (isOutfitAlreadySaved()) {
-      Alert.alert('알림', '이미 저장된 코디예요.');
+      router.push('/(closet)/outfits');
       return;
     }
 
@@ -486,8 +486,10 @@ export default function RecommendScreen() {
               isSaving && styles.saveOutfitButtonDisabled,
             ]}
             onPress={handleSaveOutfit}
-            disabled={isSaving || isOutfitAlreadySaved()}
+            disabled={isSaving}
             testID="save-outfit-button"
+            accessibilityRole="button"
+            accessibilityLabel={isOutfitAlreadySaved() ? '저장한 코디 보기' : '코디 저장'}
           >
             {isSaving ? (
               <ActivityIndicator size="small" color={colors.card} />
@@ -506,7 +508,7 @@ export default function RecommendScreen() {
                     },
                   ]}
                 >
-                  {isOutfitAlreadySaved() ? '저장됨' : '코디 저장'}
+                  {isOutfitAlreadySaved() ? '저장한 코디 보기' : '코디 저장'}
                 </Text>
               </>
             )}
@@ -527,6 +529,12 @@ export default function RecommendScreen() {
       <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
         <GlassCard shadowSize="md" style={{ ...styles.summaryCard }}>
           <Text style={[styles.summaryTitle, { color: colors.foreground }]}>내 옷장 분석</Text>
+          <Text
+            testID="closet-summary-total"
+            style={[styles.summaryTotal, { color: colors.mutedForeground }]}
+          >
+            전체 {summary.total}벌
+          </Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
               <Text style={[styles.summaryValue, { color: status.success }]}>
@@ -537,6 +545,15 @@ export default function RecommendScreen() {
               </Text>
             </View>
             <View style={styles.summaryItem}>
+              <Text
+                testID="closet-summary-neutral"
+                style={[styles.summaryValue, { color: colors.foreground }]}
+              >
+                {summary.total - summary.wellMatched - summary.needsImprovement}
+              </Text>
+              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>무난</Text>
+            </View>
+            <View style={styles.summaryItem}>
               <Text style={[styles.summaryValue, { color: status.warning }]}>
                 {summary.needsImprovement}
               </Text>
@@ -545,15 +562,27 @@ export default function RecommendScreen() {
               </Text>
             </View>
           </View>
+          <Text
+            testID="closet-summary-basis"
+            style={[styles.summaryBasis, { color: colors.mutedForeground }]}
+          >
+            퍼스널컬러·체형 기준이에요
+          </Text>
           {summary.suggestions.length > 0 && (
             <View style={[styles.suggestionsContainer, { borderTopColor: colors.border }]}>
               {summary.suggestions.map((suggestion, index) => (
-                <Text
-                  key={index}
-                  style={[styles.suggestionText, { color: colors.mutedForeground }]}
-                >
-                  📌 {suggestion}
-                </Text>
+                <View key={`${suggestion}-${index}`} style={styles.suggestionRow}>
+                  <Text
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
+                    style={[styles.suggestionText, { color: colors.mutedForeground }]}
+                  >
+                    •
+                  </Text>
+                  <Text style={[styles.suggestionText, { color: colors.mutedForeground }]}>
+                    {suggestion}
+                  </Text>
+                </View>
               ))}
             </View>
           )}
@@ -770,7 +799,12 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
-    marginBottom: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  summaryTotal: {
+    fontSize: typography.size.xs,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
   },
   summaryRow: {
     flexDirection: 'row',
@@ -788,6 +822,11 @@ const styles = StyleSheet.create({
     fontSize: typography.size.xs,
     marginTop: spacing.xs,
   },
+  summaryBasis: {
+    fontSize: 11,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  },
   suggestionsContainer: {
     borderTopWidth: 1,
     paddingTop: spacing.smx,
@@ -796,6 +835,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
     marginBottom: spacing.xs,
+  },
+  suggestionRow: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: spacing.xs,
   },
   emptyContainer: {
     flex: 1,

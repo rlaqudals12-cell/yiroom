@@ -2,16 +2,14 @@
  * 체중 목표 관리 화면
  * 체중 기록 + 목표 설정 + 트렌드 표시
  */
-import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
 
 import { TIMING } from '../../lib/animations';
-import { useClerkSupabaseClient } from '../../lib/supabase';
 import { useTheme, spacing } from '../../lib/theme';
 
 interface WeightEntry {
@@ -28,132 +26,38 @@ interface WeightGoal {
 
 export default function WeightGoalScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
-  const { user } = useUser();
-  const supabase = useClerkSupabaseClient();
 
-  const [entries, setEntries] = useState<WeightEntry[]>([]);
-  const [goal, setGoal] = useState<WeightGoal | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [entries] = useState<WeightEntry[]>([]);
+  const [goal] = useState<WeightGoal | null>(null);
+  const [isLoading] = useState(false);
   const [newWeight, setNewWeight] = useState('');
   const [targetWeight, setTargetWeight] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
 
   const fetchData = useCallback(async () => {
-    if (!user?.id) return;
-
-    setIsLoading(true);
-    try {
-      // 최근 30일 체중 기록
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
-
-      const { data: weightData } = await supabase
-        .from('weight_logs')
-        .select('id, date, weight')
-        .gte('date', thirtyDaysAgo.toISOString().split('T')[0])
-        .order('date', { ascending: false });
-
-      if (weightData) {
-        setEntries(
-          weightData.map((w) => ({
-            id: w.id,
-            date: w.date,
-            weight: w.weight,
-          }))
-        );
-      }
-
-      // 목표 조회
-      const { data: goalData } = await supabase
-        .from('weight_goals')
-        .select('target_weight, start_weight, start_date')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (goalData) {
-        setGoal({
-          targetWeight: goalData.target_weight,
-          startWeight: goalData.start_weight,
-          startDate: goalData.start_date,
-        });
-        setTargetWeight(String(goalData.target_weight));
-      }
-    } catch {
-      // 조용히 실패
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id, supabase]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    // 체중 저장 API가 생기기 전에는 존재하지 않는 테이블을 조회하지 않는다.
+  }, []);
 
   // 체중 기록
   const handleLogWeight = async (): Promise<void> => {
     const weight = parseFloat(newWeight);
-    if (isNaN(weight) || weight < 20 || weight > 300 || !user?.id) {
+    if (isNaN(weight) || weight < 20 || weight > 300) {
       Alert.alert('오류', '올바른 체중을 입력해주세요 (20~300kg)');
       return;
     }
 
-    setIsSaving(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-    try {
-      const today = new Date().toISOString().split('T')[0];
-
-      // 오늘 기록이 있으면 업데이트, 없으면 생성
-      const { data: existing } = await supabase
-        .from('weight_logs')
-        .select('id')
-        .eq('date', today)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase.from('weight_logs').update({ weight }).eq('id', existing.id);
-      } else {
-        await supabase.from('weight_logs').insert({ clerk_user_id: user.id, date: today, weight });
-      }
-
-      Alert.alert('완료', '체중이 기록되었어요!');
-      setNewWeight('');
-      fetchData();
-    } catch {
-      Alert.alert('오류', '체중 기록에 실패했어요.');
-    } finally {
-      setIsSaving(false);
-    }
+    Alert.alert('기능 준비 중', '체중 기록 저장은 현재 지원하지 않아요.');
   };
 
   // 목표 설정
   const handleSetGoal = async (): Promise<void> => {
     const target = parseFloat(targetWeight);
-    if (isNaN(target) || target < 20 || target > 300 || !user?.id) {
+    if (isNaN(target) || target < 20 || target > 300) {
       Alert.alert('오류', '올바른 목표 체중을 입력해주세요');
       return;
     }
 
-    setIsSaving(true);
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const currentWeight = entries[0]?.weight ?? 0;
-
-      await supabase.from('weight_goals').insert({
-        clerk_user_id: user.id,
-        target_weight: target,
-        start_weight: currentWeight,
-        start_date: today,
-      });
-
-      Alert.alert('완료', '목표가 설정되었어요!');
-      fetchData();
-    } catch {
-      Alert.alert('오류', '목표 설정에 실패했어요.');
-    } finally {
-      setIsSaving(false);
-    }
+    Alert.alert('기능 준비 중', '체중 목표 저장은 현재 지원하지 않아요.');
   };
 
   const formatDateKo = (dateStr: string): string => {
@@ -195,6 +99,18 @@ export default function WeightGoalScreen(): React.JSX.Element {
       onRefresh={handleRefresh}
     >
       <DataStateWrapper isLoading={isLoading} isEmpty={false}>
+        <GlassCard shadowSize="md" style={{ ...styles.card }}>
+          <Text
+            style={{
+              color: colors.foreground,
+              fontSize: typography.size.sm,
+              fontWeight: typography.weight.semibold,
+            }}
+          >
+            체중 기록 저장은 현재 지원하지 않아요.
+          </Text>
+        </GlassCard>
+
         {/* 현재 상태 */}
         <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
           <GlassCard shadowSize="md" style={{ ...styles.card }}>
@@ -240,7 +156,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
                   { color: colors.mutedForeground, fontSize: typography.size.sm },
                 ]}
               >
-                아직 체중 기록이 없어요
+                저장 기능 준비 중이에요
               </Text>
             )}
           </GlassCard>
@@ -342,6 +258,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
                 value={newWeight}
                 onChangeText={setNewWeight}
                 keyboardType="decimal-pad"
+                editable={false}
                 testID="weight-input"
               />
               <Text
@@ -356,17 +273,17 @@ export default function WeightGoalScreen(): React.JSX.Element {
                 style={[
                   styles.logButton,
                   {
-                    backgroundColor: newWeight.trim() ? brand.primary : colors.muted,
+                    backgroundColor: colors.muted,
                     borderRadius: radii.xl,
                   },
                 ]}
                 onPress={handleLogWeight}
-                disabled={!newWeight.trim() || isSaving}
+                disabled
                 testID="weight-log-button"
               >
                 <Text
                   style={{
-                    color: newWeight.trim() ? brand.primaryForeground : colors.mutedForeground,
+                    color: colors.mutedForeground,
                     fontWeight: typography.weight.bold,
                   }}
                 >
@@ -409,6 +326,7 @@ export default function WeightGoalScreen(): React.JSX.Element {
                   value={targetWeight}
                   onChangeText={setTargetWeight}
                   keyboardType="decimal-pad"
+                  editable={false}
                   testID="target-weight-input"
                 />
                 <Text
@@ -423,17 +341,17 @@ export default function WeightGoalScreen(): React.JSX.Element {
                   style={[
                     styles.logButton,
                     {
-                      backgroundColor: targetWeight.trim() ? brand.primary : colors.muted,
+                      backgroundColor: colors.muted,
                       borderRadius: radii.xl,
                     },
                   ]}
                   onPress={handleSetGoal}
-                  disabled={!targetWeight.trim() || isSaving}
+                  disabled
                   testID="goal-set-button"
                 >
                   <Text
                     style={{
-                      color: targetWeight.trim() ? brand.primaryForeground : colors.mutedForeground,
+                      color: colors.mutedForeground,
                       fontWeight: typography.weight.bold,
                     }}
                   >

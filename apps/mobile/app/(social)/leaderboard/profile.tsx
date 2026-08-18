@@ -44,7 +44,7 @@ interface UserProfile {
 }
 
 interface UserStats {
-  totalAnalyses: number;
+  totalAnalyses: number | null;
   totalWorkouts: number;
   currentStreak: number;
   badges: number;
@@ -118,11 +118,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
       }
 
       // 활동 통계
-      const [analysisCount, workoutCount, badgeCount] = await Promise.all([
-        supabase
-          .from('user_analyses')
-          .select('*', { count: 'exact', head: true })
-          .eq('clerk_user_id', params.userId),
+      const [workoutCount, badgeCount] = await Promise.all([
         supabase
           .from('workout_logs')
           .select('*', { count: 'exact', head: true })
@@ -134,7 +130,8 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
       ]);
 
       setStats({
-        totalAnalyses: analysisCount.count ?? 0,
+        // 통합 분석 테이블/API가 없으므로 다른 사용자의 분석 횟수를 추정하지 않는다.
+        totalAnalyses: null,
         totalWorkouts: workoutCount.count ?? 0,
         currentStreak: 0,
         badges: badgeCount.count ?? 0,
@@ -455,7 +452,7 @@ export default function LeaderboardProfileScreen(): React.JSX.Element {
                       marginTop: spacing.xs,
                     }}
                   >
-                    {stat.value}
+                    {stat.value ?? '—'}
                     {stat.unit ?? ''}
                   </Text>
                   <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>

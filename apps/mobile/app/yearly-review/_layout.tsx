@@ -1,12 +1,18 @@
 /**
  * 연간 리뷰 레이아웃
  */
-import { Stack } from 'expo-router';
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect, Stack } from 'expo-router';
 
 import { useTheme } from '../../lib/theme';
 
 export default function YearlyReviewLayout() {
   const { colors, typography } = useTheme();
+
+  // ADR-098: 실데이터가 없는 W/N 연간 결산은 Phase 2 복원 전 직접 진입도 차단한다.
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   return (
     <Stack

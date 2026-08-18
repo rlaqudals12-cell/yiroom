@@ -199,6 +199,17 @@ export default function StyleTab(): React.JSX.Element {
               testID="menu-shopping"
             />
           </Animated.View>
+
+          <Animated.View entering={staggeredEntry(4)}>
+            <MenuCard
+              icon={<Package size={20} color={status.info} />}
+              iconBg={status.info + ICON_BG_OPACITY}
+              title="내 제품함"
+              description="저장한 뷰티 제품을 확인하고 관리하세요"
+              onPress={() => router.push('/(inventory)/shelf')}
+              testID="menu-product-shelf"
+            />
+          </Animated.View>
         </GlassCard>
       </Animated.View>
     </ScreenContainer>

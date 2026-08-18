@@ -5,6 +5,7 @@
  * 의존성: useTheme, useClerkSupabaseClient, ScreenContainer, DataStateWrapper
  */
 import React from 'react';
+import { waitFor } from '@testing-library/react-native';
 
 import { renderWithTheme } from '../../helpers/test-utils';
 
@@ -60,6 +61,20 @@ jest.mock('expo-haptics', () => ({
   notificationAsync: jest.fn(),
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
   NotificationFeedbackType: { Success: 'success', Warning: 'warning' },
+}));
+
+const mockGetToken = jest.fn().mockResolvedValue('clerk-token');
+jest.mock('@clerk/clerk-expo', () => ({
+  useAuth: () => ({ getToken: mockGetToken }),
+}));
+
+const mockGetFastingSessions = jest.fn();
+const mockStartFastingSession = jest.fn();
+const mockCompleteFastingSession = jest.fn();
+jest.mock('../../../lib/api/fasting', () => ({
+  getFastingSessions: (...args: unknown[]) => mockGetFastingSessions(...args),
+  startFastingSession: (...args: unknown[]) => mockStartFastingSession(...args),
+  completeFastingSession: (...args: unknown[]) => mockCompleteFastingSession(...args),
 }));
 
 jest.mock('react-native-safe-area-context', () => {
@@ -188,6 +203,8 @@ import FastingTrackerScreen from '../../../app/(nutrition)/fasting/index';
 describe('FastingTrackerScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetToken.mockResolvedValue('clerk-token');
+    mockGetFastingSessions.mockResolvedValue({ activeSession: null, history: [] });
     // limit() 체인 후 호출되는 maybeSingle 설정
     mockSupabase.maybeSingle.mockResolvedValue({ data: null, error: null });
     // not() 체인 후 history 반환
@@ -210,5 +227,14 @@ describe('FastingTrackerScreen', () => {
     const { findByText } = renderWithTheme(<FastingTrackerScreen />);
     const timer = await findByText('00:00:00');
     expect(timer).toBeTruthy();
+  });
+
+  it('Clerk 토큰을 웹 단식 API에 전달한다', async () => {
+    renderWithTheme(<FastingTrackerScreen />);
+
+    await waitFor(() => {
+      expect(mockGetFastingSessions).toHaveBeenCalledWith('clerk-token');
+    });
+    expect(mockSupabase.from).not.toHaveBeenCalled();
   });
 });

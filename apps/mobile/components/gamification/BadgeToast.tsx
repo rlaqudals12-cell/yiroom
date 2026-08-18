@@ -1,5 +1,7 @@
 'use client';
 
+import { Text, View } from 'react-native';
+
 import { RARITY_COLORS } from '@/lib/gamification';
 import { cn } from '@/lib/utils';
 import { Badge as BadgeType } from '@/types/gamification';
@@ -16,9 +18,9 @@ export function BadgeToast({ badge }: BadgeToastProps) {
   const rarityColor = RARITY_COLORS[badge.rarity];
 
   return (
-    <div data-testid="badge-toast" className="flex items-center gap-3 p-1">
+    <View testID="badge-toast" className="flex-row items-center gap-3 p-1">
       {/* 배지 아이콘 */}
-      <div
+      <View
         className={cn(
           'flex h-12 w-12 items-center justify-center rounded-full text-2xl',
           'shadow-lg',
@@ -27,16 +29,18 @@ export function BadgeToast({ badge }: BadgeToastProps) {
           rarityColor.glow
         )}
       >
-        {badge.icon}
-      </div>
+        <Text className="text-2xl">{badge.icon}</Text>
+      </View>
 
       {/* 텍스트 */}
-      <div className="flex flex-col">
-        <span className="text-xs font-medium text-muted-foreground">배지 획득!</span>
-        <span className="font-semibold">{badge.name}</span>
-        <span className="text-xs text-muted-foreground line-clamp-1">{badge.description}</span>
-      </div>
-    </div>
+      <View className="flex-col">
+        <Text className="text-xs font-medium text-muted-foreground">배지 획득!</Text>
+        <Text className="font-semibold">{badge.name}</Text>
+        <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+          {badge.description}
+        </Text>
+      </View>
+    </View>
   );
 }
 

@@ -66,6 +66,7 @@ export async function getSizeRecommendation(
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      'x-yiroom-client': 'mobile',
     },
     body: JSON.stringify(params),
   });
@@ -87,6 +88,7 @@ export async function getMeasurements(token: string): Promise<UserBodyMeasuremen
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
+      'x-yiroom-client': 'mobile',
     },
   });
 
@@ -95,8 +97,8 @@ export async function getMeasurements(token: string): Promise<UserBodyMeasuremen
     throw new Error(`HTTP ${response.status}`);
   }
 
-  const data = await response.json();
-  return data.measurements;
+  // 왜: 웹 정본 라우트는 봉투가 아닌 치수 객체 자체를 반환한다.
+  return response.json();
 }
 
 /**
@@ -111,6 +113,7 @@ export async function saveMeasurements(
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      'x-yiroom-client': 'mobile',
     },
     body: JSON.stringify(measurements),
   });
@@ -120,8 +123,8 @@ export async function saveMeasurements(
     throw new Error(error.error || `HTTP ${response.status}`);
   }
 
-  const data = await response.json();
-  return data.measurements;
+  // 왜: 웹 정본 라우트는 봉투가 아닌 저장된 치수 객체 자체를 반환한다.
+  return response.json();
 }
 
 /**
@@ -132,6 +135,7 @@ export async function getSizeHistory(token: string): Promise<SizeHistoryItem[]> 
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
+      'x-yiroom-client': 'mobile',
     },
   });
 
@@ -139,8 +143,8 @@ export async function getSizeHistory(token: string): Promise<SizeHistoryItem[]> 
     throw new Error(`HTTP ${response.status}`);
   }
 
-  const data = await response.json();
-  return data.history || [];
+  // 왜: 웹 정본 라우트는 봉투가 아닌 기록 배열 자체를 반환한다.
+  return response.json();
 }
 
 /**
@@ -162,6 +166,7 @@ export async function addSizeHistory(
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      'x-yiroom-client': 'mobile',
     },
     body: JSON.stringify(item),
   });
@@ -171,8 +176,8 @@ export async function addSizeHistory(
     throw new Error(error.error || `HTTP ${response.status}`);
   }
 
-  const data = await response.json();
-  return data.history;
+  // 왜: 웹 정본 라우트는 봉투가 아닌 생성된 기록 객체 자체를 반환한다.
+  return response.json();
 }
 
 // ============================================

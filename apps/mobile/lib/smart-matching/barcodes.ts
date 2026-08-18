@@ -1,135 +1,101 @@
 /**
- * 바코드 Repository
- * @description 바코드 스캔/조회/등록
+ * 바코드 API 클라이언트
+ * @description 바코드 스캔/조회/등록을 웹 정본 API에 위임
  */
 
-import { supabase } from '@/lib/supabase/client';
-import { smartMatchingLogger } from '@/lib/utils/logger';
-import type { ProductBarcode, ProductBarcodeDB } from '@/types/smart-matching';
+import type { ProductBarcode } from '@/types/smart-matching';
+
+import { missingSmartMatchingApi, requestSmartMatching } from './api-client';
+
+type SerializedBarcode = Omit<ProductBarcode, 'createdAt' | 'updatedAt'> & {
+  createdAt: string;
+  updatedAt: string;
+};
 
 /**
  * 바코드 변환 함수
  */
-function toBarcode(row: ProductBarcodeDB): ProductBarcode {
+function toBarcode(row: SerializedBarcode): ProductBarcode {
   return {
-    id: row.id,
-    barcode: row.barcode,
-    barcodeType: row.barcode_type as ProductBarcode['barcodeType'],
-    productId: row.product_id ?? undefined,
-    productName: row.product_name ?? undefined,
-    brand: row.brand ?? undefined,
-    category: row.category ?? undefined,
-    imageUrl: row.image_url ?? undefined,
-    source: row.source ?? undefined,
-    verified: row.verified,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
+    ...row,
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
   };
 }
 
 /**
  * 바코드로 제품 조회
  */
-export async function findByBarcode(barcode: string): Promise<ProductBarcode | null> {
-  const { data, error } = await supabase
-    .from('product_barcodes')
-    .select('*')
-    .eq('barcode', barcode)
-    .single();
+export async function findByBarcode(
+  barcode: string,
+  clerkToken?: string
+): Promise<ProductBarcode | null> {
+  const payload = await requestSmartMatching<{
+    found: boolean;
+    data?: SerializedBarcode;
+  }>('/api/smart-matching/barcodes', clerkToken, {
+    method: 'POST',
+    body: JSON.stringify({ barcode, action: 'lookup' }),
+  });
 
-  if (error || !data) {
-    return null;
-  }
-
-  return toBarcode(data as ProductBarcodeDB);
+  return payload.found && payload.data ? toBarcode(payload.data) : null;
 }
 
 /**
  * 제품 ID로 바코드 조회
  */
-export async function findByProductId(productId: string): Promise<ProductBarcode[]> {
-  const { data, error } = await supabase
-    .from('product_barcodes')
-    .select('*')
-    .eq('product_id', productId);
-
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as ProductBarcodeDB[]).map(toBarcode);
+export async function findByProductId(
+  _productId: string,
+  _clerkToken?: string
+): Promise<ProductBarcode[]> {
+  return missingSmartMatchingApi('제품별 바코드 조회');
 }
 
 /**
  * 바코드 등록
  */
-export async function createBarcode(input: {
-  barcode: string;
-  barcodeType?: string;
-  productId?: string;
-  productName?: string;
-  brand?: string;
-  category?: string;
-  imageUrl?: string;
-  source?: string;
-}): Promise<ProductBarcode | null> {
-  const { data, error } = await supabase
-    .from('product_barcodes')
-    .insert({
+export async function createBarcode(
+  input: {
+    barcode: string;
+    barcodeType?: string;
+    productId?: string;
+    productName?: string;
+    brand?: string;
+    category?: string;
+    imageUrl?: string;
+    source?: string;
+  },
+  clerkToken?: string
+): Promise<ProductBarcode | null> {
+  const payload = await requestSmartMatching<{
+    success: boolean;
+    data?: SerializedBarcode;
+  }>('/api/smart-matching/barcodes', clerkToken, {
+    method: 'POST',
+    body: JSON.stringify({
       barcode: input.barcode,
-      barcode_type: input.barcodeType || 'EAN13',
-      product_id: input.productId ?? null,
-      product_name: input.productName ?? null,
-      brand: input.brand ?? null,
-      category: input.category ?? null,
-      image_url: input.imageUrl ?? null,
-      source: input.source || 'user_report',
-      verified: false,
-    })
-    .select()
-    .single();
+      action: 'register',
+      productData: input,
+    }),
+  });
 
-  if (error) {
-    smartMatchingLogger.error('바코드 등록 실패:', error);
-    return null;
-  }
-
-  return toBarcode(data as ProductBarcodeDB);
+  return payload.success && payload.data ? toBarcode(payload.data) : null;
 }
 
 /**
  * 바코드-제품 연결
  */
-export async function linkBarcodeToProduct(barcodeId: string, productId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('product_barcodes')
-    .update({
-      product_id: productId,
-      verified: true,
-    })
-    .eq('id', barcodeId);
-
-  if (error) {
-    smartMatchingLogger.error('바코드 연결 실패:', error);
-    return false;
-  }
-
-  return true;
+export async function linkBarcodeToProduct(
+  _barcodeId: string,
+  _productId: string,
+  _clerkToken?: string
+): Promise<boolean> {
+  return missingSmartMatchingApi('바코드 제품 연결');
 }
 
 /**
  * 바코드 검증 상태 업데이트
  */
-export async function verifyBarcode(barcodeId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('product_barcodes')
-    .update({ verified: true })
-    .eq('id', barcodeId);
-
-  if (error) {
-    smartMatchingLogger.error('바코드 검증 실패:', error);
-    return false;
-  }
-
-  return true;
+export async function verifyBarcode(_barcodeId: string, _clerkToken?: string): Promise<boolean> {
+  return missingSmartMatchingApi('바코드 검증');
 }

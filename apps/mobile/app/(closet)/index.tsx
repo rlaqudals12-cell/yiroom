@@ -6,7 +6,7 @@
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Plus, Heart, SlidersHorizontal } from 'lucide-react-native';
+import { Bookmark, Heart, Plus, SlidersHorizontal, Wand2 } from 'lucide-react-native';
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
@@ -47,7 +47,7 @@ const FILTER_OPTIONS: { key: FilterCategory; label: string }[] = [
 ];
 
 export default function ClosetScreen() {
-  const { colors, module: moduleTheme, shadows: themeShadows, typography, spacing } = useTheme();
+  const { colors, module: moduleTheme, shadows: themeShadows, spacing } = useTheme();
   const router = useRouter();
 
   const { items, isLoading, isRefreshing, error: _error, toggleFavorite, refetch } = useCloset();
@@ -176,6 +176,36 @@ export default function ClosetScreen() {
           <Text style={[styles.statValue, { color: colors.foreground }]}>{stats.categories}</Text>
           <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>카테고리</Text>
         </GlassCard>
+      </Animated.View>
+
+      {/* 저장·조립 화면은 옷장 작업의 연속선이므로 목록 안에서 바로 진입할 수 있어야 한다. */}
+      <Animated.View entering={staggeredEntry(1)} style={styles.outfitActions}>
+        <Pressable
+          style={[
+            styles.outfitAction,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+          onPress={() => router.push('/(closet)/outfits')}
+          testID="closet-outfits-entry"
+          accessibilityRole="button"
+          accessibilityLabel="저장한 코디 보기"
+        >
+          <Bookmark size={18} color={moduleTheme.body.dark} />
+          <Text style={[styles.outfitActionText, { color: colors.foreground }]}>저장한 코디</Text>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.outfitAction,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+          onPress={() => router.push('/(closet)/outfit-builder')}
+          testID="closet-outfit-builder-entry"
+          accessibilityRole="button"
+          accessibilityLabel="코디 만들기"
+        >
+          <Wand2 size={18} color={moduleTheme.body.dark} />
+          <Text style={[styles.outfitActionText, { color: colors.foreground }]}>코디 만들기</Text>
+        </Pressable>
       </Animated.View>
 
       {/* 카테고리 필터 */}
@@ -380,6 +410,26 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: typography.size.xs,
     marginTop: spacing.xxs,
+  },
+  outfitActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  outfitAction: {
+    minHeight: 44,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    borderWidth: 1,
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.sm,
+  },
+  outfitActionText: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
   },
   filterContainer: {
     paddingVertical: spacing.sm,

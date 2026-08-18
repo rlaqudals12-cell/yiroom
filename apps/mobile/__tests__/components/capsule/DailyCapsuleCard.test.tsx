@@ -284,6 +284,34 @@ describe('DailyCapsuleCard', () => {
       fireEvent.press(getByLabelText('캡슐 펼치기'));
       expect(getByText('건조한 피부에 수분 공급')).toBeTruthy();
     });
+
+    it('서버의 시간대·개인화 근거·실행 솔루션을 렌더링한다', () => {
+      const { getByLabelText, getByText, getByTestId } = renderWithTheme(
+        <DailyCapsuleCard
+          capsule={{
+            ...mockCapsule,
+            items: [
+              {
+                ...mockItems[0],
+                timeOfDay: 'morning' as const,
+                groupNote: '복합성 피부와 최근 수분 분석을 반영했어요',
+                solution: '히알루론산 성분 토너를 두 번 레이어링하세요',
+              },
+            ],
+          }}
+          completionRate={0}
+          onGenerate={onGenerate}
+          onCheckItem={onCheckItem}
+        />
+      );
+
+      fireEvent.press(getByLabelText('캡슐 펼치기'));
+
+      expect(getByTestId('capsule-time-group-morning')).toBeTruthy();
+      expect(getByText('아침')).toBeTruthy();
+      expect(getByText('복합성 피부와 최근 수분 분석을 반영했어요')).toBeTruthy();
+      expect(getByText('히알루론산 성분 토너를 두 번 레이어링하세요')).toBeTruthy();
+    });
   });
 
   // 실제 제품 연결 (ADR-117) — shelf=배지(구매 연결 없음) / catalog=제품 상세 링크
@@ -384,9 +412,9 @@ describe('DailyCapsuleCard', () => {
   });
 
   describe('빈 아이템', () => {
-    it('아이템 없는 캡슐 렌더링', () => {
+    it('아이템 없는 생성 완료 캡슐은 백지 대신 분석 CTA를 표시한다', () => {
       const emptyCapsule = { id: 'empty', items: [], totalCcs: 0, status: 'active' };
-      const { getByText } = renderWithTheme(
+      const { getByText, getByTestId } = renderWithTheme(
         <DailyCapsuleCard
           capsule={emptyCapsule}
           completionRate={0}
@@ -395,7 +423,12 @@ describe('DailyCapsuleCard', () => {
         />
       );
 
-      expect(getByText('CCS 0')).toBeTruthy();
+      expect(getByText('분석을 완료하면 내게 맞는 루틴을 만들어드려요.')).toBeTruthy();
+      expect(getByTestId('capsule-empty-analyze')).toBeTruthy();
+
+      fireEvent.press(getByTestId('capsule-empty-analyze'));
+      const { router } = require('expo-router');
+      expect(router.push).toHaveBeenCalledWith('/(analysis)/integrated');
     });
   });
 });

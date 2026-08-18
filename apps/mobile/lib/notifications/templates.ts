@@ -2,6 +2,7 @@
  * 알림 템플릿 정의
  * 웹과 동기화된 알림 템플릿 시스템
  */
+import { FEATURE_FLAGS } from '@yiroom/shared';
 
 // ============================================================
 // 알림 카테고리 및 타입
@@ -58,6 +59,34 @@ export interface NotificationTemplate {
 
 export type TemplateVariables = Record<string, string | number>;
 
+const HOME_ROUTE = '/(tabs)';
+const HIDDEN_WELLNESS_ROUTE_PREFIXES = [
+  '/(workout)',
+  '/(nutrition)',
+  '/(tabs)/workout',
+  '/(tabs)/nutrition',
+  '/(tabs)/records',
+  '/(reports)',
+  '/reports',
+] as const;
+
+/** 저장된 과거 알림까지 W/N 숨김 정책을 우회하지 못하도록 착지 경로를 정규화한다. */
+export function resolveNotificationActionRoute(route: string): string {
+  if (
+    !FEATURE_FLAGS.WELLNESS_PHASE2 &&
+    HIDDEN_WELLNESS_ROUTE_PREFIXES.some((prefix) => route.startsWith(prefix))
+  ) {
+    return HOME_ROUTE;
+  }
+
+  return route;
+}
+
+const WORKOUT_ACTION_ROUTE = resolveNotificationActionRoute('/(workout)/session');
+const NUTRITION_ACTION_ROUTE = resolveNotificationActionRoute('/(nutrition)/dashboard');
+const REPORTS_ACTION_ROUTE = resolveNotificationActionRoute('/(reports)');
+const RECORDS_ACTION_ROUTE = resolveNotificationActionRoute('/(tabs)/records');
+
 // ============================================================
 // 템플릿 맵
 // ============================================================
@@ -71,25 +100,25 @@ export const NOTIFICATION_TEMPLATES: Record<
     category: 'workout',
     title: '💪 운동할 시간이에요!',
     body: '오늘의 운동 루틴을 확인해보세요.',
-    action: { label: '운동 시작', route: '/(tabs)/workout' },
+    action: { label: '운동 시작', route: WORKOUT_ACTION_ROUTE },
   },
   workout_complete: {
     category: 'workout',
     title: '🎉 운동 완료!',
     body: '{{duration}}분간 {{workout_type}} 운동을 완료했어요!',
-    action: { label: '기록 보기', route: '/(tabs)/workout' },
+    action: { label: '기록 보기', route: WORKOUT_ACTION_ROUTE },
   },
   workout_streak: {
     category: 'workout',
     title: '🔥 {{streak}}일 연속 달성!',
     body: '대단해요! {{streak}}일 연속으로 운동을 기록했어요.',
-    action: { label: '기록 확인', route: '/(tabs)/workout' },
+    action: { label: '기록 확인', route: WORKOUT_ACTION_ROUTE },
   },
   workout_streak_warning: {
     category: 'workout',
     title: '🏃 {{streak}}일 연속 기록이 끊길 위험!',
     body: '오늘 운동 기록을 남기면 연속 기록이 유지됩니다.',
-    action: { label: '운동 기록', route: '/(tabs)/workout' },
+    action: { label: '운동 기록', route: WORKOUT_ACTION_ROUTE },
   },
 
   // 영양 관련
@@ -97,25 +126,25 @@ export const NOTIFICATION_TEMPLATES: Record<
     category: 'nutrition',
     title: '🍽️ 식단 기록 시간이에요!',
     body: '오늘 먹은 음식을 기록해보세요.',
-    action: { label: '기록하기', route: '/(tabs)/nutrition' },
+    action: { label: '기록하기', route: NUTRITION_ACTION_ROUTE },
   },
   nutrition_goal: {
     category: 'nutrition',
     title: '🎯 영양 목표 달성!',
     body: '오늘 {{nutrient}} 목표를 달성했어요!',
-    action: { label: '자세히 보기', route: '/(tabs)/nutrition' },
+    action: { label: '자세히 보기', route: NUTRITION_ACTION_ROUTE },
   },
   water_reminder: {
     category: 'nutrition',
     title: '💧 수분 섭취 시간!',
     body: '물 한 잔 마시는 건 어떨까요? 현재 {{current}}ml/{{target}}ml',
-    action: { label: '기록하기', route: '/(tabs)/nutrition' },
+    action: { label: '기록하기', route: NUTRITION_ACTION_ROUTE },
   },
   fasting_end: {
     category: 'nutrition',
     title: '⏰ 단식 종료!',
     body: '{{hours}}시간 단식을 완료했어요. 건강한 식사하세요!',
-    action: { label: '식단 기록', route: '/(tabs)/nutrition' },
+    action: { label: '식단 기록', route: NUTRITION_ACTION_ROUTE },
   },
 
   // 소셜 관련
@@ -167,7 +196,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     category: 'achievement',
     title: '📊 주간 리포트 도착!',
     body: '이번 주 활동을 분석한 리포트가 준비됐어요.',
-    action: { label: '리포트 보기', route: '/reports' },
+    action: { label: '리포트 보기', route: REPORTS_ACTION_ROUTE },
   },
 
   // 개인화 트리거
@@ -199,7 +228,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     category: 'achievement',
     title: '🌙 오늘 {{count}}건 기록했어요!',
     body: '잘하고 있어요! 내일도 화이팅 💪',
-    action: { label: '오늘 기록 보기', route: '/(tabs)/records' },
+    action: { label: '오늘 기록 보기', route: RECORDS_ACTION_ROUTE },
   },
 
   // 시스템

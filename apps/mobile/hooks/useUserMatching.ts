@@ -1,14 +1,39 @@
 'use client';
 
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+
+import { getLatestAnalysisDetails } from '@/lib/api/analysis-history';
 import {
   calculateMatchScore,
   addMatchInfoToProducts,
   type UserProfile,
 } from '@/lib/products/matching';
-import type { AnyProduct, ProductWithMatch } from '@/types/product';
+import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import type {
+  AnyProduct,
+  PersonalColorSeason,
+  ProductWithMatch,
+  SkinConcern,
+  SkinType,
+} from '@/types/product';
+
+const SKIN_TYPES: SkinType[] = ['dry', 'oily', 'combination', 'sensitive', 'normal'];
+const PERSONAL_COLOR_SEASONS: PersonalColorSeason[] = ['Spring', 'Summer', 'Autumn', 'Winter'];
+
+function toSkinType(value: unknown): SkinType | null {
+  return typeof value === 'string' && SKIN_TYPES.includes(value as SkinType)
+    ? (value as SkinType)
+    : null;
+}
+
+function toPersonalColorSeason(value: unknown): PersonalColorSeason | null {
+  if (typeof value !== 'string') return null;
+  const normalized = `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}`;
+  return PERSONAL_COLOR_SEASONS.includes(normalized as PersonalColorSeason)
+    ? (normalized as PersonalColorSeason)
+    : null;
+}
 
 /**
  * 사용자 프로필 기반 제품 매칭 훅
@@ -44,6 +69,7 @@ interface UseUserMatchingResult {
 
 export function useUserMatching(): UseUserMatchingResult {
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -68,34 +94,23 @@ export function useUserMatching(): UseUserMatchingResult {
       }
 
       try {
+        const token = await getToken();
+        if (!token) throw new Error('로그인이 필요합니다.');
         // 병렬로 모든 분석 데이터 조회 — 하나 실패해도 나머지는 사용
         const results = await Promise.allSettled([
-          // S-1 피부 분석
-          supabase
-            .from('skin_assessments')
-            .select('skin_type, concerns')
-            .eq('clerk_user_id', user.id)
-            .order('assessed_at', { ascending: false })
-            .limit(1)
-            .single(),
-
-          // PC-1 퍼스널컬러 분석
-          supabase
-            .from('personal_color_assessments')
-            .select('season')
-            .eq('clerk_user_id', user.id)
-            .order('assessed_at', { ascending: false })
-            .limit(1)
-            .single(),
-
-          // C-1 체형 분석
-          supabase
-            .from('body_assessments')
-            .select('body_type')
-            .eq('clerk_user_id', user.id)
-            .order('assessed_at', { ascending: false })
-            .limit(1)
-            .single(),
+          getLatestAnalysisDetails(token, 'skin').then((details) => {
+            const skinType = toSkinType(details?.skinType);
+            return {
+              data: skinType ? { skin_type: skinType, concerns: [] as SkinConcern[] } : null,
+            };
+          }),
+          getLatestAnalysisDetails(token, 'personal-color').then((details) => {
+            const season = toPersonalColorSeason(details?.season);
+            return { data: season ? { season } : null };
+          }),
+          getLatestAnalysisDetails(token, 'body').then((details) => ({
+            data: details ? { body_type: String(details.bodyType ?? '') } : null,
+          })),
 
           // H-1 헤어 분석
           supabase
@@ -201,7 +216,7 @@ export function useUserMatching(): UseUserMatchingResult {
     }
 
     loadUserProfile();
-  }, [isLoaded, user, supabase]);
+  }, [isLoaded, user, getToken, supabase]);
 
   // 분석 완료 여부
   const hasAnalysis = useMemo(() => {
@@ -287,7 +302,7 @@ export function useStyleMatching() {
   const recommendedColors = useMemo(() => {
     if (!personalColor) return [];
 
-    const colorMap: Record<string, Array<{ name: string; hex: string }>> = {
+    const colorMap: Record<string, { name: string; hex: string }[]> = {
       '봄 웜톤': [
         { name: '코랄', hex: '#FF6B6B' },
         { name: '피치', hex: '#FFB4A2' },

@@ -20,6 +20,7 @@ import {
   MetricBar,
   AnalysisLoadingState,
   AnalysisErrorState,
+  AnalysisSaveFailureNotice,
   ResultLayout,
   FaceZoneMap,
   TopActionsCard,
@@ -111,7 +112,7 @@ const INGREDIENT_DATA: Record<SkinType, { good: string[]; avoid: string[] }> = {
 };
 
 export default function SkinResultScreen() {
-  const { module, colors, status, isDark } = useAnalysisStyles();
+  const { module, colors, status } = useAnalysisStyles();
   const accent = module.skin;
   const { getToken, userId } = useAuth();
   const supabase = useClerkSupabaseClient();
@@ -128,6 +129,7 @@ export default function SkinResultScreen() {
   const [delta, setDelta] = useState<SkinMetricsDelta | null>(null);
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [dbSaveFailed, setDbSaveFailed] = useState(false);
   const [errorMessage, setErrorMessage] =
     useState<string>('분석에 실패했어요. 다시 시도해 주세요.');
   const [showCelebration, setShowCelebration] = useState(false);
@@ -140,6 +142,7 @@ export default function SkinResultScreen() {
   const analyzeSkin = useCallback(async () => {
     setIsLoading(true);
     setUsedFallback(false);
+    setDbSaveFailed(false);
 
     try {
       let base64Data = imageBase64;
@@ -159,6 +162,7 @@ export default function SkinResultScreen() {
       const analysisResult = await requestSkinAnalysis({ imageBase64: base64Data }, token);
 
       setUsedFallback(analysisResult.usedMock);
+      setDbSaveFailed(analysisResult.dbSaveFailed);
       setSkinType(analysisResult.skinType);
       setMetrics(analysisResult.metrics);
 
@@ -279,6 +283,9 @@ export default function SkinResultScreen() {
   const headerContent = (
     <View style={localStyles.headerContent}>
       <AIBadge variant="small" />
+      {dbSaveFailed && (
+        <AnalysisSaveFailureNotice onRetry={() => router.replace('/(analysis)/skin')} />
+      )}
       <Animated.View
         style={overallScore >= 70 ? (pulseGlowStyle as AnimatedStyle<ViewStyle>) : undefined}
       >

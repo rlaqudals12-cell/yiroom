@@ -25,6 +25,7 @@ import { useFeed } from '../../lib/feed/useFeed';
 
 // 피드 타입별 아이콘
 const FEED_TYPE_ICONS: Record<string, string> = {
+  general: '•',
   badge: '🏆',
   challenge: '🎯',
   analysis: '🔬',
@@ -34,6 +35,7 @@ const FEED_TYPE_ICONS: Record<string, string> = {
 
 // 피드 타입별 라벨
 const FEED_TYPE_LABELS: Record<string, string> = {
+  general: '소식',
   badge: '뱃지 획득',
   challenge: '챌린지',
   analysis: '분석 완료',
@@ -116,9 +118,11 @@ export default function FeedScreen() {
               </Text>
             </View>
           </View>
-          <View style={[styles.levelBadge, { backgroundColor: colors.secondary }]}>
-            <Text style={[styles.levelText, { color: brand.primary }]}>Lv.{item.userLevel}</Text>
-          </View>
+          {item.userLevel > 0 && (
+            <View style={[styles.levelBadge, { backgroundColor: colors.secondary }]}>
+              <Text style={[styles.levelText, { color: brand.primary }]}>Lv.{item.userLevel}</Text>
+            </View>
+          )}
         </View>
 
         {/* 컨텐츠 */}

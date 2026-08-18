@@ -20,6 +20,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import {
   AnalysisLoadingState,
   AnalysisErrorState,
+  AnalysisSaveFailureNotice,
   ResultLayout,
   MetricBar,
   TopActionsCard,
@@ -160,6 +161,9 @@ export default function BodyResultScreen() {
   const headerContent = (
     <View style={localStyles.headerContent}>
       <AIBadge variant="small" />
+      {analysis.dbSaveFailed && (
+        <AnalysisSaveFailureNotice onRetry={() => router.replace('/(analysis)/body')} />
+      )}
       <Text style={[localStyles.typeName, { color: accent.base }]}>{analysis.bodyTypeLabel}</Text>
       <View style={localStyles.bmiRow}>
         <Text style={[localStyles.bmiLabel, { color: colors.mutedForeground }]}>BMI</Text>

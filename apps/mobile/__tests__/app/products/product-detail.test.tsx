@@ -7,7 +7,8 @@
  * → 실데이터만 표시하고, 부재 시 정직한 "찾을 수 없음" 상태여야 한다.
  */
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
@@ -156,5 +157,19 @@ describe('ProductDetailScreen — 정직성 (Mock 폴백 재발 방지)', () => 
     // matchScore 하드코딩 제거 — 매칭 게이지가 지어낸 85%로 뜨면 안 된다
     expect(queryByText('85%')).toBeNull();
     expect(queryByText('나와의 매칭')).toBeNull();
+  });
+
+  it('저장 API가 없는 찜 버튼은 로컬 성공을 가장하지 않는다', async () => {
+    mockGetCosmeticProductById.mockResolvedValue(REAL_PRODUCT);
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const { getByTestId } = renderWithTheme(<ProductDetailScreen />);
+
+    await waitFor(() => expect(getByTestId('product-favorite-button')).toBeTruthy());
+    fireEvent.press(getByTestId('product-favorite-button'));
+
+    expect(alertSpy).toHaveBeenCalledWith(
+      '기능 준비 중',
+      '제품 찜하기 저장은 현재 지원하지 않아요.'
+    );
   });
 });

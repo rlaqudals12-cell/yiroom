@@ -3,10 +3,9 @@
  * 피드 조회 및 무한 스크롤 지원
  */
 
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useCallback, useEffect, useState } from 'react';
 
-import { useClerkSupabaseClient } from '../supabase';
 import type { FeedItem, FeedTab } from './types';
 import { feedLogger } from '../utils/logger';
 
@@ -33,7 +32,7 @@ interface UseFeedResult {
  */
 export function useFeed(): UseFeedResult {
   const { user } = useUser();
-  const supabase = useClerkSupabaseClient();
+  const { getToken } = useAuth();
 
   const [items, setItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,7 +45,7 @@ export function useFeed(): UseFeedResult {
   // 피드 조회
   const fetchFeed = useCallback(
     async (tab: FeedTab, reset: boolean = false) => {
-      if (!user?.id || !supabase) return;
+      if (!user?.id) return;
 
       const currentOffset = reset ? 0 : offset;
 
@@ -60,17 +59,19 @@ export function useFeed(): UseFeedResult {
       setError(null);
 
       try {
+        const token = await getToken();
+        if (!token) throw new Error('로그인이 필요합니다.');
         let data: FeedItem[] = [];
 
         switch (tab) {
           case 'my':
-            data = await getMyFeed(supabase, user.id, PAGE_SIZE, currentOffset);
+            data = await getMyFeed(token, user.id, PAGE_SIZE, currentOffset);
             break;
           case 'friends':
-            data = await getFriendsFeed(supabase, user.id, PAGE_SIZE, currentOffset);
+            data = await getFriendsFeed(token, user.id, PAGE_SIZE, currentOffset);
             break;
           case 'all':
-            data = await getAllFeed(supabase, PAGE_SIZE, currentOffset);
+            data = await getAllFeed(token, PAGE_SIZE, currentOffset);
             break;
         }
 
@@ -90,7 +91,7 @@ export function useFeed(): UseFeedResult {
         setIsLoadingMore(false);
       }
     },
-    [user?.id, supabase, offset]
+    [user?.id, getToken, offset]
   );
 
   // 탭 변경 시 새로 조회
@@ -123,7 +124,7 @@ export function useFeed(): UseFeedResult {
   // 좋아요 핸들러
   const handleLike = useCallback(
     async (itemId: string) => {
-      if (!user?.id || !supabase) return;
+      if (!user?.id) return;
 
       // 낙관적 업데이트
       setItems((prev) =>
@@ -139,7 +140,13 @@ export function useFeed(): UseFeedResult {
       );
 
       // 서버 요청
-      const result = await toggleLike(supabase, user.id, itemId);
+      let result = { success: false, isLiked: false };
+      try {
+        const token = await getToken();
+        if (token) result = await toggleLike(token, user.id, itemId);
+      } catch (err) {
+        feedLogger.error('피드 좋아요 저장 실패:', err);
+      }
 
       if (!result.success) {
         // 실패 시 롤백
@@ -156,7 +163,7 @@ export function useFeed(): UseFeedResult {
         );
       }
     },
-    [user?.id, supabase]
+    [user?.id, getToken]
   );
 
   return {

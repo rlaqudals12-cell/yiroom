@@ -66,6 +66,14 @@ describe('requestHairAnalysis', () => {
     expect(result.usedMock).toBe(false);
   });
 
+  it('DB 저장 실패 플래그를 결과 화면까지 보존한다', async () => {
+    mockFetchOnce(200, { ...successBody(), dbSaveFailed: true });
+
+    const result = await requestHairAnalysis(VALID_INPUT, 'token-1', BASE_URL);
+
+    expect(result.dbSaveFailed).toBe(true);
+  });
+
   it("서버 'damage' 지표(건강도)를 손상도로 반전한다", async () => {
     mockFetchOnce(200, successBody());
 

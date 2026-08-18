@@ -3,9 +3,11 @@
  * 퍼스널컬러, 체형, 날씨 기반으로 사용자 옷장에서 어울리는 아이템 추천
  */
 
-import type { InventoryItem, ClothingItem, ClothingCategory, Season, Occasion } from './types';
-import { toClothingItem } from './types';
 import { resolveClothingCategory } from './clothingCategory';
+import { toClothingItem } from './types';
+import type { InventoryItem, ClothingItem, ClothingCategory, Season, Occasion } from './types';
+import { seasonKo } from '../integrated/labels';
+import { withSubjectParticle, withTopicParticle } from '../utils/korean';
 
 // 체형 타입 (3-type 시스템)
 export type BodyType3 = 'S' | 'W' | 'N';
@@ -308,6 +310,9 @@ export interface MatchScore {
   seasonScore: number;
 }
 
+/** 웹 옷장 매처와 같은 기본 가중치 — 요약 재정규화도 이 값을 함께 쓴다. */
+const BASE_WEIGHTS = { color: 0.35, bodyType: 0.25, season: 0.4 } as const;
+
 export interface MatchOptions {
   personalColor?: PersonalColorSeason | null;
   bodyType?: BodyType3 | null;
@@ -342,16 +347,10 @@ export function calculateMatchScore(item: InventoryItem, options: MatchOptions):
     occasionBonus = 10;
   }
 
-  const weights = {
-    color: 0.35,
-    bodyType: 0.25,
-    season: 0.4,
-  };
-
   const total = Math.round(
-    colorScore * weights.color +
-      bodyTypeScore * weights.bodyType +
-      seasonScore * weights.season +
+    colorScore * BASE_WEIGHTS.color +
+      bodyTypeScore * BASE_WEIGHTS.bodyType +
+      seasonScore * BASE_WEIGHTS.season +
       occasionBonus
   );
 
@@ -418,7 +417,7 @@ export function recommendFromCloset(
     const reasons: string[] = [];
 
     if (score.colorScore >= 70 && options.personalColor) {
-      reasons.push(`${options.personalColor} 컬러와 잘 어울려요`);
+      reasons.push(`${seasonKo(options.personalColor)} 컬러와 잘 어울려요`);
     }
     if (score.bodyTypeScore >= 70 && options.bodyType) {
       const bodyTypeNames: Record<BodyType3, string> = {
@@ -478,7 +477,7 @@ function buildOutfitTips(options: MatchOptions, isDressOutfit: boolean): string[
   }
 
   if (options.personalColor) {
-    tips.push(`${options.personalColor} 톤의 색상을 중심으로 코디했어요`);
+    tips.push(`${seasonKo(options.personalColor)} 색상을 중심으로 코디했어요`);
   }
 
   if (options.bodyType) {
@@ -607,6 +606,69 @@ export interface RecommendationSummary {
 }
 
 /**
+ * 요약에는 계절 입력이 없어 중립 50점이 상수로 들어가므로 색·체형만 재정규화한다.
+ * 왜 필요한가: 계절 상수가 총점을 눌러 실제 적합한 옷까지 모두 '무난'으로 보이던 결함을 막는다.
+ */
+function profileMatchScore(score: MatchScore): number {
+  const weightSum = BASE_WEIGHTS.color + BASE_WEIGHTS.bodyType;
+  return Math.round(
+    (score.colorScore * BASE_WEIGHTS.color + score.bodyTypeScore * BASE_WEIGHTS.bodyType) /
+      weightSum
+  );
+}
+
+const CATEGORY_NAMES: Record<ClothingCategory, string> = {
+  outer: '아우터',
+  top: '상의',
+  bottom: '하의',
+  dress: '원피스',
+  shoes: '신발',
+  bag: '가방',
+  accessory: '액세서리',
+};
+
+function buildCategorySuggestions(
+  categoryCount: Record<string, number>,
+  hideAbsentCategoryTip: boolean
+): string[] {
+  const dressCount = categoryCount['dress'] || 0;
+  const essentialCategories: ClothingCategory[] =
+    dressCount > 0 ? ['outer', 'shoes'] : ['outer', 'top', 'bottom', 'shoes'];
+
+  const absent: ClothingCategory[] = [];
+  const thin: ClothingCategory[] = [];
+  for (const category of essentialCategories) {
+    const count = categoryCount[category] || 0;
+    if (count === 0) absent.push(category);
+    else if (count === 1) thin.push(category);
+  }
+
+  const label = (categories: ClothingCategory[]): string =>
+    categories.map((category) => CATEGORY_NAMES[category]).join(', ');
+  const suggestions: string[] = [];
+
+  if (absent.length > 0 && !hideAbsentCategoryTip) {
+    // 왜 '없어요'가 아닌가: 사용자가 가진 옷이 미등록·미매핑 상태일 수도 있어 단정하지 않는다.
+    suggestions.push(`${withSubjectParticle(label(absent))} 아직 등록 안 됐어요`);
+  }
+  if (thin.length > 0) {
+    suggestions.push(
+      `${withTopicParticle(label(thin))} 1벌뿐이에요 — 1벌씩 더 있으면 조합이 다양해져요`
+    );
+  }
+
+  const hasEmptyPairSlot =
+    (categoryCount['top'] || 0) === 0 || (categoryCount['bottom'] || 0) === 0;
+  if (dressCount > 0 && hasEmptyPairSlot) {
+    suggestions.push(
+      `원피스 ${dressCount}벌로 코디를 조립할 수 있어요 — 상의·하의를 더하면 조합이 더 늘어나요`
+    );
+  }
+
+  return suggestions;
+}
+
+/**
  * 카테고리별 추천 요약
  */
 export function getRecommendationSummary(
@@ -614,6 +676,7 @@ export function getRecommendationSummary(
   options: {
     personalColor?: PersonalColorSeason | null;
     bodyType?: BodyType3 | null;
+    hideAbsentCategoryTip?: boolean;
   }
 ): RecommendationSummary {
   const closetItems = items.filter((item) => item.category === 'closet');
@@ -624,10 +687,10 @@ export function getRecommendationSummary(
   const categoryCount: Record<string, number> = {};
 
   for (const item of closetItems) {
-    const score = calculateMatchScore(item, options);
-    if (score.total >= 70) {
+    const score = profileMatchScore(calculateMatchScore(item, options));
+    if (score >= 70) {
       wellMatched++;
-    } else if (score.total < 50) {
+    } else if (score < 50) {
       needsImprovement++;
     }
 
@@ -636,55 +699,10 @@ export function getRecommendationSummary(
     categoryCount[resolvedCategory] = (categoryCount[resolvedCategory] || 0) + 1;
   }
 
-  // 부족한 카테고리 확인 — 0벌(부재)과 1벌(빈약)을 분리한다.
-  // 1벌만 있어도 코디 조립은 진행되므로(진행 안내와 정합) '없어요'로 뭉뚱그리면 자기모순이 된다
-  // 원피스 보유 시: 한 벌로 코디가 성립하므로 상·하의 부재를 '없어요'로 단정하지 않는다(조립기와 정합)
-  const dressCount = categoryCount['dress'] || 0;
-  const essentialCategories: ClothingCategory[] =
-    dressCount > 0 ? ['outer', 'shoes'] : ['outer', 'top', 'bottom', 'shoes'];
-  const absentCategories: ClothingCategory[] = [];
-  const thinCategories: ClothingCategory[] = [];
-  for (const cat of essentialCategories) {
-    const count = categoryCount[cat] || 0;
-    if (count === 0) {
-      absentCategories.push(cat);
-    } else if (count === 1) {
-      thinCategories.push(cat);
-    }
-  }
-
-  const categoryNames: Record<ClothingCategory, string> = {
-    outer: '아우터',
-    top: '상의',
-    bottom: '하의',
-    dress: '원피스',
-    shoes: '신발',
-    bag: '가방',
-    accessory: '액세서리',
-  };
-
-  const suggestions: string[] = [];
-  if (absentCategories.length > 0) {
-    suggestions.push(`${absentCategories.map((c) => categoryNames[c]).join(', ')}이 없어요`);
-  }
-  if (thinCategories.length > 0) {
-    suggestions.push(
-      `${thinCategories.map((c) => categoryNames[c]).join(', ')}은 1벌뿐이에요 — 1벌씩 더 있으면 조합이 다양해져요`
-    );
-  }
-
-  // 원피스로만 조립 가능한 상태 — 지금도 코디가 되지만 조합 폭을 넓히는 길을 정직하게 안내
-  if (
-    dressCount > 0 &&
-    ((categoryCount['top'] || 0) === 0 || (categoryCount['bottom'] || 0) === 0)
-  ) {
-    suggestions.push(
-      `원피스 ${dressCount}벌로 코디를 조립할 수 있어요 — 상의·하의를 더하면 조합이 더 늘어나요`
-    );
-  }
+  const suggestions = buildCategorySuggestions(categoryCount, !!options.hideAbsentCategoryTip);
 
   if (options.personalColor && wellMatched < closetItems.length * 0.3) {
-    suggestions.push(`${options.personalColor} 톤에 어울리는 옷을 추가해보세요`);
+    suggestions.push(`${seasonKo(options.personalColor)}에 어울리는 옷을 추가해보세요`);
   }
 
   return {

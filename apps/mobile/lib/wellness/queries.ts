@@ -69,41 +69,17 @@ export async function upsertWellnessScore(
  * 최신 분석 점수 조회 (피부/체형/자세)
  */
 export async function getLatestAnalysisScores(
-  supabase: SupabaseClient,
-  userId: string
+  _supabase: SupabaseClient,
+  _userId: string
 ): Promise<{
   skinScore: number | null;
   bodyScore: number | null;
   postureScore: number | null;
 }> {
-  // 각 분석의 최신 점수 조회
-  const [skinResult, bodyResult, postureResult] = await Promise.all([
-    supabase
-      .from('skin_assessments')
-      .select('overall_score')
-      .eq('clerk_user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single(),
-    supabase
-      .from('body_assessments')
-      .select('overall_score')
-      .eq('clerk_user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single(),
-    supabase
-      .from('posture_assessments')
-      .select('overall_score')
-      .eq('clerk_user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single(),
-  ]);
-
+  // 숨김 웰니스 집계 API가 생기기 전에는 존재하지 않는 테이블 점수를 지어내지 않는다.
   return {
-    skinScore: skinResult.data?.overall_score ?? null,
-    bodyScore: bodyResult.data?.overall_score ?? null,
-    postureScore: postureResult.data?.overall_score ?? null,
+    skinScore: null,
+    bodyScore: null,
+    postureScore: null,
   };
 }

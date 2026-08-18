@@ -6,15 +6,16 @@
  * - 단식 패턴 선택 (16:8, 18:6, 20:4, OMAD)
  * - 최근 단식 기록
  */
+import { useAuth } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { Clock, Play, Square, History, Utensils, Timer } from 'lucide-react-native';
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform, Alert } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
 import { staggeredEntry } from '@/lib/animations';
-import { useClerkSupabaseClient } from '@/lib/supabase';
+import { completeFastingSession, getFastingSessions, startFastingSession } from '@/lib/api/fasting';
 import { useTheme, typography, spacing } from '@/lib/theme';
 
 import { nutritionLogger } from '../../../lib/utils/logger';
@@ -70,10 +71,11 @@ function formatRelativeDate(dateStr: string): string {
 export default function FastingTrackerScreen(): React.JSX.Element {
   const { colors, radii, status, shadows, isDark, module: moduleColors } = useTheme();
   const nutritionColor = moduleColors.nutrition.base;
-  const supabase = useClerkSupabaseClient();
+  const { getToken } = useAuth();
 
   const [selectedPattern, setSelectedPattern] = useState<FastingPattern>(FASTING_PATTERNS[0]);
   const [fastingState, setFastingState] = useState<FastingState>('loading');
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [logs, setLogs] = useState<FastingLog[]>([]);
@@ -83,50 +85,42 @@ export default function FastingTrackerScreen(): React.JSX.Element {
   const loadData = useCallback(async () => {
     setFastingState('loading');
     try {
-      // 진행 중인 단식 확인
-      const { data: active } = await supabase
-        .from('fasting_logs')
-        .select('id, started_at, pattern')
-        .is('ended_at', null)
-        .order('started_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      const { activeSession: active, history } = await getFastingSessions(token);
 
       if (active) {
-        setStartTime(new Date(active.started_at));
+        setActiveSessionId(active.id);
+        setStartTime(new Date(active.start_time));
         const pattern =
-          FASTING_PATTERNS.find((p) => p.id === active.pattern) ?? FASTING_PATTERNS[0];
+          FASTING_PATTERNS.find((p) => p.fastHours === active.target_hours) ?? FASTING_PATTERNS[0];
         setSelectedPattern(pattern);
         setFastingState('fasting');
       } else {
+        setActiveSessionId(null);
+        setStartTime(null);
         setFastingState('idle');
       }
 
-      // 최근 기록 조회
-      const { data: history } = await supabase
-        .from('fasting_logs')
-        .select('id, started_at, ended_at, pattern, duration_minutes, completed')
-        .not('ended_at', 'is', null)
-        .order('started_at', { ascending: false })
-        .limit(10);
-
-      if (history) {
-        setLogs(
-          history.map((h) => ({
-            id: h.id,
-            startedAt: h.started_at,
-            endedAt: h.ended_at,
-            pattern: h.pattern,
-            durationMinutes: h.duration_minutes,
-            completed: h.completed ?? false,
+      setLogs(
+        history
+          .filter((item) => item.end_time)
+          .map((item) => ({
+            id: item.id,
+            startedAt: item.start_time,
+            endedAt: item.end_time,
+            pattern:
+              FASTING_PATTERNS.find((pattern) => pattern.fastHours === item.target_hours)?.id ??
+              `${item.target_hours}h`,
+            durationMinutes: item.actual_hours == null ? null : Math.round(item.actual_hours * 60),
+            completed: item.is_completed,
           }))
-        );
-      }
+      );
     } catch (err) {
       nutritionLogger.error('Fasting data load failed:', err);
       setFastingState('idle');
     }
-  }, [supabase]);
+  }, [getToken]);
 
   useEffect(() => {
     loadData();
@@ -151,26 +145,24 @@ export default function FastingTrackerScreen(): React.JSX.Element {
   }, [fastingState, startTime]);
 
   const handleStartFasting = useCallback(async () => {
-    const now = new Date();
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
     try {
-      await supabase.from('fasting_logs').insert({
-        started_at: now.toISOString(),
-        pattern: selectedPattern.id,
-        completed: false,
-      });
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      const session = await startFastingSession(token, selectedPattern.fastHours);
 
-      setStartTime(now);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setActiveSessionId(session.id);
+      setStartTime(new Date(session.start_time));
       setElapsed(0);
       setFastingState('fasting');
     } catch (err) {
       nutritionLogger.error('Start fasting failed:', err);
+      Alert.alert('저장 실패', '단식을 시작하지 못했어요. 잠시 후 다시 시도해주세요.');
     }
-  }, [supabase, selectedPattern]);
+  }, [getToken, selectedPattern]);
 
   const handleStopFasting = useCallback(async () => {
-    if (!startTime) return;
+    if (!startTime || !activeSessionId) return;
     const now = new Date();
     const durationMinutes = Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60));
     const targetMinutes = selectedPattern.fastHours * 60;
@@ -183,23 +175,20 @@ export default function FastingTrackerScreen(): React.JSX.Element {
     );
 
     try {
-      await supabase
-        .from('fasting_logs')
-        .update({
-          ended_at: now.toISOString(),
-          duration_minutes: durationMinutes,
-          completed,
-        })
-        .is('ended_at', null);
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      await completeFastingSession(token, activeSessionId);
 
       setFastingState('idle');
+      setActiveSessionId(null);
       setStartTime(null);
       setElapsed(0);
-      loadData();
+      await loadData();
     } catch (err) {
       nutritionLogger.error('Stop fasting failed:', err);
+      Alert.alert('저장 실패', '단식 종료를 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
     }
-  }, [startTime, selectedPattern, supabase, loadData]);
+  }, [startTime, activeSessionId, selectedPattern, getToken, loadData]);
 
   const targetSeconds = selectedPattern.fastHours * 3600;
   const progress = fastingState === 'fasting' ? Math.min(elapsed / targetSeconds, 1) : 0;

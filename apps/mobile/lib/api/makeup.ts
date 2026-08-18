@@ -46,6 +46,8 @@ export interface MakeupAnalysisApiResult {
   bestColors: string[];
   /** AI 폴백 여부 — true면 UI에 정직하게 표시 */
   usedMock: boolean;
+  /** 분석은 반환됐지만 서버 기록 저장이 실패했는지 */
+  dbSaveFailed: boolean;
 }
 
 export interface MakeupAnalysisInput {
@@ -268,5 +270,6 @@ export async function requestMakeupAnalysis(
     },
     bestColors: collectBestColors(colorRecs),
     usedMock: obj.usedMock === true,
+    dbSaveFailed: obj.dbSaveFailed === true,
   };
 }

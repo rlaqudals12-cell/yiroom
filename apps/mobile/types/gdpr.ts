@@ -62,7 +62,7 @@ export const DELETION_TABLES = [
   'body_analyses',
   'hair_analyses',
   'makeup_analyses',
-  'posture_assessments',
+  'posture_analyses',
   'workout_logs',
   'workout_sets',
   'meal_records',
@@ -84,7 +84,7 @@ export const DELETION_TABLES = [
   'image_consents',
   'skin_diary_entries',
   'saved_outfits',
-  'wishlist',
+  'user_wishlists',
   // 옷장/화장대 인벤토리 정본 (구 오타 테이블명은 실재하지 않아 교체)
   'user_inventory',
   'user_agreements',

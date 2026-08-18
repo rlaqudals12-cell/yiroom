@@ -2,7 +2,7 @@
  * 피드 상세 페이지 (댓글 기능 포함)
  */
 
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -24,14 +24,15 @@ import {
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
+import { createFeedComment, getFeedComments, getFeedPost, toggleFeedLike } from '@/lib/feed/api';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { TIMING } from '../../lib/animations';
 import type { FeedItem } from '../../lib/feed/types';
-import { useClerkSupabaseClient } from '../../lib/supabase';
 
 // 피드 타입별 아이콘
 const FEED_TYPE_ICONS: Record<string, string> = {
+  general: '•',
   badge: '🏆',
   challenge: '🎯',
   analysis: '🔬',
@@ -52,8 +53,7 @@ export default function FeedDetailScreen() {
   const { colors, brand } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useUser();
-  const supabase = useClerkSupabaseClient();
+  const { getToken } = useAuth();
 
   const [feedItem, setFeedItem] = useState<FeedItem | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -63,84 +63,19 @@ export default function FeedDetailScreen() {
 
   // 피드 상세 조회
   const fetchFeedItem = useCallback(async () => {
-    if (!id || !supabase) return;
+    if (!id) return;
 
     setIsLoading(true);
 
     try {
-      // 피드 아이템 조회
-      const { data: feedData, error: feedError } = await supabase
-        .from('feed_items')
-        .select(
-          `
-          *,
-          user:users!user_id(id, display_name, avatar_url, level)
-        `
-        )
-        .eq('id', id)
-        .single();
-
-      if (feedError) throw feedError;
-
-      if (feedData) {
-        const userData = feedData.user as {
-          id: string;
-          display_name: string;
-          avatar_url: string | null;
-          level: number;
-        };
-
-        setFeedItem({
-          id: feedData.id,
-          userId: feedData.user_id,
-          userName: userData?.display_name || '사용자',
-          userAvatar: userData?.avatar_url || null,
-          userLevel: userData?.level || 1,
-          type: feedData.type,
-          content: feedData.content,
-          detail: feedData.detail,
-          createdAt: new Date(feedData.created_at),
-          likes: feedData.likes_count || 0,
-          comments: feedData.comments_count || 0,
-          isLiked: Array.isArray(feedData.metadata?.liked_by)
-            ? feedData.metadata.liked_by.includes(user?.id ?? '')
-            : false,
-        });
-      }
-
-      // 댓글 조회
-      const { data: commentsData, error: commentsError } = await supabase
-        .from('feed_comments')
-        .select(
-          `
-          *,
-          user:users!user_id(id, display_name, avatar_url)
-        `
-        )
-        .eq('feed_item_id', id)
-        .order('created_at', { ascending: true });
-
-      if (commentsError) throw commentsError;
-
-      if (commentsData) {
-        setComments(
-          commentsData.map((c) => {
-            const cUser = c.user as {
-              id: string;
-              display_name: string;
-              avatar_url: string | null;
-            };
-            return {
-              id: c.id,
-              userId: c.user_id,
-              userName: cUser?.display_name || '사용자',
-              userAvatar: cUser?.avatar_url || null,
-              content: c.content,
-              createdAt: new Date(c.created_at),
-            };
-          })
-        );
-      }
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      const [post, postComments] = await Promise.all([
+        getFeedPost(id, token),
+        getFeedComments(id, token),
+      ]);
+      setFeedItem(post);
+      setComments(postComments.map((comment) => ({ ...comment, userAvatar: null })));
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'feed-detail',
@@ -151,7 +86,7 @@ export default function FeedDetailScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [id, supabase, router]);
+  }, [id, getToken, router]);
 
   useEffect(() => {
     fetchFeedItem();
@@ -159,45 +94,24 @@ export default function FeedDetailScreen() {
 
   // 좋아요 토글
   const handleLike = async () => {
-    if (!feedItem || !user?.id || !supabase) return;
+    if (!feedItem) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // 낙관적 업데이트
-    setFeedItem((prev) =>
-      prev
-        ? {
-            ...prev,
-            isLiked: !prev.isLiked,
-            likes: prev.isLiked ? prev.likes - 1 : prev.likes + 1,
-          }
-        : null
-    );
-
     try {
-      if (feedItem.isLiked) {
-        await supabase
-          .from('feed_likes')
-          .delete()
-          .eq('feed_item_id', feedItem.id)
-          .eq('user_id', user.id);
-      } else {
-        await supabase.from('feed_likes').insert({
-          feed_item_id: feedItem.id,
-          user_id: user.id,
-        });
-      }
-    } catch (error) {
-      // 롤백
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      const liked = await toggleFeedLike(feedItem.id, token);
       setFeedItem((prev) =>
         prev
           ? {
               ...prev,
-              isLiked: !prev.isLiked,
-              likes: prev.isLiked ? prev.likes + 1 : prev.likes - 1,
+              isLiked: liked,
+              likes: Math.max(0, prev.likes + (liked === prev.isLiked ? 0 : liked ? 1 : -1)),
             }
           : null
       );
+    } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'feed-detail',
         tags: { module: 'feed', action: 'like' },
@@ -207,33 +121,16 @@ export default function FeedDetailScreen() {
 
   // 댓글 작성
   const handleSubmitComment = async () => {
-    if (!commentText.trim() || !user?.id || !supabase || !feedItem) return;
+    if (!commentText.trim() || !feedItem) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await supabase
-        .from('feed_comments')
-        .insert({
-          feed_item_id: feedItem.id,
-          user_id: user.id,
-          content: commentText.trim(),
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // 새 댓글 추가
-      const newComment: Comment = {
-        id: data.id,
-        userId: user.id,
-        userName: user.firstName || '나',
-        userAvatar: user.imageUrl || null,
-        content: data.content,
-        createdAt: new Date(data.created_at),
-      };
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      const saved = await createFeedComment(feedItem.id, commentText.trim(), token);
+      const newComment: Comment = { ...saved, userAvatar: null };
 
       setComments((prev) => [...prev, newComment]);
       setFeedItem((prev) => (prev ? { ...prev, comments: prev.comments + 1 } : null));
@@ -348,11 +245,13 @@ export default function FeedDetailScreen() {
                       </Text>
                     </View>
                   </View>
-                  <View style={[styles.levelBadge, { backgroundColor: colors.secondary }]}>
-                    <Text style={[styles.levelText, { color: brand.primary }]}>
-                      Lv.{feedItem.userLevel}
-                    </Text>
-                  </View>
+                  {feedItem.userLevel > 0 && (
+                    <View style={[styles.levelBadge, { backgroundColor: colors.secondary }]}>
+                      <Text style={[styles.levelText, { color: brand.primary }]}>
+                        Lv.{feedItem.userLevel}
+                      </Text>
+                    </View>
+                  )}
                 </View>
 
                 {/* 게시물 컨텐츠 */}

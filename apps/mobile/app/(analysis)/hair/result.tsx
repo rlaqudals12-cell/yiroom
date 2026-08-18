@@ -16,6 +16,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import {
   AnalysisLoadingState,
   AnalysisErrorState,
+  AnalysisSaveFailureNotice,
   ResultLayout,
   MetricBar,
   TopActionsCard,
@@ -159,6 +160,9 @@ export default function HairResultScreen() {
   const headerContent = (
     <View style={localStyles.headerContent}>
       <AIBadge variant="small" />
+      {result.dbSaveFailed && (
+        <AnalysisSaveFailureNotice onRetry={() => router.replace('/(analysis)/hair')} />
+      )}
       <Text style={[localStyles.typeName, { color: accent.base }]}>
         {TEXTURE_LABELS[result.texture]} / {THICKNESS_LABELS[result.thickness]}
       </Text>

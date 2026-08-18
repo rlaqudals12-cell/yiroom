@@ -24,7 +24,7 @@ import {
   deactivatePushToken,
 } from './api';
 import type { NotificationType } from './templates';
-import { createNotification } from './templates';
+import { createNotification, resolveNotificationActionRoute } from './templates';
 import {
   type NotificationSettings,
   DEFAULT_NOTIFICATION_SETTINGS,
@@ -526,7 +526,8 @@ export function useNotificationResponse() {
       const route = data?.route as string | undefined;
 
       if (route) {
-        router.push(route as never);
+        // 이미 예약된 구버전 알림도 숨김 W/N 라우트를 다시 열지 못하게 한다.
+        router.push(resolveNotificationActionRoute(route) as never);
       }
     });
 

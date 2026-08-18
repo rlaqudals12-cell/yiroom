@@ -247,6 +247,9 @@ export interface DailyCapsule {
   createdAt: string;
 }
 
+/** 아이템 실행 시간대 — 구 데이터의 미지정 값은 언제든으로 처리한다. */
+export type DailyItemTimeOfDay = 'morning' | 'evening' | 'anytime';
+
 /** 오늘의 개별 아이템 */
 export interface DailyItem {
   id: string;
@@ -255,6 +258,9 @@ export interface DailyItem {
   reason: string;
   compatibilityScore: number;
   isChecked: boolean;
+  timeOfDay?: DailyItemTimeOfDay;
+  groupNote?: string;
+  solution?: string;
 }
 
 // =============================================================================

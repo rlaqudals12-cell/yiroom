@@ -2,7 +2,7 @@
  * 피드 상세 화면 렌더링 테스트
  *
  * 대상: app/(feed)/[id].tsx (FeedDetailScreen)
- * 의존성: useLocalSearchParams, useUser, useClerkSupabaseClient, captureError
+ * 의존성: useLocalSearchParams, useAuth, feed API, captureError
  */
 import React from 'react';
 
@@ -71,26 +71,17 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('@clerk/clerk-expo', () => ({
-  useUser: jest.fn(() => ({
-    user: { id: 'user_123', firstName: '테스트', imageUrl: null },
-    isLoaded: true,
-  })),
+  useAuth: jest.fn(() => ({ getToken: jest.fn().mockResolvedValue('clerk-token') })),
 }));
 
-// Supabase mock: select/single 체인 반환
-const mockSupabaseFrom = jest.fn(() => ({
-  select: jest.fn().mockReturnThis(),
-  eq: jest.fn().mockReturnThis(),
-  order: jest.fn().mockReturnThis(),
-  single: jest.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } }),
-  insert: jest.fn().mockReturnThis(),
-  delete: jest.fn().mockReturnThis(),
-}));
+const mockGetFeedPost = jest.fn();
+const mockGetFeedComments = jest.fn();
 
-jest.mock('../../../lib/supabase', () => ({
-  useClerkSupabaseClient: jest.fn(() => ({
-    from: mockSupabaseFrom,
-  })),
+jest.mock('../../../lib/feed/api', () => ({
+  getFeedPost: (...args: unknown[]) => mockGetFeedPost(...args),
+  getFeedComments: (...args: unknown[]) => mockGetFeedComments(...args),
+  toggleFeedLike: jest.fn(),
+  createFeedComment: jest.fn(),
 }));
 
 jest.mock('../../../lib/monitoring/sentry', () => ({
@@ -104,6 +95,12 @@ import { waitFor } from '@testing-library/react-native';
 import FeedDetailScreen from '../../../app/(feed)/[id]';
 
 describe('FeedDetailScreen', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetFeedPost.mockRejectedValue(new Error('Not found'));
+    mockGetFeedComments.mockResolvedValue([]);
+  });
+
   it('에러 없이 렌더링된다', async () => {
     // 피드 아이템이 없으면 에러 화면 표시 (정상 동작)
     const { getByText } = renderWithTheme(<FeedDetailScreen />);

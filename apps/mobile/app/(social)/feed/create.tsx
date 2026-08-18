@@ -2,7 +2,7 @@
  * 피드 글 작성 화면
  * 사용자가 직접 피드에 글을 올리는 기능
  */
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { FEATURE_FLAGS } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { Redirect, router } from 'expo-router';
@@ -24,10 +24,10 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { TIMING } from '@/lib/animations';
+import { createFeedPost } from '@/lib/feed/api';
 import { useTheme, typography, spacing } from '@/lib/theme';
 
 import type { FeedItemType } from '../../../lib/feed';
-import { useClerkSupabaseClient } from '../../../lib/supabase';
 
 const FEED_CATEGORIES: { type: FeedItemType; emoji: string; label: string }[] = [
   { type: 'workout', emoji: '💪', label: '운동' },
@@ -35,15 +35,6 @@ const FEED_CATEGORIES: { type: FeedItemType; emoji: string; label: string }[] = 
   { type: 'analysis', emoji: '🎨', label: '분석' },
   { type: 'challenge', emoji: '🔥', label: '챌린지' },
 ];
-
-// 활동 타입 역매핑
-const typeToActivity: Record<FeedItemType, string> = {
-  workout: 'workout_completed',
-  nutrition: 'nutrition_logged',
-  analysis: 'analysis_completed',
-  challenge: 'challenge_completed',
-  badge: 'badge_earned',
-};
 
 // ADR-098 §2.4.2 기능 과잉 정리: 소셜 피드 숨김 (코드 유지, SOCIAL_FEED=true 시 복원)
 export default function FeedCreateScreenGuard(): React.JSX.Element {
@@ -56,7 +47,7 @@ export default function FeedCreateScreenGuard(): React.JSX.Element {
 function FeedCreateScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
   const { user } = useUser();
-  const supabase = useClerkSupabaseClient();
+  const { getToken } = useAuth();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -88,18 +79,12 @@ function FeedCreateScreen(): React.JSX.Element {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      const { error } = await supabase.from('user_activities').insert({
-        clerk_user_id: user.id,
-        activity_type: typeToActivity[selectedType],
-        title: title.trim(),
-        description: description.trim() || null,
-        metadata: { likes: 0, comments: 0, liked_by: [] },
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      await createFeedPost(token, {
+        content: [title.trim(), description.trim()].filter(Boolean).join('\n'),
+        type: selectedType,
       });
-
-      if (error) {
-        Alert.alert('오류', '글을 올리지 못했어요. 다시 시도해주세요.');
-        return;
-      }
 
       Alert.alert('완료', '글이 올라갔어요!');
       router.back();

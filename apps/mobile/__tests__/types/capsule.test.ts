@@ -15,6 +15,7 @@ import {
   PERSONALIZATION_LABELS,
   CCS_THRESHOLD,
 } from '../../types/capsule';
+import type { DailyItem } from '../../types/capsule';
 
 // =============================================================================
 // getCCSGrade
@@ -293,5 +294,25 @@ describe('PERSONALIZATION_LABELS', () => {
 
   it('레벨 4는 "행동 패턴"이어야 한다', () => {
     expect(PERSONALIZATION_LABELS[4]).toBe('행동 패턴');
+  });
+});
+
+describe('DailyItem 서버 응답 계약', () => {
+  it('시간대·개인화 근거·실행 솔루션을 보존한다', () => {
+    const item: DailyItem = {
+      id: 'skin-morning-toner',
+      moduleCode: 'S',
+      name: '토너 바르기',
+      reason: '수분 보충',
+      compatibilityScore: 80,
+      isChecked: false,
+      timeOfDay: 'morning',
+      groupNote: '최근 수분 분석을 반영했어요',
+      solution: '히알루론산 토너를 두 번 레이어링하세요',
+    };
+
+    expect(item.timeOfDay).toBe('morning');
+    expect(item.groupNote).toContain('최근 수분 분석');
+    expect(item.solution).toContain('히알루론산');
   });
 });

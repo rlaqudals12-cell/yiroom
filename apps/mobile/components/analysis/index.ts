@@ -15,6 +15,9 @@ export type { AnalysisLoadingStateProps } from './AnalysisLoadingState';
 export { AnalysisErrorState } from './AnalysisErrorState';
 export type { AnalysisErrorStateProps } from './AnalysisErrorState';
 
+export { AnalysisSaveFailureNotice } from './AnalysisSaveFailureNotice';
+export type { AnalysisSaveFailureNoticeProps } from './AnalysisSaveFailureNotice';
+
 export { AnalysisTrustBadge } from './AnalysisTrustBadge';
 export type { AnalysisTrustBadgeProps, TrustBadgeType } from './AnalysisTrustBadge';
 

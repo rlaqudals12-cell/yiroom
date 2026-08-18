@@ -12,6 +12,7 @@ import {
   CATEGORY_ICONS,
   interpolateTemplate,
   createNotification,
+  resolveNotificationActionRoute,
   getNotificationTypesByCategory,
 } from '../../lib/notifications/templates';
 
@@ -367,11 +368,11 @@ describe('DEFAULT_NOTIFICATION_SETTINGS', () => {
 // ============================================================
 
 describe('알림 템플릿 내용', () => {
-  it('운동 리마인더 템플릿이 올바라야 함', () => {
+  it('운동 리마인더는 내용을 유지하되 숨김 화면으로 진입시키지 않아야 함', () => {
     const template = NOTIFICATION_TEMPLATES['workout_reminder'];
 
     expect(template.title).toContain('운동');
-    expect(template.action?.route).toContain('workout');
+    expect(template.action?.route).toBe('/(tabs)');
   });
 
   it('물 리마인더 템플릿이 올바라야 함', () => {
@@ -406,26 +407,49 @@ describe('알림 템플릿 내용', () => {
 // ============================================================
 
 describe('알림 액션 라우트', () => {
-  it('운동 관련 알림은 workout 탭으로 이동해야 함', () => {
+  it.each([
+    '/(tabs)/workout',
+    '/(tabs)/nutrition',
+    '/(tabs)/records',
+    '/(workout)/session',
+    '/(nutrition)/water',
+    '/(reports)/weekly',
+    '/reports',
+  ])('예약된 과거 W/N 알림 경로 %s도 오늘 탭으로 정규화한다', (route) => {
+    expect(resolveNotificationActionRoute(route)).toBe('/(tabs)');
+  });
+
+  it('WELLNESS_PHASE2=false이면 운동 관련 알림은 숨김 화면 대신 오늘 탭으로 이동해야 함', () => {
     const workoutTypes: NotificationType[] = [
       'workout_reminder',
       'workout_complete',
       'workout_streak',
+      'workout_streak_warning',
     ];
 
     workoutTypes.forEach((type) => {
       const route = NOTIFICATION_TEMPLATES[type].action?.route;
-      expect(route).toContain('workout');
+      expect(route).toBe('/(tabs)');
     });
   });
 
-  it('영양 관련 알림은 nutrition 탭으로 이동해야 함', () => {
-    const nutritionTypes: NotificationType[] = ['nutrition_reminder', 'water_reminder'];
+  it('WELLNESS_PHASE2=false이면 영양 관련 알림은 숨김 화면 대신 오늘 탭으로 이동해야 함', () => {
+    const nutritionTypes: NotificationType[] = [
+      'nutrition_reminder',
+      'nutrition_goal',
+      'water_reminder',
+      'fasting_end',
+    ];
 
     nutritionTypes.forEach((type) => {
       const route = NOTIFICATION_TEMPLATES[type].action?.route;
-      expect(route).toContain('nutrition');
+      expect(route).toBe('/(tabs)');
     });
+  });
+
+  it('W/N 데이터 기반 리포트·기록 알림도 숨김 화면 대신 오늘 탭으로 이동해야 함', () => {
+    expect(NOTIFICATION_TEMPLATES.weekly_report.action?.route).toBe('/(tabs)');
+    expect(NOTIFICATION_TEMPLATES.evening_recap.action?.route).toBe('/(tabs)');
   });
 
   it('소셜 관련 알림은 social 라우트로 이동해야 함', () => {

@@ -65,6 +65,15 @@ jest.mock('../../../lib/inventory/useInventory', () => ({
 }));
 
 jest.mock('../../../lib/inventory/types', () => ({
+  CLOTHING_SUB_CATEGORIES: {
+    outer: ['재킷'],
+    top: ['티셔츠'],
+    bottom: ['바지'],
+    dress: ['원피스'],
+    shoes: ['스니커즈'],
+    bag: ['토트백'],
+    accessory: ['모자'],
+  },
   CLOTHING_CATEGORY_LABELS: {
     outer: '아우터', top: '상의', bottom: '하의', dress: '원피스',
     shoes: '신발', bag: '가방', accessory: '액세서리',

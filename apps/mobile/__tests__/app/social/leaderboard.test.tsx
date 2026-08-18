@@ -2,15 +2,12 @@
  * 리더보드 스크린 테스트
  *
  * 대상: app/(social)/leaderboard/index.tsx
- * 5개 카테고리 탭(XP/레벨/웰니스/운동/영양) + 전체/친구 탭 + 순위 목록
+ * WELLNESS_PHASE2=false에서 3개 카테고리 탭(XP/레벨/웰니스) + 전체/친구 탭 + 순위 목록
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -118,6 +115,10 @@ jest.mock('../../../lib/social', () => ({
   }),
 }));
 
+jest.mock('@yiroom/shared', () => ({
+  FEATURE_FLAGS: { WELLNESS_PHASE2: false },
+}));
+
 import LeaderboardScreen from '../../../app/(social)/leaderboard/index';
 
 // ============================================================
@@ -147,9 +148,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -185,14 +184,14 @@ describe('LeaderboardScreen', () => {
       expect(getByTestId('social-leaderboard-screen')).toBeTruthy();
     });
 
-    it('5개 카테고리 탭이 모두 표시된다', () => {
-      const { getAllByText } = renderWithTheme(<LeaderboardScreen />);
+    it('W/N 카테고리 칩은 숨기고 5축과 무관하지 않은 칩만 표시한다', () => {
+      const { getAllByText, queryByText } = renderWithTheme(<LeaderboardScreen />);
       // XP는 카테고리 탭 + 점수 라벨에 동시 존재
       expect(getAllByText('XP').length).toBeGreaterThanOrEqual(1);
       expect(getAllByText('레벨').length).toBeGreaterThanOrEqual(1);
       expect(getAllByText('웰니스').length).toBeGreaterThanOrEqual(1);
-      expect(getAllByText('운동').length).toBeGreaterThanOrEqual(1);
-      expect(getAllByText('영양').length).toBeGreaterThanOrEqual(1);
+      expect(queryByText('운동')).toBeNull();
+      expect(queryByText('영양')).toBeNull();
     });
 
     it('전체/친구 탭이 표시된다', () => {

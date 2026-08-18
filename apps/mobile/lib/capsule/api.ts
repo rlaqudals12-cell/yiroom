@@ -28,6 +28,8 @@ export interface DailySolutionProduct {
   shelfItemId?: string;
 }
 
+export type DailyItemTimeOfDay = 'morning' | 'evening' | 'anytime';
+
 export interface DailyItem {
   id: string;
   moduleCode: string;
@@ -35,6 +37,12 @@ export interface DailyItem {
   reason: string;
   compatibilityScore: number;
   isChecked: boolean;
+  /** 구 캐시는 없을 수 있어 미지정 아이템을 언제든 그룹으로 처리한다. */
+  timeOfDay?: DailyItemTimeOfDay;
+  /** 그룹 첫 아이템에 실리는 실제 분석 기반 개인화 근거 */
+  groupNote?: string;
+  /** 서버가 저장된 분석 데이터로 조립한 구체 실행 방법 */
+  solution?: string;
   /** 솔루션에 대응하는 실제 제품 — 매칭 실패 시 서버가 싣지 않는다 */
   solutionProduct?: DailySolutionProduct;
 }
@@ -46,7 +54,7 @@ export interface DailyCapsule {
   items: DailyItem[];
   totalCcs: number;
   estimatedMinutes: number;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: 'pending' | 'in_progress' | 'completed' | 'skipped';
   completedAt: string | null;
   createdAt: string;
 }

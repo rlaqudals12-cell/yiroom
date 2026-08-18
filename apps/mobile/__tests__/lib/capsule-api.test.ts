@@ -13,6 +13,7 @@ import {
   getDomainCapsule,
   rotateCapsule,
 } from '../../lib/capsule/api';
+import type { DailyCapsule } from '../../lib/capsule/api';
 
 // =============================================================================
 // fetch 모킹
@@ -45,7 +46,7 @@ function mockNetworkError() {
 
 const AUTH_TOKEN = 'test-auth-token';
 
-const mockCapsule = {
+const mockCapsule: DailyCapsule = {
   id: 'capsule-1',
   userId: 'user-1',
   date: '2026-03-12',
@@ -57,6 +58,9 @@ const mockCapsule = {
       reason: '피부 수분 부족',
       compatibilityScore: 85,
       isChecked: false,
+      timeOfDay: 'morning',
+      groupNote: '복합성 피부의 최근 분석을 반영했어요',
+      solution: '수분 세럼을 얇게 두 번 발라주세요',
     },
   ],
   totalCcs: 82,

@@ -16,6 +16,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import {
   AnalysisLoadingState,
   AnalysisErrorState,
+  AnalysisSaveFailureNotice,
   ResultLayout,
   MetricBar,
   ColorPalette,
@@ -77,7 +78,7 @@ const RECOMMENDATION_LABELS: Record<keyof MakeupAnalysisApiResult['recommendatio
 };
 
 export default function MakeupResultScreen() {
-  const { module, colors, isDark } = useAnalysisStyles();
+  const { module, colors } = useAnalysisStyles();
   const accent = module.makeup;
   const { getToken } = useAuth();
 
@@ -177,6 +178,9 @@ export default function MakeupResultScreen() {
   const headerContent = (
     <View style={localStyles.headerContent}>
       <AIBadge variant="small" />
+      {result.dbSaveFailed && (
+        <AnalysisSaveFailureNotice onRetry={() => router.replace('/(analysis)/makeup')} />
+      )}
       <Text style={[localStyles.typeName, { color: accent.base }]}>
         {FACE_SHAPE_LABELS[result.faceShape]} / {UNDERTONE_LABELS[result.undertone]}
       </Text>

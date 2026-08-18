@@ -233,78 +233,42 @@ export function getRandomTip(): MessageTemplate {
  * 사용자 메시지 조회
  */
 export async function getUserMessages(
-  supabase: SupabaseClient,
-  userId: string,
-  limit = 30
+  _supabase: SupabaseClient,
+  _userId: string,
+  _limit = 30
 ): Promise<AppMessage[]> {
-  const { data } = await supabase
-    .from('user_messages')
-    .select('id, type, title, body, icon, read, created_at, data')
-    .eq('clerk_user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (!data) return [];
-
-  return data.map((row) => ({
-    id: row.id,
-    type: row.type,
-    title: row.title,
-    body: row.body,
-    icon: row.icon ?? '📩',
-    read: row.read ?? false,
-    createdAt: row.created_at,
-    data: row.data ?? undefined,
-  }));
+  return [];
 }
 
 /**
  * 안읽은 메시지 수
  */
-export async function getUnreadCount(supabase: SupabaseClient, userId: string): Promise<number> {
-  const { count } = await supabase
-    .from('user_messages')
-    .select('id', { count: 'exact', head: true })
-    .eq('clerk_user_id', userId)
-    .eq('read', false);
-
-  return count ?? 0;
+export async function getUnreadCount(_supabase: SupabaseClient, _userId: string): Promise<number> {
+  return 0;
 }
 
 /**
  * 메시지 읽음 처리
  */
-export async function markAsRead(supabase: SupabaseClient, messageId: string): Promise<void> {
-  await supabase.from('user_messages').update({ read: true }).eq('id', messageId);
+export async function markAsRead(_supabase: SupabaseClient, _messageId: string): Promise<void> {
+  throw new Error('메시지 저장은 현재 지원하지 않아요.');
 }
 
 /**
  * 모든 메시지 읽음 처리
  */
-export async function markAllAsRead(supabase: SupabaseClient, userId: string): Promise<void> {
-  await supabase
-    .from('user_messages')
-    .update({ read: true })
-    .eq('clerk_user_id', userId)
-    .eq('read', false);
+export async function markAllAsRead(_supabase: SupabaseClient, _userId: string): Promise<void> {
+  throw new Error('메시지 저장은 현재 지원하지 않아요.');
 }
 
 /**
  * 시스템 메시지 전송
  */
 export async function sendSystemMessage(
-  supabase: SupabaseClient,
-  userId: string,
-  template: MessageTemplate,
-  data?: Record<string, unknown>
+  _supabase: SupabaseClient,
+  _userId: string,
+  _template: MessageTemplate,
+  _data?: Record<string, unknown>
 ): Promise<void> {
-  await supabase.from('user_messages').insert({
-    clerk_user_id: userId,
-    type: template.type,
-    title: template.title,
-    body: template.body,
-    icon: template.icon,
-    read: false,
-    data: data ?? null,
-  });
+  throw new Error('메시지 저장은 현재 지원하지 않아요.');
 }

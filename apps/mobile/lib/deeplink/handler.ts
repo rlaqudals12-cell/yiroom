@@ -3,12 +3,22 @@
  * 위젯 및 외부 앱에서 딥링크 처리
  */
 
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Linking } from 'react-native';
 
 import { DEEP_LINK_SCHEME, PATH_MAPPING, ParsedDeepLink, DeepLinkParams } from './types';
 import { deepLinkLogger } from '../utils/logger';
+
+const WELLNESS_DEEP_LINK_PATHS = new Set([
+  '/workout/session',
+  '/workout/log',
+  '/workout/history',
+  '/nutrition/dashboard',
+  '/nutrition/camera',
+  '/nutrition/water',
+]);
 
 /**
  * 딥링크 URL 파싱
@@ -50,6 +60,12 @@ export function parseDeepLink(url: string): ParsedDeepLink {
 export function navigateToDeepLink(parsed: ParsedDeepLink): boolean {
   if (!parsed.isValid) {
     deepLinkLogger.info('Invalid deep link');
+    return false;
+  }
+
+  // ADR-098: 외부 URL은 탭 게이트를 우회하므로 W/N 복원 전에는 탐색 자체를 중단한다.
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2 && WELLNESS_DEEP_LINK_PATHS.has(parsed.path)) {
+    deepLinkLogger.info('Hidden wellness deep link:', parsed.path);
     return false;
   }
 

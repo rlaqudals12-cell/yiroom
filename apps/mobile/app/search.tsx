@@ -73,6 +73,8 @@ const QUICK_SEARCHES = [
   ...(FEATURE_FLAGS.WELLNESS_PHASE2 ? ['운동 기록', '영양 분석'] : []),
 ];
 
+const ANALYSIS_LINKS = ['퍼스널컬러', '피부 분석', '체형 분석', '헤어 분석', '메이크업 분석'];
+
 export default function UnifiedSearchScreen(): React.JSX.Element {
   const { colors, radii, brand, shadows } = useTheme();
   const supabase = useClerkSupabaseClient();
@@ -94,24 +96,16 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
       const allResults: SearchResult[] = [];
 
       try {
-        // 분석 이력 검색
-        const { data: analyses } = await supabase
-          .from('user_analyses')
-          .select('id, analysis_type, created_at')
-          .ilike('analysis_type', `%${trimmed}%`)
-          .limit(5);
-
-        if (analyses) {
-          analyses.forEach((a) => {
-            allResults.push({
-              id: `analysis-${a.id}`,
-              type: 'analysis',
-              title: getAnalysisLabel(a.analysis_type),
-              subtitle: new Date(a.created_at).toLocaleDateString('ko-KR'),
-              route: `/(analysis)/history`,
-            });
+        // 분석 통합 테이블은 없으므로 실제 이력인 척하지 않고 이력 화면 링크만 제공한다.
+        ANALYSIS_LINKS.filter((label) => label.includes(trimmed)).forEach((label) => {
+          allResults.push({
+            id: `analysis-link-${label}`,
+            type: 'analysis',
+            title: label,
+            subtitle: '분석 이력 보기',
+            route: `/(analysis)/history`,
           });
-        }
+        });
 
         // 제품 검색
         const { data: products } = await supabase
@@ -443,19 +437,6 @@ export default function UnifiedSearchScreen(): React.JSX.Element {
       </KeyboardAvoidingView>
     </ScreenContainer>
   );
-}
-
-function getAnalysisLabel(type: string): string {
-  const labels: Record<string, string> = {
-    'personal-color': '퍼스널컬러 분석',
-    skin: '피부 분석',
-    body: '체형 분석',
-    hair: '헤어 분석',
-    makeup: '메이크업 분석',
-    'oral-health': '구강건강 분석',
-    posture: '자세 분석',
-  };
-  return labels[type] ?? `${type} 분석`;
 }
 
 const styles = StyleSheet.create({

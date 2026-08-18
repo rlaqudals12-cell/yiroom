@@ -33,8 +33,9 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
 }));
 
+const mockRouterPush = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({ push: mockRouterPush, back: jest.fn() }),
 }));
 
 jest.mock('expo-image', () => {
@@ -198,5 +199,21 @@ describe('ClosetScreen 카테고리 필터', () => {
     const { getByText } = render(<ClosetScreen />);
 
     expect(getByText('2')).toBeTruthy();
+  });
+
+  it('저장한 코디 목록으로 이동할 수 있다', () => {
+    const { getByTestId } = render(<ClosetScreen />);
+
+    fireEvent.press(getByTestId('closet-outfits-entry'));
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/(closet)/outfits');
+  });
+
+  it('코디 조립기로 이동할 수 있다', () => {
+    const { getByTestId } = render(<ClosetScreen />);
+
+    fireEvent.press(getByTestId('closet-outfit-builder-entry'));
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/(closet)/outfit-builder');
   });
 });

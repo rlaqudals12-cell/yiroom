@@ -4,6 +4,8 @@
  */
 
 import { resolveClothingCategory } from '../../../lib/inventory/clothingCategory';
+import fs from 'node:fs';
+import path from 'node:path';
 
 describe('resolveClothingCategory', () => {
   describe('한글 세부종류 형상 (실데이터 — sub_category에 한글 저장)', () => {
@@ -75,5 +77,16 @@ describe('resolveClothingCategory', () => {
       expect(resolveClothingCategory({ subCategory: '티셔츠', metadata: null })).toBe('top');
       expect(resolveClothingCategory({ subCategory: '티셔츠', metadata: undefined })).toBe('top');
     });
+  });
+
+  it('코디 조립기도 raw cast 대신 같은 정규화기를 사용한다', () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), 'app', '(closet)', 'outfit-builder.tsx'),
+      'utf8'
+    );
+
+    expect(source).toContain("from '../../lib/inventory/clothingCategory'");
+    expect(source).toContain('resolveClothingCategory(item)');
+    expect(source).not.toContain("(item.subCategory || 'top') as ClothingCategory");
   });
 });

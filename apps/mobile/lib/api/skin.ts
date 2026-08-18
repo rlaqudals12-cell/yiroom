@@ -31,6 +31,8 @@ export interface SkinAnalysisApiResult {
   overallScore?: number;
   /** AI 폴백 여부 — true면 UI에 정직하게 표시 */
   usedMock: boolean;
+  /** 분석은 반환됐지만 서버 기록 저장이 실패했는지 */
+  dbSaveFailed: boolean;
   /** 방금 저장된 분석 row id — 이전 분석 대비 변화량 계산 시 자기 자신 제외용 */
   analysisId?: string;
 }
@@ -193,6 +195,7 @@ export async function requestSkinAnalysis(
     },
     overallScore: typeof result.overallScore === 'number' ? result.overallScore : undefined,
     usedMock: obj.usedMock === true,
+    dbSaveFailed: obj.dbSaveFailed === true,
     analysisId: typeof data.id === 'string' ? data.id : undefined,
   };
 }

@@ -1,12 +1,18 @@
 /**
  * 운동 모듈 레이아웃
  */
-import { Stack } from 'expo-router';
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect, Stack } from 'expo-router';
 
-import { useTheme, typography } from '../../lib/theme';
+import { useTheme } from '../../lib/theme';
 
 export default function WorkoutLayout() {
   const { colors, typography } = useTheme();
+
+  // ADR-098: 라우트 그룹 게이트로 딥링크·푸시·직접 URL 우회를 함께 차단한다.
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   return (
     <Stack

@@ -1,6 +1,6 @@
 /**
  * 내 제품함 (선반) 목록
- * 상태 필터: 보관중/사용중/다씀
+ * user_product_shelf의 실제 상태 기준 목록과 필터
  */
 import { useAuth } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
@@ -10,64 +10,62 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
-import { useClerkSupabaseClient } from '@/lib/supabase';
+import {
+  getProductShelf,
+  type ProductShelfItem,
+  type ProductShelfStatus,
+} from '@/lib/api/product-shelf';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
-type ShelfStatus = 'all' | 'stored' | 'in_use' | 'finished';
+type ShelfStatusFilter = 'all' | ProductShelfStatus;
 
-interface ShelfItem {
-  id: string;
-  name: string;
-  brand: string;
-  status: 'stored' | 'in_use' | 'finished';
-  expiresAt: string | null;
-  category: string;
-}
-
-const STATUS_FILTERS: { id: ShelfStatus; label: string; emoji: string }[] = [
-  { id: 'all', label: '전체', emoji: '📦' },
-  { id: 'stored', label: '보관중', emoji: '🗄️' },
-  { id: 'in_use', label: '사용중', emoji: '✨' },
-  { id: 'finished', label: '다 씀', emoji: '✅' },
+const STATUS_FILTERS: { id: ShelfStatusFilter; label: string }[] = [
+  { id: 'all', label: '전체' },
+  { id: 'owned', label: '보유중' },
+  { id: 'wishlist', label: '관심' },
+  { id: 'used_up', label: '다 씀' },
 ];
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  stored: { label: '보관중', color: '#3B82F6' },
-  in_use: { label: '사용중', color: '#10B981' },
-  finished: { label: '다 씀', color: '#9CA3AF' },
+const STATUS_LABELS: Record<ProductShelfStatus, { label: string; color: string }> = {
+  owned: { label: '보유중', color: '#10B981' },
+  wishlist: { label: '관심', color: '#3B82F6' },
+  used_up: { label: '다 씀', color: '#9CA3AF' },
+  archived: { label: '보관', color: '#6B7280' },
 };
+
+function formatExpiry(value: string | undefined): string {
+  if (!value) return '미등록';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '미등록';
+  return date.toLocaleDateString('ko-KR');
+}
 
 export default function ShelfScreen(): React.JSX.Element {
   const { colors } = useTheme();
-  const { userId } = useAuth();
-  const supabase = useClerkSupabaseClient();
-  const [statusFilter, setStatusFilter] = useState<ShelfStatus>('all');
-  const [items, setItems] = useState<ShelfItem[]>([]);
+  const { getToken } = useAuth();
+  const [statusFilter, setStatusFilter] = useState<ShelfStatusFilter>('all');
+  const [items, setItems] = useState<ProductShelfItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchItems = useCallback(async (): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      const result = await getProductShelf(token);
+      setItems(result.items);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : '제품함을 불러오지 못했어요.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getToken]);
 
   useEffect(() => {
-    if (!userId) return;
-    const fetchItems = async (): Promise<void> => {
-      const { data, error } = await supabase
-        .from('user_inventory')
-        .select('id, name, brand, status, expires_at, category')
-        .eq('clerk_user_id', userId)
-        .order('updated_at', { ascending: false });
-
-      if (!error && data) {
-        setItems(
-          data.map((row) => ({
-            id: row.id,
-            name: row.name ?? '이름 없음',
-            brand: row.brand ?? '',
-            status: row.status ?? 'stored',
-            expiresAt: row.expires_at,
-            category: row.category ?? 'skincare',
-          }))
-        );
-      }
-    };
-    fetchItems();
-  }, [userId, supabase]);
+    void fetchItems();
+  }, [fetchItems]);
 
   const filteredItems =
     statusFilter === 'all' ? items : items.filter((item) => item.status === statusFilter);
@@ -99,7 +97,6 @@ export default function ShelfScreen(): React.JSX.Element {
               ]}
               onPress={() => setStatusFilter(f.id)}
             >
-              <Text style={{ fontSize: 14 }}>{f.emoji}</Text>
               <Text
                 style={[
                   styles.filterLabel,
@@ -134,12 +131,14 @@ export default function ShelfScreen(): React.JSX.Element {
                   <Text style={{ fontSize: 22 }}>🧴</Text>
                 </View>
                 <View style={styles.itemContent}>
-                  <Text style={[styles.itemName, { color: colors.foreground }]}>{item.name}</Text>
+                  <Text style={[styles.itemName, { color: colors.foreground }]}>
+                    {item.productName || '이름 없음'}
+                  </Text>
                   <Text style={[styles.itemBrand, { color: colors.mutedForeground }]}>
-                    {item.brand}
+                    {item.productBrand || '브랜드 미등록'}
                   </Text>
                   <Text style={[styles.itemExpiry, { color: colors.mutedForeground }]}>
-                    사용기한: {item.expiresAt}
+                    사용기한: {formatExpiry(item.expiresAt)}
                   </Text>
                 </View>
                 <View style={[styles.statusBadge, { backgroundColor: `${statusInfo.color}20` }]}>
@@ -155,11 +154,22 @@ export default function ShelfScreen(): React.JSX.Element {
           <View style={styles.empty}>
             <Text style={{ fontSize: 40, marginBottom: spacing.md }}>📦</Text>
             <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-              제품함이 비어있어요
+              {isLoading ? '제품함을 불러오고 있어요' : error || '제품함이 비어있어요'}
             </Text>
             <Text style={[styles.emptyDesc, { color: colors.mutedForeground }]}>
-              바코드 스캔으로 제품을 추가해보세요
+              {error ? '잠시 후 다시 시도해주세요.' : '아직 저장한 제품이 없어요.'}
             </Text>
+            {error ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="제품함 다시 불러오기"
+                onPress={() => void fetchItems()}
+                style={[styles.retryButton, { borderColor: colors.border }]}
+                testID="shelf-retry"
+              >
+                <Text style={[styles.filterLabel, { color: colors.foreground }]}>다시 시도</Text>
+              </Pressable>
+            ) : null}
           </View>
         }
       />
@@ -226,4 +236,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   emptyDesc: { fontSize: typography.size.sm },
+  retryButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.full,
+    borderWidth: 1,
+  },
 });

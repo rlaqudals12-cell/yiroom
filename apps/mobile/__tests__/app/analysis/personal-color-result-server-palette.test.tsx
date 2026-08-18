@@ -1,4 +1,4 @@
-import { render, waitFor, within } from '@testing-library/react-native';
+import { fireEvent, render, waitFor, within } from '@testing-library/react-native';
 import React from 'react';
 
 import PersonalColorResultScreen from '../../../app/(analysis)/personal-color/result';
@@ -48,6 +48,11 @@ jest.mock('../../../components/analysis', () => {
   return {
     AnalysisLoadingState: ({ testID }: { testID?: string }) => <View testID={testID} />,
     AnalysisErrorState: ({ testID }: { testID?: string }) => <View testID={testID} />,
+    AnalysisSaveFailureNotice: ({ onRetry }: { onRetry: () => void }) => (
+      <Text testID="analysis-save-failure-notice" onPress={onRetry}>
+        저장 실패
+      </Text>
+    ),
     ResultLayout: ({
       testID,
       headerContent,
@@ -167,6 +172,7 @@ describe('PersonalColorResultScreen 서버 팔레트 배선', () => {
       bestColors: ['#123456', '#ABCDEF'],
       worstColors: ['#654321'],
       usedMock: false,
+      dbSaveFailed: false,
     });
 
     const screen = render(<PersonalColorResultScreen />);
@@ -194,10 +200,32 @@ describe('PersonalColorResultScreen 서버 팔레트 배선', () => {
       bestColors: [],
       worstColors: [],
       usedMock: false,
+      dbSaveFailed: false,
     });
 
     const screen = render(<PersonalColorResultScreen />);
 
     await waitFor(() => expect(screen.getByTestId('used-fallback').props.children).toBe('true'));
+  });
+
+  it('DB 저장 실패를 실제로 렌더하고 재분석 경로를 연다', async () => {
+    mockRequestPersonalColorAnalysis.mockResolvedValue({
+      season: 'Spring',
+      seasonSubtype: 'bright',
+      confidence: 0.91,
+      description: '서버 분석 설명',
+      bestColors: ['#123456'],
+      worstColors: ['#654321'],
+      usedMock: false,
+      dbSaveFailed: true,
+    });
+
+    const screen = render(<PersonalColorResultScreen />);
+
+    await waitFor(() => expect(screen.getByTestId('analysis-save-failure-notice')).toBeTruthy());
+    fireEvent.press(screen.getByTestId('analysis-save-failure-notice'));
+
+    const { router } = require('expo-router');
+    expect(router.replace).toHaveBeenCalledWith('/(analysis)/personal-color');
   });
 });

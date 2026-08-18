@@ -72,13 +72,7 @@ export async function generateDailySummaryData(
 
   if (supabase && userId) {
     try {
-      const [workoutRes, nutritionRes, wellnessRes] = await Promise.all([
-        supabase
-          .from('workout_sessions')
-          .select('duration_minutes, calories_burned')
-          .eq('clerk_user_id', userId)
-          .gte('created_at', `${today}T00:00:00`)
-          .lte('created_at', `${today}T23:59:59`),
+      const [nutritionRes, wellnessRes] = await Promise.all([
         supabase
           .from('daily_nutrition_summary')
           .select('total_calories, water_ml')
@@ -94,17 +88,6 @@ export async function generateDailySummaryData(
           .maybeSingle(),
       ]);
 
-      const workoutMinutes = (workoutRes.data ?? []).reduce(
-        (sum: number, s: { duration_minutes: number }) => sum + (s.duration_minutes ?? 0),
-        0
-      );
-      const calories = (workoutRes.data ?? []).reduce(
-        (sum: number, s: { calories_burned: number }) => sum + (s.calories_burned ?? 0),
-        0
-      );
-
-      defaults.workoutMinutes = workoutMinutes;
-      defaults.calories = calories;
       defaults.water = nutritionRes.data?.water_ml ?? 0;
       defaults.wellnessScore = wellnessRes.data?.total ?? 0;
     } catch (error) {
@@ -126,80 +109,23 @@ export async function generateDailySummaryData(
  */
 export async function generateWorkoutProgressData(
   size: WidgetSize = 'small',
-  supabase?: SupabaseClient,
-  userId?: string
+  _supabase?: SupabaseClient,
+  _userId?: string
 ): Promise<WorkoutProgressWidgetData> {
-  let weeklyMinutes = 0;
-  let streak = 0;
-  let todayCompleted = false;
-
-  if (supabase && userId) {
-    try {
-      const now = new Date();
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay());
-      weekStart.setHours(0, 0, 0, 0);
-      const today = now.toISOString().split('T')[0];
-
-      const [weeklyRes, todayRes, streakRes] = await Promise.all([
-        supabase
-          .from('workout_sessions')
-          .select('duration_minutes')
-          .eq('clerk_user_id', userId)
-          .gte('created_at', weekStart.toISOString()),
-        supabase
-          .from('workout_sessions')
-          .select('id')
-          .eq('clerk_user_id', userId)
-          .gte('created_at', `${today}T00:00:00`)
-          .limit(1),
-        supabase
-          .from('workout_sessions')
-          .select('created_at')
-          .eq('clerk_user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(30),
-      ]);
-
-      weeklyMinutes = (weeklyRes.data ?? []).reduce(
-        (sum: number, s: { duration_minutes: number }) => sum + (s.duration_minutes ?? 0),
-        0
-      );
-      todayCompleted = (todayRes.data ?? []).length > 0;
-
-      // 연속일 계산
-      if (streakRes.data && streakRes.data.length > 0) {
-        const dates = new Set(
-          streakRes.data.map((s: { created_at: string }) => s.created_at.substring(0, 10))
-        );
-        for (let i = 0; i < 30; i++) {
-          const d = new Date(now);
-          d.setDate(d.getDate() - i);
-          if (dates.has(d.toISOString().substring(0, 10))) {
-            streak++;
-          } else {
-            break;
-          }
-        }
-      }
-    } catch (error) {
-      widgetLogger.error('Failed to fetch workout progress data:', error);
-    }
-  }
-
   return {
     type: 'workout-progress',
     size,
     updatedAt: new Date().toISOString(),
     data: {
-      weeklyMinutes,
+      // 숨김 운동 위젯의 집계 API가 없으므로 존재하지 않는 세션을 조회해 수치를 만들지 않는다.
+      weeklyMinutes: 0,
       weeklyGoal: 300,
-      streak,
+      streak: 0,
       nextWorkout: {
         name: '상체 운동',
         scheduledAt: null,
       },
-      todayCompleted,
+      todayCompleted: false,
     },
   };
 }

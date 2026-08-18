@@ -2,7 +2,6 @@
  * 제품 상세 화면
  * 제품 정보, 성분, 리뷰, 구매 링크
  */
-import { useUser } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -15,6 +14,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Share,
+  Alert,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
@@ -69,13 +69,12 @@ interface Review {
 export default function ProductDetailScreen() {
   const { colors, brand, status, typography, spacing, radii } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useUser();
   const supabase = useClerkSupabaseClient();
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('info');
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite] = useState(false);
 
   const { handleClick: affiliateClick } = useAffiliateClick({
     productId: id || '',
@@ -156,30 +155,10 @@ export default function ProductDetailScreen() {
     fetchProduct();
   }, [fetchProduct]);
 
-  // 찜하기 토글 (DB 저장 시도)
-  const handleFavoriteToggle = async () => {
+  const handleFavoriteToggle = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const newValue = !isFavorite;
-    setIsFavorite(newValue);
-
-    if (user?.id && product) {
-      try {
-        if (newValue) {
-          await supabase.from('product_wishlist').upsert({
-            clerk_user_id: user.id,
-            product_id: product.id,
-          });
-        } else {
-          await supabase
-            .from('product_wishlist')
-            .delete()
-            .eq('clerk_user_id', user.id)
-            .eq('product_id', product.id);
-        }
-      } catch {
-        // DB 저장 실패 시 로컬 상태만 유지
-      }
-    }
+    // 제품 위시리스트 API가 생기기 전에는 저장된 것처럼 로컬 상태를 바꾸지 않는다.
+    Alert.alert('기능 준비 중', '제품 찜하기 저장은 현재 지원하지 않아요.');
   };
 
   // 공유하기
@@ -519,6 +498,8 @@ export default function ProductDetailScreen() {
         <Pressable
           style={[styles.actionButton, { backgroundColor: colors.muted }]}
           onPress={handleFavoriteToggle}
+          accessibilityLabel="제품 찜하기"
+          testID="product-favorite-button"
         >
           <Text style={styles.actionIcon}>{isFavorite ? '❤️' : '🤍'}</Text>
         </Pressable>

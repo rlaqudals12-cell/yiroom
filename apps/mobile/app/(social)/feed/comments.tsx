@@ -2,7 +2,7 @@
  * 피드 댓글 화면
  * 특정 피드 아이템의 댓글 목록 + 댓글 작성
  */
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 import { FEATURE_FLAGS } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { Redirect, useLocalSearchParams } from 'expo-router';
@@ -17,13 +17,14 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
+import { createFeedComment, getFeedComments } from '@/lib/feed/api';
 import { useTheme, typography, spacing, radii } from '@/lib/theme';
 
 import { formatRelativeTime } from '../../../lib/feed';
-import { useClerkSupabaseClient } from '../../../lib/supabase';
 
 interface Comment {
   id: string;
@@ -44,42 +45,27 @@ export default function CommentsScreenGuard(): React.JSX.Element {
 function CommentsScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography } = useTheme();
   const { activityId } = useLocalSearchParams<{ activityId: string }>();
-  const { user } = useUser();
-  const supabase = useClerkSupabaseClient();
+  const { getToken } = useAuth();
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  // 댓글 조회 — activity의 metadata.comments_list에 저장
   const fetchComments = useCallback(async () => {
     if (!activityId) return;
 
     setIsLoading(true);
     try {
-      const { data } = await supabase
-        .from('user_activities')
-        .select('metadata')
-        .eq('id', activityId)
-        .maybeSingle();
-
-      const commentsList = data?.metadata?.comments_list ?? [];
-      setComments(
-        commentsList.map((c: Record<string, unknown>) => ({
-          id: String(c.id ?? ''),
-          userId: String(c.user_id ?? ''),
-          userName: String(c.user_name ?? '사용자'),
-          content: String(c.content ?? ''),
-          createdAt: new Date(String(c.created_at ?? new Date().toISOString())),
-        }))
-      );
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      setComments(await getFeedComments(activityId, token));
     } catch {
-      // 조용히 실패
+      setComments([]);
     } finally {
       setIsLoading(false);
     }
-  }, [activityId, supabase]);
+  }, [activityId, getToken]);
 
   useEffect(() => {
     fetchComments();
@@ -87,57 +73,19 @@ function CommentsScreen(): React.JSX.Element {
 
   // 댓글 작성
   const handleSend = async (): Promise<void> => {
-    if (!newComment.trim() || !user?.id || !activityId || isSending) return;
+    if (!newComment.trim() || !activityId || isSending) return;
 
     setIsSending(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     try {
-      // 현재 metadata 조회
-      const { data: activity } = await supabase
-        .from('user_activities')
-        .select('metadata')
-        .eq('id', activityId)
-        .maybeSingle();
-
-      const currentMeta = activity?.metadata ?? {};
-      const currentCommentsList = currentMeta.comments_list ?? [];
-      const currentCount = currentMeta.comments ?? 0;
-
-      const newEntry = {
-        id: `comment_${Date.now()}`,
-        user_id: user.id,
-        user_name: user.firstName || '나',
-        content: newComment.trim(),
-        created_at: new Date().toISOString(),
-      };
-
-      // metadata 업데이트
-      await supabase
-        .from('user_activities')
-        .update({
-          metadata: {
-            ...currentMeta,
-            comments: currentCount + 1,
-            comments_list: [...currentCommentsList, newEntry],
-          },
-        })
-        .eq('id', activityId);
-
-      // 낙관적 업데이트
-      setComments((prev) => [
-        ...prev,
-        {
-          id: newEntry.id,
-          userId: user.id,
-          userName: newEntry.user_name,
-          content: newEntry.content,
-          createdAt: new Date(),
-        },
-      ]);
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요합니다.');
+      const saved = await createFeedComment(activityId, newComment.trim(), token);
+      setComments((prev) => [...prev, saved]);
       setNewComment('');
     } catch {
-      // 조용히 실패
+      Alert.alert('저장 실패', '댓글을 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSending(false);
     }

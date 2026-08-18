@@ -1,114 +1,87 @@
 /**
- * 사용자 피드백 Repository
- * @description 구매 후기, 사이즈 피드백, 추천 평가 관리
+ * 사용자 피드백 API 클라이언트
+ * @description 구매 후기, 사이즈 피드백, 추천 평가 관리를 웹 정본 API에 위임
  */
 
-import { supabase } from '@/lib/supabase/client';
-import { smartMatchingLogger } from '@/lib/utils/logger';
-import type {
-  UserFeedback,
-  UserFeedbackDB,
-  FeedbackType,
-  SizeFit,
-  ColorAccuracy,
-} from '@/types/smart-matching';
-import { mapFeedbackRow } from '@/types/smart-matching';
+import type { UserFeedback, FeedbackType, SizeFit, ColorAccuracy } from '@/types/smart-matching';
+
+import { missingSmartMatchingApi, requestSmartMatching } from './api-client';
+
+type SerializedFeedback = Omit<UserFeedback, 'createdAt'> & { createdAt: string };
+
+function toFeedback(payload: SerializedFeedback): UserFeedback {
+  return {
+    ...payload,
+    createdAt: new Date(payload.createdAt),
+  };
+}
 
 /**
  * 사용자의 피드백 목록 조회
  */
 export async function getFeedbackList(
-  clerkUserId: string,
+  _clerkUserId: string,
   options?: {
     type?: FeedbackType;
     productId?: string;
     limit?: number;
-  }
+  },
+  clerkToken?: string
 ): Promise<UserFeedback[]> {
-  let query = supabase.from('user_feedback').select('*').eq('clerk_user_id', clerkUserId);
+  const query = new URLSearchParams();
+  if (options?.type) query.set('type', options.type);
+  if (options?.productId) query.set('productId', options.productId);
+  const queryString = query.toString();
+  const suffix = queryString ? `?${queryString}` : '';
 
-  if (options?.type) {
-    query = query.eq('feedback_type', options.type);
-  }
-
-  if (options?.productId) {
-    query = query.eq('product_id', options.productId);
-  }
-
-  query = query.order('created_at', { ascending: false });
-
-  if (options?.limit) {
-    query = query.limit(options.limit);
-  }
-
-  const { data, error } = await query;
-
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as UserFeedbackDB[]).map(mapFeedbackRow);
+  const payload = await requestSmartMatching<SerializedFeedback[]>(
+    `/api/smart-matching/feedback${suffix}`,
+    clerkToken,
+    { method: 'GET' }
+  );
+  const feedback = payload.map(toFeedback);
+  return options?.limit ? feedback.slice(0, options.limit) : feedback;
 }
 
 /**
  * 특정 피드백 조회
  */
-export async function getFeedback(feedbackId: string): Promise<UserFeedback | null> {
-  const { data, error } = await supabase
-    .from('user_feedback')
-    .select('*')
-    .eq('id', feedbackId)
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return mapFeedbackRow(data as UserFeedbackDB);
+export async function getFeedback(
+  _feedbackId: string,
+  _clerkToken?: string
+): Promise<UserFeedback | null> {
+  return missingSmartMatchingApi('개별 피드백 조회');
 }
 
 /**
  * 피드백 생성
  */
-export async function createFeedback(input: {
-  clerkUserId: string;
-  feedbackType: FeedbackType;
-  productId?: string;
-  recommendationId?: string;
-  rating?: number;
-  sizeFit?: SizeFit;
-  colorAccuracy?: ColorAccuracy;
-  wouldRecommend?: boolean;
-  comment?: string;
-  pros?: string[];
-  cons?: string[];
-  photos?: string[];
-}): Promise<UserFeedback | null> {
-  const { data, error } = await supabase
-    .from('user_feedback')
-    .insert({
-      clerk_user_id: input.clerkUserId,
-      feedback_type: input.feedbackType,
-      product_id: input.productId ?? null,
-      recommendation_id: input.recommendationId ?? null,
-      rating: input.rating ?? null,
-      size_fit: input.sizeFit ?? null,
-      color_accuracy: input.colorAccuracy ?? null,
-      would_recommend: input.wouldRecommend ?? null,
-      comment: input.comment ?? null,
-      pros: input.pros ?? null,
-      cons: input.cons ?? null,
-      photos: input.photos ?? null,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    smartMatchingLogger.error('피드백 생성 실패:', error);
-    return null;
-  }
-
-  return mapFeedbackRow(data as UserFeedbackDB);
+export async function createFeedback(
+  input: {
+    clerkUserId: string;
+    feedbackType: FeedbackType;
+    productId?: string;
+    recommendationId?: string;
+    rating?: number;
+    sizeFit?: SizeFit;
+    colorAccuracy?: ColorAccuracy;
+    wouldRecommend?: boolean;
+    comment?: string;
+    pros?: string[];
+    cons?: string[];
+    photos?: string[];
+  },
+  clerkToken?: string
+): Promise<UserFeedback | null> {
+  const payload = await requestSmartMatching<SerializedFeedback>(
+    '/api/smart-matching/feedback',
+    clerkToken,
+    {
+      method: 'POST',
+      body: JSON.stringify({ ...input, clerkUserId: undefined }),
+    }
+  );
+  return toFeedback(payload);
 }
 
 /**
@@ -125,131 +98,74 @@ export async function updateFeedback(
     pros: string[];
     cons: string[];
     photos: string[];
-  }>
+  }>,
+  clerkToken?: string
 ): Promise<boolean> {
-  const updateData: Record<string, unknown> = {};
-
-  if (updates.rating !== undefined) updateData.rating = updates.rating;
-  if (updates.sizeFit !== undefined) updateData.size_fit = updates.sizeFit;
-  if (updates.colorAccuracy !== undefined) updateData.color_accuracy = updates.colorAccuracy;
-  if (updates.wouldRecommend !== undefined) updateData.would_recommend = updates.wouldRecommend;
-  if (updates.comment !== undefined) updateData.comment = updates.comment;
-  if (updates.pros !== undefined) updateData.pros = updates.pros;
-  if (updates.cons !== undefined) updateData.cons = updates.cons;
-  if (updates.photos !== undefined) updateData.photos = updates.photos;
-
-  const { error } = await supabase.from('user_feedback').update(updateData).eq('id', feedbackId);
-
-  if (error) {
-    smartMatchingLogger.error('피드백 업데이트 실패:', error);
-    return false;
-  }
-
-  return true;
+  const payload = await requestSmartMatching<{ success: boolean }>(
+    `/api/smart-matching/feedback/${encodeURIComponent(feedbackId)}`,
+    clerkToken,
+    { method: 'PATCH', body: JSON.stringify(updates) }
+  );
+  return payload.success;
 }
 
 /**
  * 피드백 삭제
  */
-export async function deleteFeedback(feedbackId: string): Promise<boolean> {
-  const { error } = await supabase.from('user_feedback').delete().eq('id', feedbackId);
-
-  if (error) {
-    smartMatchingLogger.error('피드백 삭제 실패:', error);
-    return false;
-  }
-
-  return true;
+export async function deleteFeedback(feedbackId: string, clerkToken?: string): Promise<boolean> {
+  const payload = await requestSmartMatching<{ success: boolean }>(
+    `/api/smart-matching/feedback/${encodeURIComponent(feedbackId)}`,
+    clerkToken,
+    { method: 'DELETE' }
+  );
+  return payload.success;
 }
 
 /**
  * 제품별 평균 평점 조회
  */
-export async function getProductAverageRating(productId: string): Promise<{
+export async function getProductAverageRating(
+  _productId: string,
+  _clerkToken?: string
+): Promise<{
   averageRating: number;
   totalCount: number;
 } | null> {
-  const { data, error } = await supabase
-    .from('user_feedback')
-    .select('rating')
-    .eq('product_id', productId)
-    .eq('feedback_type', 'purchase_review')
-    .not('rating', 'is', null);
-
-  if (error || !data || data.length === 0) {
-    return null;
-  }
-
-  const ratings = data.map((d) => d.rating as number);
-  const sum = ratings.reduce((a, b) => a + b, 0);
-
-  return {
-    averageRating: sum / ratings.length,
-    totalCount: ratings.length,
-  };
+  return missingSmartMatchingApi('제품 전체 평균 평점 조회');
 }
 
 /**
  * 제품별 사이즈 핏 통계 조회
  */
-export async function getProductSizeFitStats(productId: string): Promise<{
+export async function getProductSizeFitStats(
+  _productId: string,
+  _clerkToken?: string
+): Promise<{
   small: number;
   perfect: number;
   large: number;
   total: number;
 } | null> {
-  const { data, error } = await supabase
-    .from('user_feedback')
-    .select('size_fit')
-    .eq('product_id', productId)
-    .eq('feedback_type', 'size_feedback')
-    .not('size_fit', 'is', null);
-
-  if (error || !data || data.length === 0) {
-    return null;
-  }
-
-  const stats = {
-    small: 0,
-    perfect: 0,
-    large: 0,
-    total: data.length,
-  };
-
-  data.forEach((d) => {
-    if (d.size_fit === 'small') stats.small++;
-    else if (d.size_fit === 'perfect') stats.perfect++;
-    else if (d.size_fit === 'large') stats.large++;
-  });
-
-  return stats;
+  return missingSmartMatchingApi('제품 전체 사이즈 핏 통계 조회');
 }
 
 /**
  * 추천 정확도 통계 조회
  */
-export async function getRecommendationAccuracy(clerkUserId: string): Promise<{
+export async function getRecommendationAccuracy(
+  _clerkUserId: string,
+  clerkToken?: string
+): Promise<{
   totalRecommendations: number;
   positiveRatings: number;
   accuracyPercent: number;
 } | null> {
-  const { data, error } = await supabase
-    .from('user_feedback')
-    .select('rating, would_recommend')
-    .eq('clerk_user_id', clerkUserId)
-    .eq('feedback_type', 'match_feedback');
-
-  if (error || !data || data.length === 0) {
-    return null;
-  }
-
-  const positive = data.filter(
-    (d) => d.would_recommend === true || (d.rating && d.rating >= 4)
-  ).length;
-
-  return {
-    totalRecommendations: data.length,
-    positiveRatings: positive,
-    accuracyPercent: (positive / data.length) * 100,
-  };
+  const payload = await requestSmartMatching<{
+    accuracy: {
+      totalRecommendations: number;
+      positiveRatings: number;
+      accuracyPercent: number;
+    } | null;
+  }>('/api/smart-matching/feedback?stats=true', clerkToken, { method: 'GET' });
+  return payload.accuracy;
 }

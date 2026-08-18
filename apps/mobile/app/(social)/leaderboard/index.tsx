@@ -3,6 +3,7 @@
  * UX v3: GlassCard + GradientText 히어로 + backgroundGradient + LinearGradient 내 순위 + ScalePressable
  */
 import { useUser } from '@clerk/clerk-expo';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -25,8 +26,12 @@ const CATEGORIES: { id: CategoryType; label: string; emoji: string }[] = [
   { id: 'xp', label: 'XP', emoji: '⭐' },
   { id: 'level', label: '레벨', emoji: '🏅' },
   { id: 'wellness', label: '웰니스', emoji: '💚' },
-  { id: 'workout', label: '운동', emoji: '💪' },
-  { id: 'nutrition', label: '영양', emoji: '🥗' },
+  ...(FEATURE_FLAGS.WELLNESS_PHASE2
+    ? ([
+        { id: 'workout', label: '운동', emoji: '💪' },
+        { id: 'nutrition', label: '영양', emoji: '🥗' },
+      ] satisfies { id: CategoryType; label: string; emoji: string }[])
+    : []),
 ];
 
 const CATEGORY_SCORE_LABELS: Record<CategoryType, string> = {

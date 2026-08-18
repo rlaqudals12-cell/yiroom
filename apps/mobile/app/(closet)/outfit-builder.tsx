@@ -22,6 +22,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 
+import { resolveClothingCategory } from '../../lib/inventory/clothingCategory';
 import type { ClothingCategory, Season, Occasion, InventoryItem } from '../../lib/inventory/types';
 import {
   CLOTHING_CATEGORY_LABELS,
@@ -77,8 +78,8 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
       accessory: [],
     };
     for (const item of items) {
-      const cat = (item.subCategory || 'top') as ClothingCategory;
-      if (groups[cat]) {
+      const cat = resolveClothingCategory(item);
+      if (cat) {
         groups[cat].push(item);
       }
     }
@@ -193,7 +194,7 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
                           style={[styles.previewPlaceholder, { backgroundColor: colors.border }]}
                         >
                           <Text style={styles.previewEmoji}>
-                            {CATEGORY_EMOJIS[(item.subCategory || 'top') as ClothingCategory]}
+                            {CATEGORY_EMOJIS[resolveClothingCategory(item) ?? 'accessory']}
                           </Text>
                         </View>
                       )}

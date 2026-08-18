@@ -113,6 +113,11 @@ describe('StyleTab', () => {
       expect(getByTestId('menu-shopping')).toBeTruthy();
     });
 
+    it('내 제품함 메뉴가 표시된다', () => {
+      const { getByTestId } = renderWithTheme(<StyleTab />);
+      expect(getByTestId('menu-product-shelf')).toBeTruthy();
+    });
+
     it('메뉴 카드의 설명 텍스트가 표시된다', () => {
       const { getAllByText, getByText } = renderWithTheme(<StyleTab />);
       expect(
@@ -159,6 +164,22 @@ describe('StyleTab', () => {
       fireEvent.press(getByTestId('menu-closet'));
       expect(mockPush).toHaveBeenCalledWith('/(closet)');
     });
+
+    it('내 제품함 메뉴 클릭 시 제품함 라우터를 호출한다', () => {
+      const mockPush = jest.fn();
+      const { useRouter } = require('expo-router');
+      useRouter.mockReturnValue({
+        push: mockPush,
+        replace: jest.fn(),
+        back: jest.fn(),
+        navigate: jest.fn(),
+        canGoBack: jest.fn(() => true),
+      });
+
+      const { getByTestId } = renderWithTheme(<StyleTab />);
+      fireEvent.press(getByTestId('menu-product-shelf'));
+      expect(mockPush).toHaveBeenCalledWith('/(inventory)/shelf');
+    });
   });
 
   describe('다크 모드', () => {
@@ -167,13 +188,14 @@ describe('StyleTab', () => {
       expect(getByTestId('style-tab')).toBeTruthy();
     });
 
-    it('다크 모드에서 5개 메뉴가 모두 표시된다', () => {
+    it('다크 모드에서 모든 메뉴가 표시된다', () => {
       const { getByTestId } = renderWithTheme(<StyleTab />, true);
       expect(getByTestId('menu-body')).toBeTruthy();
       expect(getByTestId('menu-fashion')).toBeTruthy();
       expect(getByTestId('menu-closet')).toBeTruthy();
       expect(getByTestId('menu-coord')).toBeTruthy();
       expect(getByTestId('menu-shopping')).toBeTruthy();
+      expect(getByTestId('menu-product-shelf')).toBeTruthy();
     });
   });
 });

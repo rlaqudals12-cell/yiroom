@@ -304,7 +304,7 @@ function setupDefaultMocks(overrides?: {
     items,
     isLoading,
     error: null,
-    summary: { wellMatched: 2, needsImprovement: 1, suggestions: [] },
+    summary: { total: 3, wellMatched: 2, needsImprovement: 1, suggestions: [] },
     getRecommendations: jest.fn(() => []),
     getOutfitSuggestion: mockGetOutfitSuggestion,
     getWeatherBasedRecommendations: jest.fn(() => []),
@@ -341,7 +341,7 @@ describe('RecommendScreen 코디 저장 기능', () => {
   });
 
   describe('이미 저장된 코디 상태', () => {
-    it('동일한 아이템 조합이 저장되어 있으면 "저장됨" 텍스트를 표시한다', () => {
+    it('동일한 아이템 조합이 저장되어 있으면 다시 보기 진입점을 표시한다', () => {
       // top1, bot1, shoe1 — mockOutfit의 아이템 ID와 동일
       setupDefaultMocks({
         savedOutfits: [
@@ -350,19 +350,29 @@ describe('RecommendScreen 코디 저장 기능', () => {
       });
 
       const { getByText } = renderWithTheme(<RecommendScreen />);
-      expect(getByText('저장됨')).toBeTruthy();
+      expect(getByText('저장한 코디 보기')).toBeTruthy();
     });
 
-    it('이미 저장된 코디의 버튼은 비활성화된다', () => {
+    it('이미 저장된 코디 버튼을 누르면 저장 목록으로 이동한다', () => {
       setupDefaultMocks({
         savedOutfits: [{ itemIds: ['bot1', 'shoe1', 'top1'] }],
       });
 
-      const { getByTestId } = renderWithTheme(<RecommendScreen />);
-      const button = getByTestId('save-outfit-button');
+      const mockPush = jest.fn();
+      const { useRouter } = require('expo-router');
+      useRouter.mockReturnValue({
+        push: mockPush,
+        replace: jest.fn(),
+        back: jest.fn(),
+        navigate: jest.fn(),
+        canGoBack: jest.fn(() => true),
+      });
 
-      // TouchableOpacity disabled prop 확인
-      expect(button.props.accessibilityState?.disabled ?? button.props.disabled).toBeTruthy();
+      const { getByTestId } = renderWithTheme(<RecommendScreen />);
+      fireEvent.press(getByTestId('save-outfit-button'));
+
+      expect(mockPush).toHaveBeenCalledWith('/(closet)/outfits');
+      expect(mockSaveOutfit).not.toHaveBeenCalled();
     });
   });
 
@@ -421,18 +431,16 @@ describe('RecommendScreen 코디 저장 기능', () => {
       });
     });
 
-    it('이미 저장된 코디를 다시 누르면 "이미 저장된 코디" Alert를 표시한다', async () => {
+    it('이미 저장된 코디를 다시 누르면 중복 저장하지 않는다', async () => {
       setupDefaultMocks({
         savedOutfits: [{ itemIds: ['bot1', 'shoe1', 'top1'] }],
       });
 
       const { getByTestId } = renderWithTheme(<RecommendScreen />);
 
-      // disabled 상태이므로 직접 onPress를 호출하기 위해 함수적으로 검증
-      // TouchableOpacity disabled=true면 fireEvent.press가 작동하지 않는 경우가 있으므로
-      // 대신 isOutfitAlreadySaved 체크가 올바른지 간접 검증
-      // 위의 "이미 저장된 코디의 버튼은 비활성화된다" 테스트에서 이미 검증됨
-      expect(getByTestId('save-outfit-button')).toBeTruthy();
+      fireEvent.press(getByTestId('save-outfit-button'));
+
+      expect(mockSaveOutfit).not.toHaveBeenCalled();
     });
   });
 
@@ -536,7 +544,9 @@ describe('RecommendScreen 코디 저장 기능', () => {
       const { getByTestId, getByText, queryByText } = renderWithTheme(<RecommendScreen />);
 
       expect(getByTestId('weather-fallback-notice')).toBeTruthy();
-      expect(getByText('실시간 날씨를 불러오지 못해 날씨 정보는 추천에서 제외했어요.')).toBeTruthy();
+      expect(
+        getByText('실시간 날씨를 불러오지 못해 날씨 정보는 추천에서 제외했어요.')
+      ).toBeTruthy();
       expect(queryByText('15°C')).toBeNull();
       expect(queryByText('맑음')).toBeNull();
     });
@@ -553,6 +563,29 @@ describe('RecommendScreen 코디 저장 기능', () => {
       });
 
       expect(mockSaveOutfit.mock.calls[0][0].description).toBe('Spring · 스트레이트');
+    });
+  });
+
+  describe('옷장 분석 요약 패리티', () => {
+    it('중간 밴드를 0/0으로 숨기지 않고 전체·무난·판정 근거를 표시한다', () => {
+      mockUseClosetMatcher.mockReturnValue({
+        items: mockItems,
+        isLoading: false,
+        error: null,
+        summary: { total: 3, wellMatched: 0, needsImprovement: 0, suggestions: [] },
+        getRecommendations: jest.fn(() => []),
+        getOutfitSuggestion: mockGetOutfitSuggestion,
+        getWeatherBasedRecommendations: jest.fn(() => []),
+        getOccasionRecommendations: jest.fn(() => []),
+        refetch: mockRefetch,
+      });
+
+      const { getByTestId, getByText } = renderWithTheme(<RecommendScreen />);
+
+      expect(getByTestId('closet-summary-total').props.children).toContain(3);
+      expect(getByTestId('closet-summary-neutral').props.children).toBe(3);
+      expect(getByText('무난')).toBeTruthy();
+      expect(getByTestId('closet-summary-basis').props.children).toBe('퍼스널컬러·체형 기준이에요');
     });
   });
 });

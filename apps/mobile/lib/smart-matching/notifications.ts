@@ -1,221 +1,148 @@
 /**
- * 스마트 알림 Repository
- * @description 가격 알림, 재입고 알림, 소진 예측 알림 관리
+ * 스마트 알림 API 클라이언트
+ * @description 가격 알림, 재입고 알림, 소진 예측 알림 관리를 웹 정본 API에 위임
  */
 
-import { supabase } from '@/lib/supabase/client';
-import { smartMatchingLogger } from '@/lib/utils/logger';
-import type {
+import type { SmartNotification, NotificationType } from '@/types/smart-matching';
+
+import { missingSmartMatchingApi, requestSmartMatching } from './api-client';
+
+type SerializedNotification = Omit<
   SmartNotification,
-  SmartNotificationDB,
-  NotificationType,
-} from '@/types/smart-matching';
-import { mapNotificationRow } from '@/types/smart-matching';
+  'readAt' | 'scheduledFor' | 'sentAt' | 'createdAt'
+> & {
+  readAt?: string;
+  scheduledFor?: string;
+  sentAt?: string;
+  createdAt: string;
+};
+
+function toNotification(payload: SerializedNotification): SmartNotification {
+  return {
+    ...payload,
+    readAt: payload.readAt ? new Date(payload.readAt) : undefined,
+    scheduledFor: payload.scheduledFor ? new Date(payload.scheduledFor) : undefined,
+    sentAt: payload.sentAt ? new Date(payload.sentAt) : undefined,
+    createdAt: new Date(payload.createdAt),
+  };
+}
 
 /**
  * 사용자의 알림 목록 조회
  */
 export async function getNotifications(
-  clerkUserId: string,
+  _clerkUserId: string,
   options?: {
     unreadOnly?: boolean;
     type?: NotificationType;
     limit?: number;
-  }
+  },
+  clerkToken?: string
 ): Promise<SmartNotification[]> {
-  let query = supabase.from('smart_notifications').select('*').eq('clerk_user_id', clerkUserId);
+  const query = new URLSearchParams();
+  if (options?.unreadOnly) query.set('unread', 'true');
+  if (options?.type) query.set('type', options.type);
 
-  if (options?.unreadOnly) {
-    query = query.eq('read', false);
-  }
+  const suffix = query.size > 0 ? `?${query.toString()}` : '';
+  const payload = await requestSmartMatching<{
+    notifications: SerializedNotification[];
+    unreadCount: number;
+  }>(`/api/smart-matching/notifications${suffix}`, clerkToken, { method: 'GET' });
 
-  if (options?.type) {
-    query = query.eq('notification_type', options.type);
-  }
-
-  query = query.order('created_at', { ascending: false });
-
-  if (options?.limit) {
-    query = query.limit(options.limit);
-  }
-
-  const { data, error } = await query;
-
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as SmartNotificationDB[]).map(mapNotificationRow);
+  const notifications = payload.notifications.map(toNotification);
+  return options?.limit ? notifications.slice(0, options.limit) : notifications;
 }
 
 /**
  * 읽지 않은 알림 개수 조회
  */
-export async function getUnreadCount(clerkUserId: string): Promise<number> {
-  const { count, error } = await supabase
-    .from('smart_notifications')
-    .select('*', { count: 'exact', head: true })
-    .eq('clerk_user_id', clerkUserId)
-    .eq('read', false);
-
-  if (error) {
-    smartMatchingLogger.error('알림 개수 조회 실패:', error);
-    return 0;
-  }
-
-  return count ?? 0;
+export async function getUnreadCount(_clerkUserId: string, clerkToken?: string): Promise<number> {
+  const payload = await requestSmartMatching<{ unreadCount: number }>(
+    '/api/smart-matching/notifications?count=true',
+    clerkToken,
+    { method: 'GET' }
+  );
+  return payload.unreadCount;
 }
 
 /**
  * 알림 생성
  */
-export async function createNotification(input: {
-  clerkUserId: string;
-  notificationType: NotificationType;
-  title: string;
-  message: string;
-  imageUrl?: string;
-  productId?: string;
-  inventoryItemId?: string;
-  actionUrl?: string;
-  scheduledFor?: Date;
-}): Promise<SmartNotification | null> {
-  const { data, error } = await supabase
-    .from('smart_notifications')
-    .insert({
-      clerk_user_id: input.clerkUserId,
-      notification_type: input.notificationType,
-      title: input.title,
-      message: input.message,
-      image_url: input.imageUrl ?? null,
-      product_id: input.productId ?? null,
-      inventory_item_id: input.inventoryItemId ?? null,
-      action_url: input.actionUrl ?? null,
-      scheduled_for: input.scheduledFor?.toISOString() ?? null,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    smartMatchingLogger.error('알림 생성 실패:', error);
-    return null;
-  }
-
-  return mapNotificationRow(data as SmartNotificationDB);
+export async function createNotification(
+  _input: {
+    clerkUserId: string;
+    notificationType: NotificationType;
+    title: string;
+    message: string;
+    imageUrl?: string;
+    productId?: string;
+    inventoryItemId?: string;
+    actionUrl?: string;
+    scheduledFor?: Date;
+  },
+  _clerkToken?: string
+): Promise<SmartNotification | null> {
+  // 왜: 현재 DB 정책에는 사용자 알림 INSERT 권한이 없어 기존 POST도 항상 실패한다.
+  return missingSmartMatchingApi('알림 생성');
 }
 
 /**
  * 알림 읽음 처리
  */
-export async function markAsRead(notificationId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('smart_notifications')
-    .update({
-      read: true,
-      read_at: new Date().toISOString(),
-    })
-    .eq('id', notificationId);
-
-  if (error) {
-    smartMatchingLogger.error('알림 읽음 처리 실패:', error);
-    return false;
-  }
-
-  return true;
+export async function markAsRead(notificationId: string, clerkToken?: string): Promise<boolean> {
+  const payload = await requestSmartMatching<{ success: boolean }>(
+    `/api/smart-matching/notifications/${encodeURIComponent(notificationId)}`,
+    clerkToken,
+    { method: 'PATCH' }
+  );
+  return payload.success;
 }
 
 /**
  * 모든 알림 읽음 처리
  */
-export async function markAllAsRead(clerkUserId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('smart_notifications')
-    .update({
-      read: true,
-      read_at: new Date().toISOString(),
-    })
-    .eq('clerk_user_id', clerkUserId)
-    .eq('read', false);
-
-  if (error) {
-    smartMatchingLogger.error('알림 전체 읽음 처리 실패:', error);
-    return false;
-  }
-
-  return true;
+export async function markAllAsRead(_clerkUserId: string, clerkToken?: string): Promise<boolean> {
+  const payload = await requestSmartMatching<{ success: boolean }>(
+    '/api/smart-matching/notifications',
+    clerkToken,
+    {
+      method: 'POST',
+      body: JSON.stringify({ action: 'markAllAsRead' }),
+    }
+  );
+  return payload.success;
 }
 
 /**
  * 알림 삭제
  */
-export async function deleteNotification(notificationId: string): Promise<boolean> {
-  const { error } = await supabase.from('smart_notifications').delete().eq('id', notificationId);
-
-  if (error) {
-    smartMatchingLogger.error('알림 삭제 실패:', error);
-    return false;
-  }
-
-  return true;
+export async function deleteNotification(
+  _notificationId: string,
+  _clerkToken?: string
+): Promise<boolean> {
+  // 왜: 현재 DB 정책에는 사용자 알림 DELETE 권한이 없어 성공한 것처럼 요청하지 않는다.
+  return missingSmartMatchingApi('알림 삭제');
 }
 
 /**
  * 오래된 알림 정리 (30일 이상)
  */
 export async function cleanupOldNotifications(days: number = 30): Promise<number> {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
-
-  const { data, error } = await supabase
-    .from('smart_notifications')
-    .delete()
-    .lt('created_at', cutoff.toISOString())
-    .eq('read', true)
-    .select();
-
-  if (error) {
-    smartMatchingLogger.error('알림 정리 실패:', error);
-    return 0;
-  }
-
-  return data?.length ?? 0;
+  return missingSmartMatchingApi(`${days}일 이전 알림 정리`);
 }
 
 /**
  * 발송 예정 알림 조회
  */
 export async function getScheduledNotifications(): Promise<SmartNotification[]> {
-  const { data, error } = await supabase
-    .from('smart_notifications')
-    .select('*')
-    .is('sent_at', null)
-    .lte('scheduled_for', new Date().toISOString())
-    .order('scheduled_for', { ascending: true });
-
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as SmartNotificationDB[]).map(mapNotificationRow);
+  return missingSmartMatchingApi('발송 예정 알림 조회');
 }
 
 /**
  * 알림 발송 완료 처리
  */
-export async function markAsSent(notificationId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('smart_notifications')
-    .update({
-      sent_at: new Date().toISOString(),
-    })
-    .eq('id', notificationId);
-
-  if (error) {
-    smartMatchingLogger.error('알림 발송 처리 실패:', error);
-    return false;
-  }
-
-  return true;
+export async function markAsSent(_notificationId: string): Promise<boolean> {
+  return missingSmartMatchingApi('알림 발송 완료 처리');
 }
 
 // ============================================
@@ -225,85 +152,109 @@ export async function markAsSent(notificationId: string): Promise<boolean> {
 /**
  * 가격 하락 알림 생성
  */
-export async function createPriceDropNotification(input: {
-  clerkUserId: string;
-  productId: string;
-  productName: string;
-  oldPrice: number;
-  newPrice: number;
-  platform: string;
-  actionUrl: string;
-}): Promise<SmartNotification | null> {
+export async function createPriceDropNotification(
+  input: {
+    clerkUserId: string;
+    productId: string;
+    productName: string;
+    oldPrice: number;
+    newPrice: number;
+    platform: string;
+    actionUrl: string;
+  },
+  clerkToken?: string
+): Promise<SmartNotification | null> {
   const discountPercent = Math.round(((input.oldPrice - input.newPrice) / input.oldPrice) * 100);
 
-  return createNotification({
-    clerkUserId: input.clerkUserId,
-    notificationType: 'price_drop',
-    title: '가격 하락 알림',
-    message: `${input.productName}이(가) ${discountPercent}% 할인 중이에요! (${input.platform})`,
-    productId: input.productId,
-    actionUrl: input.actionUrl,
-  });
+  return createNotification(
+    {
+      clerkUserId: input.clerkUserId,
+      notificationType: 'price_drop',
+      title: '가격 하락 알림',
+      message: `${input.productName}이(가) ${discountPercent}% 할인 중이에요! (${input.platform})`,
+      productId: input.productId,
+      actionUrl: input.actionUrl,
+    },
+    clerkToken
+  );
 }
 
 /**
  * 재입고 알림 생성
  */
-export async function createRestockNotification(input: {
-  clerkUserId: string;
-  productId: string;
-  productName: string;
-  size?: string;
-  actionUrl: string;
-}): Promise<SmartNotification | null> {
+export async function createRestockNotification(
+  input: {
+    clerkUserId: string;
+    productId: string;
+    productName: string;
+    size?: string;
+    actionUrl: string;
+  },
+  clerkToken?: string
+): Promise<SmartNotification | null> {
   const sizeText = input.size ? ` (${input.size} 사이즈)` : '';
 
-  return createNotification({
-    clerkUserId: input.clerkUserId,
-    notificationType: 'back_in_stock',
-    title: '재입고 알림',
-    message: `${input.productName}${sizeText}이(가) 재입고되었어요!`,
-    productId: input.productId,
-    actionUrl: input.actionUrl,
-  });
+  return createNotification(
+    {
+      clerkUserId: input.clerkUserId,
+      notificationType: 'back_in_stock',
+      title: '재입고 알림',
+      message: `${input.productName}${sizeText}이(가) 재입고되었어요!`,
+      productId: input.productId,
+      actionUrl: input.actionUrl,
+    },
+    clerkToken
+  );
 }
 
 /**
  * 소진 예측 알림 생성
  */
-export async function createRunningLowNotification(input: {
-  clerkUserId: string;
-  inventoryItemId: string;
-  productName: string;
-  daysRemaining: number;
-  actionUrl?: string;
-}): Promise<SmartNotification | null> {
-  return createNotification({
-    clerkUserId: input.clerkUserId,
-    notificationType: 'product_running_low',
-    title: '소진 예정 알림',
-    message: `${input.productName}이(가) 약 ${input.daysRemaining}일 후 소진될 예정이에요.`,
-    inventoryItemId: input.inventoryItemId,
-    actionUrl: input.actionUrl,
-  });
+export async function createRunningLowNotification(
+  input: {
+    clerkUserId: string;
+    inventoryItemId: string;
+    productName: string;
+    daysRemaining: number;
+    actionUrl?: string;
+  },
+  clerkToken?: string
+): Promise<SmartNotification | null> {
+  return createNotification(
+    {
+      clerkUserId: input.clerkUserId,
+      notificationType: 'product_running_low',
+      title: '소진 예정 알림',
+      message: `${input.productName}이(가) 약 ${input.daysRemaining}일 후 소진될 예정이에요.`,
+      inventoryItemId: input.inventoryItemId,
+      actionUrl: input.actionUrl,
+    },
+    clerkToken
+  );
 }
 
 /**
  * 유통기한 알림 생성
  */
-export async function createExpiryNotification(input: {
-  clerkUserId: string;
-  inventoryItemId: string;
-  productName: string;
-  daysUntilExpiry: number;
-}): Promise<SmartNotification | null> {
-  return createNotification({
-    clerkUserId: input.clerkUserId,
-    notificationType: 'expiry_approaching',
-    title: '유통기한 알림',
-    message: `${input.productName}의 유통기한이 ${input.daysUntilExpiry}일 남았어요.`,
-    inventoryItemId: input.inventoryItemId,
-  });
+export async function createExpiryNotification(
+  input: {
+    clerkUserId: string;
+    inventoryItemId: string;
+    productName: string;
+    daysUntilExpiry: number;
+  },
+  clerkToken?: string
+): Promise<SmartNotification | null> {
+  return createNotification(
+    {
+      clerkUserId: input.clerkUserId,
+      notificationType: 'expiry_approaching',
+      title: '유통기한 알림',
+      message: `${input.productName}의 유통기한이 ${input.daysUntilExpiry}일 남았어요.`,
+      inventoryItemId: input.inventoryItemId,
+    },
+    clerkToken
+  );
 }
 
 // ============================================

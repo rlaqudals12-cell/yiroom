@@ -162,34 +162,24 @@ export function parseIngredientsText(text: string): string[] {
  * 스캔 기록 저장
  */
 export async function recordScan(
-  supabase: SupabaseClient,
-  userId: string,
-  barcode: string,
-  productName: string | null
+  _supabase: SupabaseClient,
+  _userId: string,
+  _barcode: string,
+  _productName: string | null
 ): Promise<void> {
-  await supabase.from('scan_history').insert({
-    clerk_user_id: userId,
-    barcode,
-    product_name: productName,
-  });
+  // 스캔 이력 정본은 제품함 API이며, 정보가 부족한 레거시 호출은 저장 성공을 가장하지 않는다.
+  throw new Error('레거시 스캔 기록 저장은 현재 지원하지 않아요.');
 }
 
 /**
  * 최근 스캔 기록 조회
  */
 export async function getRecentScans(
-  supabase: SupabaseClient,
-  userId: string,
-  limit = 20
+  _supabase: SupabaseClient,
+  _userId: string,
+  _limit = 20
 ): Promise<ScanHistory[]> {
-  const { data } = await supabase
-    .from('scan_history')
-    .select('id, clerk_user_id, barcode, product_name, scanned_at')
-    .eq('clerk_user_id', userId)
-    .order('scanned_at', { ascending: false })
-    .limit(limit);
-
-  return (data ?? []) as ScanHistory[];
+  return [];
 }
 
 // ─── 피부타입별 성분 가이드 ─────────────────────────

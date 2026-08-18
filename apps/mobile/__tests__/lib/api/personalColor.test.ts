@@ -110,6 +110,14 @@ describe('requestPersonalColorAnalysis', () => {
     expect(result.usedMock).toBe(true);
   });
 
+  it('DB 저장 실패 플래그를 결과 화면까지 보존한다', async () => {
+    mockFetchOnce(200, { ...successBody(), dbSaveFailed: true });
+
+    const result = await requestPersonalColorAnalysis(VALID_INPUT, 'token-1', BASE_URL);
+
+    expect(result.dbSaveFailed).toBe(true);
+  });
+
   it('403 게이트의 플랫 에러 봉투에서 서버 한국어 메시지를 관통시킨다', async () => {
     mockFetchOnce(403, {
       error: '만 14세 미만은 이용할 수 없어요.',

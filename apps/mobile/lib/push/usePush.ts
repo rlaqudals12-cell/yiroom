@@ -16,6 +16,7 @@ import {
 } from './token';
 import { NotificationData, NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from './types';
 import { handleDeepLinkUrl } from '../deeplink';
+import { resolveNotificationActionRoute } from '../notifications/templates';
 import { pushLogger } from '../utils/logger';
 
 // 알림 설정 저장 키
@@ -85,13 +86,13 @@ export function usePush(userId?: string): UsePushReturn {
       switch (data.type) {
         case 'workout_reminder':
         case 'workout_complete':
-          router.push('/(workout)/session');
+          router.push(resolveNotificationActionRoute('/(workout)/session') as never);
           break;
         case 'meal_reminder':
-          router.push('/(nutrition)/record');
+          router.push(resolveNotificationActionRoute('/(nutrition)/record') as never);
           break;
         case 'water_reminder':
-          router.push('/(nutrition)/water');
+          router.push(resolveNotificationActionRoute('/(nutrition)/water') as never);
           break;
         case 'challenge_update':
           router.push('/(tabs)/profile');
