@@ -55,7 +55,10 @@ jest.mock('../../../hooks/useUserAnalyses', () => ({
     personalColor: { season: 'spring' },
     skinAnalysis: { skinType: '복합성' },
     bodyAnalysis: null,
+    hairAnalysis: { hairType: 'wavy' },
+    makeupAnalysis: { undertone: 'neutral' },
     isLoading: false,
+    refetch: jest.fn(),
   })),
 }));
 
@@ -184,6 +187,15 @@ describe('ProfileScreen', () => {
       expect(getByText('체형 분석')).toBeTruthy();
     });
 
+    it('서버가 반환한 헤어·메이크업 축을 포함해 5축 완성도를 표시한다', () => {
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      expect(getByText('4/5 분석 완료')).toBeTruthy();
+      expect(getByText('헤어 분석')).toBeTruthy();
+      expect(getByText('웨이브')).toBeTruthy();
+      expect(getByText('메이크업 분석')).toBeTruthy();
+      expect(getByText('뉴트럴')).toBeTruthy();
+    });
+
     it('완료된 분석에 시즌/타입 서브타이틀이 표시된다', () => {
       // SEASON_LABELS: 'spring' → '봄' 한국어 라벨로 표시
       const { getByText } = renderWithTheme(<ProfileScreen />);
@@ -198,6 +210,8 @@ describe('ProfileScreen', () => {
       personalColor: null,
       skinAnalysis: null,
       bodyAnalysis: null,
+      hairAnalysis: null,
+      makeupAnalysis: null,
       isLoading: false,
       refetch: jest.fn(),
     };
@@ -228,6 +242,20 @@ describe('ProfileScreen', () => {
       mockAnalyses({ bodyAnalysis: { bodyType: 'zzz_unknown' } });
       const { queryByText } = renderWithTheme(<ProfileScreen />);
       expect(queryByText('zzz_unknown')).toBeNull();
+    });
+
+    it('미진단 헤어·메이크업 축은 값을 지어내지 않고 진단 CTA로 연결한다', () => {
+      mockAnalyses({});
+      const mockPush = jest.fn();
+      const { router } = require('expo-router');
+      router.push = mockPush;
+
+      const { getByLabelText } = renderWithTheme(<ProfileScreen />);
+      fireEvent.press(getByLabelText('헤어 분석, 진단하기'));
+      fireEvent.press(getByLabelText('메이크업 분석, 진단하기'));
+
+      expect(mockPush).toHaveBeenCalledWith('/(analysis)/hair');
+      expect(mockPush).toHaveBeenCalledWith('/(analysis)/makeup');
     });
   });
 

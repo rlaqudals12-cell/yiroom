@@ -55,6 +55,17 @@ const BODY_TYPE_LABELS: Record<string, string> = {
   athletic: '운동형',
   apple: '사과형',
 };
+const HAIR_TYPE_LABELS: Record<string, string> = {
+  straight: '직모',
+  wavy: '웨이브',
+  curly: '곱슬',
+  coily: '강한 곱슬',
+};
+const UNDERTONE_LABELS: Record<string, string> = {
+  warm: '웜톤',
+  cool: '쿨톤',
+  neutral: '뉴트럴',
+};
 
 // 라벨 조회: 소문자 정규화 후 매핑. 미지 값은 원시 영문 노출 대신 '—'(지어내지 않음).
 function toKoreanLabel(map: Record<string, string>, raw?: string | null): string | undefined {
@@ -73,6 +84,8 @@ export default function ProfileScreen(): React.JSX.Element {
     personalColor,
     skinAnalysis,
     bodyAnalysis,
+    hairAnalysis,
+    makeupAnalysis,
     refetch: refetchAnalyses,
   } = useUserAnalyses();
   const {
@@ -102,7 +115,13 @@ export default function ProfileScreen(): React.JSX.Element {
     nutritionStreak,
   });
 
-  const analysisCount = [personalColor, skinAnalysis, bodyAnalysis].filter(Boolean).length;
+  const analysisCount = [
+    personalColor,
+    skinAnalysis,
+    bodyAnalysis,
+    hairAnalysis,
+    makeupAnalysis,
+  ].filter(Boolean).length;
 
   const handleSignIn = (): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -195,7 +214,7 @@ export default function ProfileScreen(): React.JSX.Element {
                     marginBottom: spacing.md,
                   }}
                 >
-                  {analysisCount}/3 분석 완료
+                  {analysisCount}/5 분석 완료
                 </Text>
                 {/* 내 정보 수정 + 로그아웃 버튼 */}
                 <View style={{ flexDirection: 'row', gap: spacing.sm }}>
@@ -338,6 +357,8 @@ export default function ProfileScreen(): React.JSX.Element {
               'personal-color': '/(analysis)/personal-color',
               skin: '/(analysis)/skin',
               body: '/(analysis)/body',
+              hair: '/(analysis)/hair',
+              makeup: '/(analysis)/makeup',
             };
             const route = routeMap[item.type];
             if (route) router.push(route as never);
@@ -358,7 +379,11 @@ export default function ProfileScreen(): React.JSX.Element {
             title="퍼스널 컬러"
             completed={!!personalColor}
             subtitle={
-              personalColor?.season ? toKoreanLabel(SEASON_LABELS, personalColor.season) : undefined
+              personalColor
+                ? personalColor.season
+                  ? toKoreanLabel(SEASON_LABELS, personalColor.season)
+                  : '분석 완료'
+                : '진단하기'
             }
             onPress={() => router.push('/(analysis)/personal-color')}
           />
@@ -373,9 +398,11 @@ export default function ProfileScreen(): React.JSX.Element {
             title="피부 분석"
             completed={!!skinAnalysis}
             subtitle={
-              skinAnalysis?.skinType
-                ? toKoreanLabel(SKIN_TYPE_LABELS, skinAnalysis.skinType)
-                : undefined
+              skinAnalysis
+                ? skinAnalysis.skinType
+                  ? toKoreanLabel(SKIN_TYPE_LABELS, skinAnalysis.skinType)
+                  : '분석 완료'
+                : '진단하기'
             }
             onPress={() => router.push('/(analysis)/skin')}
           />
@@ -390,11 +417,51 @@ export default function ProfileScreen(): React.JSX.Element {
             title="체형 분석"
             completed={!!bodyAnalysis}
             subtitle={
-              bodyAnalysis?.bodyType
-                ? toKoreanLabel(BODY_TYPE_LABELS, bodyAnalysis.bodyType)
-                : undefined
+              bodyAnalysis
+                ? bodyAnalysis.bodyType
+                  ? toKoreanLabel(BODY_TYPE_LABELS, bodyAnalysis.bodyType)
+                  : '분석 완료'
+                : '진단하기'
             }
             onPress={() => router.push('/(analysis)/body')}
+          />
+          <View
+            style={{
+              height: StyleSheet.hairlineWidth,
+              backgroundColor: colors.border,
+              marginHorizontal: spacing.md,
+            }}
+          />
+          <MenuItem
+            title="헤어 분석"
+            completed={!!hairAnalysis}
+            subtitle={
+              hairAnalysis
+                ? hairAnalysis.hairType
+                  ? toKoreanLabel(HAIR_TYPE_LABELS, hairAnalysis.hairType)
+                  : '분석 완료'
+                : '진단하기'
+            }
+            onPress={() => router.push('/(analysis)/hair')}
+          />
+          <View
+            style={{
+              height: StyleSheet.hairlineWidth,
+              backgroundColor: colors.border,
+              marginHorizontal: spacing.md,
+            }}
+          />
+          <MenuItem
+            title="메이크업 분석"
+            completed={!!makeupAnalysis}
+            subtitle={
+              makeupAnalysis
+                ? makeupAnalysis.undertone
+                  ? toKoreanLabel(UNDERTONE_LABELS, makeupAnalysis.undertone)
+                  : '분석 완료'
+                : '진단하기'
+            }
+            onPress={() => router.push('/(analysis)/makeup')}
           />
         </GlassCard>
       </Animated.View>

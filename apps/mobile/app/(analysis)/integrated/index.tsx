@@ -6,7 +6,7 @@
  * @see docs/specs/SDD-MOBILE-INTEGRATED.md §4
  */
 
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useMemo, useState } from 'react';
@@ -82,6 +82,28 @@ const ALL_AXES = AXIS_OPTIONS.map((a) => a.code);
 // ============================================
 
 export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
+  const { isLoaded, isSignedIn } = useAuth();
+
+  // Clerk 세션 판정 전에는 로그인 화면으로 보내지 않는다. 판정이 끝난 미로그인 사용자만
+  // 기존 로그인 플로우로 즉시 이동시켜 사진·문진을 모두 입력한 뒤 실패하는 여정을 막는다.
+  if (!isLoaded) {
+    return (
+      <ScreenContainer testID="integrated-auth-loading">
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator accessibilityLabel="로그인 상태 확인 중" color="#EC4899" />
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (!isSignedIn) {
+    return <Redirect href="/(auth)/sign-in" />;
+  }
+
+  return <IntegratedAnalysisForm />;
+}
+
+function IntegratedAnalysisForm(): React.JSX.Element {
   const { colors } = useTheme();
   const { getToken } = useAuth();
 

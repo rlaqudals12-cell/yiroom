@@ -76,6 +76,40 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
     clearLastSubmission();
   });
 
+  it('세션 판정이 끝난 미로그인 사용자는 입력 폼 대신 기존 로그인 화면으로 즉시 이동한다', () => {
+    const { useAuth } = require('@clerk/clerk-expo');
+    useAuth.mockReturnValueOnce({
+      isLoaded: true,
+      isSignedIn: false,
+      getToken: jest.fn(),
+    });
+    mockUseLocalSearchParams.mockReturnValue({});
+
+    const { getByTestId, queryByText } = renderWithTheme(<IntegratedAnalysisInputScreen />);
+
+    expect(getByTestId('redirect').props.accessibilityLabel).toBe('/(auth)/sign-in');
+    expect(queryByText('5축 통합 분석')).toBeNull();
+    expect(require('@/lib/api').fetchBirthdate).not.toHaveBeenCalled();
+  });
+
+  it('Clerk 로딩 중에는 미로그인으로 오판하지 않고 세션 확인 상태만 표시한다', () => {
+    const { useAuth } = require('@clerk/clerk-expo');
+    useAuth.mockReturnValueOnce({
+      isLoaded: false,
+      isSignedIn: undefined,
+      getToken: jest.fn(),
+    });
+    mockUseLocalSearchParams.mockReturnValue({});
+
+    const { getByTestId, queryByTestId, getByLabelText } = renderWithTheme(
+      <IntegratedAnalysisInputScreen />
+    );
+
+    expect(getByTestId('integrated-auth-loading')).toBeTruthy();
+    expect(getByLabelText('로그인 상태 확인 중')).toBeTruthy();
+    expect(queryByTestId('redirect')).toBeNull();
+  });
+
   it('retryAxes로 진입하면 미완료 축만 선택된 채 축 선택 UI가 노출된다', async () => {
     mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'hair,makeup' });
 
