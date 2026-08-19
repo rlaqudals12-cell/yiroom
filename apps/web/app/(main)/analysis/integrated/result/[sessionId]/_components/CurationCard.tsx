@@ -58,6 +58,12 @@ export async function CurationCard({
 }: CurationCardProps): Promise<React.JSX.Element | null> {
   const t = await getTranslations('analysis.integratedResult');
   const hasProducts = products.length > 0;
+  const hasPersonalProducts = products.some((product) => product.personalMatched === true);
+  const hasUnverifiedProducts = products.some((product) => product.personalMatched !== true);
+  const rankedProducts = [
+    ...rankByMatchScore(products.filter((product) => product.personalMatched === true)),
+    ...rankByMatchScore(products.filter((product) => product.personalMatched !== true)),
+  ];
   // 실제 제품이 있으면 뷰티 링크 카드는 제품 블록으로 대체하고, 나머지(옷장/헤어)만 링크로 유지
   const linkItems = hasProducts
     ? curation.items.filter((i) => !BEAUTY_CATEGORIES.has(i.category))
@@ -79,12 +85,24 @@ export async function CurationCard({
           <p className="text-xs text-muted-foreground">{t('curation.subtitle')}</p>
         </div>
 
-        {/* 실제 제품 3개 (지갑 여는 "너를 위한 이 세트") — BEST 순위 배지 + 적합도 */}
+        {hasProducts && hasUnverifiedProducts && (
+          <p
+            className="text-xs text-muted-foreground"
+            role="status"
+            data-testid="curation-match-guidance"
+          >
+            {hasPersonalProducts
+              ? '일부 제품은 개인 적합도를 판단할 태그가 부족해 점수 없이 보여드려요.'
+              : '제품 태그가 부족해 개인 적합도와 BEST 표시는 숨기고 제품 정보만 보여드려요.'}
+          </p>
+        )}
+
+        {/* 실제 제품 3개 — 개인 근거가 있는 항목에만 BEST 순위와 적합도를 표시 */}
         {hasProducts && (
           <ol className="space-y-2" data-testid="curation-products">
-            {rankByMatchScore(products).map((p, idx) => {
+            {rankedProducts.map((p, idx) => {
               const price = formatPrice(p.priceKrw);
-              const badge = getRankBadge(idx);
+              const badge = p.personalMatched === true ? getRankBadge(idx) : null;
               return (
                 <li key={p.id}>
                   <Link
@@ -115,12 +133,16 @@ export async function CurationCard({
                       </div>
                       <p className="text-xs text-muted-foreground">{p.brand}</p>
                       <p className="text-xs text-muted-foreground">{p.reason}</p>
-                      <p
-                        className="text-[11px] font-medium text-primary"
-                        data-testid="curation-rank-reason"
-                      >
-                        {buildRankReasonLine(p.matchScore)}
-                      </p>
+                      {p.personalMatched === true && (
+                        <p
+                          className="text-[11px] font-medium text-primary"
+                          data-testid="curation-rank-reason"
+                        >
+                          {buildRankReasonLine(p.matchScore, undefined, {
+                            hasPersonalMatch: true,
+                          })}
+                        </p>
+                      )}
                     </div>
                     <ChevronRight
                       className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:text-primary"

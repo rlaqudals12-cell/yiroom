@@ -26,6 +26,7 @@ import {
   mapAgeGroupsToDbValues,
   type BeautyConcernId,
 } from '@/lib/products/vocabulary';
+import { PERSONAL_MATCH_REASON_TYPES } from '@/lib/products/matching';
 import type { FavoriteItem, AgeGroup } from '@/types/hybrid';
 import type { MatchReason, AnyProduct, ProductWithMatch } from '@/types/product';
 
@@ -208,6 +209,7 @@ interface BeautyProduct {
   category?: string;
   keyIngredients?: string[];
   matchReasons?: MatchReason[];
+  personalMatched: boolean;
 }
 
 // 이미지 placeholder 생성
@@ -250,7 +252,7 @@ function initialSkinTypeSelection(
 
 // E5: 교차 모듈 매칭 서술 생성
 function getMatchNarrative(reasons: MatchReason[]): string | null {
-  const matched = reasons.filter((r) => r.matched);
+  const matched = reasons.filter((r) => r.matched && PERSONAL_MATCH_REASON_TYPES.includes(r.type));
   if (matched.length === 0) return null;
 
   // 2개+ 모듈이 매칭되면 교차 인사이트
@@ -325,6 +327,14 @@ export function BeautyRecommendTab({
   const [productsLoading, setProductsLoading] = useState(true);
   const [productsError, setProductsError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const hasPersonalProducts = products.some((product) => product.personalMatched);
+  const hasUnverifiedProducts = products.some((product) => !product.personalMatched);
+  const allProductsPersonallyMatched = products.length > 0 && !hasUnverifiedProducts;
+  const canUsePersonalMatching = hasAnalysis && hasPersonalProducts;
+  const effectiveSortBy = sortBy === 'match' && !canUsePersonalMatching ? 'latest' : sortBy;
+  const visibleSortOptions = canUsePersonalMatching
+    ? sortOptions
+    : sortOptions.filter((option) => option.id !== 'match');
 
   // 훅에서 분석 결과 로드 시 필터 상태 동기화 —
   // 피부 분석 결과가 있으면 피부타입 필터를 자동 선택하고 "분석 자동 선택" 상태로 되돌린다
@@ -462,6 +472,7 @@ export function BeautyRecommendTab({
               product: p,
               matchScore: 75,
               matchReasons: [] as MatchReason[],
+              personalMatched: false,
             }));
 
         const mappedProducts: BeautyProduct[] = matched.map((m) => {
@@ -479,30 +490,39 @@ export function BeautyRecommendTab({
             hasRealImage: p.hasRealImage,
             keyIngredients: p.keyIngredients,
             matchReasons: m.matchReasons,
+            personalMatched: m.personalMatched === true,
           };
         });
 
-        // 매칭률 정렬은 클라이언트 계산 값이므로 여기서 정렬.
-        // 동률(같은 매칭률)일 때만 실제 이미지 보유 제품을 앞으로 — 순위 조작이 아니라
-        // 첫 화면 표시 품질 향상(placeholder 타일이 상단을 채우지 않도록). 정직 원칙 유지.
-        if (sortBy === 'match') {
-          mappedProducts.sort(
-            (a, b) => b.matchRate - a.matchRate || Number(b.hasRealImage) - Number(a.hasRealImage)
-          );
+        const hasPersonallyMatchedCandidate = mappedProducts.some(
+          (product) => product.personalMatched
+        );
+
+        // 개인 태그가 실제로 맞은 제품만 적합도순의 대상이다. 근거 없는 제품은 DB 최신순을 보존한다.
+        if (sortBy === 'match' && hasPersonallyMatchedCandidate) {
+          mappedProducts.sort((a, b) => {
+            if (a.personalMatched !== b.personalMatched) {
+              return Number(b.personalMatched) - Number(a.personalMatched);
+            }
+            if (!a.personalMatched) return 0;
+            return b.matchRate - a.matchRate || Number(b.hasRealImage) - Number(a.hasRealImage);
+          });
         }
 
         // 매칭 필터 적용 — 임계 이상이 0개면 자동 완화(매칭률순 전체 표시) + 안내
         let filteredProducts = mappedProducts;
         let relaxed = false;
-        if (matchFilterOn && hasAnalysis) {
+        if (matchFilterOn && hasAnalysis && hasPersonallyMatchedCandidate) {
           const aboveThreshold = mappedProducts.filter(
-            (p) => p.matchRate >= MATCH_FILTER_THRESHOLD
+            (p) => p.personalMatched && p.matchRate >= MATCH_FILTER_THRESHOLD
           );
           if (aboveThreshold.length > 0) {
             filteredProducts = aboveThreshold;
-          } else if (mappedProducts.length > 0) {
+          } else {
             relaxed = true;
-            filteredProducts = [...mappedProducts].sort((a, b) => b.matchRate - a.matchRate);
+            filteredProducts = mappedProducts
+              .filter((product) => product.personalMatched)
+              .sort((a, b) => b.matchRate - a.matchRate);
           }
         }
         setMatchFilterRelaxed(relaxed);
@@ -577,7 +597,7 @@ export function BeautyRecommendTab({
     <div data-testid="beauty-recommend-tab">
       {/* D5: 분석 완료 사용자 대상 발견 텍스트.
           피부 분석이 없으면 "피부 분석 결과에 맞춰"라고 말하지 않는다 (수리 1과 같은 계열의 허위 진술) */}
-      {hasAnalysis && products.length > 0 && !productsLoading && (
+      {hasAnalysis && allProductsPersonallyMatched && !productsLoading && (
         <p className="text-sm text-muted-foreground px-4 pt-3" data-testid="beauty-discovery-text">
           {getDiscoveryText(hasSkinAnalysis)}
         </p>
@@ -754,11 +774,11 @@ export function BeautyRecommendTab({
           aria-haspopup="dialog"
           data-testid="beauty-sort-button"
         >
-          {sortOptions.find((s) => s.id === sortBy)?.label}
+          {sortOptions.find((s) => s.id === effectiveSortBy)?.label}
           <ChevronDown className="w-4 h-4" aria-hidden="true" />
         </button>
 
-        {hasAnalysis ? (
+        {canUsePersonalMatching && (
           <button
             onClick={() => setMatchFilterOn(!matchFilterOn)}
             className="flex items-center gap-2"
@@ -784,7 +804,8 @@ export function BeautyRecommendTab({
               />
             </div>
           </button>
-        ) : (
+        )}
+        {!canUsePersonalMatching && !hasAnalysis && (
           <button
             // 미분석 첫 진입은 통합분석("첫 미팅")으로 통일 — 개별 축 단독 진입 대신 5축 정본 온보딩. (배치 IA-3)
             onClick={() => router.push('/analysis/integrated')}
@@ -824,7 +845,7 @@ export function BeautyRecommendTab({
               </button>
             </div>
             <div className="py-2 max-h-[60vh] overflow-y-auto" role="listbox">
-              {sortOptions.map((option) => (
+              {visibleSortOptions.map((option) => (
                 <button
                   key={option.id}
                   onClick={() => {
@@ -832,14 +853,16 @@ export function BeautyRecommendTab({
                     setShowSortSheet(false);
                   }}
                   role="option"
-                  aria-selected={sortBy === option.id}
+                  aria-selected={effectiveSortBy === option.id}
                   className={cn(
                     'w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-muted/50 transition-colors',
-                    sortBy === option.id && 'text-primary'
+                    effectiveSortBy === option.id && 'text-primary'
                   )}
                 >
-                  <span className={cn(sortBy === option.id && 'font-medium')}>{option.label}</span>
-                  {sortBy === option.id && (
+                  <span className={cn(effectiveSortBy === option.id && 'font-medium')}>
+                    {option.label}
+                  </span>
+                  {effectiveSortBy === option.id && (
                     <Check className="w-5 h-5 text-primary" aria-hidden="true" />
                   )}
                 </button>
@@ -852,6 +875,18 @@ export function BeautyRecommendTab({
 
       {/* 콘텐츠 영역 */}
       <div className="px-4 py-4 space-y-6">
+        {hasAnalysis && hasUnverifiedProducts && !productsLoading && (
+          <p
+            className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2"
+            role="status"
+            data-testid="beauty-personal-match-guidance"
+          >
+            {hasPersonalProducts
+              ? '일부 제품은 개인 적합도를 판단할 태그가 부족해 점수 없이 보여드려요'
+              : '제품 태그가 부족해 개인 적합도는 숨기고 확인 가능한 제품 정보만 보여드려요'}
+          </p>
+        )}
+
         {/* 매칭 필터 자동 완화 안내 — 임계 이상 제품이 없을 때 숨기는 대신 정직하게 알리고 전체 표시 */}
         {matchFilterOn && matchFilterRelaxed && !productsLoading && (
           <p
@@ -868,7 +903,7 @@ export function BeautyRecommendTab({
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Flame className="w-5 h-5 text-orange-500" aria-hidden="true" />
-              {hasAnalysis ? '내 피부 맞춤' : '추천 제품'}
+              {hasAnalysis && allProductsPersonallyMatched ? '내 피부 맞춤' : '추천 제품'}
             </h2>
             {/* 로딩/에러 중에는 개수를 단정하지 않는다 — 실패를 "0개 제품"으로 위장 금지 */}
             {!productsError && (
@@ -949,7 +984,7 @@ export function BeautyRecommendTab({
                       loading="lazy"
                       unoptimized
                     />
-                    {hasAnalysis && (
+                    {product.personalMatched && (
                       <div
                         className={cn(
                           'absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-bold z-10',
@@ -964,7 +999,7 @@ export function BeautyRecommendTab({
                       </div>
                     )}
                     {/* D5: 90%+ 찰떡 매칭 뱃지 */}
-                    {hasAnalysis && product.matchRate >= 95 && (
+                    {product.personalMatched && product.matchRate >= 95 && (
                       <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-yellow-400 text-yellow-900 z-10">
                         찰떡
                       </div>
@@ -976,11 +1011,13 @@ export function BeautyRecommendTab({
                   </p>
 
                   {/* E1/E5/E7: 매칭 이유 서술 */}
-                  {hasAnalysis && product.matchReasons && product.matchReasons.length > 0 && (
-                    <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">
-                      {getMatchNarrative(product.matchReasons) || ''}
-                    </p>
-                  )}
+                  {product.personalMatched &&
+                    product.matchReasons &&
+                    product.matchReasons.length > 0 && (
+                      <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">
+                        {getMatchNarrative(product.matchReasons) || ''}
+                      </p>
+                    )}
 
                   {/* 평점은 실데이터가 있을 때만 표시 (null → 미표시) */}
                   {product.rating != null && product.reviews > 0 && (

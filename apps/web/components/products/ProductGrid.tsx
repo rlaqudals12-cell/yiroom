@@ -44,11 +44,7 @@ export function ProductGrid({
       data-testid="product-grid"
     >
       {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          matchScore={matchScores?.get(product.id)}
-        />
+        <ProductCard key={product.id} product={product} matchScore={matchScores?.get(product.id)} />
       ))}
     </div>
   );
@@ -65,7 +61,9 @@ export function extractMatchScores<T extends { id: string }>(
 
   for (const item of productsWithMatch) {
     products.push(item.product);
-    matchScores.set(item.product.id, item.matchScore);
+    if (item.personalMatched === true) {
+      matchScores.set(item.product.id, item.matchScore);
+    }
   }
 
   return { products, matchScores };

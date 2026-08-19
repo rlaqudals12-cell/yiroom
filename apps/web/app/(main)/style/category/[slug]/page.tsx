@@ -28,8 +28,8 @@ interface Product {
 /**
  * 스타일 카테고리 페이지
  * - 카테고리별 제품/코디 목록
- * - 정렬/필터 옵션
- * - 체형 매칭률 필터
+ * - 실제 제품 필드가 있는 정렬 옵션만 노출
+ * - 체형 매칭률 필터는 계산된 matchRate가 있는 코디에만 노출
  */
 
 type SortOption = 'match' | 'rating' | 'review' | 'price_low' | 'price_high';
@@ -75,11 +75,30 @@ export default function StyleCategoryPage() {
   const [matchFilterOn, setMatchFilterOn] = useState(true);
   const [minMatchRate] = useState(80);
   const [userBodyType, setUserBodyType] = useState<string>('미분석');
-  const [userBodyTypeRaw, setUserBodyTypeRaw] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [isProductsLoading, setIsProductsLoading] = useState(true);
 
   const category = categoryInfo[slug] || { name: slug, description: '' };
+  const hasMatchData = products.some((product) => product.matchRate !== undefined);
+  const availableSortOptions = useMemo(
+    () =>
+      sortOptions.filter((option) => {
+        if (option.id === 'match') return hasMatchData;
+        if (option.id === 'rating') return products.some((product) => product.rating !== undefined);
+        if (option.id === 'review') {
+          return products.some((product) => product.reviewCount !== undefined);
+        }
+        return products.some((product) => product.price > 0);
+      }),
+    [hasMatchData, products]
+  );
+
+  useEffect(() => {
+    if (availableSortOptions.length === 0) return;
+    if (!availableSortOptions.some((option) => option.id === sortBy)) {
+      setSortBy(availableSortOptions[0].id);
+    }
+  }, [availableSortOptions, sortBy]);
 
   // 제품 데이터 가져오기
   // eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
@@ -106,7 +125,8 @@ export default function StyleCategoryPage() {
               brand: '이룸 추천',
               price: 0,
               // 평점/리뷰는 실데이터 없음 — 임의 생성하지 않음
-              matchRate: userBodyTypeRaw && post.body_type === userBodyTypeRaw ? 95 : 70,
+              // 룩북의 체형 태그 일치 여부는 퍼센트 매칭률이 아니다.
+              // 검증된 산식이 생기기 전까지 matchRate를 만들지 않는다.
               type: 'outfit',
               imageUrl: post.image_url,
             })
@@ -161,7 +181,7 @@ export default function StyleCategoryPage() {
     } finally {
       setIsProductsLoading(false);
     }
-  }, [slug, supabase, userBodyTypeRaw]);
+  }, [slug, supabase]);
 
   // 제품 가져오기
   useEffect(() => {
@@ -183,7 +203,6 @@ export default function StyleCategoryPage() {
           .maybeSingle();
 
         if (data) {
-          setUserBodyTypeRaw(data.body_type);
           const bodyTypeMap: Record<string, string> = {
             S: '스트레이트',
             W: '웨이브',
@@ -204,7 +223,7 @@ export default function StyleCategoryPage() {
     let result = [...products];
 
     // 매칭률 필터 — 매칭률 데이터가 있는 항목에만 적용 (없는 항목은 유지)
-    if (matchFilterOn) {
+    if (matchFilterOn && hasMatchData) {
       result = result.filter((p) => p.matchRate === undefined || p.matchRate >= minMatchRate);
     }
 
@@ -228,7 +247,7 @@ export default function StyleCategoryPage() {
     }
 
     return result;
-  }, [products, sortBy, matchFilterOn, minMatchRate]);
+  }, [products, sortBy, matchFilterOn, minMatchRate, hasMatchData]);
 
   // 무한 스크롤
   const { displayedItems, hasMore, isLoading, sentinelRef } = useInfiniteScroll(filteredProducts, {
@@ -265,52 +284,58 @@ export default function StyleCategoryPage() {
           <span className="font-medium text-foreground">{userBodyType}</span>
         </div>
 
-        {/* 필터/정렬 바 */}
-        <div className="flex items-center justify-between px-4 py-2 border-t">
-          {/* 매칭률 필터 */}
-          <button
-            onClick={() => setMatchFilterOn(!matchFilterOn)}
-            className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors',
-              matchFilterOn
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground'
+        {/* 데이터가 없거나 해당 지표가 없으면 작동하지 않는 필터·정렬을 만들지 않는다. */}
+        {products.length > 0 && (hasMatchData || availableSortOptions.length > 1) && (
+          <div className="flex items-center justify-between px-4 py-2 border-t">
+            {hasMatchData ? (
+              <button
+                onClick={() => setMatchFilterOn(!matchFilterOn)}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors',
+                  matchFilterOn
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+                )}
+              >
+                {minMatchRate}% 이상
+              </button>
+            ) : (
+              <span />
             )}
-          >
-            {minMatchRate}% 이상
-          </button>
 
-          {/* 정렬 */}
-          <div className="relative">
-            <button
-              onClick={() => setShowSortMenu(!showSortMenu)}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-            >
-              {sortOptions.find((o) => o.id === sortBy)?.label}
-              <ChevronDown className="w-4 h-4" />
-            </button>
+            {availableSortOptions.length > 1 && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowSortMenu(!showSortMenu)}
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  {availableSortOptions.find((option) => option.id === sortBy)?.label}
+                  <ChevronDown className="w-4 h-4" />
+                </button>
 
-            {showSortMenu && (
-              <div className="absolute right-0 top-full mt-1 bg-card border rounded-lg shadow-lg py-1 z-50 min-w-[120px]">
-                {sortOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => {
-                      setSortBy(option.id);
-                      setShowSortMenu(false);
-                    }}
-                    className={cn(
-                      'w-full px-4 py-2 text-left text-sm hover:bg-muted transition-colors',
-                      sortBy === option.id && 'text-primary font-medium'
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                {showSortMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-card border rounded-lg shadow-lg py-1 z-50 min-w-[120px]">
+                    {availableSortOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => {
+                          setSortBy(option.id);
+                          setShowSortMenu(false);
+                        }}
+                        className={cn(
+                          'w-full px-4 py-2 text-left text-sm hover:bg-muted transition-colors',
+                          sortBy === option.id && 'text-primary font-medium'
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
-        </div>
+        )}
       </header>
 
       {/* 제품 목록 */}

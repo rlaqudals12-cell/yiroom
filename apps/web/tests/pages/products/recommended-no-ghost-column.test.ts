@@ -30,4 +30,14 @@ describe('/products/recommended — 유령 컬럼 미조회 (재발 방지)', ()
     expect(PAGE_SRC).toMatch(/\.from\(['"]skin_analyses['"]\)/);
     expect(PAGE_SRC).toMatch(/\.select\(['"]skin_type['"]\)/);
   });
+
+  it('개인 제품 태그가 true일 때만 ProductCard에 적합도 점수를 전달한다', () => {
+    expect(PAGE_SRC).toMatch(/matchScore=\{personalMatched === true \? matchScore : undefined\}/);
+  });
+
+  it('개인 태그가 부족한 섹션은 일반 추천 제목과 한 번의 안내를 사용한다', () => {
+    expect(PAGE_SRC).toContain('fallbackTitle');
+    expect(PAGE_SRC).toContain('개인 적합도를 판단할 제품 태그가 부족한 항목은 점수 없이');
+    expect(PAGE_SRC).toContain('data-testid="match-data-guidance"');
+  });
 });

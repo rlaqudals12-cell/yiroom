@@ -345,6 +345,7 @@ describe('useUserMatching', () => {
       expect(matched).toHaveLength(1);
       expect(matched[0].matchScore).toBe(50);
       expect(matched[0].matchReasons).toEqual([]);
+      expect(matched[0].personalMatched).toBe(false);
     });
 
     it('filterByMatchRate는 최소 매칭률 이상만 반환', async () => {
@@ -365,22 +366,44 @@ describe('useUserMatching', () => {
           product: { id: '1', name: 'A', brand: 'B', category: 'serum' } as CosmeticProduct,
           matchScore: 90,
           matchReasons: [],
+          personalMatched: true,
         },
         {
           product: { id: '2', name: 'B', brand: 'B', category: 'serum' } as CosmeticProduct,
           matchScore: 70,
           matchReasons: [],
+          personalMatched: true,
         },
         {
           product: { id: '3', name: 'C', brand: 'B', category: 'serum' } as CosmeticProduct,
           matchScore: 50,
           matchReasons: [],
+          personalMatched: false,
         },
       ];
 
       const filtered = result.current.filterByMatchRate(products, 75);
       expect(filtered).toHaveLength(1);
       expect(filtered[0].matchScore).toBe(90);
+    });
+
+    it('filterByMatchRate는 개인 근거 없는 높은 대중성 점수를 제외한다', async () => {
+      mockUseUser.mockReturnValue({ isLoaded: true, user: null });
+
+      const useUserMatching = await loadHook();
+      const { result } = renderHook(() => useUserMatching());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      const products = [
+        {
+          product: { id: '1', name: 'A', brand: 'B', category: 'serum' } as CosmeticProduct,
+          matchScore: 99,
+          matchReasons: [],
+          personalMatched: false,
+        },
+      ];
+
+      expect(result.current.filterByMatchRate(products, 70)).toEqual([]);
     });
   });
 

@@ -207,6 +207,29 @@ describe('i18n messages', () => {
     });
   });
 
+  describe('통합 분석 폴백 카피 계약', () => {
+    const fallbackExpectations = [
+      ['ko', '낮은 신뢰도', '샘플(예시)'],
+      ['en', 'low-confidence', 'sample (example)'],
+      ['ja', '信頼度の低い', 'サンプル（例）'],
+      ['zh', '低可信度', '示例（样例）'],
+    ] as const;
+
+    it.each(fallbackExpectations)(
+      '%s usedFallback 고지가 낮은 신뢰도의 예시 결과임을 함께 밝힌다',
+      (locale, lowConfidenceTerm, sampleTerm) => {
+        const messages = { ko: koMessages, en: enMessages, ja: jaMessages, zh: zhMessages }[locale];
+        const analysis = messages.analysis as {
+          integratedResult: { fallback: { bodyAfterLabels: string } };
+        };
+        const message = analysis.integratedResult.fallback.bodyAfterLabels;
+
+        expect(message).toContain(lowConfidenceTerm);
+        expect(message).toContain(sampleTerm);
+      }
+    );
+  });
+
   // 2026-08 랜딩 리뷰 확정 수리 — 히어로 과약속 제거 + 같은 목적지 CTA 문구 통일
   describe('랜딩 카피 계약', () => {
     const locales = () =>
@@ -219,6 +242,24 @@ describe('i18n messages', () => {
 
     /** 체형은 전신 사진이 필요하다(landing.step0Desc가 근거) — 셀카 한 장 약속에서 제외 */
     const BODY_TERMS = ['체형', 'body', '体型', '体形'];
+    const FIRST_ANALYSIS_TERMS: Record<string, string> = {
+      ko: '퍼스널컬러',
+      en: 'personal color',
+      ja: 'パーソナルカラー',
+      zh: '个人色彩',
+    };
+    const EXPANSION_TERMS: Record<string, string> = {
+      ko: '확장',
+      en: 'expand',
+      ja: '広げ',
+      zh: '扩展',
+    };
+    const MULTI_AXIS_FIRST_STEP_TERMS: Record<string, string> = {
+      ko: '네 가지',
+      en: '4 axes',
+      ja: '4軸',
+      zh: '4个维度',
+    };
 
     it.each(['ko', 'en', 'ja', 'zh'])(
       '%s 히어로 제목이 셀카 한 장으로 체형까지 약속하지 않는다',
@@ -232,6 +273,39 @@ describe('i18n messages', () => {
         BODY_TERMS.forEach((term) => {
           expect(heroTitle.toLowerCase()).not.toContain(term.toLowerCase());
         });
+      }
+    );
+
+    it.each(['ko', 'en', 'ja', 'zh'])(
+      '%s 히어로가 퍼스널컬러로 시작해 나머지 축으로 확장되는 순서를 밝힌다',
+      (locale) => {
+        const messages = Object.fromEntries(locales()) as Record<
+          string,
+          Record<string, Record<string, string>>
+        >;
+        const { heroTitle, heroDesc } = messages[locale].landing;
+        const firstAnalysisTerm = FIRST_ANALYSIS_TERMS[locale];
+        const expansionTerm = EXPANSION_TERMS[locale];
+
+        expect(heroTitle.toLowerCase()).toContain(firstAnalysisTerm.toLowerCase());
+        expect(heroDesc.toLowerCase()).toContain(firstAnalysisTerm.toLowerCase());
+        expect(heroDesc.toLowerCase()).toContain(expansionTerm.toLowerCase());
+      }
+    );
+
+    it.each(['ko', 'en', 'ja', 'zh'])(
+      '%s 첫 단계도 퍼스널컬러만 약속하고 여러 축 동시 분석을 약속하지 않는다',
+      (locale) => {
+        const messages = Object.fromEntries(locales()) as Record<
+          string,
+          Record<string, Record<string, string>>
+        >;
+        const { step0Title, step0Desc } = messages[locale].landing;
+
+        expect(step0Title.toLowerCase()).toContain(FIRST_ANALYSIS_TERMS[locale].toLowerCase());
+        expect(step0Desc.toLowerCase()).not.toContain(
+          MULTI_AXIS_FIRST_STEP_TERMS[locale].toLowerCase()
+        );
       }
     );
 

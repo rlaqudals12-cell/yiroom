@@ -3,16 +3,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { User, Palette, Shirt, Star, Loader2 } from 'lucide-react';
+import { User, Palette, Shirt, Loader2 } from 'lucide-react';
 import { FadeInUp } from '@/components/animations';
 import { getBodyShapeLabel } from '@/lib/body';
-import { cn } from '@/lib/utils';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { MaterialFavoriteFilter } from '@/components/style/MaterialFavoriteFilter';
-import { StylePreferenceChips } from '@/components/style/StylePreferenceChips';
 import { OutfitRoutineCard, type OutfitItem } from '@/components/style/OutfitRoutineCard';
 import { shouldShowMeasurementBanner, getMatchedItemsEmptyState } from '@/lib/style';
-import type { FavoriteItem } from '@/types/hybrid';
 import {
   suggestOutfitFromCloset,
   type BodyType3,
@@ -33,40 +29,19 @@ import type { PersonalColorSeason } from '@/lib/color-recommendations';
  * - 주인공 CTA는 상태 기반 1개만 — 옷장 0벌=옷장 등록, 1벌+=오늘의 코디(날씨·상황별 추천).
  *   나머지 행동(내 정보 입력·체형 분석)은 아웃라인/텍스트 링크로 격하.
  * - /closet/recommend 진입은 오늘의 코디 섹션 1곳뿐 (구 "오늘 뭐 입지?" 중복 섹션 제거).
- * - 섹션 적층 축소: 내 프로필(프로필+팔레트 병합) / 필터(맞춤 토글+카테고리+소재 병합)
- *   / 오늘의 코디 / 맞춤 아이템 — 4~5단.
+ * - 섹션 적층 축소: 내 프로필(프로필+팔레트 병합) / 오늘의 코디 / 맞춤 아이템.
+ *   실제 패션 상품 데이터와 연결되지 않은 맞춤·카테고리·소재 필터는 노출하지 않는다.
  */
-
-type Category = 'all' | 'tops' | 'bottoms' | 'outer' | 'outfit';
-
-const categories: { id: Category; label: string }[] = [
-  { id: 'all', label: '전체' },
-  { id: 'tops', label: '상의' },
-  { id: 'bottoms', label: '하의' },
-  { id: 'outer', label: '아우터' },
-  { id: 'outfit', label: '코디' },
-];
 
 interface ColorItem {
   name: string;
   color: string;
 }
 
-interface ProductItem {
-  id: string;
-  name: string;
-  brand: string;
-  rating: number;
-  matchRate: number;
-  price: number;
-}
-
 export default function StylePage() {
   const router = useRouter();
   const { user, isLoaded } = useUser();
   const supabase = useClerkSupabaseClient();
-  const [category, setCategory] = useState<Category>('all');
-  const [matchFilterOn, setMatchFilterOn] = useState(true);
 
   // 분석 결과 상태
   const [hasAnalysis, setHasAnalysis] = useState(false);
@@ -96,8 +71,6 @@ export default function StylePage() {
       return calculateHue(labA) - calculateHue(labB);
     });
   }, [colorPalette]);
-  const [products] = useState<ProductItem[]>([]); // 패션 제품 DB 미보유 — 빈 상태 유지 (유령 쿼리 제거, 2026-07-08)
-
   // L-1-2: 키/몸무게 체크 상태
   const [hasMeasurements, setHasMeasurements] = useState<boolean | null>(null);
 
@@ -241,10 +214,6 @@ export default function StylePage() {
 
     fetchAnalysis();
   }, [isLoaded, user?.id, supabase, hasMeasurements]);
-
-  // 하이브리드 UX 상태
-  const [favoriteMaterials, setFavoriteMaterials] = useState<FavoriteItem[]>([]);
-  const [avoidMaterials, setAvoidMaterials] = useState<FavoriteItem[]>([]);
 
   // 오늘의 코디 — 내 옷장에서 실제 매칭 (기존엔 하드코딩 가짜 4벌이었음)
   const realOutfit = useMemo(() => {
@@ -418,72 +387,6 @@ export default function StylePage() {
         </FadeInUp>
       )}
 
-      {/* 필터 — 체형 맞춤 토글 + 카테고리 + 소재·스타일 병합 (섹션 적층 축소, 로직 불변) */}
-      <FadeInUp delay={1}>
-        <section className="px-4 py-3 border-b space-y-3" aria-label="코디 필터">
-          {hasAnalysis && (
-            <button
-              onClick={() => setMatchFilterOn(!matchFilterOn)}
-              className="flex items-center gap-2"
-              role="switch"
-              aria-checked={matchFilterOn}
-              aria-label="내 체형 맞춤 제품만 표시"
-            >
-              <Shirt className="w-4 h-4" aria-hidden="true" />
-              <span className="text-sm" aria-hidden="true">
-                내 체형 맞춤만 보기
-              </span>
-              <div
-                className={cn(
-                  'w-10 h-6 rounded-full transition-colors relative',
-                  matchFilterOn ? 'bg-primary' : 'bg-muted'
-                )}
-                aria-hidden="true"
-              >
-                <div
-                  className={cn(
-                    'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
-                    matchFilterOn ? 'translate-x-5' : 'translate-x-1'
-                  )}
-                />
-              </div>
-            </button>
-          )}
-
-          {/* 카테고리 필터 */}
-          <nav className="overflow-x-auto" aria-label="카테고리 필터">
-            <div className="flex gap-2" role="tablist" aria-label="스타일 카테고리">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setCategory(cat.id)}
-                  role="tab"
-                  aria-selected={category === cat.id}
-                  aria-controls={`category-panel-${cat.id}`}
-                  className={cn(
-                    'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
-                    category === cat.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  )}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-          </nav>
-
-          {/* 소재 즐겨찾기 필터 + 선호 스타일 (하이브리드 UX) */}
-          <MaterialFavoriteFilter
-            favorites={favoriteMaterials}
-            avoids={avoidMaterials}
-            onFavoritesChange={setFavoriteMaterials}
-            onAvoidsChange={setAvoidMaterials}
-          />
-          <StylePreferenceChips />
-        </section>
-      </FadeInUp>
-
       {/* 본문 */}
       <div className="px-4 py-4 space-y-6">
         {/* 오늘의 코디 — 상태 기반 주인공 1개:
@@ -530,55 +433,28 @@ export default function StylePage() {
             <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
               {hasAnalysis ? '내 체형 맞춤 아이템' : '인기 아이템'}
             </h2>
-            {products.length > 0 ? (
-              <div className="grid grid-cols-3 gap-3">
-                {products.map((product) => (
-                  <button
-                    key={product.id}
-                    onClick={() => router.push(`/style/${product.id}`)}
-                    className="bg-card rounded-xl border p-3 text-left hover:shadow-md transition-shadow"
-                  >
-                    {hasAnalysis && product.matchRate > 0 && (
-                      <div className="text-xs font-bold text-primary mb-1">
-                        {product.matchRate}%
-                      </div>
-                    )}
-                    <div className="w-full aspect-square bg-muted rounded-lg mb-2" />
-                    <p className="text-xs text-muted-foreground">{product.brand}</p>
-                    <p className="text-sm font-medium line-clamp-2">{product.name}</p>
-                    {product.rating > 0 && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        <span className="text-xs">{product.rating}</span>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              (() => {
-                // 패션 상품 DB가 없어 쇼핑 매칭 아이템은 미제공 — 정직하게 안내.
-                // 주인공 CTA(오늘의 코디 섹션)와 겹치는 경로는 CTA 없이 메시지만 (진입 1곳 원칙)
-                const { message, ctaHref, ctaLabel } = getMatchedItemsEmptyState(
-                  hasAnalysis,
-                  closetItems.length > 0
-                );
-                return (
-                  <div className="text-center py-8 bg-card rounded-xl border px-4">
-                    <Shirt className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">{message}</p>
-                    {ctaHref && ctaLabel && (
-                      <button
-                        onClick={() => router.push(ctaHref)}
-                        className="mt-3 text-sm font-medium text-primary hover:underline"
-                      >
-                        {ctaLabel} →
-                      </button>
-                    )}
-                  </div>
-                );
-              })()
-            )}
+            {(() => {
+              // 패션 상품 데이터가 연결되기 전에는 작동하지 않는 필터·가짜 상품을 만들지 않는다.
+              // 주인공 CTA(오늘의 코디 섹션)와 겹치는 경로는 CTA 없이 메시지만 둔다.
+              const { message, ctaHref, ctaLabel } = getMatchedItemsEmptyState(
+                hasAnalysis,
+                closetItems.length > 0
+              );
+              return (
+                <div className="text-center py-8 bg-card rounded-xl border px-4">
+                  <Shirt className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">{message}</p>
+                  {ctaHref && ctaLabel && (
+                    <button
+                      onClick={() => router.push(ctaHref)}
+                      className="mt-3 text-sm font-medium text-primary hover:underline"
+                    >
+                      {ctaLabel} →
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
           </section>
         </FadeInUp>
       </div>

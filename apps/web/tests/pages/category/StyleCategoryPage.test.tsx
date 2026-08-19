@@ -166,35 +166,15 @@ describe('StyleCategoryPage', () => {
     });
   });
 
-  describe('정렬', () => {
-    it('정렬 메뉴가 열리고 옵션이 표시된다', async () => {
-      const user = userEvent.setup();
+  describe('정직한 필터 노출', () => {
+    it('패션 상품이 없으면 매칭·평점·가격 정렬 UI를 숨긴다', async () => {
       render(<StyleCategoryPage />);
 
-      // 초기: 매칭률순
-      const sortButton = screen.getByText('매칭률순');
-      await user.click(sortButton);
-
-      // 정렬 옵션 표시
-      expect(screen.getByText('평점순')).toBeInTheDocument();
-      expect(screen.getByText('리뷰순')).toBeInTheDocument();
-      expect(screen.getByText('가격 낮은순')).toBeInTheDocument();
-      expect(screen.getByText('가격 높은순')).toBeInTheDocument();
-    });
-
-    it('가격 낮은순 정렬 선택', async () => {
-      const user = userEvent.setup();
-      render(<StyleCategoryPage />);
-
-      // 정렬 메뉴 열기
-      await user.click(screen.getByText('매칭률순'));
-
-      // 가격 낮은순 선택
-      await user.click(screen.getByText('가격 낮은순'));
-
-      // 메뉴가 닫히고 버튼 텍스트 변경
-      const sortButtons = screen.getAllByText('가격 낮은순');
-      expect(sortButtons.length).toBeGreaterThan(0);
+      await screen.findByText('아직 준비된 아이템이 없어요');
+      expect(screen.queryByText('매칭률순')).not.toBeInTheDocument();
+      expect(screen.queryByText('평점순')).not.toBeInTheDocument();
+      expect(screen.queryByText('가격 낮은순')).not.toBeInTheDocument();
+      expect(screen.queryByText('80% 이상')).not.toBeInTheDocument();
     });
   });
 

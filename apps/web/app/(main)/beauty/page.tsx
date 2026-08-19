@@ -177,6 +177,9 @@ export default function BeautyPage() {
     () => (userSkinConcernsFromHook as SkinConcern[]) || [],
     [userSkinConcernsFromHook]
   );
+  // 이 탭이 조회하는 제품 태그는 피부 타입·퍼스널컬러뿐이다. 체형만 분석한 사용자를
+  // "매칭 분석 완료"로 취급하면 근거도, 후속 진단 안내도 사라진다.
+  const hasBeautyMatchingAnalysis = hasSkinAnalysis || personalColor !== null;
 
   // 스킨케어 루틴 — 정본 엔진(lib/skincare generateRoutine, 캡슐 데일리와 동일) 파생.
   // 하드코딩 제품명 루틴 대신 피부타입 기반 실제 루틴 스텝을 사용.
@@ -416,7 +419,7 @@ export default function BeautyPage() {
         <TabsContent value="recommend">
           <ErrorBoundary>
             <BeautyRecommendTab
-              hasAnalysis={hasAnalysis}
+              hasAnalysis={hasBeautyMatchingAnalysis}
               userSkinType={userSkinType}
               userSkinConcerns={userSkinConcerns}
               personalColor={personalColor}

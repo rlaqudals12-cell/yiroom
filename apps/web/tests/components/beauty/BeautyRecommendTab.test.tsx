@@ -119,11 +119,21 @@ import { BeautyRecommendTab } from '@/components/beauty/BeautyRecommendTab';
 
 // 매칭 엔진 흉내 — 모든 제품에 92% 부여
 const mockGetMatchedProducts = <T extends AnyProduct>(products: T[]): ProductWithMatch<T>[] =>
-  products.map((product) => ({ product, matchScore: 92, matchReasons: [] }));
+  products.map((product) => ({
+    product,
+    matchScore: 92,
+    matchReasons: [],
+    personalMatched: true,
+  }));
 
 // 낮은 매칭 점수 엔진 — 임계(70) 미달 시나리오 (스킨케어 실질 상한 아래 현실 점수 재현)
 const mockLowMatchProducts = <T extends AnyProduct>(products: T[]): ProductWithMatch<T>[] =>
-  products.map((product) => ({ product, matchScore: 65, matchReasons: [] }));
+  products.map((product) => ({
+    product,
+    matchScore: 65,
+    matchReasons: [],
+    personalMatched: true,
+  }));
 
 function renderTab(overrides: Partial<React.ComponentProps<typeof BeautyRecommendTab>> = {}) {
   return render(
@@ -166,6 +176,28 @@ describe('BeautyRecommendTab', () => {
     expect(toggle).toHaveAttribute('aria-checked', 'false');
     // 3개 제품 전부 표시
     expect(screen.getByText('3개 제품')).toBeInTheDocument();
+  });
+
+  it('개인 제품 태그가 없으면 적합도 점수·서술·필터를 숨기고 한 번 안내한다', async () => {
+    const withoutPersonalEvidence = <T extends AnyProduct>(products: T[]): ProductWithMatch<T>[] =>
+      products.map((product) => ({
+        product,
+        matchScore: 99,
+        matchReasons: [{ type: 'rating', label: '평점 4.5', matched: true }],
+        personalMatched: false,
+      }));
+
+    renderTab({ getMatchedProducts: withoutPersonalEvidence });
+    await screen.findByText('히알루론 수분 크림');
+
+    expect(screen.queryByTestId('beauty-match-toggle')).not.toBeInTheDocument();
+    expect(screen.getByTestId('beauty-sort-button')).toHaveTextContent('최신순');
+    expect(screen.getByTestId('beauty-personal-match-guidance')).toHaveTextContent(
+      '제품 태그가 부족해 개인 적합도는 숨기고 확인 가능한 제품 정보만 보여드려요'
+    );
+    expect(screen.getByRole('heading', { name: '추천 제품' })).toBeInTheDocument();
+    expect(screen.queryByText('99%')).not.toBeInTheDocument();
+    expect(screen.getByText('4.5')).toBeInTheDocument();
   });
 
   it('skin_types 미태깅(null) 제품을 배제하지 않는다 (or-null 필터)', async () => {
@@ -264,7 +296,12 @@ describe('BeautyRecommendTab', () => {
   describe('매칭 필터 0개 근본 수리 (창업자: 복합성+보습, 토글 ON에서 0개)', () => {
     // 스킨케어 실질 상한(~77) 아래 현실 점수 — 프로필 고민 태그 부재로 대부분 여기 위치
     const mockRealisticSkincare = <T extends AnyProduct>(products: T[]): ProductWithMatch<T>[] =>
-      products.map((product) => ({ product, matchScore: 55, matchReasons: [] }));
+      products.map((product) => ({
+        product,
+        matchScore: 55,
+        matchReasons: [],
+        personalMatched: true,
+      }));
 
     it('복합성+보습 + 토글 ON에서 임계 미달이어도 0개가 아니라 완화 안내 + 전체를 보여준다', async () => {
       const user = userEvent.setup();
@@ -321,7 +358,12 @@ describe('BeautyRecommendTab', () => {
     it('임계(70) 도달 제품이 있으면 완화 없이 필터가 실제 동작한다 (80은 도달 불가였음)', async () => {
       // 70 정확히 도달 — 완화되지 않고 필터 통과 (이전 임계 80에서는 스킨케어가 도달 불가였다)
       const atThreshold = <T extends AnyProduct>(products: T[]): ProductWithMatch<T>[] =>
-        products.map((product) => ({ product, matchScore: 70, matchReasons: [] }));
+        products.map((product) => ({
+          product,
+          matchScore: 70,
+          matchReasons: [],
+          personalMatched: true,
+        }));
       const user = userEvent.setup();
       renderTab({ getMatchedProducts: atThreshold });
       await screen.findByText('히알루론 수분 크림');

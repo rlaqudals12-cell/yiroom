@@ -130,4 +130,16 @@ describe('StylePage 오늘의 코디 — 원피스', () => {
     expect(await screen.findByText('사진으로 옷장 한 번에 등록하기')).toBeInTheDocument();
     expect(screen.queryByTestId('outfit-routine-card')).not.toBeInTheDocument();
   });
+
+  it('상품 데이터와 연결되지 않은 필터를 스타일 표면에 노출하지 않는다', async () => {
+    render(<StylePage />);
+
+    await screen.findByText('사진으로 옷장 한 번에 등록하기');
+    expect(screen.queryByRole('tablist', { name: '스타일 카테고리' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('material-filter')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('style-pref-chips')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('switch', { name: '내 체형 맞춤 제품만 표시' })
+    ).not.toBeInTheDocument();
+  });
 });

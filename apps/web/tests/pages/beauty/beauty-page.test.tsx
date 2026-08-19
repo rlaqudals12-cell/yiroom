@@ -217,6 +217,14 @@ describe('BeautyPage 피부 미분석 정직성', () => {
     expect(mockRecommendProps.at(-1)?.userSkinType).toBeNull();
   });
 
+  it('체형 등 다른 축만 있고 피부·퍼스널컬러가 없으면 추천 탭은 진단 전 상태를 유지한다', () => {
+    mockPersonalColor = null;
+    render(<BeautyPage />);
+
+    expect(mockRecommendProps.length).toBeGreaterThan(0);
+    expect(mockRecommendProps.at(-1)?.hasAnalysis).toBe(false);
+  });
+
   it('피부 분석이 없으면 루틴을 생성하지 않는다 (지어낸 타입 기반 루틴 금지)', async () => {
     const user = userEvent.setup();
     render(<BeautyPage />);

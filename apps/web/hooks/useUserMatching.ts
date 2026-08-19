@@ -240,6 +240,7 @@ export function useUserMatching(): UseUserMatchingResult {
           product,
           matchScore: 50,
           matchReasons: [],
+          personalMatched: false,
         }));
       }
       return addMatchInfoToProducts(products, profile);
@@ -253,7 +254,7 @@ export function useUserMatching(): UseUserMatchingResult {
       products: ProductWithMatch<T>[],
       minRate: number
     ): ProductWithMatch<T>[] => {
-      return products.filter((p) => p.matchScore >= minRate);
+      return products.filter((p) => p.personalMatched === true && p.matchScore >= minRate);
     },
     []
   );

@@ -271,7 +271,7 @@ export function QuestionnaireForm({
       {showBodyFields && (
         <fieldset>
           <legend className="mb-3 text-sm font-semibold text-foreground">
-            신체 정보 <span className="text-muted-foreground">(전신 사진 대신)</span>
+            신체 정보 <span className="text-muted-foreground">(선택)</span>
           </legend>
           <div className="grid grid-cols-2 gap-3">
             <NumberInput
@@ -303,8 +303,12 @@ export function QuestionnaireForm({
               onChange={setWaistCm}
             />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            * 키만 입력해도 분석 가능해요. 정확도가 올라갈수록 세부 입력 추천.
+          <p
+            className="mt-2 text-xs leading-relaxed text-muted-foreground"
+            data-testid="body-example-notice"
+          >
+            전신 사진 없이 신체 정보만 입력하면 체형을 측정하지 않고, 재현 가능한 낮은 신뢰도의
+            샘플(예시) 결과를 표시해요. 실제 분석 결과가 아니므로 참고용으로만 봐주세요.
           </p>
         </fieldset>
       )}

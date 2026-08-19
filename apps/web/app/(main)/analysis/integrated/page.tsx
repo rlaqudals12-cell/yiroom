@@ -518,7 +518,7 @@ export default function IntegratedAnalysisInputPage(): React.JSX.Element {
         {/* 체형 축 사전 고지 — 제출 후 결과에서 처음 알게 되지 않도록 (전신 사진이 유일한 신호) */}
         {willSkipBody && (
           <p className="text-center text-xs text-muted-foreground" data-testid="body-skip-notice">
-            체형 분석은 이번에 건너뛰어요 (전신 사진 필요) — 결과엔 예시 값이 들어가요
+            체형 분석은 이번에 건너뛰어요. 전신 사진 또는 신체 정보가 필요해요.
           </p>
         )}
 

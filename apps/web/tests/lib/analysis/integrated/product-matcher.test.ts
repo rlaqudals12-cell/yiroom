@@ -51,6 +51,7 @@ describe('fetchCurationProducts', () => {
     const r = await fetchCurationProducts({ skinType: 'oily', gender: 'male' });
     expect(r.some((p) => p.id === 'lip')).toBe(false);
     expect(r.some((p) => p.id === 'serum')).toBe(true);
+    expect(r.find((p) => p.id === 'serum')?.personalMatched).toBe(true);
   });
 
   it('여성이면 메이크업 제품 포함 가능', async () => {
@@ -78,6 +79,26 @@ describe('fetchCurationProducts', () => {
     expect(a?.priceKrw).toBe(15000);
     expect(a?.name).toBe('A');
     expect(a?.brand).toBe('브A');
+    expect(a?.personalMatched).toBe(false);
+    expect(a?.reason).not.toContain('내 프로필');
+  });
+
+  it('피부 분석값이 있어도 제품 피부 태그가 없으면 개인화 서술을 만들지 않는다', async () => {
+    getCosmeticProducts.mockResolvedValue([
+      product({
+        id: 'untagged',
+        name: '태그 없는 세럼',
+        category: 'serum',
+        rating: 4.7,
+        reviewCount: 500,
+      }),
+    ]);
+
+    const r = await fetchCurationProducts({ skinType: 'dry', gender: 'neutral' });
+
+    expect(r[0]?.personalMatched).toBe(false);
+    expect(r[0]?.reason).not.toContain('내 피부 타입');
+    expect(r[0]?.reason).not.toContain('내 프로필');
   });
 
   it('DB 조회가 throw해도 빈 배열 (결과 페이지 보호)', async () => {

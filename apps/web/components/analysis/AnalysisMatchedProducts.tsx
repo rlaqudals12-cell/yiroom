@@ -32,8 +32,8 @@ interface MatchedProduct {
   matchReasons: string[];
   /**
    * 개인 축(퍼스널컬러·피부·모발 등)에서 실제로 일치한 근거가 있는가.
-   * 명시적으로 false일 때만 "나와의 적합도 N점" 문구를 생략한다
-   * (구버전 sessionStorage 캐시에는 이 필드가 없어 undefined로 올 수 있다).
+   * true일 때만 "나와의 적합도 N점"과 BEST 표현을 허용한다.
+   * 구버전 sessionStorage 캐시의 undefined도 근거 없음으로 처리한다.
    */
   personalMatched?: boolean;
 }
@@ -165,7 +165,7 @@ export function AnalysisMatchedProducts({
   if (isLoading) {
     return (
       <div data-testid="matched-products-loading">
-        <SectionHeader analysisType={analysisType} />
+        <SectionHeader analysisType={analysisType} personalized={false} />
         {/* 로드 후 BEST 3열 그리드와 동일 레이아웃 → 스켈레톤↔결과 전환 시 레이아웃 시프트 방지 */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {Array.from({ length: Math.min(maxProducts, 3) }).map((_, i) => (
@@ -180,7 +180,7 @@ export function AnalysisMatchedProducts({
   if (products.length === 0) {
     return (
       <div data-testid="matched-products-empty">
-        <SectionHeader analysisType={analysisType} />
+        <SectionHeader analysisType={analysisType} personalized={false} />
         <div className="rounded-xl border border-zinc-800 bg-neutral-900/50 p-6 text-center">
           <ShoppingBag className="mx-auto mb-2 h-6 w-6 text-zinc-600" />
           <p className="text-sm text-zinc-500">맞춤 제품을 준비 중이에요. 곧 추천해드릴게요.</p>
@@ -191,22 +191,45 @@ export function AnalysisMatchedProducts({
 
   const moreHref = moreProductsHref(analysisType);
 
-  // 적합도 내림차순 안정 정렬(동률이면 원래 순서 유지) 후 상위 3개 = BEST 순위
-  const ranked = rankByMatchScore(products);
+  // 개인 근거가 있는 제품만 먼저 적합도순으로 놓는다. 나머지는 대중성 점수를 개인 순위로 위장하지 않는다.
+  const personallyRanked = rankByMatchScore(
+    products.filter((product) => product.personalMatched === true)
+  );
+  const unverifiedRanked = rankByMatchScore(
+    products.filter((product) => product.personalMatched !== true)
+  );
+  const ranked = [...personallyRanked, ...unverifiedRanked];
   const best = ranked.slice(0, 3);
   const rest = ranked.slice(3);
+  const hasPersonalProducts = personallyRanked.length > 0;
+  const hasUnverifiedProducts = unverifiedRanked.length > 0;
+  const allPersonallyMatched = !hasUnverifiedProducts;
   // BEST 1 vs 2 비교 — matchReasons 차집합, 차이 없으면 null(지어내지 않음)
   const comparison =
-    best.length >= 2 ? buildRankComparisonLine(best[0].matchReasons, best[1].matchReasons) : null;
+    best.length >= 2 && best[0].personalMatched === true && best[1].personalMatched === true
+      ? buildRankComparisonLine(best[0].matchReasons, best[1].matchReasons)
+      : null;
 
   return (
     <div data-testid="matched-products-section">
-      <SectionHeader analysisType={analysisType} />
+      <SectionHeader analysisType={analysisType} personalized={allPersonallyMatched} />
+
+      {hasUnverifiedProducts && (
+        <p
+          className="mb-3 text-xs text-zinc-500"
+          role="status"
+          data-testid="matched-products-guidance"
+        >
+          {hasPersonalProducts
+            ? '일부 제품은 개인 적합도를 판단할 태그가 부족해 점수 없이 보여드려요.'
+            : '제품 태그가 부족해 개인 적합도와 BEST 표시는 숨기고 제품 정보만 보여드려요.'}
+        </p>
+      )}
 
       {/* BEST 순위 (상위 3개) — 메달 배지 + "왜 이 순위인지" 한 줄 */}
       <ol className="grid grid-cols-2 gap-3 sm:grid-cols-3" data-testid="matched-products-ranked">
         {best.map((mp, idx) => {
-          const badge = getRankBadge(idx);
+          const badge = mp.personalMatched === true ? getRankBadge(idx) : null;
           return (
             <li key={mp.product.id} className="flex flex-col" data-testid="ranked-product">
               {badge && (
@@ -223,14 +246,16 @@ export function AnalysisMatchedProducts({
                   카드 내부는 가격 행이 mt-auto로 하단 정렬되어 세 카드의 가격 행이 같은 높이에 온다. */}
               <ProductCard product={mp.product} matchReasons={mp.matchReasons} className="flex-1" />
               {/* 이유 줄은 최소 2줄 높이를 예약 — BEST 1만 줄 수가 많아 첫 카드가 커 보이는 어긋남 방지 */}
-              <p
-                className="mt-1.5 min-h-[2rem] text-[11px] leading-snug text-zinc-400"
-                data-testid="rank-reason"
-              >
-                {buildRankReasonLine(mp.matchScore, mp.matchReasons, {
-                  hasPersonalMatch: mp.personalMatched,
-                })}
-              </p>
+              {mp.personalMatched === true && (
+                <p
+                  className="mt-1.5 min-h-[2rem] text-[11px] leading-snug text-zinc-400"
+                  data-testid="rank-reason"
+                >
+                  {buildRankReasonLine(mp.matchScore, mp.matchReasons, {
+                    hasPersonalMatch: true,
+                  })}
+                </p>
+              )}
             </li>
           );
         })}
@@ -252,11 +277,11 @@ export function AnalysisMatchedProducts({
           className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3"
           data-testid="matched-products-rest"
         >
-          {rest.map(({ product, matchScore, matchReasons }) => (
+          {rest.map(({ product, matchScore, matchReasons, personalMatched }) => (
             <ProductCard
               key={product.id}
               product={product}
-              matchScore={matchScore}
+              matchScore={personalMatched === true ? matchScore : undefined}
               matchReasons={matchReasons}
             />
           ))}
@@ -268,7 +293,7 @@ export function AnalysisMatchedProducts({
           href={moreHref}
           className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-pink-400 transition-colors"
         >
-          맞춤 제품 더 보기
+          {hasPersonalProducts ? '맞춤 제품 더 보기' : '제품 더 보기'}
           <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
@@ -280,7 +305,13 @@ export function AnalysisMatchedProducts({
 }
 
 /** 섹션 헤더 */
-function SectionHeader({ analysisType }: { analysisType: string }): React.JSX.Element {
+function SectionHeader({
+  analysisType,
+  personalized,
+}: {
+  analysisType: string;
+  personalized: boolean;
+}): React.JSX.Element {
   const labels: Record<string, string> = {
     skin: '피부 분석 맞춤 제품',
     'personal-color': '퍼스널컬러 맞춤 제품',
@@ -294,7 +325,7 @@ function SectionHeader({ analysisType }: { analysisType: string }): React.JSX.El
     <div className="mb-3 flex items-center gap-2">
       <ShoppingBag className="h-4 w-4 text-pink-400" />
       <h3 className="text-sm font-semibold text-zinc-200">
-        {labels[analysisType] ?? '맞춤 제품 추천'}
+        {personalized ? (labels[analysisType] ?? '맞춤 제품 추천') : '추천 제품'}
       </h3>
     </div>
   );

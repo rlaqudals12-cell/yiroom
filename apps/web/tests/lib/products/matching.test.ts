@@ -723,12 +723,14 @@ describe('addMatchInfo', () => {
     expect(result.product).toBe(cosmeticProduct);
     expect(result.matchScore).toBeGreaterThanOrEqual(20);
     expect(result.matchReasons).toBeInstanceOf(Array);
+    expect(result.personalMatched).toBe(true);
   });
 
   it('원본 제품 객체를 보존한다', () => {
     const result = addMatchInfo(cosmeticProduct, emptyProfile);
     expect(result.product.id).toBe('c1');
     expect(result.product.name).toBe('수분 토너');
+    expect(result.personalMatched).toBe(false);
   });
 });
 
@@ -743,6 +745,7 @@ describe('addMatchInfoToProducts', () => {
     expect(results).toHaveLength(2);
     expect(results[0]).toHaveProperty('matchScore');
     expect(results[1]).toHaveProperty('matchScore');
+    expect(results.every((result) => result.personalMatched === false)).toBe(true);
   });
 
   it('점수 높은 순으로 정렬한다', () => {

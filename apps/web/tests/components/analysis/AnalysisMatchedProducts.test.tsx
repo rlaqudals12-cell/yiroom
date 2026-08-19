@@ -32,10 +32,14 @@ interface MatchedRow {
   personalMatched?: boolean;
 }
 
-function mockFetchProducts(rows: MatchedRow[]): void {
+function mockFetchProducts(rows: MatchedRow[], defaultPersonalMatched = true): void {
   global.fetch = vi.fn().mockResolvedValue({
     ok: true,
-    json: async () => ({ products: rows }),
+    json: async () => ({
+      products: defaultPersonalMatched
+        ? rows.map((row) => ({ personalMatched: true, ...row }))
+        : rows,
+    }),
   }) as unknown as typeof fetch;
 }
 
@@ -91,9 +95,34 @@ describe('AnalysisMatchedProducts (BEST 순위 표현)', () => {
 
     render(<AnalysisMatchedProducts analysisType="personal-color" />);
 
-    const reasons = await screen.findAllByTestId('rank-reason');
-    expect(reasons[0]).toHaveTextContent('');
+    await screen.findByTestId('matched-products-ranked');
+    expect(screen.queryByTestId('rank-reason')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('rank-badge')).not.toBeInTheDocument();
+    expect(screen.getByTestId('matched-products-guidance')).toHaveTextContent(
+      '제품 태그가 부족해 개인 적합도와 BEST 표시는 숨기고 제품 정보만 보여드려요.'
+    );
     expect(screen.queryByText(/나와의 적합도/)).not.toBeInTheDocument();
+  });
+
+  it('구버전 캐시처럼 personalMatched가 없으면 개인 근거 없음으로 처리한다', async () => {
+    mockFetchProducts(
+      [
+        {
+          product: makeCosmetic('p1', '세럼A'),
+          matchScore: 99,
+          matchReasons: ['높은 평점'],
+        },
+      ],
+      false
+    );
+
+    render(<AnalysisMatchedProducts analysisType="body" />);
+
+    await screen.findByTestId('matched-products-ranked');
+    expect(screen.queryByTestId('rank-badge')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('rank-reason')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '추천 제품' })).toBeInTheDocument();
+    expect(screen.getByText('제품 더 보기')).toBeInTheDocument();
   });
 
   it('personalMatched=true면 기존대로 적합도 문구를 표시한다', async () => {

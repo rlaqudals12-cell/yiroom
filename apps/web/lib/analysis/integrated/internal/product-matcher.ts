@@ -11,9 +11,19 @@
  * @internal — 외부 import 금지 (result page 전용)
  */
 
-import { getCosmeticProducts, addMatchInfoToProducts } from '@/lib/products';
+import {
+  getCosmeticProducts,
+  addMatchInfoToProducts,
+  PERSONAL_MATCH_REASON_TYPES,
+} from '@/lib/products';
 import type { UserProfile } from '@/lib/products';
-import type { CosmeticProduct, SkinType, PersonalColorSeason, Undertone } from '@/types/product';
+import type {
+  CosmeticProduct,
+  SkinType,
+  PersonalColorSeason,
+  Undertone,
+  MatchReason,
+} from '@/types/product';
 import type { RecommendationGender } from '../types';
 
 /** 결과 카드에 인라인으로 노출할 실제 제품 (지갑 여는 3개) */
@@ -27,6 +37,8 @@ export interface CurationProduct {
   reason: string;
   /** 매칭 점수(0-100) */
   matchScore: number;
+  /** 개인 분석 축과 제품 태그가 실제로 일치할 때만 true */
+  personalMatched?: boolean;
   imageUrl: string | null;
 }
 
@@ -84,12 +96,17 @@ function normalizeUndertone(raw?: string): Undertone | undefined {
   return undefined;
 }
 
-/** 매칭 이유 한 줄 도출 — 매칭된 첫 사유 라벨, 없으면 피부/톤 기반 기본 */
-function buildReason(reasons: { label: string; matched: boolean }[], skinType?: SkinType): string {
-  const matched = reasons.find((r) => r.matched);
-  if (matched) return `${matched.label} — 내 프로필에 잘 맞아요`;
-  if (skinType) return '내 피부 타입에 무난하게 어울려요';
-  return '리뷰가 많은 인기 제품이에요';
+/** 개인 근거가 있을 때만 개인화하고, 그 외에는 확인 가능한 제품 사실만 쓴다. */
+function buildReason(reasons: MatchReason[], personalMatched: boolean): string {
+  if (personalMatched) {
+    const personalReason = reasons.find(
+      (reason) => reason.matched && PERSONAL_MATCH_REASON_TYPES.includes(reason.type)
+    );
+    if (personalReason) return `${personalReason.label} — 내 프로필에 잘 맞아요`;
+  }
+
+  const factualReason = reasons.find((reason) => reason.matched);
+  return factualReason?.label ?? '제품 상세 정보를 확인해보세요';
 }
 
 /**
@@ -134,8 +151,9 @@ export async function fetchCurationProducts(
       name: m.product.name,
       brand: m.product.brand,
       priceKrw: m.product.priceKrw ?? null,
-      reason: buildReason(m.matchReasons, skinType),
+      reason: buildReason(m.matchReasons, m.personalMatched === true),
       matchScore: m.matchScore,
+      personalMatched: m.personalMatched === true,
       imageUrl: m.product.imageUrl ?? null,
     }));
   } catch (error) {

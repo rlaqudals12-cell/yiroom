@@ -184,7 +184,13 @@ async function SkincareSection({ userProfile }: { userProfile: UserProfile }) {
   const skincare = products.filter((p) => p.category !== 'makeup');
   const withMatch = addMatchInfoToProducts(skincare, userProfile);
 
-  return <RecommendationSection title="내 피부에 맞는 스킨케어" products={withMatch.slice(0, 6)} />;
+  return (
+    <RecommendationSection
+      title="내 피부에 맞는 스킨케어"
+      fallbackTitle="추천 스킨케어"
+      products={withMatch.slice(0, 6)}
+    />
+  );
 }
 
 /** 메이크업 추천 섹션 */
@@ -202,6 +208,7 @@ async function MakeupSection({ userProfile }: { userProfile: UserProfile }) {
   return (
     <RecommendationSection
       title="내 퍼스널 컬러에 맞는 메이크업"
+      fallbackTitle="추천 메이크업"
       products={withMatch.slice(0, 6)}
     />
   );
@@ -214,7 +221,13 @@ async function SupplementSection({ userProfile }: { userProfile: UserProfile }) 
 
   const withMatch = addMatchInfoToProducts(products, userProfile);
 
-  return <RecommendationSection title="운동 목표에 맞는 영양제" products={withMatch.slice(0, 6)} />;
+  return (
+    <RecommendationSection
+      title="운동 목표에 맞는 영양제"
+      fallbackTitle="추천 영양제"
+      products={withMatch.slice(0, 6)}
+    />
+  );
 }
 
 /** 운동 기구 추천 섹션 */
@@ -227,7 +240,13 @@ async function EquipmentSection({ userProfile }: { userProfile: UserProfile }) {
 
   const withMatch = addMatchInfoToProducts(products, userProfile);
 
-  return <RecommendationSection title="운동 루틴에 필요한 기구" products={withMatch.slice(0, 6)} />;
+  return (
+    <RecommendationSection
+      title="운동 루틴에 필요한 기구"
+      fallbackTitle="추천 운동 기구"
+      products={withMatch.slice(0, 6)}
+    />
+  );
 }
 
 /** 건강식품 추천 섹션 */
@@ -237,36 +256,54 @@ async function HealthFoodSection({ userProfile }: { userProfile: UserProfile }) 
   const withMatch = addMatchInfoToProducts(products, userProfile);
 
   return (
-    <RecommendationSection title="식단 목표에 맞는 건강식품" products={withMatch.slice(0, 6)} />
+    <RecommendationSection
+      title="식단 목표에 맞는 건강식품"
+      fallbackTitle="추천 건강식품"
+      products={withMatch.slice(0, 6)}
+    />
   );
 }
 
 /** 추천 섹션 공통 컴포넌트 */
 function RecommendationSection({
   title,
+  fallbackTitle,
   products,
 }: {
   title: string;
-  products: Array<{ product: { id: string }; matchScore: number }>;
+  fallbackTitle: string;
+  products: Array<{
+    product: { id: string };
+    matchScore: number;
+    personalMatched?: boolean;
+  }>;
 }) {
   if (products.length === 0) {
     return (
       <section>
-        <h2 className="mb-4 text-lg font-semibold">{title}</h2>
+        <h2 className="mb-4 text-lg font-semibold">{fallbackTitle}</h2>
         <p className="text-muted-foreground">추천 제품이 없습니다.</p>
       </section>
     );
   }
 
+  const allPersonallyMatched = products.every((item) => item.personalMatched === true);
+  const hasUnverifiedProducts = products.some((item) => item.personalMatched !== true);
+
   return (
     <section>
-      <h2 className="mb-4 text-lg font-semibold">{title}</h2>
+      <h2 className="mb-4 text-lg font-semibold">{allPersonallyMatched ? title : fallbackTitle}</h2>
+      {hasUnverifiedProducts && (
+        <p className="mb-3 text-xs text-muted-foreground" data-testid="match-data-guidance">
+          개인 적합도를 판단할 제품 태그가 부족한 항목은 점수 없이 보여드려요.
+        </p>
+      )}
       <div className="flex gap-4 overflow-x-auto pb-4">
-        {products.map(({ product, matchScore }) => (
+        {products.map(({ product, matchScore, personalMatched }) => (
           <div key={product.id} className="w-[180px] flex-shrink-0">
             <ProductCard
               product={product as Parameters<typeof ProductCard>[0]['product']}
-              matchScore={matchScore}
+              matchScore={personalMatched === true ? matchScore : undefined}
             />
           </div>
         ))}

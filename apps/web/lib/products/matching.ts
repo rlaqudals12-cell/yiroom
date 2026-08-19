@@ -929,6 +929,7 @@ export function addMatchInfo<T extends AnyProduct>(
     product,
     matchScore: score,
     matchReasons: reasons,
+    personalMatched: hasPersonalMatch(reasons),
   };
 }
 
