@@ -6,6 +6,13 @@
  * - 웹 넓은 enum(눈꼬리 처짐·입술 small/heart/asymmetric) → 모바일 값으로 접기
  * - 게이트(403) 메시지 관통
  */
+const mockTrackAnalysisStart = jest.fn();
+const mockTrackAnalysisComplete = jest.fn();
+jest.mock('@/lib/analytics/tracker', () => ({
+  trackAnalysisStart: (...args: unknown[]) => mockTrackAnalysisStart(...args),
+  trackAnalysisComplete: (...args: unknown[]) => mockTrackAnalysisComplete(...args),
+}));
+
 import { DEFAULT_API_BASE_URL } from '@/lib/api/base-url';
 import { requestMakeupAnalysis, MakeupApiError } from '@/lib/api/makeup';
 
@@ -61,6 +68,8 @@ function successBody(overrides: Record<string, unknown> = {}) {
 }
 
 describe('requestMakeupAnalysis', () => {
+  beforeEach(() => jest.clearAllMocks());
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -69,6 +78,13 @@ describe('requestMakeupAnalysis', () => {
     mockFetchOnce(200, successBody());
 
     const result = await requestMakeupAnalysis(VALID_INPUT, 'token-1', BASE_URL);
+
+    expect(mockTrackAnalysisStart).toHaveBeenCalledWith('makeup', 'full', 'token-1');
+    expect(mockTrackAnalysisComplete).toHaveBeenCalledWith(
+      'makeup',
+      { status: 'completed', axesCompletedCount: 1, usedFallback: false },
+      'token-1'
+    );
 
     expect(result.faceShape).toBe('oval');
     expect(result.undertone).toBe('warm');
@@ -200,6 +216,16 @@ describe('requestMakeupAnalysis', () => {
       if (originalYiroom !== undefined) process.env.EXPO_PUBLIC_YIROOM_API_URL = originalYiroom;
       if (originalApi !== undefined) process.env.EXPO_PUBLIC_API_URL = originalApi;
     }
+  });
+
+  it('API 실패에는 시작만 기록하고 완료는 기록하지 않는다', async () => {
+    mockFetchOnce(500, { success: false, error: 'failed' });
+
+    await expect(requestMakeupAnalysis(VALID_INPUT, 'token-1', BASE_URL)).rejects.toBeInstanceOf(
+      MakeupApiError
+    );
+    expect(mockTrackAnalysisStart).toHaveBeenCalledTimes(1);
+    expect(mockTrackAnalysisComplete).not.toHaveBeenCalled();
   });
 
   it('MakeupApiError는 인스턴스 판별이 가능하다', () => {

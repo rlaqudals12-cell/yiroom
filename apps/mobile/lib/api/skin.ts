@@ -15,6 +15,7 @@ import type { SkinType } from '@yiroom/shared';
 
 import type { SkinMetrics } from '@/lib/skincare';
 
+import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
 
@@ -126,6 +127,7 @@ export async function requestSkinAnalysis(
   baseUrl?: string
 ): Promise<SkinAnalysisApiResult> {
   const url = getApiBaseUrl(baseUrl);
+  void trackAnalysisStart('skin', 'full', clerkToken);
 
   let response: Response;
   try {
@@ -182,7 +184,7 @@ export async function requestSkinAnalysis(
 
   const metrics = result.metrics;
 
-  return {
+  const analysis: SkinAnalysisApiResult = {
     skinType,
     metrics: {
       moisture: metricValue(metrics, 'hydration'),
@@ -198,4 +200,10 @@ export async function requestSkinAnalysis(
     dbSaveFailed: obj.dbSaveFailed === true,
     analysisId: typeof data.id === 'string' ? data.id : undefined,
   };
+  void trackAnalysisComplete(
+    'skin',
+    { status: 'completed', axesCompletedCount: 1, usedFallback: analysis.usedMock },
+    clerkToken
+  );
+  return analysis;
 }

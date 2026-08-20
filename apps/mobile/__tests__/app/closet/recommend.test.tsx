@@ -400,6 +400,7 @@ describe('RecommendScreen 코디 저장 기능', () => {
       // season은 배열
       expect(Array.isArray(callArg.season)).toBe(true);
       expect(callArg.season.length).toBeGreaterThan(0);
+      expect(mockSaveOutfit.mock.calls[0][1]).toBe('recommendation');
     });
 
     it('저장 성공 시 SuccessCheckmark를 표시한다', async () => {

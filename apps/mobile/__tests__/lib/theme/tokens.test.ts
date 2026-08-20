@@ -17,21 +17,22 @@ import {
   radii,
   shadows,
   typography,
+  needsLegacyAndroidShadow,
 } from '../../../lib/theme/tokens';
 
 describe('디자인 토큰', () => {
   describe('brand', () => {
-    it('primary 색상이 #EC4899이어야 한다', () => {
-      expect(brand.primary).toBe('#EC4899');
+    it('primary 색상이 ADR-120의 절제된 rose여야 한다', () => {
+      expect(brand.primary).toBe('#C56A84');
     });
 
-    it('primaryForeground가 흰색이어야 한다', () => {
-      expect(brand.primaryForeground).toBe('#FFFFFF');
+    it('primaryForeground는 rose 위 일반 텍스트 AA를 만족하는 잉크여야 한다', () => {
+      expect(brand.primaryForeground).toBe('#1C1C1E');
     });
 
-    it('gradient 색상이 정의되어야 한다', () => {
-      expect(brand.gradientStart).toBeDefined();
-      expect(brand.gradientEnd).toBeDefined();
+    it('gradient 호환 키도 primary 단색으로 고정되어야 한다', () => {
+      expect(brand.gradientStart).toBe(brand.primary);
+      expect(brand.gradientEnd).toBe(brand.gradientStart);
     });
   });
 
@@ -53,14 +54,12 @@ describe('디자인 토큰', () => {
 
       for (const key of requiredKeys) {
         expect(lightColors).toHaveProperty(key);
-        expect(typeof lightColors[key as keyof typeof lightColors]).toBe(
-          'string'
-        );
+        expect(typeof lightColors[key as keyof typeof lightColors]).toBe('string');
       }
     });
 
-    it('background는 밝은 색이어야 한다', () => {
-      expect(lightColors.background).toBe('#FDFCFB');
+    it('background는 ADR-120의 크림 지면이어야 한다', () => {
+      expect(lightColors.background).toBe('#FBF3F1');
     });
 
     it('ring이 brand primary와 일치해야 한다', () => {
@@ -144,9 +143,51 @@ describe('디자인 토큰', () => {
   });
 
   describe('shadows', () => {
-    it('card 그림자가 정의되어야 한다', () => {
-      expect(shadows).toHaveProperty('card');
-      expect(shadows.card).toHaveProperty('shadowColor');
+    it('Android API 28 미만에서만 elevation 폴백을 선택해야 한다', () => {
+      expect(needsLegacyAndroidShadow('android', 27)).toBe(true);
+      expect(needsLegacyAndroidShadow('android', 28)).toBe(false);
+      expect(needsLegacyAndroidShadow('ios', '18.0')).toBe(false);
+    });
+
+    it('rest 그림자는 웜 브라운 두 레이어여야 한다', () => {
+      expect(shadows.card.boxShadow).toEqual([
+        {
+          offsetX: 0,
+          offsetY: 1,
+          blurRadius: 2,
+          spreadDistance: 0,
+          color: 'rgba(93, 64, 55, 0.07)',
+        },
+        {
+          offsetX: 0,
+          offsetY: 8,
+          blurRadius: 24,
+          spreadDistance: 0,
+          color: 'rgba(93, 64, 55, 0.08)',
+        },
+      ]);
+      expect(shadows.sm).toBe(shadows.card);
+      expect(shadows.md).toBe(shadows.card);
+    });
+
+    it('raised 그림자는 웜 브라운 두 레이어여야 한다', () => {
+      expect(shadows.lg.boxShadow).toEqual([
+        {
+          offsetX: 0,
+          offsetY: 2,
+          blurRadius: 4,
+          spreadDistance: 0,
+          color: 'rgba(93, 64, 55, 0.08)',
+        },
+        {
+          offsetX: 0,
+          offsetY: 16,
+          blurRadius: 40,
+          spreadDistance: 0,
+          color: 'rgba(93, 64, 55, 0.12)',
+        },
+      ]);
+      expect(shadows.xl).toBe(shadows.lg);
     });
   });
 

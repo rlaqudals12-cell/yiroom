@@ -1,191 +1,95 @@
 /**
- * Analytics 세션 관리
- * @description 브라우저 세션 ID 생성 및 관리
+ * 모바일 Analytics 세션 관리
+ *
+ * 브라우저용 sessionStorage를 사용하던 복사본을 RN 런타임 세션으로 교체한다.
+ * 앱 프로세스가 살아 있는 동안 하나의 세션 ID를 유지하고, 30분 비활동 시 새 세션을 만든다.
  */
+import { Dimensions, Platform } from 'react-native';
 
-// 세션 ID 저장 키
-const SESSION_ID_KEY = 'yiroom_session_id';
-const SESSION_START_KEY = 'yiroom_session_start';
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30분
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 
-/**
- * UUID v4 생성 (브라우저 환경)
- */
-function generateUUID(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
+let currentSessionId: string | null = null;
+let sessionStartedAt: number | null = null;
+let lastActivityAt: number | null = null;
+let fallbackSequence = 0;
+
+/** Hermes에 randomUUID가 없을 때도 충돌 가능성을 낮춘 런타임 세션 ID를 만든다. */
+function generateSessionId(): string {
+  const webCrypto = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+  if (typeof webCrypto?.randomUUID === 'function') {
+    return `mobile_${webCrypto.randomUUID()}`;
   }
-  // Fallback for older browsers
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+
+  fallbackSequence += 1;
+  return `mobile_${Date.now().toString(36)}_${fallbackSequence.toString(36)}`;
 }
 
-/**
- * 세션 ID 가져오기 (없으면 null)
- */
+/** 현재 유효한 세션 ID. 없거나 만료됐으면 null이다. */
 export function getSessionId(): string | null {
-  if (typeof window === 'undefined') return null;
+  if (!currentSessionId || lastActivityAt === null) return null;
 
-  try {
-    const sessionId = sessionStorage.getItem(SESSION_ID_KEY);
-    const sessionStart = sessionStorage.getItem(SESSION_START_KEY);
-
-    if (!sessionId || !sessionStart) return null;
-
-    // 세션 타임아웃 체크
-    const startTime = parseInt(sessionStart, 10);
-    if (Date.now() - startTime > SESSION_TIMEOUT_MS) {
-      // 세션 만료
-      sessionStorage.removeItem(SESSION_ID_KEY);
-      sessionStorage.removeItem(SESSION_START_KEY);
-      return null;
-    }
-
-    return sessionId;
-  } catch {
+  if (Date.now() - lastActivityAt > SESSION_TIMEOUT_MS) {
+    endSession();
     return null;
   }
+
+  return currentSessionId;
 }
 
-/**
- * 세션 ID 가져오거나 생성
- */
+/** 현재 세션을 반환하거나 새 앱 세션을 만든다. */
 export function getOrCreateSession(): string {
-  if (typeof window === 'undefined') {
-    return `server_${generateUUID()}`;
-  }
+  const existing = getSessionId();
+  if (existing) return existing;
 
-  try {
-    let sessionId = getSessionId();
-
-    if (!sessionId) {
-      sessionId = `sess_${generateUUID()}`;
-      sessionStorage.setItem(SESSION_ID_KEY, sessionId);
-      sessionStorage.setItem(SESSION_START_KEY, Date.now().toString());
-    }
-
-    return sessionId;
-  } catch {
-    // sessionStorage 사용 불가 시
-    return `temp_${generateUUID()}`;
-  }
+  const now = Date.now();
+  currentSessionId = generateSessionId();
+  sessionStartedAt = now;
+  lastActivityAt = now;
+  return currentSessionId;
 }
 
-/**
- * 세션 활동 갱신 (타임아웃 리셋)
- */
+/** 이벤트 발생 시 비활동 타이머만 갱신한다. */
 export function refreshSession(): void {
-  if (typeof window === 'undefined') return;
-
-  try {
-    const sessionId = sessionStorage.getItem(SESSION_ID_KEY);
-    if (sessionId) {
-      sessionStorage.setItem(SESSION_START_KEY, Date.now().toString());
-    }
-  } catch {
-    // 무시
+  if (getSessionId()) {
+    lastActivityAt = Date.now();
   }
 }
 
-/**
- * 세션 종료
- */
+/** 로그아웃·테스트 종료 등에서 런타임 세션을 명시적으로 끝낸다. */
 export function endSession(): void {
-  if (typeof window === 'undefined') return;
-
-  try {
-    sessionStorage.removeItem(SESSION_ID_KEY);
-    sessionStorage.removeItem(SESSION_START_KEY);
-  } catch {
-    // 무시
-  }
+  currentSessionId = null;
+  sessionStartedAt = null;
+  lastActivityAt = null;
 }
 
-/**
- * 세션 시작 시간 가져오기
- */
 export function getSessionStartTime(): number | null {
-  if (typeof window === 'undefined') return null;
-
-  try {
-    const sessionStart = sessionStorage.getItem(SESSION_START_KEY);
-    return sessionStart ? parseInt(sessionStart, 10) : null;
-  } catch {
-    return null;
-  }
+  return sessionStartedAt;
 }
 
-/**
- * 세션 지속 시간 (초)
- */
 export function getSessionDuration(): number {
-  const startTime = getSessionStartTime();
-  if (!startTime) return 0;
-  return Math.floor((Date.now() - startTime) / 1000);
+  if (sessionStartedAt === null) return 0;
+  return Math.floor((Date.now() - sessionStartedAt) / 1000);
 }
 
-/**
- * 디바이스 타입 감지
- */
+/** RN 화면 폭 기준. 네이티브 앱은 desktop으로 분류하지 않는다. */
 export function detectDeviceType(): 'mobile' | 'tablet' | 'desktop' {
-  if (typeof window === 'undefined') return 'desktop';
-
-  const userAgent = navigator.userAgent.toLowerCase();
-  const width = window.innerWidth;
-
-  // 모바일 UA 패턴
-  const mobilePatterns = /android|webos|iphone|ipod|blackberry|iemobile|opera mini/i;
-  // 태블릿 UA 패턴
-  const tabletPatterns = /ipad|tablet|playbook|silk/i;
-
-  if (tabletPatterns.test(userAgent) || (width >= 768 && width < 1024)) {
-    return 'tablet';
-  }
-
-  if (mobilePatterns.test(userAgent) || width < 768) {
-    return 'mobile';
-  }
-
-  return 'desktop';
+  const width = Dimensions.get('window').width;
+  if (Platform.OS === 'web' && width >= 1024) return 'desktop';
+  return width >= 768 ? 'tablet' : 'mobile';
 }
 
-/**
- * 브라우저 감지
- */
+/** 브라우저명이 없는 네이티브 요청은 Expo 런타임으로 명시한다. */
 export function detectBrowser(): string {
-  if (typeof window === 'undefined') return 'unknown';
-
-  const userAgent = navigator.userAgent;
-
-  if (userAgent.includes('Firefox')) return 'Firefox';
-  if (userAgent.includes('SamsungBrowser')) return 'Samsung';
-  if (userAgent.includes('Opera') || userAgent.includes('OPR')) return 'Opera';
-  if (userAgent.includes('Edge')) return 'Edge';
-  if (userAgent.includes('Chrome')) return 'Chrome';
-  if (userAgent.includes('Safari')) return 'Safari';
-
-  return 'Other';
+  return Platform.OS === 'web' ? 'Web' : 'Expo';
 }
 
-/**
- * OS 감지
- */
 export function detectOS(): string {
-  if (typeof window === 'undefined') return 'unknown';
-
-  const userAgent = navigator.userAgent;
-
-  // Android UA에 'Linux'가 포함되므로 Android를 먼저 체크
-  if (userAgent.includes('Android')) return 'Android';
-  if (userAgent.includes('Windows')) return 'Windows';
-  if (userAgent.includes('Mac OS')) return 'macOS';
-  if (userAgent.includes('iOS') || userAgent.includes('iPhone') || userAgent.includes('iPad')) {
-    return 'iOS';
-  }
-  if (userAgent.includes('Linux')) return 'Linux';
-
-  return 'Other';
+  const labels: Record<string, string> = {
+    android: 'Android',
+    ios: 'iOS',
+    web: 'Web',
+    windows: 'Windows',
+    macos: 'macOS',
+  };
+  return labels[Platform.OS] ?? Platform.OS;
 }

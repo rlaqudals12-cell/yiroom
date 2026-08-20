@@ -205,9 +205,9 @@ describe('GlassCard', () => {
       const flatStyle = Array.isArray(card.props.style)
         ? card.props.style
         : [card.props.style];
-      // lg 사이즈: shadows.lg 토큰 반환 (shadowRadius 16)
+      // lg 사이즈: raised 웜 2층 그림자 토큰 반환
       const hasShadow = flatStyle.some(
-        (s: Record<string, unknown>) => s && typeof s.shadowRadius === 'number' && s.shadowRadius >= 10
+        (s: Record<string, unknown>) => s && Array.isArray(s.boxShadow) && s.boxShadow.length === 2
       );
       expect(hasShadow).toBe(true);
     });
@@ -227,7 +227,7 @@ describe('GlassCard', () => {
         ? card.props.style
         : [card.props.style];
       const hasShadow = flatStyle.some(
-        (s: Record<string, unknown>) => s && typeof s.shadowRadius === 'number' && s.shadowRadius >= 10
+        (s: Record<string, unknown>) => s && Array.isArray(s.boxShadow) && s.boxShadow.length === 2
       );
       expect(hasShadow).toBe(true);
     });
@@ -246,11 +246,13 @@ describe('GlassCard', () => {
       const flatStyle = Array.isArray(card.props.style)
         ? card.props.style
         : [card.props.style];
-      // 다크 모드에서 shadowRadius가 없거나 0이어야 함
-      const hasShadowRadius = flatStyle.some(
-        (s: Record<string, unknown>) => s && typeof s.shadowRadius === 'number' && (s.shadowRadius as number) > 0
+      const hasShadow = flatStyle.some(
+        (s: Record<string, unknown>) =>
+          s &&
+          ((Array.isArray(s.boxShadow) && s.boxShadow.length > 0) ||
+            (typeof s.shadowRadius === 'number' && (s.shadowRadius as number) > 0))
       );
-      expect(hasShadowRadius).toBe(false);
+      expect(hasShadow).toBe(false);
     });
   });
 

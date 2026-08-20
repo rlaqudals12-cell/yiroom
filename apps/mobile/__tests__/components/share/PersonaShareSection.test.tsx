@@ -23,6 +23,11 @@ import {
 import { PersonaShareSection } from '../../../components/share/PersonaShareSection';
 import type { PersonaCardData } from '../../../lib/share/card-data';
 
+const mockTrackAnalysisShare = jest.fn();
+jest.mock('@/lib/analytics/tracker', () => ({
+  trackAnalysisShare: (...args: unknown[]) => mockTrackAnalysisShare(...args),
+}));
+
 // useTheme 소비 컴포넌트는 ThemeContext.Provider 래핑 필수 (프로젝트 테스트 관례)
 function createThemeValue(isDark = false): ThemeContextValue {
   return {
@@ -99,6 +104,7 @@ describe('PersonaShareSection', () => {
         'file://card.png',
         expect.objectContaining({ mimeType: 'image/png' })
       );
+      expect(mockTrackAnalysisShare).toHaveBeenCalledWith('integrated', 'image', 'mock_jwt_token');
     });
   });
 
@@ -114,6 +120,7 @@ describe('PersonaShareSection', () => {
       );
     });
     expect(mockShareAsync).not.toHaveBeenCalled();
+    expect(mockTrackAnalysisShare).not.toHaveBeenCalled();
   });
 
   it('링크 공유는 톤·은유·랜딩 URL을 싣는다 (유입 귀속)', async () => {
@@ -126,7 +133,19 @@ describe('PersonaShareSection', () => {
       expect(shareSpy).toHaveBeenCalledWith({
         message: '뮤티드 서머 — 여름 아침의 서늘한 빛을 닮은 사람\nhttps://yiroom.app/?ref=card',
       });
+      expect(mockTrackAnalysisShare).toHaveBeenCalledWith('integrated', 'link', 'mock_jwt_token');
     });
+    shareSpy.mockRestore();
+  });
+
+  it('링크 공유 시트를 닫으면 성공 이벤트를 기록하지 않는다', async () => {
+    const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'dismissedAction' });
+
+    const { getByTestId } = renderWithTheme(<PersonaShareSection data={DATA} />);
+    fireEvent.press(getByTestId('persona-share-text'));
+
+    await waitFor(() => expect(shareSpy).toHaveBeenCalled());
+    expect(mockTrackAnalysisShare).not.toHaveBeenCalled();
     shareSpy.mockRestore();
   });
 });

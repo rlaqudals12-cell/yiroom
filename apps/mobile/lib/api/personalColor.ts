@@ -13,6 +13,7 @@
  */
 import type { PersonalColorSeason } from '@yiroom/shared';
 
+import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
 
@@ -174,6 +175,7 @@ export async function requestPersonalColorAnalysis(
   baseUrl?: string
 ): Promise<PersonalColorApiResult> {
   const url = getApiBaseUrl(baseUrl);
+  void trackAnalysisStart('personal-color', 'full', clerkToken);
 
   let response: Response;
   try {
@@ -245,7 +247,7 @@ export async function requestPersonalColorAnalysis(
     normalizePersonalColorSubtype(data.season_subtype) ??
     normalizePersonalColorSubtype(imageAnalysis.seasonSubtype);
 
-  return {
+  const analysis: PersonalColorApiResult = {
     season,
     seasonSubtype,
     confidence: normalizeConfidence(result.confidence),
@@ -261,4 +263,10 @@ export async function requestPersonalColorAnalysis(
     usedMock: obj.usedMock === true,
     dbSaveFailed: obj.dbSaveFailed === true,
   };
+  void trackAnalysisComplete(
+    'personal-color',
+    { status: 'completed', axesCompletedCount: 1, usedFallback: analysis.usedMock },
+    clerkToken
+  );
+  return analysis;
 }

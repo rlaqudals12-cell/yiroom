@@ -163,9 +163,6 @@ export default function HairResultScreen() {
       {result.dbSaveFailed && (
         <AnalysisSaveFailureNotice onRetry={() => router.replace('/(analysis)/hair')} />
       )}
-      <Text style={[localStyles.typeName, { color: accent.base }]}>
-        {TEXTURE_LABELS[result.texture]} / {THICKNESS_LABELS[result.thickness]}
-      </Text>
       <Text style={[localStyles.subInfo, { color: colors.mutedForeground }]}>
         {SCALP_LABELS[result.scalpCondition]} · 손상도 {result.damageLevel}%
       </Text>
@@ -340,6 +337,7 @@ export default function HairResultScreen() {
       <ResultLayout
         moduleKey="hair"
         title="헤어 분석 결과"
+        verdict={`${TEXTURE_LABELS[result.texture]} / ${THICKNESS_LABELS[result.thickness]}`}
         imageUri={imageUri}
         imageStyle={localStyles.hairImage}
         headerContent={headerContent}
@@ -361,10 +359,6 @@ const localStyles = StyleSheet.create({
   headerContent: {
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  typeName: {
-    fontSize: 22,
-    fontWeight: typography.weight.bold,
   },
   subInfo: {
     fontSize: typography.size.sm,

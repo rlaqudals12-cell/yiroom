@@ -12,6 +12,7 @@
  * @see apps/web/lib/mock/hair-analysis.ts (응답 필드·concern id 정본)
  * @see docs/adr/ADR-118 (웹 API 정본 + 모바일 thin client)
  */
+import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
 
@@ -148,6 +149,7 @@ export async function requestHairAnalysis(
   baseUrl?: string
 ): Promise<HairAnalysisApiResult> {
   const url = getApiBaseUrl(baseUrl);
+  void trackAnalysisStart('hair', 'full', clerkToken);
 
   let response: Response;
   try {
@@ -191,7 +193,7 @@ export async function requestHairAnalysis(
   // 서버 'damage' 지표는 "높을수록 건강"(100-손상). 화면 damageLevel은 손상도이므로 반전.
   const damageHealth = metricValue(metrics, 'damage');
 
-  return {
+  const analysis: HairAnalysisApiResult = {
     texture: firstEnum(
       result.hairType,
       ['straight', 'wavy', 'curly', 'coily'] as const,
@@ -216,4 +218,10 @@ export async function requestHairAnalysis(
     usedMock: obj.usedMock === true,
     dbSaveFailed: obj.dbSaveFailed === true,
   };
+  void trackAnalysisComplete(
+    'hair',
+    { status: 'completed', axesCompletedCount: 1, usedFallback: analysis.usedMock },
+    clerkToken
+  );
+  return analysis;
 }

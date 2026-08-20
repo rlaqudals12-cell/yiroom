@@ -11,13 +11,15 @@
 
 import { useAuth } from '@clerk/clerk-expo';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 
 import { AxisFallbackNotice, ColorPalette } from '@/components/analysis';
+import { ResultVerdictText } from '@/components/analysis/ResultVerdictText';
 import { PersonaShareSection } from '@/components/share';
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { fetchIssueNo } from '@/lib/api';
+import { trackAnalysisResultView } from '@/lib/analytics/tracker';
 import { extractPalette } from '@/lib/integrated/palette';
 import { resolvePersonaCardData } from '@/lib/share/card-data';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
@@ -59,6 +61,7 @@ const AXIS_LABELS: Record<AxisCode, string> = {
 
 export default function IntegratedResultScreen(): React.JSX.Element {
   const { colors } = useTheme();
+  const { getToken } = useAuth();
   const { sessionId, payload } = useLocalSearchParams<{
     sessionId: string;
     payload?: string;
@@ -79,6 +82,20 @@ export default function IntegratedResultScreen(): React.JSX.Element {
     typeof sessionId === 'string' ? sessionId : null,
     initialResult
   );
+  const resultSource = initialResult ? 'fresh' : 'history';
+  const resultSessionId = result?.sessionId ?? null;
+  const trackedResultViewRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!resultSessionId) return;
+    const viewKey = `${resultSessionId}:${resultSource}`;
+    if (trackedResultViewRef.current === viewKey) return;
+    trackedResultViewRef.current = viewKey;
+
+    void getToken()
+      .catch(() => null)
+      .then((token) => trackAnalysisResultView('integrated', resultSource, token));
+  }, [getToken, resultSessionId, resultSource]);
 
   // 왜: outfit 카드를 옷장 상태에 맞게 우회시키기 위해 비동기 조회
   const hasClosetItems = useHasClosetItems();
@@ -463,7 +480,7 @@ function PersonaNarrativeCard({ persona }: PersonaNarrativeCardProps): React.JSX
   return (
     <View style={styles.personaCard} testID="persona-narrative-card">
       <Text style={styles.personaLabel}>✨ 나 프로필</Text>
-      <Text style={[styles.personaOneLine, { color: colors.foreground }]}>{persona.oneLine}</Text>
+      <ResultVerdictText testID="integrated-result-verdict">{persona.oneLine}</ResultVerdictText>
       <Text style={[styles.personaNarrative, { color: colors.mutedForeground }]}>
         {persona.narrative}
       </Text>
@@ -761,11 +778,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 4,
-  },
-  personaOneLine: {
-    fontSize: typography.size.xl,
-    fontWeight: '800',
-    lineHeight: typography.size.xl * 1.3,
   },
   personaNarrative: {
     fontSize: typography.size.sm,

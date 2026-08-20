@@ -15,11 +15,13 @@
  */
 import { useRef, useState } from 'react';
 import { Pressable, Share, StyleSheet, Text, View, type View as ViewType } from 'react-native';
+import { useAuth } from '@clerk/clerk-expo';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import { Download, Share2 } from 'lucide-react-native';
 
 import { GlassCard } from '@/components/ui';
+import { trackAnalysisShare } from '@/lib/analytics/tracker';
 import { useTheme, radii, spacing, typography } from '@/lib/theme';
 import {
   CARD_WIDTH,
@@ -50,6 +52,7 @@ export function PersonaShareSection({
   serialNo,
 }: PersonaShareSectionProps): React.JSX.Element {
   const { colors, brand } = useTheme();
+  const { getToken } = useAuth();
   const cardRef = useRef<ViewType>(null);
   const [format, setFormat] = useState<PersonaCardFormat>('square');
   const [isBusy, setIsBusy] = useState(false);
@@ -79,6 +82,9 @@ export function PersonaShareSection({
         mimeType: 'image/png',
         dialogTitle: '내 컬러 카드 공유',
       });
+      void getToken()
+        .catch(() => null)
+        .then((token) => trackAnalysisShare('integrated', 'image', token));
     } catch {
       setMessage('카드 이미지를 만들지 못했어요. 다시 시도해주세요.');
     } finally {
@@ -89,9 +95,14 @@ export function PersonaShareSection({
   const handleTextShare = async (): Promise<void> => {
     try {
       // 텍스트 공유엔 링크가 실린다 — 이미지 시트가 링크를 버리는 타깃 대비 보조 경로
-      await Share.share({
+      const result = await Share.share({
         message: `${data.toneName ? `${data.toneName} — ` : ''}${data.oneLine}\n${SHARE_LANDING_URL}`,
       });
+      if (result.action === Share.sharedAction) {
+        void getToken()
+          .catch(() => null)
+          .then((token) => trackAnalysisShare('integrated', 'link', token));
+      }
     } catch {
       // 사용자가 시트를 닫은 경우 — 실패 아님
     }

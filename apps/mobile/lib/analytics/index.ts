@@ -22,7 +22,12 @@ export {
   flushEvents,
   trackPageView,
   trackFeatureUse,
+  trackAppStarted,
+  trackAnalysisStart,
   trackAnalysisComplete,
+  trackAnalysisResultView,
+  trackAnalysisShare,
+  trackOutfitSaved,
   trackWorkoutStart,
   trackWorkoutComplete,
   trackMealRecord,
@@ -35,6 +40,10 @@ export {
   trackAffiliateConversion,
   trackCustomEvent,
 } from './tracker';
+export type { MobileAnalysisType } from './tracker';
+
+// App lifecycle
+export { useAnalyticsLifecycle } from './lifecycle';
 
 // Stats
 export {

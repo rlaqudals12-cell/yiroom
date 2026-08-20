@@ -6,6 +6,13 @@
  * - 게이트(403)·검증(400) 에러의 서버 한국어 메시지 관통 (플랫 봉투)
  * - usedMock 정직 전달, 피부 타입을 못 읽으면 지어내지 않고 실패 처리
  */
+const mockTrackAnalysisStart = jest.fn();
+const mockTrackAnalysisComplete = jest.fn();
+jest.mock('@/lib/analytics/tracker', () => ({
+  trackAnalysisStart: (...args: unknown[]) => mockTrackAnalysisStart(...args),
+  trackAnalysisComplete: (...args: unknown[]) => mockTrackAnalysisComplete(...args),
+}));
+
 import { DEFAULT_API_BASE_URL } from '@/lib/api/base-url';
 import { requestSkinAnalysis, SkinApiError } from '@/lib/api/skin';
 
@@ -46,6 +53,8 @@ function successBody(overrides: Record<string, unknown> = {}) {
 }
 
 describe('requestSkinAnalysis', () => {
+  beforeEach(() => jest.clearAllMocks());
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -54,6 +63,13 @@ describe('requestSkinAnalysis', () => {
     mockFetchOnce(200, successBody());
 
     const result = await requestSkinAnalysis(VALID_INPUT, 'token-1', BASE_URL);
+
+    expect(mockTrackAnalysisStart).toHaveBeenCalledWith('skin', 'full', 'token-1');
+    expect(mockTrackAnalysisComplete).toHaveBeenCalledWith(
+      'skin',
+      { status: 'completed', axesCompletedCount: 1, usedFallback: false },
+      'token-1'
+    );
 
     // data.skin_type(서버 검증값)이 result.skinType(AI 원본)보다 우선
     expect(result.skinType).toBe('combination');
@@ -179,6 +195,16 @@ describe('requestSkinAnalysis', () => {
       if (originalYiroom !== undefined) process.env.EXPO_PUBLIC_YIROOM_API_URL = originalYiroom;
       if (originalApi !== undefined) process.env.EXPO_PUBLIC_API_URL = originalApi;
     }
+  });
+
+  it('API 실패에는 시작만 기록하고 완료는 기록하지 않는다', async () => {
+    mockFetchOnce(500, { success: false, error: 'failed' });
+
+    await expect(requestSkinAnalysis(VALID_INPUT, 'token-1', BASE_URL)).rejects.toBeInstanceOf(
+      SkinApiError
+    );
+    expect(mockTrackAnalysisStart).toHaveBeenCalledTimes(1);
+    expect(mockTrackAnalysisComplete).not.toHaveBeenCalled();
   });
 
   it('SkinApiError는 인스턴스 판별이 가능하다', () => {

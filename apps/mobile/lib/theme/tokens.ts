@@ -1,21 +1,24 @@
+import { Platform, type ViewStyle } from 'react-native';
+
 /**
  * 이룸 모바일 디자인 토큰
  *
- * 웹 globals.css (YIROOM IDENTITY v3, ADR-057)에서 추출한 값.
+ * 웹 globals.css와 ADR-120의 에디토리얼 지면 계약에서 추출한 값.
  * 모든 StyleSheet.create() 색상은 이 파일을 참조해야 합니다.
  */
 
 // 브랜드 프라이머리
 export const brand = {
-  primary: '#EC4899',
-  primaryForeground: '#FFFFFF',
-  gradientStart: '#EC4899',
-  gradientEnd: '#A855F7',
+  primary: '#C56A84',
+  primaryForeground: '#1C1C1E',
+  // 호출부 호환을 위해 gradient 키는 유지하되 ADR-120의 절제된 rose 단색으로 고정한다.
+  gradientStart: '#C56A84',
+  gradientEnd: '#C56A84',
 } as const;
 
 // 라이트 모드 시맨틱 색상 (웹 :root와 동일)
 export const lightColors = {
-  background: '#FDFCFB',
+  background: '#FBF3F1',
   foreground: '#1C1C1E',
   card: '#FFFFFF',
   cardForeground: '#1C1C1E',
@@ -32,7 +35,7 @@ export const lightColors = {
   overlayForeground: '#FFFFFF',
   border: '#E8E7E5',
   input: '#E8E7E5',
-  ring: '#EC4899',
+  ring: '#C56A84',
 } as const;
 
 // 다크 모드 시맨틱 색상 (웹 .dark와 동일)
@@ -119,45 +122,69 @@ export const radii = {
 // 아이콘 배경 투명도 (hex suffix, moduleColors.X.light + ICON_BG_OPACITY)
 export const ICON_BG_OPACITY = '30';
 
-// 그림자 (React Native 포맷, 웹 shadow 값과 매칭)
+// ADR-120: 크림 지면 위 웜 브라운 2층 깊이(rest/raised)만 사용한다.
+// React Native 0.81 + New Architecture의 다중 boxShadow를 웹 정본과 같은 값으로 맞춘다.
+const warmShadowRest = {
+  boxShadow: [
+    {
+      offsetX: 0,
+      offsetY: 1,
+      blurRadius: 2,
+      spreadDistance: 0,
+      color: 'rgba(93, 64, 55, 0.07)',
+    },
+    {
+      offsetX: 0,
+      offsetY: 8,
+      blurRadius: 24,
+      spreadDistance: 0,
+      color: 'rgba(93, 64, 55, 0.08)',
+    },
+  ],
+} as const;
+
+const warmShadowRaised = {
+  boxShadow: [
+    {
+      offsetX: 0,
+      offsetY: 2,
+      blurRadius: 4,
+      spreadDistance: 0,
+      color: 'rgba(93, 64, 55, 0.08)',
+    },
+    {
+      offsetX: 0,
+      offsetY: 16,
+      blurRadius: 40,
+      spreadDistance: 0,
+      color: 'rgba(93, 64, 55, 0.12)',
+    },
+  ],
+} as const;
+
+// Android 9(API 28) 미만은 RN boxShadow를 그리지 못한다. 신형 기기의 2층 섀도와
+// 중첩되지 않도록 구형 Android에서만 elevation으로 카드 깊이를 보존한다.
+export function needsLegacyAndroidShadow(os: string, version: string | number): boolean {
+  return os === 'android' && typeof version === 'number' && version < 28;
+}
+
+const isLegacyAndroidShadow = needsLegacyAndroidShadow(Platform.OS, Platform.Version);
+
+const legacyAndroidShadowRest = { elevation: 2 } as const;
+const legacyAndroidShadowRaised = { elevation: 5 } as const;
+
+const restShadow: ViewStyle = isLegacyAndroidShadow ? legacyAndroidShadowRest : warmShadowRest;
+const raisedShadow: ViewStyle = isLegacyAndroidShadow
+  ? legacyAndroidShadowRaised
+  : warmShadowRaised;
+
 export const shadows = {
-  sm: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
-  },
-  md: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  lg: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 5,
-  },
-  // 웹 shadow-xl 대응 — 대시보드 히어로, 피처드 카드에 사용
-  xl: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 8,
-  },
-  // 기본 카드 (웹 shadow 클래스 대응) — 전역 카드 그림자
-  card: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
-  },
+  sm: restShadow,
+  md: restShadow,
+  lg: raisedShadow,
+  // 호환 키는 유지하되 깊이 단계는 rest/raised 두 종류만 허용한다.
+  xl: raisedShadow,
+  card: restShadow,
 } as const;
 
 // 타이포그래피 (웹 Major Third 1.25 비율과 동일)

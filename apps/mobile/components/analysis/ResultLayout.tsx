@@ -12,9 +12,10 @@
  * D2-2: GradeDisplay 통합, 그라디언트 깊이 강화, 전문가 CTA 추가
  * D3: 적응형 애니메이션 + 다음 분석 추천 카드 추가
  */
+import { useAuth } from '@clerk/clerk-expo';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useCallback, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import {
   View,
   Text,
@@ -27,13 +28,15 @@ import {
 import Animated, { FadeInUp, FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { trackAnalysisResultView, type MobileAnalysisType } from '@/lib/analytics/tracker';
 import { TIMING, useAdaptiveAnimation } from '@/lib/animations';
-import { useTheme, typography, radii, borderGlow, spacing, trustColors } from '@/lib/theme';
-import { brand, moduleColors } from '@/lib/theme/tokens';
+import { useTheme, typography, radii, borderGlow, spacing } from '@/lib/theme';
+import { moduleColors } from '@/lib/theme/tokens';
 
 import { AnalysisResultButtons } from './AnalysisResultButtons';
 import { AnalysisTrustBadge, type TrustBadgeType } from './AnalysisTrustBadge';
 import { GradeDisplay } from './GradeDisplay';
+import { ResultVerdictText } from './ResultVerdictText';
 import { AITransparencyNotice } from '../common/AITransparencyNotice';
 import { MockDataNotice } from '../common/MockDataNotice';
 import { GradientCard } from '../ui/GradientCard';
@@ -42,6 +45,15 @@ import { TabView, type TabItem } from '../ui/TabView';
 
 /** 모듈 키에 따른 악센트 색상 가져오기 */
 type ModuleKey = keyof typeof moduleColors;
+
+/** 실제 서비스 중인 5축 결과만 조회 이벤트로 집계한다. 숨김 모듈은 날조하지 않는다. */
+const RESULT_ANALYSIS_TYPES: Partial<Record<ModuleKey, MobileAnalysisType>> = {
+  personalColor: 'personal-color',
+  skin: 'skin',
+  body: 'body',
+  hair: 'hair',
+  makeup: 'makeup',
+};
 
 /** GradientCard variant 매핑 (moduleKey → GradientCard variant) */
 const MODULE_TO_VARIANT: Record<string, string> = {
@@ -127,6 +139,8 @@ export interface ResultLayoutProps {
   moduleKey: ModuleKey;
   /** 결과 화면 제목 (헤더 표시) */
   title: string;
+  /** 분석 데이터가 직접 제공하는 핵심 결론 */
+  verdict: string;
   /** 분석한 이미지 URI */
   imageUri?: string;
   /** 이미지 스타일 (원형, 직사각형 등 모듈별 다름) */
@@ -158,6 +172,7 @@ export interface ResultLayoutProps {
 export function ResultLayout({
   moduleKey,
   title,
+  verdict,
   imageUri,
   imageStyle,
   headerContent,
@@ -173,8 +188,28 @@ export function ResultLayout({
   retryPath,
   testID = 'analysis-result-layout',
 }: ResultLayoutProps): React.JSX.Element {
-  const { colors, isDark, spacing, radii, typography, brand } = useTheme();
+  const { colors, isDark, radii, typography, brand } = useTheme();
+  const { getToken, isSignedIn } = useAuth();
   const accent = moduleColors[moduleKey];
+  const analysisType = RESULT_ANALYSIS_TYPES[moduleKey];
+  const trackedResultTypeRef = useRef<MobileAnalysisType | null>(null);
+
+  useEffect(() => {
+    if (!isSignedIn || !analysisType || trackedResultTypeRef.current === analysisType) return;
+
+    let cancelled = false;
+    void getToken()
+      .then((token) => {
+        if (cancelled || !token || trackedResultTypeRef.current === analysisType) return;
+        trackedResultTypeRef.current = analysisType;
+        void trackAnalysisResultView(analysisType, 'result-screen', token);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [analysisType, getToken, isSignedIn]);
 
   // 접근성: 동작 줄이기 설정 시 entering 애니메이션 생략
   const { shouldAnimate } = useAdaptiveAnimation();
@@ -244,8 +279,14 @@ export function ResultLayout({
             </GradientText>
           </Animated.View>
 
+          <Animated.View entering={shouldAnimate ? FadeIn.duration(TIMING.normal) : undefined}>
+            <ResultVerdictText testID={`${testID}-verdict`}>{verdict}</ResultVerdictText>
+          </Animated.View>
+
           {/* 신뢰도 배지 */}
-          <Animated.View entering={shouldAnimate ? FadeIn.delay(100).duration(TIMING.normal) : undefined}>
+          <Animated.View
+            entering={shouldAnimate ? FadeIn.delay(100).duration(TIMING.normal) : undefined}
+          >
             <AnalysisTrustBadge type={trustBadgeType} confidence={confidence} />
           </Animated.View>
 
@@ -275,7 +316,9 @@ export function ResultLayout({
 
           {/* 헤더 콘텐츠 (점수, 타입 배지 등) */}
           {headerContent && (
-            <Animated.View entering={shouldAnimate ? FadeInUp.delay(300).duration(TIMING.slow) : undefined}>
+            <Animated.View
+              entering={shouldAnimate ? FadeInUp.delay(300).duration(TIMING.slow) : undefined}
+            >
               {headerContent}
             </Animated.View>
           )}
@@ -314,10 +357,7 @@ export function ResultLayout({
             entering={shouldAnimate ? FadeInUp.delay(180).duration(TIMING.normal) : undefined}
             style={styles.nextAnalysisContainer}
           >
-            <GradientCard
-              variant={cardVariant}
-              testID={`${testID}-next-analysis`}
-            >
+            <GradientCard variant={cardVariant} testID={`${testID}-next-analysis`}>
               <Pressable
                 onPress={handleNextAnalysis}
                 style={styles.nextAnalysisContent}

@@ -5,6 +5,7 @@
  * 테스트 범위: 기본 렌더링, 로딩 상태, 저장 버튼 표시
  */
 import React from 'react';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 
 // -------------------------------------------------------------------
 // Mocks
@@ -20,21 +21,45 @@ jest.mock('react-native-reanimated', () => {
   return {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: unknown) => c },
-    FadeInUp: createChainable(), FadeIn: createChainable(), FadeInDown: createChainable(),
-    ZoomIn: createChainable(), SlideInRight: createChainable(), SlideInLeft: createChainable(),
-    Easing: { out: () => ({}), exp: {}, bezier: () => ({}), linear: {}, ease: {}, in: () => ({}), inOut: () => ({}) },
+    FadeInUp: createChainable(),
+    FadeIn: createChainable(),
+    FadeInDown: createChainable(),
+    ZoomIn: createChainable(),
+    SlideInRight: createChainable(),
+    SlideInLeft: createChainable(),
+    Easing: {
+      out: () => ({}),
+      exp: {},
+      bezier: () => ({}),
+      linear: {},
+      ease: {},
+      in: () => ({}),
+      inOut: () => ({}),
+    },
     useSharedValue: (v: unknown) => ({ value: v }),
     useAnimatedStyle: () => ({}),
-    withTiming: (v: unknown) => v, withSpring: (v: unknown) => v, withDelay: (_d: unknown, v: unknown) => v,
+    withTiming: (v: unknown) => v,
+    withSpring: (v: unknown) => v,
+    withDelay: (_d: unknown, v: unknown) => v,
   };
 });
 
 jest.mock('expo-linear-gradient', () => ({ LinearGradient: 'LinearGradient' }));
-jest.mock('expo-haptics', () => ({ impactAsync: jest.fn(), selectionAsync: jest.fn(), ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' } }));
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  selectionAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
+}));
 jest.mock('react-native-safe-area-context', () => {
   const { View } = require('react-native');
   return {
-    SafeAreaView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <View {...props}>{children}</View>,
+    SafeAreaView: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <View {...props}>{children}</View>,
     useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
   };
 });
@@ -58,6 +83,7 @@ jest.mock('../../../lib/animations', () => ({
 
 const mockUseCloset = jest.fn();
 const mockUseSavedOutfits = jest.fn();
+const mockSaveOutfit = jest.fn();
 
 jest.mock('../../../lib/inventory/useInventory', () => ({
   useCloset: (...args: unknown[]) => mockUseCloset(...args),
@@ -75,22 +101,37 @@ jest.mock('../../../lib/inventory/types', () => ({
     accessory: ['모자'],
   },
   CLOTHING_CATEGORY_LABELS: {
-    outer: '아우터', top: '상의', bottom: '하의', dress: '원피스',
-    shoes: '신발', bag: '가방', accessory: '액세서리',
+    outer: '아우터',
+    top: '상의',
+    bottom: '하의',
+    dress: '원피스',
+    shoes: '신발',
+    bag: '가방',
+    accessory: '액세서리',
   },
   SEASON_LABELS: { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' },
   OCCASION_LABELS: {
-    casual: '캐주얼', work: '출근', date: '데이트', travel: '여행',
-    formal: '포멀', sports: '운동',
+    casual: '캐주얼',
+    work: '출근',
+    date: '데이트',
+    travel: '여행',
+    formal: '포멀',
+    sports: '운동',
   },
 }));
 
 jest.mock('../../../lib/theme', () => ({
   useTheme: () => ({
     colors: {
-      background: '#fff', foreground: '#000', card: '#f5f5f5', border: '#e0e0e0',
-      mutedForeground: '#888', muted: '#ccc', secondary: '#f0f0f0',
-      overlayForeground: '#fff', destructive: '#ff0000',
+      background: '#fff',
+      foreground: '#000',
+      card: '#f5f5f5',
+      border: '#e0e0e0',
+      mutedForeground: '#888',
+      muted: '#ccc',
+      secondary: '#f0f0f0',
+      overlayForeground: '#fff',
+      destructive: '#ff0000',
     },
     brand: { primary: '#6366f1', primaryForeground: '#fff' },
     isDark: false,
@@ -107,8 +148,12 @@ jest.mock('../../../lib/theme', () => ({
 jest.mock('../../../components/ui', () => {
   const { View } = require('react-native');
   return {
-    ScreenContainer: ({ children, testID }: { children: React.ReactNode; testID?: string }) => <View testID={testID}>{children}</View>,
-    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <View {...props}>{children}</View>,
+    ScreenContainer: ({ children, testID }: { children: React.ReactNode; testID?: string }) => (
+      <View testID={testID}>{children}</View>
+    ),
+    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
     SuccessCheckmark: () => null,
   };
 });
@@ -141,7 +186,7 @@ function setupDefaults(overrides?: { isLoading?: boolean; items?: unknown[] }) {
     outfits: [],
     isLoading: false,
     error: null,
-    saveOutfit: jest.fn().mockResolvedValue({ id: 'outfit-1' }),
+    saveOutfit: mockSaveOutfit.mockResolvedValue({ id: 'outfit-1' }),
     deleteOutfit: jest.fn(),
     recordWear: jest.fn(),
     refetch: jest.fn(),
@@ -173,5 +218,22 @@ describe('OutfitBuilderScreen 렌더링', () => {
     const { getByText } = renderWithTheme(<OutfitBuilderScreen />);
     expect(getByText('아이템 선택')).toBeTruthy();
     expect(getByText('코디 저장 (0개)')).toBeTruthy();
+  });
+
+  it('저장 호출에 builder 출처를 두 번째 인자로 전달한다', async () => {
+    setupDefaults({
+      items: [
+        { id: 'top-1', name: '상의 A', subCategory: 'top', metadata: {}, imageUrl: '' },
+        { id: 'top-2', name: '상의 B', subCategory: 'top', metadata: {}, imageUrl: '' },
+      ],
+    });
+    const { getByText } = renderWithTheme(<OutfitBuilderScreen />);
+
+    fireEvent.press(getByText('상의 A'));
+    fireEvent.press(getByText('상의 B'));
+    fireEvent.press(getByText('코디 저장 (2개)'));
+
+    await waitFor(() => expect(mockSaveOutfit).toHaveBeenCalledTimes(1));
+    expect(mockSaveOutfit.mock.calls[0][1]).toBe('builder');
   });
 });

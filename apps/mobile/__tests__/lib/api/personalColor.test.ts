@@ -6,6 +6,13 @@
  * - 신뢰도 0~100 → 0~1 정규화
  * - 게이트(403) 서버 한국어 메시지 관통, 시즌 못 읽으면 실패 처리
  */
+const mockTrackAnalysisStart = jest.fn();
+const mockTrackAnalysisComplete = jest.fn();
+jest.mock('@/lib/analytics/tracker', () => ({
+  trackAnalysisStart: (...args: unknown[]) => mockTrackAnalysisStart(...args),
+  trackAnalysisComplete: (...args: unknown[]) => mockTrackAnalysisComplete(...args),
+}));
+
 import { DEFAULT_API_BASE_URL } from '@/lib/api/base-url';
 import { requestPersonalColorAnalysis, PersonalColorApiError } from '@/lib/api/personalColor';
 
@@ -39,6 +46,8 @@ function successBody(overrides: Record<string, unknown> = {}) {
 }
 
 describe('requestPersonalColorAnalysis', () => {
+  beforeEach(() => jest.clearAllMocks());
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -47,6 +56,13 @@ describe('requestPersonalColorAnalysis', () => {
     mockFetchOnce(200, successBody());
 
     const result = await requestPersonalColorAnalysis(VALID_INPUT, 'token-1', BASE_URL);
+
+    expect(mockTrackAnalysisStart).toHaveBeenCalledWith('personal-color', 'full', 'token-1');
+    expect(mockTrackAnalysisComplete).toHaveBeenCalledWith(
+      'personal-color',
+      { status: 'completed', axesCompletedCount: 1, usedFallback: false },
+      'token-1'
+    );
 
     expect(result.season).toBe('Spring');
     expect(result.confidence).toBeCloseTo(0.88);
@@ -189,6 +205,16 @@ describe('requestPersonalColorAnalysis', () => {
       if (originalYiroom !== undefined) process.env.EXPO_PUBLIC_YIROOM_API_URL = originalYiroom;
       if (originalApi !== undefined) process.env.EXPO_PUBLIC_API_URL = originalApi;
     }
+  });
+
+  it('API 실패에는 시작만 기록하고 완료는 기록하지 않는다', async () => {
+    mockFetchOnce(500, { success: false, error: 'failed' });
+
+    await expect(
+      requestPersonalColorAnalysis(VALID_INPUT, 'token-1', BASE_URL)
+    ).rejects.toBeInstanceOf(PersonalColorApiError);
+    expect(mockTrackAnalysisStart).toHaveBeenCalledTimes(1);
+    expect(mockTrackAnalysisComplete).not.toHaveBeenCalled();
   });
 
   it('PersonalColorApiError는 인스턴스 판별이 가능하다', () => {

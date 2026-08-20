@@ -10,7 +10,12 @@
 import fs from 'fs';
 import path from 'path';
 
-import { getApiBaseUrl, getWebHostLabel, DEFAULT_API_BASE_URL } from '@/lib/api/base-url';
+import {
+  getApiBaseUrl,
+  getWebHostLabel,
+  hasConfiguredApiBaseUrl,
+  DEFAULT_API_BASE_URL,
+} from '@/lib/api/base-url';
 
 /**
  * env 이름·호스트를 리터럴로 적지 않고 런타임 조립한다.
@@ -97,6 +102,16 @@ describe('getApiBaseUrl 정규화', () => {
     process.env[ENV_YIROOM] = '  https://env-yiroom.test  ';
 
     expect(getApiBaseUrl()).toBe('https://env-yiroom.test');
+  });
+});
+
+describe('hasConfiguredApiBaseUrl', () => {
+  it('공백 env는 미설정, 유효한 두 env 중 하나라도 있으면 설정으로 판정한다', () => {
+    process.env[ENV_YIROOM] = '   ';
+    expect(hasConfiguredApiBaseUrl()).toBe(false);
+
+    process.env[ENV_GENERIC] = 'https://preview.example';
+    expect(hasConfiguredApiBaseUrl()).toBe(true);
   });
 });
 

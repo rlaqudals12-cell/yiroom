@@ -16,6 +16,7 @@
  * @see apps/web/lib/mock/makeup-analysis.ts (응답 필드·enum 정본)
  * @see docs/adr/ADR-118 (웹 API 정본 + 모바일 thin client)
  */
+import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
 
@@ -192,6 +193,7 @@ export async function requestMakeupAnalysis(
   baseUrl?: string
 ): Promise<MakeupAnalysisApiResult> {
   const url = getApiBaseUrl(baseUrl);
+  void trackAnalysisStart('makeup', 'full', clerkToken);
 
   let response: Response;
   try {
@@ -245,7 +247,7 @@ export async function requestMakeupAnalysis(
       ? `${blushNames.slice(0, 2).join(', ')} 계열 블러셔를 볼 중앙에 은은하게 올려주세요`
       : '볼 중앙에 은은하게 블러셔를 올려 화사함을 더하세요';
 
-  return {
+  const analysis: MakeupAnalysisApiResult = {
     faceShape: firstEnum(
       result.faceShape,
       ['oval', 'round', 'square', 'heart', 'oblong', 'diamond'] as const,
@@ -272,4 +274,10 @@ export async function requestMakeupAnalysis(
     usedMock: obj.usedMock === true,
     dbSaveFailed: obj.dbSaveFailed === true,
   };
+  void trackAnalysisComplete(
+    'makeup',
+    { status: 'completed', axesCompletedCount: 1, usedFallback: analysis.usedMock },
+    clerkToken
+  );
+  return analysis;
 }

@@ -12,6 +12,7 @@
  * @see docs/adr/ADR-118 (웹 API 정본 + 모바일 thin client)
  */
 
+import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
 
@@ -127,6 +128,7 @@ export async function requestBodyAnalysis(
   baseUrl?: string
 ): Promise<BodyAnalysisApiResult> {
   const url = getApiBaseUrl(baseUrl);
+  void trackAnalysisStart('body', 'full', clerkToken);
 
   let response: Response;
   try {
@@ -181,7 +183,7 @@ export async function requestBodyAnalysis(
     );
   }
 
-  return {
+  const analysis: BodyAnalysisApiResult = {
     bodyType,
     bodyTypeLabel:
       typeof result.bodyTypeLabel === 'string' && result.bodyTypeLabel
@@ -197,4 +199,10 @@ export async function requestBodyAnalysis(
     usedMock: obj.usedMock === true,
     dbSaveFailed: obj.dbSaveFailed === true,
   };
+  void trackAnalysisComplete(
+    'body',
+    { status: 'completed', axesCompletedCount: 1, usedFallback: analysis.usedMock },
+    clerkToken
+  );
+  return analysis;
 }

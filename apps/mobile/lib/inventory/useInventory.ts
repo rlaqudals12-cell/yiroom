@@ -3,11 +3,12 @@
  * 옷장, 뷰티, 운동장비, 영양제, 냉장고 관리
  */
 
-import { useUser } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../supabase';
+import { trackOutfitSaved } from '../analytics/tracker';
 import { resolveClothingCategory } from './clothingCategory';
 import { resolveInventoryImageUrl, signInventoryImagePaths } from './image-url';
 import type {
@@ -283,7 +284,8 @@ interface UseSavedOutfitsResult {
   error: string | null;
   refetch: () => Promise<void>;
   saveOutfit: (
-    outfit: Omit<SavedOutfit, 'id' | 'clerkUserId' | 'createdAt' | 'updatedAt'>
+    outfit: Omit<SavedOutfit, 'id' | 'clerkUserId' | 'createdAt' | 'updatedAt'>,
+    analyticsSource?: 'recommendation' | 'builder'
   ) => Promise<SavedOutfit | null>;
   updateOutfit: (
     id: string,
@@ -296,6 +298,7 @@ interface UseSavedOutfitsResult {
 
 export function useSavedOutfits(): UseSavedOutfitsResult {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
 
   const [outfits, setOutfits] = useState<SavedOutfit[]>([]);
@@ -332,7 +335,8 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
 
   const saveOutfit = useCallback(
     async (
-      outfit: Omit<SavedOutfit, 'id' | 'clerkUserId' | 'createdAt' | 'updatedAt'>
+      outfit: Omit<SavedOutfit, 'id' | 'clerkUserId' | 'createdAt' | 'updatedAt'>,
+      analyticsSource?: 'recommendation' | 'builder'
     ): Promise<SavedOutfit | null> => {
       if (!user?.id || !supabase) return null;
 
@@ -357,13 +361,18 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
 
         const newOutfit = rowToSavedOutfit(data as SavedOutfitRow);
         setOutfits((prev) => [newOutfit, ...prev]);
+        if (analyticsSource) {
+          void getToken()
+            .catch(() => null)
+            .then((token) => trackOutfitSaved(analyticsSource, outfit.itemIds.length, token));
+        }
         return newOutfit;
       } catch (err) {
         closetLogger.error(' saveOutfit error:', err);
         return null;
       }
     },
-    [user?.id, supabase]
+    [getToken, user?.id, supabase]
   );
 
   const deleteOutfit = useCallback(

@@ -181,9 +181,6 @@ export default function MakeupResultScreen() {
       {result.dbSaveFailed && (
         <AnalysisSaveFailureNotice onRetry={() => router.replace('/(analysis)/makeup')} />
       )}
-      <Text style={[localStyles.typeName, { color: accent.base }]}>
-        {FACE_SHAPE_LABELS[result.faceShape]} / {UNDERTONE_LABELS[result.undertone]}
-      </Text>
       <Text style={[localStyles.subInfo, { color: colors.mutedForeground }]}>
         {EYE_SHAPE_LABELS[result.eyeShape]} · {LIP_SHAPE_LABELS[result.lipShape]}
       </Text>
@@ -327,6 +324,7 @@ export default function MakeupResultScreen() {
       <ResultLayout
         moduleKey="makeup"
         title="메이크업 분석 결과"
+        verdict={`${FACE_SHAPE_LABELS[result.faceShape]} / ${UNDERTONE_LABELS[result.undertone]}`}
         imageUri={imageUri}
         imageStyle={localStyles.makeupImage}
         headerContent={headerContent}
@@ -348,10 +346,6 @@ const localStyles = StyleSheet.create({
   headerContent: {
     alignItems: 'center',
     gap: spacing.xs,
-  },
-  typeName: {
-    fontSize: 22,
-    fontWeight: typography.weight.bold,
   },
   subInfo: {
     fontSize: typography.size.sm,

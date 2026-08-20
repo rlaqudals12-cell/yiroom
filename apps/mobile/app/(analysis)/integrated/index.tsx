@@ -24,6 +24,7 @@ import {
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
+import { trackAnalysisComplete, trackAnalysisStart } from '@/lib/analytics/tracker';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import {
   requestIntegratedAnalysis,
@@ -317,7 +318,17 @@ function IntegratedAnalysisForm(): React.JSX.Element {
       // 재시도 재진입 시 사진 재선택을 없애기 위해 직전 제출 이미지를 인메모리로만 보관(디스크 금지).
       rememberSubmission(faceImage, bodyImage ?? null);
 
+      void trackAnalysisStart('integrated', isPartialUpdate ? 'update' : 'full', token);
       const result = await requestIntegratedAnalysis(input, token);
+      void trackAnalysisComplete(
+        'integrated',
+        {
+          status: result.status,
+          axesCompletedCount: result.axesCompleted.length,
+          usedFallback: result.usedFallback.length > 0,
+        },
+        token
+      );
 
       // 왜: v1 MVP는 POST 응답을 결과 화면에 직접 전달 (재방문 조회는 Phase D.2)
       // Expo Router typed routes 회피를 위해 문자열 경로 + 캐스팅

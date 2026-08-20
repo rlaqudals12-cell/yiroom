@@ -135,9 +135,9 @@ describe('contrast utilities', () => {
   });
 
   describe('브랜드 색상 대비 검증', () => {
-    it('brand.primaryForeground on brand.primary — AA large 통과', () => {
+    it('brand.primaryForeground on brand.primary — AA normal 통과', () => {
       expect(
-        meetsWcagAA(brand.primaryForeground, brand.primary, 'large')
+        meetsWcagAA(brand.primaryForeground, brand.primary, 'normal')
       ).toBe(true);
     });
   });

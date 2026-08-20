@@ -299,7 +299,6 @@ export default function SkinResultScreen() {
           showPreviousScore={previousScore !== null}
         />
       )}
-      <Text style={[localStyles.typeName, { color: accent.base }]}>{typeData.name}</Text>
     </View>
   );
 
@@ -443,6 +442,7 @@ export default function SkinResultScreen() {
       <ResultLayout
         moduleKey="skin"
         title="피부 분석 결과"
+        verdict={typeData.name}
         imageUri={imageUri}
         imageStyle={localStyles.skinImage}
         headerContent={headerContent}
@@ -464,11 +464,6 @@ const localStyles = StyleSheet.create({
   headerContent: {
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  typeName: {
-    fontSize: 22,
-    fontWeight: typography.weight.bold,
-    marginTop: spacing.xs,
   },
   skinImage: {
     width: 100,

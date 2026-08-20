@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
@@ -188,56 +188,52 @@ describe('ScreenContainer', () => {
     });
   });
 
-  describe('backgroundGradient', () => {
-    it('backgroundGradient="home"으로 에러 없이 렌더링되어야 한다', () => {
-      const { getByText } = renderWithTheme(
-        <ScreenContainer backgroundGradient="home">
-          <Text>홈 그라디언트</Text>
+  describe('단색 지면', () => {
+    it.each([
+      'home',
+      'beauty',
+      'style',
+      'records',
+      'profile',
+      'nutrition',
+      'workout',
+      'analysis',
+      'social',
+    ] as const)(
+      '라이트 모드의 호환 prop %s가 크림 지면을 바꾸지 않아야 한다',
+      (backgroundGradient) => {
+        const { getByTestId } = renderWithTheme(
+          <ScreenContainer backgroundGradient={backgroundGradient}>
+            <Text>크림 지면</Text>
+          </ScreenContainer>
+        );
+
+        const style = StyleSheet.flatten(getByTestId('screen-container').props.style);
+        expect(style.backgroundColor).toBe(lightColors.background);
+      }
+    );
+
+    it('scrollable=false에서도 크림 단색 지면을 사용해야 한다', () => {
+      const { getByTestId } = renderWithTheme(
+        <ScreenContainer scrollable={false} backgroundGradient="records">
+          <Text>비스크롤 지면</Text>
         </ScreenContainer>
       );
 
-      expect(getByText('홈 그라디언트')).toBeTruthy();
+      const style = StyleSheet.flatten(getByTestId('screen-container').props.style);
+      expect(style.backgroundColor).toBe(lightColors.background);
     });
 
-    it('backgroundGradient="beauty"로 에러 없이 렌더링되어야 한다', () => {
-      const { getByText } = renderWithTheme(
-        <ScreenContainer backgroundGradient="beauty">
-          <Text>뷰티 그라디언트</Text>
-        </ScreenContainer>
-      );
-
-      expect(getByText('뷰티 그라디언트')).toBeTruthy();
-    });
-
-    it('다크 모드에서 backgroundGradient가 에러 없이 렌더링되어야 한다', () => {
-      const { getByText } = renderWithTheme(
+    it('다크 모드의 호환 prop은 기존 다크 지면을 바꾸지 않아야 한다', () => {
+      const { getByTestId } = renderWithTheme(
         <ScreenContainer backgroundGradient="profile">
-          <Text>다크 프로필</Text>
+          <Text>다크 지면</Text>
         </ScreenContainer>,
         true
       );
 
-      expect(getByText('다크 프로필')).toBeTruthy();
-    });
-
-    it('scrollable=false에서도 backgroundGradient가 적용되어야 한다', () => {
-      const { getByText } = renderWithTheme(
-        <ScreenContainer scrollable={false} backgroundGradient="records">
-          <Text>비스크롤 그라디언트</Text>
-        </ScreenContainer>
-      );
-
-      expect(getByText('비스크롤 그라디언트')).toBeTruthy();
-    });
-
-    it('backgroundGradient 없이도 정상 렌더링되어야 한다', () => {
-      const { getByText } = renderWithTheme(
-        <ScreenContainer>
-          <Text>기본 화면</Text>
-        </ScreenContainer>
-      );
-
-      expect(getByText('기본 화면')).toBeTruthy();
+      const style = StyleSheet.flatten(getByTestId('screen-container').props.style);
+      expect(style.backgroundColor).toBe(darkColors.background);
     });
   });
 

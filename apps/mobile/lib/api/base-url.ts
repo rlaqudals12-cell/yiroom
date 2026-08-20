@@ -44,6 +44,14 @@ function normalizeCandidate(value: string | undefined): string | undefined {
   return trimmed.replace(/\/+$/, '');
 }
 
+/** 개발·프리뷰가 프로덕션 폴백을 쓰는지 판별할 때 쓰는 env 정본 조회. */
+export function hasConfiguredApiBaseUrl(): boolean {
+  return Boolean(
+    normalizeCandidate(process.env.EXPO_PUBLIC_YIROOM_API_URL) ??
+    normalizeCandidate(process.env.EXPO_PUBLIC_API_URL)
+  );
+}
+
 /**
  * 웹 API base URL을 해석한다. 어떤 경우에도 실패하지 않는다(항상 사용 가능한 URL 반환).
  *

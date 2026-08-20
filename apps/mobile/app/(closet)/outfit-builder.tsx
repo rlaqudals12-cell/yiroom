@@ -126,16 +126,19 @@ export default function OutfitBuilderScreen(): React.JSX.Element {
       outfitName.trim() ||
       `${new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} 코디`;
 
-    const result = await saveOutfit({
-      name,
-      description: null,
-      itemIds: Array.from(selectedIds),
-      collageImageUrl: null,
-      occasion,
-      season: seasons.length > 0 ? seasons : getCurrentSeasons(),
-      wearCount: 0,
-      lastWornAt: null,
-    });
+    const result = await saveOutfit(
+      {
+        name,
+        description: null,
+        itemIds: Array.from(selectedIds),
+        collageImageUrl: null,
+        occasion,
+        season: seasons.length > 0 ? seasons : getCurrentSeasons(),
+        wearCount: 0,
+        lastWornAt: null,
+      },
+      'builder'
+    );
 
     setIsSaving(false);
 

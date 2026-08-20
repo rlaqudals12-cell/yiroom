@@ -13,14 +13,11 @@
  * - 다크 모드
  */
 import React from 'react';
-import { View, Text } from 'react-native';
-import { render, fireEvent } from '@testing-library/react-native';
+import { StyleSheet, View, Text } from 'react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 import { ResultLayout } from '../../../components/analysis/ResultLayout';
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -44,12 +41,29 @@ import {
 // expo-router
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
+const mockGetToken = jest.fn().mockResolvedValue('clerk-token');
+const mockTrackAnalysisResultView = jest.fn();
+
+jest.mock('@clerk/clerk-expo', () => ({
+  useAuth: () => ({ getToken: mockGetToken, isSignedIn: true }),
+}));
+
+jest.mock('@/lib/analytics/tracker', () => ({
+  trackAnalysisResultView: (...args: unknown[]) => mockTrackAnalysisResultView(...args),
+}));
+
 jest.mock('expo-router', () => ({
   router: {
     replace: (...args: unknown[]) => mockReplace(...args),
     push: (...args: unknown[]) => mockPush(...args),
   },
 }));
+
+jest.mock('expo-font', () => ({
+  useFonts: jest.fn(() => [true, null]),
+}));
+
+const mockUseFonts = jest.requireMock('expo-font').useFonts as jest.Mock;
 
 // react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {
@@ -67,14 +81,19 @@ jest.mock('../../../components/ui/TabView', () => {
   const RN = require('react-native');
   const R = require('react');
   return {
-    TabView: (props: { tabs: Array<{ key: string; title: string; content: unknown }>; testID?: string }) =>
+    TabView: (props: {
+      tabs: Array<{ key: string; title: string; content: unknown }>;
+      testID?: string;
+    }) =>
       R.createElement(
         RN.View,
         { testID: props.testID || 'tab-view' },
         props.tabs.map((tab: { key: string; title: string; content: unknown }) =>
-          R.createElement(RN.View, { key: tab.key, testID: `tab-${tab.key}` },
+          R.createElement(
+            RN.View,
+            { key: tab.key, testID: `tab-${tab.key}` },
             R.createElement(RN.Text, null, tab.title),
-            tab.content,
+            tab.content
           )
         )
       ),
@@ -164,9 +183,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -178,6 +195,7 @@ function createDefaultProps(overrides: Partial<React.ComponentProps<typeof Resul
   return {
     moduleKey: 'skin' as const,
     title: '피부 분석 결과',
+    verdict: '민감성 피부',
     trustBadgeType: 'ai' as const,
     summaryTab: <View testID="summary-tab" />,
     detailTab: <View testID="detail-tab" />,
@@ -196,6 +214,8 @@ function createDefaultProps(overrides: Partial<React.ComponentProps<typeof Resul
 describe('ResultLayout 컴포넌트', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetToken.mockResolvedValue('clerk-token');
+    mockUseFonts.mockReturnValue([true, null]);
   });
 
   // --------------------------------------------------------
@@ -203,9 +223,7 @@ describe('ResultLayout 컴포넌트', () => {
   // --------------------------------------------------------
   describe('기본 렌더링', () => {
     it('필수 props로 정상 렌더링되어야 한다', () => {
-      const { getByTestId } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
+      const { getByTestId } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
       expect(getByTestId('analysis-result-layout')).toBeTruthy();
     });
 
@@ -240,14 +258,74 @@ describe('ResultLayout 컴포넌트', () => {
     });
   });
 
+  describe('결론 히어로', () => {
+    it('데이터 기반 verdict를 공용 세리프 텍스트로 표시해야 한다', () => {
+      const { getByTestId, getByText } = renderWithTheme(
+        <ResultLayout {...createDefaultProps({ verdict: '민감성 피부' })} />
+      );
+
+      expect(getByText('민감성 피부')).toBeTruthy();
+      const verdict = getByTestId('analysis-result-layout-verdict');
+      const style = StyleSheet.flatten(verdict.props.style);
+      expect(style.fontFamily).toBe('NotoSerifKR_600SemiBold');
+    });
+
+    it('정적 세리프 weight 위에 fontWeight를 중첩하지 않아야 한다', () => {
+      const { getByTestId } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
+
+      const verdict = getByTestId('analysis-result-layout-verdict');
+      const style = StyleSheet.flatten(verdict.props.style);
+      expect(style.fontWeight).toBeUndefined();
+    });
+
+    it('폰트가 로딩 중이어도 결론을 숨기지 않고 시스템 글꼴로 표시해야 한다', () => {
+      mockUseFonts.mockReturnValue([false, null]);
+
+      const { getByTestId, getByText } = renderWithTheme(
+        <ResultLayout {...createDefaultProps({ verdict: '민감성 피부' })} />
+      );
+
+      expect(getByText('민감성 피부')).toBeTruthy();
+      const style = StyleSheet.flatten(getByTestId('analysis-result-layout-verdict').props.style);
+      expect(style.fontFamily).toBeUndefined();
+    });
+  });
+
+  describe('결과 조회 계측', () => {
+    it.each([
+      ['personalColor', 'personal-color'],
+      ['skin', 'skin'],
+      ['body', 'body'],
+      ['hair', 'hair'],
+      ['makeup', 'makeup'],
+    ] as const)('%s 결과를 실제 라우트 축으로 한 번 기록한다', async (moduleKey, analysisType) => {
+      renderWithTheme(<ResultLayout {...createDefaultProps({ moduleKey })} />);
+
+      await waitFor(() => {
+        expect(mockTrackAnalysisResultView).toHaveBeenCalledTimes(1);
+        expect(mockTrackAnalysisResultView).toHaveBeenCalledWith(
+          analysisType,
+          'result-screen',
+          'clerk-token'
+        );
+      });
+    });
+
+    it('서비스 결과 축이 아닌 숨김 모듈은 조회 이벤트를 만들지 않는다', async () => {
+      renderWithTheme(<ResultLayout {...createDefaultProps({ moduleKey: 'oralHealth' })} />);
+
+      await Promise.resolve();
+      expect(mockTrackAnalysisResultView).not.toHaveBeenCalled();
+      expect(mockGetToken).not.toHaveBeenCalled();
+    });
+  });
+
   // --------------------------------------------------------
   // 신뢰도 배지 (AnalysisTrustBadge)
   // --------------------------------------------------------
   describe('신뢰도 배지 렌더링', () => {
     it('AnalysisTrustBadge가 렌더링되어야 한다', () => {
-      const { getByTestId } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
+      const { getByTestId } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
       expect(getByTestId('analysis-trust-badge')).toBeTruthy();
     });
   });
@@ -290,9 +368,7 @@ describe('ResultLayout 컴포넌트', () => {
 
     it('showGrade=false이면 confidence가 있어도 GradeDisplay가 렌더링되지 않아야 한다', () => {
       const { queryByTestId } = renderWithTheme(
-        <ResultLayout
-          {...createDefaultProps({ confidence: 0.9, showGrade: false })}
-        />
+        <ResultLayout {...createDefaultProps({ confidence: 0.9, showGrade: false })} />
       );
       expect(queryByTestId('analysis-result-layout-grade')).toBeNull();
     });
@@ -303,33 +379,23 @@ describe('ResultLayout 컴포넌트', () => {
   // --------------------------------------------------------
   describe('전문가 상담 CTA 카드', () => {
     it('전문가 상담 CTA 카드가 렌더링되어야 한다', () => {
-      const { getByTestId } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
+      const { getByTestId } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
       expect(getByTestId('analysis-result-layout-expert-cta')).toBeTruthy();
     });
 
     it('CTA 카드에 상담 안내 텍스트가 표시되어야 한다', () => {
-      const { getByText } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
+      const { getByText } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
       expect(getByText('더 자세한 분석이 궁금하다면?')).toBeTruthy();
-      expect(
-        getByText('AI 웰니스 코치와 1:1 상담을 받아보세요')
-      ).toBeTruthy();
+      expect(getByText('AI 웰니스 코치와 1:1 상담을 받아보세요')).toBeTruthy();
     });
 
     it('상담하기 버튼이 표시되어야 한다', () => {
-      const { getByText } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
+      const { getByText } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
       expect(getByText('상담하기')).toBeTruthy();
     });
 
     it('상담하기 버튼 클릭 시 코치 화면으로 이동해야 한다', () => {
-      const { getByTestId } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
+      const { getByTestId } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
       fireEvent.press(getByTestId('analysis-result-layout-expert-cta-button'));
       expect(mockPush).toHaveBeenCalledWith('/(coach)');
     });
@@ -343,27 +409,19 @@ describe('ResultLayout 컴포넌트', () => {
       const { getByText } = renderWithTheme(
         <ResultLayout {...createDefaultProps({ usedFallback: true })} />
       );
-      expect(
-        getByText('샘플 결과')
-      ).toBeTruthy();
+      expect(getByText('샘플 결과')).toBeTruthy();
     });
 
     it('usedFallback=false일 때 fallback 배너가 표시되지 않아야 한다', () => {
       const { queryByText } = renderWithTheme(
         <ResultLayout {...createDefaultProps({ usedFallback: false })} />
       );
-      expect(
-        queryByText('샘플 결과')
-      ).toBeNull();
+      expect(queryByText('샘플 결과')).toBeNull();
     });
 
     it('usedFallback이 undefined일 때 fallback 배너가 표시되지 않아야 한다', () => {
-      const { queryByText } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
-      expect(
-        queryByText('샘플 결과')
-      ).toBeNull();
+      const { queryByText } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
+      expect(queryByText('샘플 결과')).toBeNull();
     });
   });
 
@@ -372,25 +430,19 @@ describe('ResultLayout 컴포넌트', () => {
   // --------------------------------------------------------
   describe('TabView 3탭 렌더링', () => {
     it('TabView가 올바른 testID로 렌더링되어야 한다', () => {
-      const { getByTestId } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
+      const { getByTestId } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
       expect(getByTestId('analysis-result-layout-tabs')).toBeTruthy();
     });
 
     it('요약/상세/추천 3개 탭이 모두 렌더링되어야 한다', () => {
-      const { getByText } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
+      const { getByText } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
       expect(getByText('요약')).toBeTruthy();
       expect(getByText('상세')).toBeTruthy();
       expect(getByText('추천')).toBeTruthy();
     });
 
     it('각 탭의 콘텐츠가 렌더링되어야 한다', () => {
-      const { getByTestId } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
+      const { getByTestId } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
       expect(getByTestId('summary-tab')).toBeTruthy();
       expect(getByTestId('detail-tab')).toBeTruthy();
       expect(getByTestId('recommend-tab')).toBeTruthy();
@@ -402,12 +454,8 @@ describe('ResultLayout 컴포넌트', () => {
   // --------------------------------------------------------
   describe('하단 액션 버튼', () => {
     it('AnalysisResultButtons가 렌더링되어야 한다', () => {
-      const { getByTestId } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />
-      );
-      expect(
-        getByTestId('analysis-result-layout-buttons')
-      ).toBeTruthy();
+      const { getByTestId } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
+      expect(getByTestId('analysis-result-layout-buttons')).toBeTruthy();
     });
   });
 
@@ -426,10 +474,7 @@ describe('ResultLayout 컴포넌트', () => {
     });
 
     it('다크 모드에서 배경색이 darkColors.background이어야 한다', () => {
-      const { getByTestId } = renderWithTheme(
-        <ResultLayout {...createDefaultProps()} />,
-        true
-      );
+      const { getByTestId } = renderWithTheme(<ResultLayout {...createDefaultProps()} />, true);
       const container = getByTestId('analysis-result-layout');
       const flatStyle = Array.isArray(container.props.style)
         ? container.props.style
@@ -455,9 +500,7 @@ describe('ResultLayout 컴포넌트', () => {
         <ResultLayout {...createDefaultProps({ usedFallback: true })} />,
         true
       );
-      expect(
-        getByText('샘플 결과')
-      ).toBeTruthy();
+      expect(getByText('샘플 결과')).toBeTruthy();
     });
 
     it('다크 모드에서 GradeDisplay가 조건부로 렌더링되어야 한다', () => {
@@ -485,9 +528,7 @@ describe('ResultLayout 컴포넌트', () => {
 
     it('imageUri가 제공되면 이미지가 렌더링되어야 한다', () => {
       const { UNSAFE_getByType } = renderWithTheme(
-        <ResultLayout
-          {...createDefaultProps({ imageUri: 'https://example.com/face.jpg' })}
-        />
+        <ResultLayout {...createDefaultProps({ imageUri: 'https://example.com/face.jpg' })} />
       );
       const { Image } = require('react-native');
       const image = UNSAFE_getByType(Image);

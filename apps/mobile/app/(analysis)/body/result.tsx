@@ -164,7 +164,6 @@ export default function BodyResultScreen() {
       {analysis.dbSaveFailed && (
         <AnalysisSaveFailureNotice onRetry={() => router.replace('/(analysis)/body')} />
       )}
-      <Text style={[localStyles.typeName, { color: accent.base }]}>{analysis.bodyTypeLabel}</Text>
       <View style={localStyles.bmiRow}>
         <Text style={[localStyles.bmiLabel, { color: colors.mutedForeground }]}>BMI</Text>
         <Text style={[localStyles.bmiNumber, { color: colors.foreground }]}>{bmi.toFixed(1)}</Text>
@@ -346,6 +345,7 @@ export default function BodyResultScreen() {
       <ResultLayout
         moduleKey="body"
         title="체형 분석 결과"
+        verdict={analysis.bodyTypeLabel}
         imageUri={imageUri}
         imageStyle={localStyles.bodyImage}
         headerContent={headerContent}
@@ -367,10 +367,6 @@ const localStyles = StyleSheet.create({
   headerContent: {
     alignItems: 'center',
     gap: 6,
-  },
-  typeName: {
-    fontSize: 22,
-    fontWeight: typography.weight.bold,
   },
   bmiRow: {
     flexDirection: 'row',

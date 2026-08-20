@@ -36,6 +36,10 @@ export type { AnalysisResultButtonsProps } from './AnalysisResultButtons';
 export { ResultLayout } from './ResultLayout';
 export type { ResultLayoutProps } from './ResultLayout';
 
+// 결과 히어로의 데이터 기반 결론 — ADR-120 세리프 진단지 문법
+export { ResultVerdictText } from './ResultVerdictText';
+export type { ResultVerdictTextProps } from './ResultVerdictText';
+
 // 결론 카드 (ADR-111 표현 원칙 1: 결론 먼저)
 export { TopActionsCard } from './TopActionsCard';
 export type { TopActionsCardProps } from './TopActionsCard';

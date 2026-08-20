@@ -6,6 +6,13 @@
  * - 서버 'damage' 지표(건강도) → 화면 손상도로 반전
  * - concern id → 한국어 라벨, 게이트(403) 메시지 관통
  */
+const mockTrackAnalysisStart = jest.fn();
+const mockTrackAnalysisComplete = jest.fn();
+jest.mock('@/lib/analytics/tracker', () => ({
+  trackAnalysisStart: (...args: unknown[]) => mockTrackAnalysisStart(...args),
+  trackAnalysisComplete: (...args: unknown[]) => mockTrackAnalysisComplete(...args),
+}));
+
 import { DEFAULT_API_BASE_URL } from '@/lib/api/base-url';
 import { requestHairAnalysis, HairApiError } from '@/lib/api/hair';
 
@@ -49,6 +56,8 @@ function successBody(overrides: Record<string, unknown> = {}) {
 }
 
 describe('requestHairAnalysis', () => {
+  beforeEach(() => jest.clearAllMocks());
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -57,6 +66,13 @@ describe('requestHairAnalysis', () => {
     mockFetchOnce(200, successBody());
 
     const result = await requestHairAnalysis(VALID_INPUT, 'token-1', BASE_URL);
+
+    expect(mockTrackAnalysisStart).toHaveBeenCalledWith('hair', 'full', 'token-1');
+    expect(mockTrackAnalysisComplete).toHaveBeenCalledWith(
+      'hair',
+      { status: 'completed', axesCompletedCount: 1, usedFallback: false },
+      'token-1'
+    );
 
     expect(result.texture).toBe('wavy');
     expect(result.thickness).toBe('thick');
@@ -166,6 +182,16 @@ describe('requestHairAnalysis', () => {
       if (originalYiroom !== undefined) process.env.EXPO_PUBLIC_YIROOM_API_URL = originalYiroom;
       if (originalApi !== undefined) process.env.EXPO_PUBLIC_API_URL = originalApi;
     }
+  });
+
+  it('API 실패에는 시작만 기록하고 완료는 기록하지 않는다', async () => {
+    mockFetchOnce(500, { success: false, error: 'failed' });
+
+    await expect(requestHairAnalysis(VALID_INPUT, 'token-1', BASE_URL)).rejects.toBeInstanceOf(
+      HairApiError
+    );
+    expect(mockTrackAnalysisStart).toHaveBeenCalledTimes(1);
+    expect(mockTrackAnalysisComplete).not.toHaveBeenCalled();
   });
 
   it('HairApiError는 인스턴스 판별이 가능하다', () => {

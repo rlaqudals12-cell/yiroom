@@ -2,7 +2,7 @@
  * 이룸 모바일 앱 루트 레이아웃
  */
 import '../global.css';
-import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo';
+import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -10,6 +10,7 @@ import { LogBox, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { OfflineBanner } from '../components/common/OfflineBanner';
+import { useAnalyticsLifecycle } from '../lib/analytics/lifecycle';
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
 import { initSentry, SentryErrorBoundary, sentryWrap } from '../lib/monitoring/sentry';
 import { useNotificationResponse } from '../lib/notifications/useNotifications';
@@ -25,6 +26,8 @@ LogBox.ignoreLogs([
 // ThemeProvider 내부에서 useTheme 사용 가능한 레이아웃
 function ThemedStack() {
   const { colors, isDark } = useTheme();
+  const { getToken, isSignedIn, userId } = useAuth();
+  useAnalyticsLifecycle(getToken, isSignedIn === true, userId);
 
   // 알림 탭 → 딥링크(data.route로 이동). 아침 브리핑 등 로컬 알림 탭을 [오늘] 탭으로 연결.
   useNotificationResponse();

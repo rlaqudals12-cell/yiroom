@@ -220,23 +220,26 @@ export default function RecommendScreen() {
       day: 'numeric',
     });
 
-    const result = await saveOutfit({
-      name: `${today} 추천 코디`,
-      // 설명은 실제 추천 근거만 — 없는 진단은 적지 않는다 (웹 패턴 미러)
-      description: [
-        personalColor,
-        bodyTypeLabel,
-        effectiveTemp != null ? `${effectiveTemp}°C` : null,
-      ]
-        .filter(Boolean)
-        .join(' · '),
-      itemIds,
-      collageImageUrl: null,
-      occasion: 'casual',
-      season: getCurrentSeasons(),
-      wearCount: 0,
-      lastWornAt: null,
-    });
+    const result = await saveOutfit(
+      {
+        name: `${today} 추천 코디`,
+        // 설명은 실제 추천 근거만 — 없는 진단은 적지 않는다 (웹 패턴 미러)
+        description: [
+          personalColor,
+          bodyTypeLabel,
+          effectiveTemp != null ? `${effectiveTemp}°C` : null,
+        ]
+          .filter(Boolean)
+          .join(' · '),
+        itemIds,
+        collageImageUrl: null,
+        occasion: 'casual',
+        season: getCurrentSeasons(),
+        wearCount: 0,
+        lastWornAt: null,
+      },
+      'recommendation'
+    );
 
     setIsSaving(false);
 

@@ -12,6 +12,14 @@ import { fireEvent, waitFor } from '@testing-library/react-native';
 import { renderWithTheme } from '../../helpers/test-utils';
 import { rememberSubmission, clearLastSubmission } from '../../../lib/integrated/last-submission';
 
+const mockTrackAnalysisStart = jest.fn();
+const mockTrackAnalysisComplete = jest.fn();
+
+jest.mock('@/lib/analytics/tracker', () => ({
+  trackAnalysisStart: (...args: unknown[]) => mockTrackAnalysisStart(...args),
+  trackAnalysisComplete: (...args: unknown[]) => mockTrackAnalysisComplete(...args),
+}));
+
 // --- 공통 mock ---
 
 jest.mock('expo-image-picker', () => ({
@@ -32,7 +40,12 @@ jest.mock('@/hooks/useUserAnalyses', () => ({
 }));
 
 jest.mock('@/lib/api', () => ({
-  requestIntegratedAnalysis: jest.fn().mockResolvedValue({ sessionId: 'sess-retry-1' }),
+  requestIntegratedAnalysis: jest.fn().mockResolvedValue({
+    sessionId: 'sess-retry-1',
+    status: 'completed',
+    axesCompleted: ['hair', 'makeup'],
+    usedFallback: [],
+  }),
   IntegratedApiError: class IntegratedApiError extends Error {},
   // 게이트는 이미 충족된 것으로 응답해 생년월일·동의 섹션이 뜨지 않게 함(재시도 흐름에 집중).
   fetchBirthdate: jest.fn().mockResolvedValue({ birthDate: '2000-01-01', hasBirthDate: true }),
@@ -69,7 +82,12 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
   beforeEach(() => {
     jest.clearAllMocks();
     clearLastSubmission();
-    mockRequest.mockResolvedValue({ sessionId: 'sess-retry-1' });
+    mockRequest.mockResolvedValue({
+      sessionId: 'sess-retry-1',
+      status: 'completed',
+      axesCompleted: ['hair', 'makeup'],
+      usedFallback: [],
+    });
   });
 
   afterEach(() => {
@@ -157,6 +175,14 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
     expect(input.axes).toEqual(['hair', 'makeup']);
     // 복원된 사진이 그대로 제출된다(재선택 불필요).
     expect(input.faceImageBase64).toBe('data:image/jpeg;base64,FACE');
+    expect(mockTrackAnalysisStart).toHaveBeenCalledTimes(1);
+    expect(mockTrackAnalysisStart).toHaveBeenCalledWith('integrated', 'update', 'mock_jwt_token');
+    expect(mockTrackAnalysisComplete).toHaveBeenCalledTimes(1);
+    expect(mockTrackAnalysisComplete).toHaveBeenCalledWith(
+      'integrated',
+      { status: 'completed', axesCompletedCount: 2, usedFallback: false },
+      'mock_jwt_token'
+    );
     expect(router.replace).toHaveBeenCalled();
   });
 

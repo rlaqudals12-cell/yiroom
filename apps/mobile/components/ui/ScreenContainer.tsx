@@ -3,7 +3,7 @@
  *
  * SafeAreaView + ScrollView + RefreshControl 통합.
  * 모든 탭/서브 화면에서 일관된 구조를 제공.
- * 배경 그라디언트: 라이트 모드는 반투명 파스텔, 다크 모드는 미묘한 색조로 깊이감 부여.
+ * ADR-120에 따라 배경은 테마의 단색 지면만 사용한다.
  */
 import React, { type ReactNode } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
@@ -22,50 +22,6 @@ export type BackgroundGradientVariant =
   | 'workout'
   | 'analysis'
   | 'social';
-
-// 웹의 bg-gradient-to-br 패턴 매칭 — 반투명 파스텔 색조
-// 다크 모드: 미묘한 색조로 깊이감 부여 (웹 dark:from-slate-950 via-blue-950/20 매칭)
-const PAGE_GRADIENTS: Record<
-  BackgroundGradientVariant,
-  { light: readonly string[]; dark: readonly string[] }
-> = {
-  home: {
-    light: ['#FDFCFB', 'rgba(240,244,255,0.5)', 'rgba(238,240,255,0.5)'],
-    dark: ['#0F0F0F', '#0F1015', '#0F0F18'],
-  },
-  beauty: {
-    light: ['#FDFCFB', 'rgba(255,240,245,0.5)', 'rgba(253,242,248,0.5)'],
-    dark: ['#0F0F0F', '#150F12', '#180F15'],
-  },
-  style: {
-    light: ['#FDFCFB', 'rgba(238,242,255,0.5)', 'rgba(224,231,255,0.5)'],
-    dark: ['#0F0F0F', '#0F0F15', '#0F0E18'],
-  },
-  records: {
-    light: ['#FDFCFB', 'rgba(236,253,245,0.5)', 'rgba(220,252,231,0.5)'],
-    dark: ['#0F0F0F', '#0F1510', '#0F1810'],
-  },
-  profile: {
-    light: ['#FDFCFB', 'rgba(245,243,255,0.5)', 'rgba(237,233,254,0.5)'],
-    dark: ['#0F0F0F', '#110F15', '#120E18'],
-  },
-  nutrition: {
-    light: ['#FDFCFB', 'rgba(255,247,237,0.6)', 'rgba(255,237,213,0.5)'],
-    dark: ['#0F0F0F', '#15120F', '#181210'],
-  },
-  workout: {
-    light: ['#FDFCFB', 'rgba(236,253,245,0.6)', 'rgba(220,252,231,0.5)'],
-    dark: ['#0F0F0F', '#0F150F', '#0F180F'],
-  },
-  analysis: {
-    light: ['#FDFCFB', 'rgba(245,243,255,0.5)', 'rgba(238,240,255,0.5)'],
-    dark: ['#0F0F0F', '#110F15', '#0F0F18'],
-  },
-  social: {
-    light: ['#FDFCFB', 'rgba(240,249,255,0.5)', 'rgba(224,242,254,0.5)'],
-    dark: ['#0F0F0F', '#0F1215', '#0F1118'],
-  },
-};
 
 interface ScreenContainerProps {
   /** 콘텐츠 */
@@ -86,7 +42,7 @@ interface ScreenContainerProps {
   contentContainerStyle?: ViewStyle;
   /** 테스트 ID */
   testID?: string;
-  /** 페이지 배경 그라디언트 (라이트: 반투명 파스텔, 다크: 미묘한 색조) */
+  /** @deprecated 호출부 호환용. 모든 변형은 테마 단색 지면으로 렌더한다. */
   backgroundGradient?: BackgroundGradientVariant;
 }
 
@@ -100,16 +56,8 @@ export function ScreenContainer({
   style,
   contentContainerStyle,
   testID = 'screen-container',
-  backgroundGradient,
 }: ScreenContainerProps): React.JSX.Element {
-  const { colors, brand: brandColors, isDark } = useTheme();
-
-  // 배경 그라디언트 — 라이트 모드에서만 반투명 파스텔, 다크 모드는 단색
-  const gradientColors = backgroundGradient
-    ? isDark
-      ? PAGE_GRADIENTS[backgroundGradient].dark
-      : PAGE_GRADIENTS[backgroundGradient].light
-    : null;
+  const { colors, brand: brandColors } = useTheme();
 
   const refreshControl = onRefresh ? (
     <RefreshControl
@@ -120,9 +68,7 @@ export function ScreenContainer({
     />
   ) : undefined;
 
-  // 배경색 — Android에서 absolute 오버레이가 ScrollView 터치를 차단하므로
-  // SafeAreaView의 backgroundColor로 그라디언트 첫 번째 색상만 적용
-  const bgColor = gradientColors ? (gradientColors[0] as string) : colors.background;
+  const bgColor = colors.background;
 
   if (!scrollable) {
     return (

@@ -6,6 +6,13 @@
  * - 게이트(403)·검증(400) 에러의 서버 한국어 메시지 관통 (플랫 봉투)
  * - usedMock 정직 전달, 비정상 bodyType은 지어내지 않고 실패 처리
  */
+const mockTrackAnalysisStart = jest.fn();
+const mockTrackAnalysisComplete = jest.fn();
+jest.mock('@/lib/analytics/tracker', () => ({
+  trackAnalysisStart: (...args: unknown[]) => mockTrackAnalysisStart(...args),
+  trackAnalysisComplete: (...args: unknown[]) => mockTrackAnalysisComplete(...args),
+}));
+
 import { DEFAULT_API_BASE_URL } from '@/lib/api/base-url';
 import { requestBodyAnalysis, BodyApiError } from '@/lib/api/body';
 
@@ -46,6 +53,8 @@ function successBody(overrides: Record<string, unknown> = {}) {
 }
 
 describe('requestBodyAnalysis', () => {
+  beforeEach(() => jest.clearAllMocks());
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -54,6 +63,13 @@ describe('requestBodyAnalysis', () => {
     mockFetchOnce(200, successBody());
 
     const result = await requestBodyAnalysis(VALID_INPUT, 'token-1', BASE_URL);
+
+    expect(mockTrackAnalysisStart).toHaveBeenCalledWith('body', 'full', 'token-1');
+    expect(mockTrackAnalysisComplete).toHaveBeenCalledWith(
+      'body',
+      { status: 'completed', axesCompletedCount: 1, usedFallback: false },
+      'token-1'
+    );
 
     expect(result.bodyType).toBe('S');
     expect(result.bodyTypeLabel).toBe('스트레이트');
@@ -173,6 +189,16 @@ describe('requestBodyAnalysis', () => {
     expect(result.avoidStyles).toEqual([]);
     expect(result.styleRecommendations).toEqual([]);
     expect(result.bmi).toBeUndefined();
+  });
+
+  it('API 실패에는 시작만 기록하고 완료는 기록하지 않는다', async () => {
+    mockFetchOnce(500, { success: false, error: 'failed' });
+
+    await expect(requestBodyAnalysis(VALID_INPUT, 'token-1', BASE_URL)).rejects.toBeInstanceOf(
+      BodyApiError
+    );
+    expect(mockTrackAnalysisStart).toHaveBeenCalledTimes(1);
+    expect(mockTrackAnalysisComplete).not.toHaveBeenCalled();
   });
 
   it('BodyApiError는 인스턴스 판별이 가능하다', () => {

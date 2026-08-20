@@ -9,9 +9,21 @@
  */
 import React from 'react';
 import { useLocalSearchParams } from 'expo-router';
+import { waitFor } from '@testing-library/react-native';
 
 import { renderWithTheme } from '../../helpers/test-utils';
 import type { AxisCode, IntegratedAnalysisResult } from '../../../lib/api';
+
+const mockTrackAnalysisResultView = jest.fn();
+const mockUseIntegratedSession = jest.fn();
+
+jest.mock('@/lib/analytics/tracker', () => ({
+  trackAnalysisResultView: (...args: unknown[]) => mockTrackAnalysisResultView(...args),
+}));
+
+jest.mock('@/hooks/useIntegratedSession', () => ({
+  useIntegratedSession: (...args: unknown[]) => mockUseIntegratedSession(...args),
+}));
 
 // 발급번호 조회는 네트워크 — 고지 검증과 무관하므로 차단
 jest.mock('@/lib/api', () => ({
@@ -77,6 +89,17 @@ function setPayload(result: IntegratedAnalysisResult): void {
 }
 
 describe('통합 결과 화면 — 축별 Mock 고지 배선', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseIntegratedSession.mockImplementation(
+      (_sessionId: string | null, initialResult: IntegratedAnalysisResult | null) => ({
+        result: initialResult,
+        isLoading: false,
+        error: null,
+      })
+    );
+  });
+
   afterEach(() => {
     mockUseLocalSearchParams.mockReturnValue({});
   });
@@ -86,7 +109,43 @@ describe('통합 결과 화면 — 축별 Mock 고지 배선', () => {
     const { getByTestId, getByText } = renderWithTheme(<IntegratedResultScreen />);
 
     expect(getByTestId('axis-fallback-notice')).toBeTruthy();
+    expect(getByTestId('integrated-result-verdict')).toBeTruthy();
     expect(getByText('피부, 체형')).toBeTruthy();
+  });
+
+  it('직전 응답 결과 보기는 fresh 출처로 한 번만 기록한다', async () => {
+    setPayload(buildResult([]));
+    renderWithTheme(<IntegratedResultScreen />);
+
+    await waitFor(() => {
+      expect(mockTrackAnalysisResultView).toHaveBeenCalledTimes(1);
+      expect(mockTrackAnalysisResultView).toHaveBeenCalledWith(
+        'integrated',
+        'fresh',
+        'mock_jwt_token'
+      );
+    });
+  });
+
+  it('이력에서 불러온 결과 보기는 history 출처로 한 번만 기록한다', async () => {
+    const historyResult = buildResult([]);
+    mockUseLocalSearchParams.mockReturnValue({ sessionId: historyResult.sessionId });
+    mockUseIntegratedSession.mockReturnValue({
+      result: historyResult,
+      isLoading: false,
+      error: null,
+    });
+
+    renderWithTheme(<IntegratedResultScreen />);
+
+    await waitFor(() => {
+      expect(mockTrackAnalysisResultView).toHaveBeenCalledTimes(1);
+      expect(mockTrackAnalysisResultView).toHaveBeenCalledWith(
+        'integrated',
+        'history',
+        'mock_jwt_token'
+      );
+    });
   });
 
   it('폴백 축이 없으면 고지를 띄우지 않는다', () => {

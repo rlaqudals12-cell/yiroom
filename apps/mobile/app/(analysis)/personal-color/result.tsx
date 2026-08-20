@@ -265,6 +265,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
       <ResultLayout
         moduleKey="personalColor"
         title="퍼스널 컬러 진단"
+        verdict={season.name}
         imageUri={imageUri}
         imageStyle={localStyles.resultImage}
         trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
@@ -279,9 +280,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
               />
             )}
             <HeaderContent
-              seasonName={season.name}
               subType={season.subType}
-              accentColor={accent.base}
               description={result.description || season.description}
               textColor={colors.mutedForeground}
             />
@@ -314,21 +313,16 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
 // --- 서브 컴포넌트 ---
 
 function HeaderContent({
-  seasonName,
   subType,
-  accentColor,
   description,
   textColor,
 }: {
-  seasonName: string;
   subType: string;
-  accentColor: string;
   description: string;
   textColor: string;
 }): React.JSX.Element {
   return (
     <View style={localStyles.headerContent}>
-      <Text style={[localStyles.seasonName, { color: accentColor }]}>{seasonName}</Text>
       <Text style={[localStyles.subType, { color: textColor }]}>{subType}</Text>
       <Text style={[localStyles.description, { color: textColor }]}>{description}</Text>
     </View>
@@ -579,10 +573,6 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
-  },
-  seasonName: {
-    fontSize: 28,
-    fontWeight: typography.weight.bold,
   },
   subType: {
     fontSize: typography.size.sm,
