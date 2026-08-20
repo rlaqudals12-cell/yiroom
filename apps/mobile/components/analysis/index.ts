@@ -40,6 +40,35 @@ export type { ResultLayoutProps } from './ResultLayout';
 export { ResultVerdictText } from './ResultVerdictText';
 export type { ResultVerdictTextProps } from './ResultVerdictText';
 
+// ADR-120 진단지 프리미티브와 5축 전용 결과 셸
+export {
+  ReportHero,
+  ReportAttrRow,
+  ReportRowTable,
+  ReportInkNumber,
+  ReportDivider,
+  ReportEvidenceDisclosure,
+  ReportActionList,
+  ReportColorBand,
+  ReportTextList,
+  ReportResultLayout,
+  REPORT_COLORS,
+} from './report';
+export type {
+  ReportHeroProps,
+  ReportAttrRowProps,
+  ReportRowTableProps,
+  ReportInkNumberProps,
+  ReportDividerProps,
+  ReportEvidenceDisclosureProps,
+  ReportActionListProps,
+  ReportColorBandProps,
+  ReportTextListProps,
+  ReportModuleKey,
+  ReportResultLayoutProps,
+  ReportSection,
+} from './report';
+
 // 결론 카드 (ADR-111 표현 원칙 1: 결론 먼저)
 export { TopActionsCard } from './TopActionsCard';
 export type { TopActionsCardProps } from './TopActionsCard';

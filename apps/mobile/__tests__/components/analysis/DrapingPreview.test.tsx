@@ -9,8 +9,7 @@
  *  - 색 라벨은 #hex 원문이 아닌 한국어 색명
  *
  * expo-image / expo-haptics 모킹 필수.
- * expo-linear-gradient·react-native-reanimated는 jest.config.js moduleNameMapper의
- * __mocks__ 구현을 사용한다.
+ * react-native-reanimated는 jest.config.js moduleNameMapper의 mock을 사용한다.
  */
 
 import { render, fireEvent } from '@testing-library/react-native';
@@ -51,6 +50,7 @@ jest.mock('expo-image', () => ({
 }));
 
 import { DrapingPreview } from '../../../components/analysis/DrapingPreview';
+import { REPORT_COLORS } from '../../../components/analysis/report/tokens';
 
 // ============================================================
 // 헬퍼
@@ -179,8 +179,9 @@ describe('DrapingPreview', () => {
       );
       const band = getByTestId('draping-band-best');
       expect(band).toBeTruthy();
-      // 밴드 색상은 선택된 hex의 rgba 변환값이어야 한다
-      expect(band.props.colors[2]).toBe('rgba(255, 154, 139, 0.92)');
+      // 밴드는 선택된 hex의 솔리드 rgba 색면이어야 한다
+      expect(flattenStyle(band.props.style).backgroundColor).toBe('rgba(255, 154, 139, 0.92)');
+      expect(band.props.colors).toBeUndefined();
     });
 
     it('밴드 래퍼는 하단 13% 높이로 절대배치되어야 한다', () => {
@@ -201,7 +202,10 @@ describe('DrapingPreview', () => {
       // 회귀 감시: absoluteFill(top·bottom 0) + 팔레트 색 backgroundColor = 구현 v1 전면 틴트
       const fullTint = collectStyles(toJSON()).filter(
         (s) =>
-          (s.backgroundColor === '#FF9A8B' || s.backgroundColor === '#000000') &&
+          (s.backgroundColor === '#FF9A8B' ||
+            s.backgroundColor === '#000000' ||
+            s.backgroundColor === 'rgba(255, 154, 139, 0.92)' ||
+            s.backgroundColor === 'rgba(0, 0, 0, 0.92)') &&
           s.position === 'absolute' &&
           s.top === 0 &&
           s.bottom === 0
@@ -216,7 +220,9 @@ describe('DrapingPreview', () => {
 
       fireEvent.press(getByTestId('draping-swatch-best-1'));
 
-      expect(getByTestId('draping-band-best').props.colors[2]).toBe('rgba(255, 218, 163, 0.92)');
+      expect(flattenStyle(getByTestId('draping-band-best').props.style).backgroundColor).toBe(
+        'rgba(255, 218, 163, 0.92)'
+      );
     });
   });
 
@@ -268,9 +274,13 @@ describe('DrapingPreview', () => {
 
       fireEvent.press(getByTestId('draping-swatch-avoid-1'));
 
-      expect(getByTestId('draping-band-avoid').props.colors[2]).toBe('rgba(128, 128, 128, 0.92)');
+      expect(flattenStyle(getByTestId('draping-band-avoid').props.style).backgroundColor).toBe(
+        'rgba(128, 128, 128, 0.92)'
+      );
       // 베스트 열은 영향받지 않는다
-      expect(getByTestId('draping-band-best').props.colors[2]).toBe('rgba(255, 154, 139, 0.92)');
+      expect(flattenStyle(getByTestId('draping-band-best').props.style).backgroundColor).toBe(
+        'rgba(255, 154, 139, 0.92)'
+      );
     });
   });
 
@@ -401,7 +411,9 @@ describe('DrapingPreview', () => {
       const { getByTestId } = renderWithTheme(
         <DrapingPreview imageUri={IMAGE_URI} palette={['#F00']} />
       );
-      expect(getByTestId('draping-band-best').props.colors[2]).toBe('rgba(255, 0, 0, 0.92)');
+      expect(flattenStyle(getByTestId('draping-band-best').props.style).backgroundColor).toBe(
+        'rgba(255, 0, 0, 0.92)'
+      );
     });
   });
 
@@ -419,7 +431,7 @@ describe('DrapingPreview', () => {
       expect(getByTestId('draping-figure-avoid')).toBeTruthy();
     });
 
-    it('다크 모드에서 시즌 정보와 고지가 표시되어야 한다', () => {
+    it('다크 모드에서도 시즌 정보는 진단지 잉크 색으로 고정되어야 한다', () => {
       const { getByText, getByTestId } = renderWithTheme(
         <DrapingPreview
           imageUri={IMAGE_URI}
@@ -430,6 +442,7 @@ describe('DrapingPreview', () => {
         true
       );
       expect(getByText('가을 웜톤')).toBeTruthy();
+      expect(flattenStyle(getByText('가을 웜톤').props.style).color).toBe(REPORT_COLORS.ink);
       expect(getByText('깊고 풍성한 색감이 잘 어울려요')).toBeTruthy();
       expect(getByTestId('draping-note')).toBeTruthy();
     });

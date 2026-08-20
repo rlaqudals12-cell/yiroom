@@ -5,7 +5,7 @@
  * 정적 600 폰트 파일 자체가 굵기를 가지므로 fontWeight를 중첩하지 않는다.
  */
 import { useFonts } from 'expo-font';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, type TextStyle } from 'react-native';
 
 import { typography, useTheme } from '@/lib/theme';
 import { RESULT_SERIF_FONT_FAMILY, resultSerifFonts } from '@/lib/theme/fonts';
@@ -13,12 +13,14 @@ import { RESULT_SERIF_FONT_FAMILY, resultSerifFonts } from '@/lib/theme/fonts';
 export interface ResultVerdictTextProps {
   children: string;
   color?: string;
+  textAlign?: TextStyle['textAlign'];
   testID?: string;
 }
 
 export function ResultVerdictText({
   children,
   color,
+  textAlign = 'center',
   testID = 'result-verdict-text',
 }: ResultVerdictTextProps): React.JSX.Element {
   const { colors } = useTheme();
@@ -31,7 +33,7 @@ export function ResultVerdictText({
       style={[
         styles.verdict,
         fontsLoaded ? styles.serif : null,
-        { color: color ?? colors.foreground },
+        { color: color ?? colors.foreground, textAlign },
       ]}
       testID={testID}
     >
@@ -45,7 +47,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     lineHeight: 38,
     letterSpacing: typography.letterSpacing.tight,
-    textAlign: 'center',
   },
   serif: {
     fontFamily: RESULT_SERIF_FONT_FAMILY,

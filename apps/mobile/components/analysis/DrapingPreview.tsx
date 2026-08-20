@@ -8,31 +8,21 @@
  *
  * 대신 웹과 동일하게 사진 하단(목·어깨)에만 색천 밴드를 올려 "얼굴 아래 천을 대본다"는
  * 물리 드레이핑을 재현한다. 얼굴 픽셀은 건드리지 않고, 동시대비로 혈색·그늘 차이를 본다.
- * RN에는 캔버스가 없어 웹의 픽셀 합성 대신 절대배치 그라데이션 색면으로 미러한다
- * (상수·페이드 비율은 웹 `lib/analysis/drape-reflectance.ts`와 동일값).
+ * RN에는 캔버스가 없어 웹의 픽셀 합성 대신 절대배치 솔리드 색면으로 미러한다.
+ * 결과 화면의 장식 그라데이션 금지 계약에 따라 하단 색천도 단색으로 고정한다.
  */
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { useTheme, radii, spacing, typography } from '../../lib/theme';
+import { drapingPreviewStyles as styles } from './DrapingPreview.styles';
+import { REPORT_COLORS } from './report/tokens';
 import { getKoreanColorName } from '../../lib/utils/color-names';
 
-// --- 드레이프 레이아웃 상수 (웹 drape-reflectance.ts와 동일값) ---
-/** 색천 시작 지점 — 촬영 가이드 기준 턱끝이 프레임 ~88%라 하단 13%만 사용 */
-const DRAPE_START_RATIO = 0.87;
-/** 상단 경계 페이드 구간 (사진 높이 기준) */
-const DRAPE_FADE_RATIO = 0.03;
 /** 색천 최대 불투명도 — 좁은 밴드를 채워 '천' 느낌 */
 const DRAPE_MAX_BLEND = 0.92;
-/** 페이드 시작 불투명도 */
-const DRAPE_MIN_BLEND = 0.2;
-
-const BAND_HEIGHT = `${Math.round((1 - DRAPE_START_RATIO) * 1000) / 10}%` as const;
-const FADE_STOP = DRAPE_FADE_RATIO / (1 - DRAPE_START_RATIO);
 
 /** 정직 고지 — 합성(생성 아님) + 기기 내 처리 + 원본 보관 범위까지 명시 */
 const HONEST_NOTE =
@@ -43,7 +33,7 @@ const OBSERVE_HINT = '얼굴 혈색·눈밑 그늘·윤곽이 색에 따라 어�
 const BEST_LABEL = '베스트';
 const AVOID_LABEL = '피해야 할 색';
 
-/** HEX(#RGB·#RRGGBB) → rgba 문자열 (RN 그라데이션은 8자리 hex보다 rgba가 안전) */
+/** HEX(#RGB·#RRGGBB) → rgba 문자열. */
 function withAlpha(hex: string, alpha: number): string {
   const normalized = hex.replace('#', '');
   const full =
@@ -90,23 +80,12 @@ function DrapeFigure({
   const colorName = getKoreanColorName(hex);
   const caption = `${label} · ${colorName}`;
 
-  // expo-linear-gradient는 튜플 타입을 요구한다
-  const gradientColors: [string, string, string] = [
-    withAlpha(hex, DRAPE_MIN_BLEND),
-    withAlpha(hex, DRAPE_MAX_BLEND),
-    withAlpha(hex, DRAPE_MAX_BLEND),
-  ];
-  const gradientLocations: [number, number, number] = [0, FADE_STOP, 1];
-
   return (
     <View style={styles.figure} testID={`draping-figure-${tone}`}>
-      <View
-        style={[styles.imageContainer, { maxHeight, borderRadius: radii.xl }]}
-        testID={`draping-photo-${tone}`}
-      >
+      <View style={[styles.imageContainer, { maxHeight }]} testID={`draping-photo-${tone}`}>
         <Image
           source={{ uri: imageUri }}
-          style={[StyleSheet.absoluteFill, { borderRadius: radii.xl }]}
+          style={[StyleSheet.absoluteFill, styles.image]}
           contentFit="cover"
           accessibilityLabel={caption}
         />
@@ -118,10 +97,8 @@ function DrapeFigure({
           pointerEvents="none"
           testID={`draping-band-wrap-${tone}`}
         >
-          <LinearGradient
-            colors={gradientColors}
-            locations={gradientLocations}
-            style={styles.band}
+          <View
+            style={[styles.band, { backgroundColor: withAlpha(hex, DRAPE_MAX_BLEND) }]}
             testID={`draping-band-${tone}`}
           />
         </Animated.View>
@@ -187,7 +164,6 @@ export function DrapingPreview({
   style,
   testID = 'draping-preview',
 }: DrapingPreviewProps): React.JSX.Element {
-  const { colors, typography } = useTheme();
   const [bestIndex, setBestIndex] = useState(0);
   const [avoidIndex, setAvoidIndex] = useState(0);
 
@@ -205,7 +181,7 @@ export function DrapingPreview({
   if (palette.length === 0) {
     return (
       <View testID={testID} style={style}>
-        <Text style={[styles.honestNote, { color: colors.mutedForeground }]} testID="draping-empty">
+        <Text style={styles.honestNote} testID="draping-empty">
           진단된 색이 없어 드레이핑을 보여드릴 수 없어요.
         </Text>
       </View>
@@ -217,32 +193,13 @@ export function DrapingPreview({
       {/* 시즌 정보 */}
       {seasonName && (
         <View style={styles.seasonInfo}>
-          <Text
-            style={[
-              styles.seasonName,
-              { color: colors.foreground, fontSize: typography.size.base },
-            ]}
-          >
-            {seasonName}
-          </Text>
-          {seasonDescription && (
-            <Text
-              style={[
-                styles.seasonDesc,
-                { color: colors.mutedForeground, fontSize: typography.size.xs },
-              ]}
-            >
-              {seasonDescription}
-            </Text>
-          )}
+          <Text style={styles.seasonName}>{seasonName}</Text>
+          {seasonDescription && <Text style={styles.seasonDesc}>{seasonDescription}</Text>}
         </View>
       )}
 
       {/* 관찰 지시 — 무엇을 볼지 알려준다 */}
-      <Text
-        style={[styles.observeHint, { color: colors.mutedForeground }]}
-        testID="draping-observe-hint"
-      >
+      <Text style={styles.observeHint} testID="draping-observe-hint">
         {OBSERVE_HINT}
       </Text>
 
@@ -256,9 +213,9 @@ export function DrapingPreview({
           label={BEST_LABEL}
           tone="best"
           maxHeight={imageHeight}
-          captionColor={colors.foreground}
+          captionColor={REPORT_COLORS.ink}
           captionStrong
-          selectedBorderColor={colors.foreground}
+          selectedBorderColor={REPORT_COLORS.ink}
         />
         {avoidPalette.length > 0 && (
           <DrapeFigure
@@ -269,79 +226,17 @@ export function DrapingPreview({
             label={AVOID_LABEL}
             tone="avoid"
             maxHeight={imageHeight}
-            captionColor={colors.mutedForeground}
+            captionColor={REPORT_COLORS.mutedInk}
             captionStrong={false}
-            selectedBorderColor={colors.mutedForeground}
+            selectedBorderColor={REPORT_COLORS.mutedInk}
           />
         )}
       </View>
 
       {/* 정직 고지 — 생성이 아닌 합성 + 기기 내 처리 */}
-      <Text style={[styles.honestNote, { color: colors.mutedForeground }]} testID="draping-note">
+      <Text style={styles.honestNote} testID="draping-note">
         {HONEST_NOTE}
       </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  seasonInfo: {
-    marginBottom: spacing.sm,
-    gap: spacing.xxs,
-  },
-  seasonName: {
-    fontWeight: '700',
-  },
-  seasonDesc: {
-    lineHeight: 18,
-  },
-  observeHint: {
-    fontSize: typography.size.xs,
-    lineHeight: 18,
-    marginBottom: spacing.smd,
-  },
-  compareRow: {
-    flexDirection: 'row',
-    gap: spacing.smd,
-  },
-  figure: {
-    flex: 1,
-    minWidth: 0,
-    gap: spacing.xs,
-  },
-  imageContainer: {
-    width: '100%',
-    aspectRatio: 3 / 4,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  bandWrap: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: BAND_HEIGHT,
-  },
-  band: {
-    flex: 1,
-  },
-  caption: {
-    fontSize: typography.size.xs,
-  },
-  swatchRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  swatch: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 2,
-  },
-  honestNote: {
-    fontSize: 11,
-    lineHeight: 16,
-    marginTop: spacing.smd,
-  },
-});

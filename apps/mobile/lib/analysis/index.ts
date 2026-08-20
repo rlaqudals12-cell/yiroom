@@ -21,3 +21,6 @@ export type { TopAction, TopActionSwatch } from './top-actions';
 
 // 헤어 두피 주의 성분 + 고민 안내 (웹 hair-analysis.ts 포팅)
 export { getHairCautionIngredients, getScalpConcernNotice } from './hair-guidance';
+
+// 진단지 지표 평문 포맷 — 등급·색상 방향성 부여 금지
+export { formatReportReading } from './report-readings';

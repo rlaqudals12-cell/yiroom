@@ -1,5 +1,5 @@
 /**
- * C-1 체형 분석 결과 화면 — 계약 테스트 (웹 API 정본, ADR-118)
+ * C-1 체형 분석 결과 화면 — 계약 테스트 (웹 API 정본, ADR-120)
  *
  * 고정하는 계약:
  * - 결과 화면은 로컬 lib/gemini 분석·클라이언트 DB 저장을 쓰지 않는다
@@ -36,8 +36,7 @@ describe('C-1 체형 결과 화면 — 웹 API 정본 배선', () => {
     expect(RESULT_SRC).not.toContain("rectangle: 'Rectangle'");
   });
 
-  it('폴백(usedMock) 여부를 신뢰 배지로 정직하게 표시한다', () => {
-    expect(RESULT_SRC).toContain("trustBadgeType={analysis.usedMock ? 'fallback' : 'ai'}");
+  it('폴백(usedMock) 여부를 진단지의 낮은 신뢰도 고지에 배선한다', () => {
     expect(RESULT_SRC).toContain('usedFallback={analysis.usedMock}');
   });
 
@@ -60,5 +59,11 @@ describe('C-1 체형 결과 화면 — BMI 정직 표기 (낙인 제거, 웹 W4)
 
   it('의료적 판정 표현(진단/처방/치료)이 없다', () => {
     expect(DISPLAY_SRC).not.toMatch(/진단|처방|치료/);
+  });
+
+  it('BMI를 점수로 정규화하거나 게이지·채점표에 넣지 않는다', () => {
+    expect(DISPLAY_SRC).not.toContain('bmiNormalized');
+    expect(DISPLAY_SRC).not.toMatch(/MetricBar|CircularProgress|RadarChart|GradeDisplay/);
+    expect(DISPLAY_SRC).toContain('ReportInkNumber');
   });
 });

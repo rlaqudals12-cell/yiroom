@@ -60,34 +60,26 @@ jest.mock('../../../lib/monitoring/sentry', () => ({ captureError: jest.fn() }))
 jest.mock('../../../components/analysis', () => {
   const { View, Text } = require('react-native');
   return {
+    REPORT_COLORS: { ink: '#211c1a', mutedInk: '#746a66' },
     AnalysisLoadingState: ({ testID }: { testID?: string }) => <View testID={testID} />,
     AnalysisErrorState: ({ testID, message }: { testID?: string; message?: string }) => (
       <View testID={testID}>
         <Text>{message}</Text>
       </View>
     ),
-    ResultLayout: ({ testID }: { testID?: string }) => <View testID={testID} />,
-    MetricBar: () => <View />,
-    TopActionsCard: () => <View />,
-    useAnalysisStyles: () => ({
-      module: { body: { base: '#8b5cf6' } },
-      colors: {
-        foreground: '#111',
-        mutedForeground: '#666',
-        muted: '#eee',
-        overlayForeground: '#fff',
-      },
-      isDark: false,
-    }),
+    ReportResultLayout: ({ testID }: { testID?: string }) => <View testID={testID} />,
+    ReportActionList: () => <View />,
+    ReportAttrRow: () => <View />,
+    ReportInkNumber: () => <View />,
+    ReportRowTable: ({ children }: { children?: React.ReactNode }) => <View>{children}</View>,
+    ReportTextList: () => <View />,
   };
 });
 
-jest.mock('../../../components/analysis/body', () => {
+jest.mock('../../../components/analysis/body/BodyReportEvidence', () => {
   const { View } = require('react-native');
   return {
-    StylingPrinciplesCard: () => <View />,
-    OutfitExamplesCard: () => <View />,
-    ClosetPromptCard: () => <View />,
+    BodyReportEvidence: () => <View />,
   };
 });
 
@@ -104,7 +96,6 @@ jest.mock('../../../components/common/ProgressiveDisclosure', () => {
 jest.mock('../../../components/ui', () => {
   const { View } = require('react-native');
   return {
-    GradientCard: ({ children }: { children?: React.ReactNode }) => <View>{children}</View>,
     CelebrationEffect: () => <View />,
     BadgeDrop: () => <View />,
   };

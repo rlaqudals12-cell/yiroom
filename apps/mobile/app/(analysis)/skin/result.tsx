@@ -1,93 +1,31 @@
-/**
- * S-1 피부 분석 — 결과 V2
- *
- * ResultLayout 3탭 구조:
- *  요약: 피부 타입 + 핵심 지표 3개
- *  상세: RadarChart 6축 + 전체 MetricBar + 변화량
- *  추천: 스킨케어 팁 + 추천/주의 성분
- */
+/** S-1 피부 분석 결과 — ADR-120 진단지 문법. */
 import { useAuth } from '@clerk/clerk-expo';
 import type { SkinType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
-import Animated, { FadeInUp, type AnimatedStyle } from 'react-native-reanimated';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text } from 'react-native';
 
 import {
-  CircularProgress,
-  ScoreChangeBadge,
-  MetricBar,
-  AnalysisLoadingState,
   AnalysisErrorState,
-  AnalysisSaveFailureNotice,
-  ResultLayout,
-  FaceZoneMap,
-  TopActionsCard,
-  useAnalysisStyles,
+  AnalysisLoadingState,
+  REPORT_COLORS,
+  ReportActionList,
+  ReportAttrRow,
+  ReportResultLayout,
+  ReportRowTable,
+  ReportTextList,
+  type ReportSection,
 } from '@/components/analysis';
-import type { FaceZone } from '@/components/analysis';
-import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { AIBadge } from '@/components/common/AIBadge';
-import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
-import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { buildSkinTopActions } from '@/lib/analysis';
-import { TIMING, usePulseGlow } from '@/lib/animations';
+import { BadgeDrop, CelebrationEffect } from '@/components/ui';
+import { buildSkinTopActions, formatReportReading } from '@/lib/analysis';
 import { requestSkinAnalysis, SkinApiError } from '@/lib/api/skin';
 import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import {
-  SKIN_TYPE_DATA,
-  SCORE_WEIGHTS,
-  type SkinMetrics,
-  type SkinMetricsDelta,
-} from '@/lib/skincare';
+import { SKIN_TYPE_DATA, type SkinMetrics, type SkinMetricsDelta } from '@/lib/skincare';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { typography, spacing, radii } from '@/lib/theme';
+import { spacing, typography } from '@/lib/theme';
 
-// 메트릭 → 얼굴 존 변환 (피부 생리학 기반 추정)
-function buildFaceZones(m: SkinMetrics): FaceZone[] {
-  return [
-    {
-      id: 'forehead',
-      label: '이마',
-      score: Math.round((m.oil + m.pores) / 2),
-      description: '유분과 모공이 집중되는 영역',
-    },
-    {
-      id: 'tzone',
-      label: 'T존',
-      score: Math.round(m.oil * 0.6 + m.pores * 0.4),
-      description: '피지 분비가 가장 활발한 영역',
-    },
-    {
-      id: 'leftCheek',
-      label: '볼(L)',
-      score: Math.round((m.moisture + m.sensitivity) / 2),
-      description: '수분과 민감도가 중요한 영역',
-    },
-    {
-      id: 'rightCheek',
-      label: '볼(R)',
-      score: Math.round((m.moisture + m.sensitivity) / 2),
-      description: '수분과 민감도가 중요한 영역',
-    },
-    {
-      id: 'nose',
-      label: '코',
-      score: Math.round(m.oil * 0.5 + m.pores * 0.5),
-      description: '블랙헤드와 모공 관리 영역',
-    },
-    {
-      id: 'chin',
-      label: '턱',
-      score: Math.round((m.moisture + m.elasticity + m.sensitivity) / 3),
-      description: '탄력과 수분 균형이 중요한 영역',
-    },
-  ];
-}
-
-// 피부 타입별 성분 추천/주의 데이터
 const INGREDIENT_DATA: Record<SkinType, { good: string[]; avoid: string[] }> = {
   dry: {
     good: ['히알루론산', '세라마이드', '스쿠알란', '시어버터', '글리세린'],
@@ -111,12 +49,11 @@ const INGREDIENT_DATA: Record<SkinType, { good: string[]; avoid: string[] }> = {
   },
 };
 
-export default function SkinResultScreen() {
-  const { module, colors, status } = useAnalysisStyles();
-  const accent = module.skin;
+const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주세요.';
+
+export default function SkinResultScreen(): React.JSX.Element {
   const { getToken, userId } = useAuth();
   const supabase = useClerkSupabaseClient();
-
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
@@ -125,34 +62,27 @@ export default function SkinResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [skinType, setSkinType] = useState<SkinType | null>(null);
   const [metrics, setMetrics] = useState<SkinMetrics | null>(null);
-  const [overallScore, setOverallScore] = useState<number>(0);
   const [delta, setDelta] = useState<SkinMetricsDelta | null>(null);
-  const [previousScore, setPreviousScore] = useState<number | null>(null);
+  const [hasPreviousAnalysis, setHasPreviousAnalysis] = useState(false);
   const [usedFallback, setUsedFallback] = useState(false);
   const [dbSaveFailed, setDbSaveFailed] = useState(false);
-  const [errorMessage, setErrorMessage] =
-    useState<string>('분석에 실패했어요. 다시 시도해 주세요.');
+  const [errorMessage, setErrorMessage] = useState<string>(DEFAULT_ERROR_MESSAGE);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
 
-  // 높은 점수(>=70) 시 CircularProgress 펄스 글로우
-  const pulseGlowStyle = usePulseGlow(accent.base, 0.2);
-
-  // 피부 분석 — 웹 POST /api/analyze/skin 정본 (실 AI + skin_analyses 저장 + 연령/생체 게이트)
-  const analyzeSkin = useCallback(async () => {
+  const analyzeSkin = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setUsedFallback(false);
     setDbSaveFailed(false);
+    setDelta(null);
+    setHasPreviousAnalysis(false);
 
     try {
       let base64Data = imageBase64;
       if (!base64Data && imageUri) {
         base64Data = await imageToBase64(imageUri);
       }
-
-      if (!base64Data) {
-        throw new Error('이미지 데이터가 없습니다.');
-      }
+      if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
 
       const token = await getToken();
       if (!token) {
@@ -160,94 +90,69 @@ export default function SkinResultScreen() {
       }
 
       const analysisResult = await requestSkinAnalysis({ imageBase64: base64Data }, token);
-
       setUsedFallback(analysisResult.usedMock);
       setDbSaveFailed(analysisResult.dbSaveFailed);
       setSkinType(analysisResult.skinType);
       setMetrics(analysisResult.metrics);
 
-      // 종합 점수 (가중 평균) — 서버 저장과 별개로 화면 표시용 산출
-      const score = Math.round(
-        analysisResult.metrics.moisture * SCORE_WEIGHTS.moisture +
-          analysisResult.metrics.elasticity * SCORE_WEIGHTS.elasticity +
-          analysisResult.metrics.pores * SCORE_WEIGHTS.pores +
-          analysisResult.metrics.wrinkles * SCORE_WEIGHTS.wrinkles +
-          analysisResult.metrics.pigmentation * SCORE_WEIGHTS.pigmentation +
-          analysisResult.metrics.oil * SCORE_WEIGHTS.oil +
-          (100 - analysisResult.metrics.sensitivity) * SCORE_WEIGHTS.sensitivity
-      );
-      setOverallScore(score);
-
-      // 이전 분석 대비 변화량 (저장은 서버가 이미 완료 — 방금 저장된 row는 제외하고 직전 것과 비교)
-      let prevScore: number | null = null;
-      let computedDelta: SkinMetricsDelta | null = null;
-
       if (userId) {
         try {
           const { data: rows } = await supabase
             .from('skin_analyses')
-            .select(
-              'id, overall_score, hydration, oil_level, pores, wrinkles, pigmentation, sensitivity'
-            )
+            .select('id, hydration, oil_level, pores, wrinkles, pigmentation, sensitivity')
             .order('created_at', { ascending: false })
             .limit(2);
+          const previous = (rows ?? []).find((row) => row.id !== analysisResult.analysisId) ?? null;
 
-          // 방금 저장된 분석(analysisId)을 제외한 직전 분석
-          const prevData = (rows ?? []).find((r) => r.id !== analysisResult.analysisId) ?? null;
-
-          if (prevData) {
-            prevScore = prevData.overall_score;
-            computedDelta = {
-              moisture: analysisResult.metrics.moisture - (prevData.hydration ?? 0),
-              oil: analysisResult.metrics.oil - (prevData.oil_level ?? 0),
-              pores: analysisResult.metrics.pores - (prevData.pores ?? 0),
-              wrinkles: analysisResult.metrics.wrinkles - (prevData.wrinkles ?? 0),
-              pigmentation: analysisResult.metrics.pigmentation - (prevData.pigmentation ?? 0),
-              sensitivity: analysisResult.metrics.sensitivity - (prevData.sensitivity ?? 0),
-              elasticity: 0, // DB에 elasticity 컬럼 없음
-              overall: score - (prevData.overall_score ?? 0),
-            };
+          if (previous) {
+            setHasPreviousAnalysis(true);
+            setDelta({
+              moisture: analysisResult.metrics.moisture - (previous.hydration ?? 0),
+              oil: analysisResult.metrics.oil - (previous.oil_level ?? 0),
+              pores: analysisResult.metrics.pores - (previous.pores ?? 0),
+              wrinkles: analysisResult.metrics.wrinkles - (previous.wrinkles ?? 0),
+              pigmentation: analysisResult.metrics.pigmentation - (previous.pigmentation ?? 0),
+              sensitivity: analysisResult.metrics.sensitivity - (previous.sensitivity ?? 0),
+              // 현재 DB에는 탄력 컬럼이 없어 변화량을 지어내지 않는다.
+              elasticity: 0,
+              // 진단지에서는 여러 지표를 합친 단일 수치를 만들지 않는다.
+              overall: 0,
+            });
           }
         } catch {
-          // 이전 분석 조회 실패 시 무시 (첫 분석이거나 DB 오류)
+          // 과거 기록 조회 실패는 현재 분석 결과 표시를 막지 않는다.
         }
       }
 
-      setDelta(computedDelta);
-      setPreviousScore(prevScore);
       setShowCelebration(true);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
         screen: 'skin-result',
         tags: { module: 'S-1', action: 'analyze' },
       });
-      // 게이트(연령·생체 동의)·검증 에러는 서버의 한국어 메시지를 그대로 보여준다
-      setErrorMessage(
-        error instanceof SkinApiError ? error.message : '분석에 실패했어요. 다시 시도해 주세요.'
-      );
+      setErrorMessage(error instanceof SkinApiError ? error.message : DEFAULT_ERROR_MESSAGE);
       setSkinType(null);
       setMetrics(null);
     } finally {
       setIsLoading(false);
     }
-  }, [imageUri, imageBase64, getToken, userId, supabase]);
+  }, [getToken, imageBase64, imageUri, supabase, userId]);
 
-  // 분석은 화면 진입당 정확히 1회만 실행 (clerk-expo getToken은 렌더마다 참조가 바뀌어
-  // 의존성 배열만으로는 effect가 무한 재발화 → 요청 폭풍. body/result.tsx와 동일 가드)
+  // clerk-expo getToken 참조가 바뀌어도 화면 진입당 분석은 한 번만 실행한다.
   const hasStartedRef = useRef(false);
   useEffect(() => {
     if (hasStartedRef.current) return;
     hasStartedRef.current = true;
-    analyzeSkin();
+    void analyzeSkin();
   }, [analyzeSkin]);
 
-  const handleProductRecommendation = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const handleProductRecommendation = useCallback((): void => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
       pathname: '/products',
-      params: { skinType: skinType || '', category: 'skincare' },
+      params: { skinType: skinType ?? '', category: 'skincare' },
     });
-  };
+  }, [skinType]);
 
   if (isLoading) {
     return (
@@ -259,8 +164,8 @@ export default function SkinResultScreen() {
     return (
       <AnalysisErrorState
         message={errorMessage}
-        onRetry={() => router.replace('/(analysis)/skin')}
         onGoHome={() => router.replace('/(tabs)')}
+        onRetry={() => router.replace('/(analysis)/skin')}
         testID="skin-analysis-error"
       />
     );
@@ -268,263 +173,119 @@ export default function SkinResultScreen() {
 
   const typeData = SKIN_TYPE_DATA[skinType];
   const ingredients = INGREDIENT_DATA[skinType];
-
-  // RadarChart 데이터 (6축)
-  const radarData: RadarDataItem[] = [
-    { label: '수분', value: metrics.moisture, maxValue: 100 },
-    { label: '유분', value: metrics.oil, maxValue: 100 },
-    { label: '모공', value: metrics.pores, maxValue: 100 },
-    { label: '탄력', value: metrics.elasticity, maxValue: 100 },
-    { label: '색소', value: metrics.pigmentation, maxValue: 100 },
-    { label: '민감', value: 100 - metrics.sensitivity, maxValue: 100 },
-  ];
-
-  // --- 헤더 콘텐츠 ---
-  const headerContent = (
-    <View style={localStyles.headerContent}>
-      <AIBadge variant="small" />
-      {dbSaveFailed && (
-        <AnalysisSaveFailureNotice onRetry={() => router.replace('/(analysis)/skin')} />
-      )}
-      <Animated.View
-        style={overallScore >= 70 ? (pulseGlowStyle as AnimatedStyle<ViewStyle>) : undefined}
-      >
-        <CircularProgress score={overallScore} size="lg" animate showScore showGradeLabel />
-      </Animated.View>
-      {delta && delta.overall !== 0 && (
-        <ScoreChangeBadge
-          delta={delta.overall}
-          size="sm"
-          previousScore={previousScore || undefined}
-          showPreviousScore={previousScore !== null}
-        />
-      )}
-    </View>
-  );
-
-  // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 조립 (새 fetch/AI 없음)
   const topActions = buildSkinTopActions({
     tips: typeData.tips,
     recommendedIngredients: ingredients.good,
     avoidIngredients: ingredients.avoid,
   });
 
-  // --- 요약 탭 (결론 먼저: 액션 → 시그니처 → 상세는 접기) ---
-  const summaryTab = (
-    <View style={localStyles.tabContent}>
-      {/* ① 그래서, 이렇게 하세요 */}
-      <TopActionsCard actions={topActions} />
-
-      {/* ② 시그니처 — 피부 타입 설명 */}
-      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <GradientCard variant="skin" style={localStyles.descCard}>
-          <Text style={[localStyles.descText, { color: colors.foreground }]}>
-            {typeData.description}
-          </Text>
-        </GradientCard>
-      </Animated.View>
-
-      {/* ③ 핵심 지표 — 접기 (정보 삭제 아님, 접기만) */}
-      <ProgressiveDisclosure
-        expandLabel="핵심 지표 자세히 보기"
-        collapseLabel="접기"
-        summary={
-          <Text style={[localStyles.discloseSummary, { color: colors.mutedForeground }]}>
-            수분 {metrics.moisture} · 탄력 {metrics.elasticity} · 민감 {metrics.sensitivity}
-          </Text>
-        }
-        detail={
-          <View style={localStyles.metricsGap}>
-            <MetricBar label="수분도" value={metrics.moisture} delta={delta?.moisture} />
-            <MetricBar label="탄력" value={metrics.elasticity} delta={delta?.elasticity} />
-            <MetricBar label="민감도" value={metrics.sensitivity} delta={delta?.sensitivity} />
-          </View>
-        }
-      />
-    </View>
-  );
-
-  // --- 상세 탭 ---
-  const detailTab = (
-    <View style={localStyles.tabContent}>
-      {/* RadarChart */}
-      <Animated.View entering={FadeInUp.duration(TIMING.normal)} style={localStyles.chartContainer}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-          피부 밸런스 차트
-        </Text>
-        <RadarChart
-          data={radarData}
-          size={240}
-          animated
-          fillColor={accent.base}
-          strokeColor={accent.base}
-        />
-      </Animated.View>
-
-      {/* 피부 존 맵 */}
-      <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>피부 존 맵</Text>
-        <FaceZoneMap zones={buildFaceZones(metrics)} size={200} testID="face-zone-map" />
-      </Animated.View>
-
-      {/* 전체 MetricBar */}
-      <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>세부 지표</Text>
-        <View style={localStyles.metricsGap}>
-          <MetricBar label="수분도" value={metrics.moisture} delta={delta?.moisture} />
-          <MetricBar label="유분도" value={metrics.oil} delta={delta?.oil} />
-          <MetricBar label="모공" value={metrics.pores} delta={delta?.pores} />
-          <MetricBar label="탄력" value={metrics.elasticity} delta={delta?.elasticity} />
-          <MetricBar label="색소침착" value={metrics.pigmentation} delta={delta?.pigmentation} />
-          <MetricBar label="민감도" value={metrics.sensitivity} delta={delta?.sensitivity} />
-        </View>
-      </Animated.View>
-    </View>
-  );
-
-  // --- 추천 탭 ---
-  const recommendTab = (
-    <View style={localStyles.tabContent}>
-      {/* 스킨케어 팁 */}
-      <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>스킨케어 팁</Text>
-        <GradientCard variant="skin" style={localStyles.tipsCard}>
-          {typeData.tips.map((tip, index) => (
-            <View key={index} style={localStyles.tipItem}>
-              <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
-              <Text style={[localStyles.tipText, { color: colors.foreground }]}>{tip}</Text>
-            </View>
-          ))}
-        </GradientCard>
-      </Animated.View>
-
-      {/* 추천 성분 */}
-      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>추천 성분</Text>
-        <View style={localStyles.tagContainer}>
-          {ingredients.good.map((item, index) => (
-            <View key={index} style={[localStyles.tag, { backgroundColor: status.success + '20' }]}>
-              <Text style={[localStyles.tagText, { color: status.success }]}>{item}</Text>
-            </View>
-          ))}
-        </View>
-      </Animated.View>
-
-      {/* 주의 성분 */}
-      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>주의 성분</Text>
-        <View style={localStyles.tagContainer}>
-          {ingredients.avoid.map((item, index) => (
-            <View key={index} style={[localStyles.tag, { backgroundColor: status.error + '20' }]}>
-              <Text style={[localStyles.tagText, { color: status.error }]}>{item}</Text>
-            </View>
-          ))}
-        </View>
-      </Animated.View>
-    </View>
-  );
+  const sections: ReportSection[] = [
+    {
+      key: 'basis',
+      title: '판정 설명',
+      summary: typeData.description,
+      content: <Text style={styles.evidenceText}>{typeData.description}</Text>,
+    },
+    {
+      key: 'metrics',
+      title: '나머지 피부 지표',
+      summary: '모공·탄력·주름·색소침착',
+      content: (
+        <ReportRowTable testID="skin-detail-metrics">
+          <ReportAttrRow label="모공" value={formatReportReading(metrics.pores, delta?.pores)} />
+          <ReportAttrRow
+            label="탄력"
+            value={formatReportReading(metrics.elasticity, delta?.elasticity)}
+          />
+          <ReportAttrRow
+            label="주름"
+            value={formatReportReading(metrics.wrinkles, delta?.wrinkles)}
+          />
+          <ReportAttrRow
+            label="색소침착"
+            value={formatReportReading(metrics.pigmentation, delta?.pigmentation)}
+          />
+        </ReportRowTable>
+      ),
+    },
+    {
+      key: 'tips',
+      title: '스킨케어 팁',
+      summary: typeData.tips[0],
+      content: <ReportTextList items={typeData.tips} testID="skin-care-tips" />,
+    },
+    {
+      key: 'ingredients',
+      title: '성분 근거',
+      summary: `추천 ${ingredients.good[0]} · 주의 ${ingredients.avoid[0]}`,
+      content: (
+        <ReportRowTable testID="skin-ingredient-rows">
+          <ReportAttrRow label="추천 성분" value={ingredients.good.join(' · ')} />
+          <ReportAttrRow label="주의 성분" value={ingredients.avoid.join(' · ')} />
+        </ReportRowTable>
+      ),
+    },
+  ];
 
   return (
     <>
+      {/* 축하 연출은 창업자 결정 대기 범위라 이번 진단지 수리에서 유지한다. */}
       <CelebrationEffect
-        type="analysis_complete"
-        visible={showCelebration}
         onComplete={() => {
           setShowCelebration(false);
-          if (!previousScore) setShowBadge(true);
+          if (!hasPreviousAnalysis) setShowBadge(true);
         }}
+        type="analysis_complete"
+        visible={showCelebration}
       />
       <BadgeDrop
         badge={{ icon: '🔬', name: '피부 관리사', description: '피부 분석 완료!' }}
-        visible={showBadge}
         onDismiss={() => setShowBadge(false)}
+        visible={showBadge}
       />
-      <ResultLayout
-        moduleKey="skin"
-        title="피부 분석 결과"
-        verdict={typeData.name}
+      <ReportResultLayout
+        attributes={
+          <ReportRowTable testID="skin-report-attrs">
+            <ReportAttrRow
+              label="수분"
+              value={formatReportReading(metrics.moisture, delta?.moisture)}
+            />
+            <ReportAttrRow label="유분" value={formatReportReading(metrics.oil, delta?.oil)} />
+            <ReportAttrRow
+              label="민감도"
+              value={formatReportReading(metrics.sensitivity, delta?.sensitivity)}
+            />
+          </ReportRowTable>
+        }
+        conclusion={<ReportActionList actions={topActions} testID="skin-report-actions" />}
+        eyebrow="피부 분석 결과"
+        imageStyle={styles.skinImage}
         imageUri={imageUri}
-        imageStyle={localStyles.skinImage}
-        headerContent={headerContent}
-        trustBadgeType={usedFallback ? 'fallback' : 'ai'}
-        usedFallback={usedFallback}
-        summaryTab={summaryTab}
-        detailTab={detailTab}
-        recommendTab={recommendTab}
-        primaryActionText="🧴 피부 맞춤 제품 보기"
+        moduleKey="skin"
         onPrimaryAction={handleProductRecommendation}
+        onSaveRetry={() => router.replace('/(analysis)/skin')}
+        primaryActionText="피부 맞춤 제품 보기"
         retryPath="/(analysis)/skin"
+        saveFailed={dbSaveFailed}
+        sections={sections}
         testID="skin-analysis-result"
+        usedFallback={usedFallback}
+        verdict={typeData.name}
       />
     </>
   );
 }
 
-const localStyles = StyleSheet.create({
-  headerContent: {
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
+const styles = StyleSheet.create({
   skinImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 3,
+    borderRadius: 52,
+    height: 104,
+    width: 104,
   },
-  tabContent: {
-    gap: spacing.mlg,
-    paddingBottom: spacing.sm,
-  },
-  descCard: {
-    padding: spacing.md,
-  },
-  descText: {
+  evidenceText: {
+    color: REPORT_COLORS.mutedInk,
     fontSize: typography.size.sm,
-    lineHeight: 22,
-  },
-  sectionTitle: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.bold,
-    marginBottom: spacing.smx,
-  },
-  discloseSummary: {
-    fontSize: typography.size.sm,
-  },
-  metricsGap: {
-    gap: 14,
-  },
-  chartContainer: {
-    alignItems: 'center',
-  },
-  tipsCard: {
-    padding: spacing.md,
-    gap: spacing.smd,
-  },
-  tipItem: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  tipBullet: {
-    fontSize: typography.size.base,
-    lineHeight: 22,
-  },
-  tipText: {
-    fontSize: typography.size.sm,
-    lineHeight: 22,
-    flex: 1,
-  },
-  tagContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  tag: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.circle,
-  },
-  tagText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
+    lineHeight: 21,
+    paddingBottom: spacing.xs,
   },
 });

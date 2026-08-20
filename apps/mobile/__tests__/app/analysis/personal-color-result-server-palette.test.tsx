@@ -1,231 +1,173 @@
-import { fireEvent, render, waitFor, within } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
+import { StyleSheet } from 'react-native';
 
 import PersonalColorResultScreen from '../../../app/(analysis)/personal-color/result';
+import { renderWithTheme } from '../../helpers/test-utils';
+
+const mockRequestPersonalColorAnalysis = jest.fn();
+const mockGetToken = jest.fn().mockResolvedValue('token-1');
+const mockPush = jest.fn();
+const mockReplace = jest.fn();
+
+jest.mock('@clerk/clerk-expo', () => ({
+  useAuth: () => ({ getToken: mockGetToken, isSignedIn: true }),
+}));
 
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
+  selectionAsync: jest.fn(),
   ImpactFeedbackStyle: { Medium: 'medium' },
 }));
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
+  router: {
+    push: (...args: unknown[]) => mockPush(...args),
+    replace: (...args: unknown[]) => mockReplace(...args),
+  },
   useLocalSearchParams: () => ({
     imageUri: 'file:///personal-color.jpg',
     imageBase64: 'x'.repeat(200),
   }),
 }));
 
-jest.mock('@clerk/clerk-expo', () => ({
-  useAuth: () => ({ getToken: jest.fn().mockResolvedValue('token-1') }),
-}));
-
-const mockRequestPersonalColorAnalysis = jest.fn();
-jest.mock('../../../lib/api/personalColor', () => ({
-  requestPersonalColorAnalysis: (...args: unknown[]) =>
-    (mockRequestPersonalColorAnalysis as jest.Mock)(...args),
-  PersonalColorApiError: class PersonalColorApiError extends Error {},
-  getPersonalColorSubtypeLabel: (subtype: string) => {
-    const labels: Record<string, string> = {
-      bright: '브라이트',
-      light: '라이트',
-      true: '트루',
-      mute: '뮤트',
-      deep: '딥',
-    };
-    return labels[subtype];
-  },
-}));
-
-jest.mock('../../../lib/gemini', () => ({
-  imageToBase64: jest.fn().mockResolvedValue('x'.repeat(200)),
-}));
-
-jest.mock('../../../lib/monitoring/sentry', () => ({ captureError: jest.fn() }));
-
-jest.mock('../../../components/analysis', () => {
-  const { Text, View } = require('react-native');
+jest.mock('expo-font', () => ({ useFonts: jest.fn(() => [true, null]) }));
+jest.mock('expo-image', () => {
+  const ReactModule = require('react');
+  const ReactNative = require('react-native');
   return {
-    AnalysisLoadingState: ({ testID }: { testID?: string }) => <View testID={testID} />,
-    AnalysisErrorState: ({ testID }: { testID?: string }) => <View testID={testID} />,
-    AnalysisSaveFailureNotice: ({ onRetry }: { onRetry: () => void }) => (
-      <Text testID="analysis-save-failure-notice" onPress={onRetry}>
-        저장 실패
-      </Text>
-    ),
-    ResultLayout: ({
-      testID,
-      headerContent,
-      summaryTab,
-      detailTab,
-      recommendTab,
-      usedFallback,
-    }: {
-      testID?: string;
-      headerContent?: React.ReactNode;
-      summaryTab?: React.ReactNode;
-      detailTab?: React.ReactNode;
-      recommendTab?: React.ReactNode;
-      usedFallback?: boolean;
-    }) => (
-      <View testID={testID}>
-        <Text testID="used-fallback">{String(usedFallback)}</Text>
-        {headerContent}
-        {summaryTab}
-        {detailTab}
-        {recommendTab}
-      </View>
-    ),
-    ColorPalette: ({ colors, testID }: { colors: { color: string }[]; testID?: string }) => (
-      <View testID={testID}>
-        <Text>{colors.map((color) => color.color).join(',')}</Text>
-      </View>
-    ),
-    ColorHarmonyGuide: ({ baseHex }: { baseHex: string }) => <Text>{baseHex}</Text>,
-    MetricBar: () => <View />,
-    DrapingPreview: ({
-      palette,
-      avoidPalette,
-      seasonDescription,
-    }: {
-      palette: string[];
-      avoidPalette: string[];
-      seasonDescription: string;
-    }) => (
-      <View testID="draping-preview">
-        <Text>{palette.join(',')}</Text>
-        <Text>{avoidPalette.join(',')}</Text>
-        <Text>{seasonDescription}</Text>
-      </View>
-    ),
-    TopActionsCard: () => <View />,
-    useAnalysisStyles: () => ({
-      module: {
-        personalColor: { base: '#EC4899', light: '#F9A8D4', dark: '#BE185D' },
-      },
-    }),
+    Image: (props: Record<string, unknown>) =>
+      ReactModule.createElement(ReactNative.View, props, props.children),
   };
 });
 
-jest.mock('../../../components/common/AIBadge', () => {
-  const { View } = require('react-native');
-  return { AIBadge: () => <View /> };
+jest.mock('../../../lib/api/personalColor', () => ({
+  requestPersonalColorAnalysis: (...args: unknown[]) => mockRequestPersonalColorAnalysis(...args),
+  getPersonalColorSubtypeLabel: (value: string) =>
+    ({ bright: '브라이트', light: '라이트', true: '트루', mute: '뮤트', deep: '딥' })[value],
+  PersonalColorApiError: class PersonalColorApiError extends Error {},
+}));
+
+jest.mock('../../../lib/gemini', () => ({ imageToBase64: jest.fn() }));
+jest.mock('../../../lib/monitoring/sentry', () => ({ captureError: jest.fn() }));
+jest.mock('../../../lib/analytics/tracker', () => ({ trackAnalysisResultView: jest.fn() }));
+
+jest.mock('../../../components/analysis/AnalysisLoadingState', () => {
+  const ReactModule = require('react');
+  const ReactNative = require('react-native');
+  return {
+    AnalysisLoadingState: ({ testID }: { testID?: string }) =>
+      ReactModule.createElement(ReactNative.View, { testID }),
+  };
 });
 
-jest.mock('../../../components/common/ProgressiveDisclosure', () => {
-  const { View } = require('react-native');
+jest.mock('../../../components/analysis/AnalysisErrorState', () => {
+  const ReactModule = require('react');
+  const ReactNative = require('react-native');
   return {
-    ProgressiveDisclosure: ({
-      summary,
-      detail,
-    }: {
-      summary?: React.ReactNode;
-      detail?: React.ReactNode;
-    }) => (
-      <View>
-        {summary}
-        {detail}
-      </View>
-    ),
+    AnalysisErrorState: ({ testID }: { testID?: string }) =>
+      ReactModule.createElement(ReactNative.View, { testID }),
   };
 });
 
 jest.mock('../../../components/ui', () => {
-  const { View } = require('react-native');
+  const ReactModule = require('react');
+  const ReactNative = require('react-native');
   return {
-    GradientCard: ({ children }: { children?: React.ReactNode }) => <View>{children}</View>,
-    CelebrationEffect: () => <View />,
-    BadgeDrop: () => <View />,
+    CelebrationEffect: () => ReactModule.createElement(ReactNative.View),
+    BadgeDrop: () => ReactModule.createElement(ReactNative.View),
   };
 });
 
-jest.mock('../../../lib/analysis', () => ({ buildPersonalColorTopActions: () => [] }));
-
-jest.mock('../../../lib/theme', () => {
-  const typography = {
-    size: { sm: 14, base: 16 },
-    weight: { medium: '500', semibold: '600', bold: '700' },
-  };
+jest.mock('react-native-safe-area-context', () => {
+  const ReactModule = require('react');
+  const ReactNative = require('react-native');
   return {
-    useTheme: () => ({
-      colors: { foreground: '#111111', mutedForeground: '#666666' },
-      typography,
-      isDark: false,
-    }),
-    typography,
-    radii: { circle: 999 },
-    spacing: { xs: 4, sm: 8, smx: 10, smd: 12, md: 16, mlg: 20 },
+    SafeAreaView: (props: Record<string, unknown>) =>
+      ReactModule.createElement(ReactNative.View, props, props.children),
   };
 });
 
-describe('PersonalColorResultScreen 서버 팔레트 배선', () => {
+const SERVER_RESULT = {
+  season: 'Spring',
+  seasonSubtype: 'bright',
+  confidence: 0.91,
+  description: '서버 분석 설명',
+  bestColors: ['#123456', '#ABCDEF'],
+  worstColors: ['#654321'],
+  usedMock: false,
+  dbSaveFailed: false,
+};
+
+describe('퍼스널컬러 결과 서버 팔레트·진단지 배선', () => {
   beforeEach(() => {
-    mockRequestPersonalColorAnalysis.mockReset();
+    jest.clearAllMocks();
+    mockGetToken.mockResolvedValue('token-1');
+    mockRequestPersonalColorAnalysis.mockResolvedValue(SERVER_RESULT);
   });
 
-  it('서버 12톤과 팔레트를 시즌 고정표보다 우선해 결과 화면에 표시한다', async () => {
-    mockRequestPersonalColorAnalysis.mockResolvedValue({
-      season: 'Spring',
-      seasonSubtype: 'bright',
-      confidence: 0.91,
-      description: '서버 분석 설명',
-      bestColors: ['#123456', '#ABCDEF'],
-      worstColors: ['#654321'],
-      usedMock: false,
-      dbSaveFailed: false,
-    });
-
-    const screen = render(<PersonalColorResultScreen />);
+  it('서버 12톤·팔레트를 우선하고 신뢰도는 채점 없이 평문으로만 표시한다', async () => {
+    const screen = renderWithTheme(<PersonalColorResultScreen />);
 
     await waitFor(() =>
       expect(screen.getByTestId('analysis-personal-color-result-screen')).toBeTruthy()
     );
 
+    expect(screen.getByText('봄 웜톤')).toBeTruthy();
     expect(screen.getByText('브라이트')).toBeTruthy();
-    expect(within(screen.getByTestId('pc-best-colors')).getByText('#123456,#ABCDEF')).toBeTruthy();
-    expect(within(screen.getByTestId('pc-worst-colors')).getByText('#654321')).toBeTruthy();
     expect(
-      within(screen.getByTestId('pc-best-colors')).queryByText(
-        '#FFB6C1,#FFDAB9,#FFA07A,#F0E68C,#98FB98,#FFD700'
-      )
-    ).toBeNull();
+      StyleSheet.flatten(screen.getByTestId('pc-best-colors-swatch-0').props.style).backgroundColor
+    ).toBe('#123456');
+    expect(
+      StyleSheet.flatten(screen.getByTestId('pc-best-colors-swatch-1').props.style).backgroundColor
+    ).toBe('#ABCDEF');
+    expect(screen.queryByTestId('pc-best-colors-swatch-2')).toBeNull();
+    expect(screen.getByText('분석 신뢰도 91%')).toBeTruthy();
+    expect(screen.queryByText(/웜톤.*91|쿨톤.*9/)).toBeNull();
+    expect(screen.queryByTestId('pc-warm-score')).toBeNull();
+
+    fireEvent.press(
+      screen.getByTestId('analysis-personal-color-result-screen-section-avoid-colors-trigger')
+    );
+    expect(
+      StyleSheet.flatten(screen.getByTestId('pc-worst-colors-swatch-0').props.style).backgroundColor
+    ).toBe('#654321');
+    expect(mockRequestPersonalColorAnalysis).toHaveBeenCalledTimes(1);
   });
 
-  it('서버 팔레트가 비어 고정표를 쓰면 폴백임을 정직하게 표시한다', async () => {
+  it('서버 팔레트가 비어 정적 참고표를 쓰면 예시 결과·낮은 신뢰도로 고지한다', async () => {
     mockRequestPersonalColorAnalysis.mockResolvedValue({
-      season: 'Spring',
-      seasonSubtype: null,
-      confidence: 0.91,
-      description: '구형 서버 응답',
+      ...SERVER_RESULT,
       bestColors: [],
+      seasonSubtype: null,
       worstColors: [],
-      usedMock: false,
-      dbSaveFailed: false,
     });
+    const screen = renderWithTheme(<PersonalColorResultScreen />);
 
-    const screen = render(<PersonalColorResultScreen />);
-
-    await waitFor(() => expect(screen.getByTestId('used-fallback').props.children).toBe('true'));
+    await waitFor(() =>
+      expect(screen.getByTestId('analysis-personal-color-result-screen-fallback')).toBeTruthy()
+    );
+    expect(screen.getAllByText('예시 결과 · 낮은 신뢰도')).toHaveLength(2);
+    expect(
+      StyleSheet.flatten(screen.getByTestId('pc-best-colors-swatch-0').props.style).backgroundColor
+    ).toBe('#FFB6C1');
+    expect(screen.queryByText('분석 신뢰도 91%')).toBeNull();
   });
 
-  it('DB 저장 실패를 실제로 렌더하고 재분석 경로를 연다', async () => {
-    mockRequestPersonalColorAnalysis.mockResolvedValue({
-      season: 'Spring',
-      seasonSubtype: 'bright',
-      confidence: 0.91,
-      description: '서버 분석 설명',
-      bestColors: ['#123456'],
-      worstColors: ['#654321'],
-      usedMock: false,
-      dbSaveFailed: true,
+  it('저장 실패 재시도와 기존 시즌 제품 CTA를 보존한다', async () => {
+    mockRequestPersonalColorAnalysis.mockResolvedValue({ ...SERVER_RESULT, dbSaveFailed: true });
+    const screen = renderWithTheme(<PersonalColorResultScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId('analysis-personal-color-result-screen-save-failed')).toBeTruthy()
+    );
+    fireEvent.press(screen.getByTestId('analysis-personal-color-result-screen-save-retry'));
+    expect(mockReplace).toHaveBeenCalledWith('/(analysis)/personal-color');
+
+    fireEvent.press(screen.getByTestId('analysis-personal-color-result-screen-buttons-primary'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/products',
+      params: { season: 'Spring', category: 'makeup' },
     });
-
-    const screen = render(<PersonalColorResultScreen />);
-
-    await waitFor(() => expect(screen.getByTestId('analysis-save-failure-notice')).toBeTruthy());
-    fireEvent.press(screen.getByTestId('analysis-save-failure-notice'));
-
-    const { router } = require('expo-router');
-    expect(router.replace).toHaveBeenCalledWith('/(analysis)/personal-color');
   });
 });

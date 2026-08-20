@@ -1,43 +1,32 @@
-/**
- * H-1 헤어 분석 — 결과 V2
- *
- * ResultLayout 3탭 구조:
- *  요약: 모발 유형 + 핵심 점수 4개
- *  상세: RadarChart 4축 + 주요 고민
- *  추천: 케어 루틴 + 추천 헤어스타일
- */
+/** H-1 헤어 분석 결과 — ADR-120 진단지 문법. */
 import { useAuth } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 import {
-  AnalysisLoadingState,
   AnalysisErrorState,
-  AnalysisSaveFailureNotice,
-  ResultLayout,
-  MetricBar,
-  TopActionsCard,
-  useAnalysisStyles,
+  AnalysisLoadingState,
+  REPORT_COLORS,
+  ReportActionList,
+  ReportAttrRow,
+  ReportResultLayout,
+  ReportRowTable,
+  ReportTextList,
+  type ReportSection,
 } from '@/components/analysis';
-import { RadarChart, type RadarDataItem } from '@/components/charts';
-import { AIBadge } from '@/components/common/AIBadge';
-import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
-import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
+import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import {
   buildHairTopActions,
   getHairCautionIngredients,
   getScalpConcernNotice,
 } from '@/lib/analysis';
-import { TIMING } from '@/lib/animations';
-import { requestHairAnalysis, HairApiError, type HairAnalysisApiResult } from '@/lib/api/hair';
+import { HairApiError, requestHairAnalysis, type HairAnalysisApiResult } from '@/lib/api/hair';
 import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { typography, radii, spacing } from '@/lib/theme';
+import { radii, spacing, typography } from '@/lib/theme';
 
-// 한국어 라벨 매핑
 const TEXTURE_LABELS: Record<HairAnalysisApiResult['texture'], string> = {
   straight: '직모',
   wavy: '웨이브',
@@ -58,11 +47,10 @@ const SCALP_LABELS: Record<HairAnalysisApiResult['scalpCondition'], string> = {
   sensitive: '민감성 두피',
 };
 
-export default function HairResultScreen() {
-  const { module, colors, isDark } = useAnalysisStyles();
-  const accent = module.hair;
-  const { getToken } = useAuth();
+const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주세요.';
 
+export default function HairResultScreen(): React.JSX.Element {
+  const { getToken } = useAuth();
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
@@ -71,13 +59,11 @@ export default function HairResultScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<HairAnalysisApiResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
-  const [errorMessage, setErrorMessage] =
-    useState<string>('분석에 실패했어요. 다시 시도해 주세요.');
+  const [errorMessage, setErrorMessage] = useState<string>(DEFAULT_ERROR_MESSAGE);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
 
-  // 헤어 분석 — 웹 POST /api/analyze/hair 정본 (실 AI + hair_analyses 저장 + 연령/생체 게이트)
-  const analyzeHair = useCallback(async () => {
+  const analyzeHair = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setUsedFallback(false);
     try {
@@ -101,28 +87,25 @@ export default function HairResultScreen() {
         screen: 'hair-result',
         tags: { module: 'H-1', action: 'analyze' },
       });
-      // 게이트(연령·생체 동의)·검증 에러는 서버의 한국어 메시지를 그대로 보여준다
-      setErrorMessage(
-        error instanceof HairApiError ? error.message : '분석에 실패했어요. 다시 시도해 주세요.'
-      );
+      setErrorMessage(error instanceof HairApiError ? error.message : DEFAULT_ERROR_MESSAGE);
       setResult(null);
     } finally {
       setIsLoading(false);
     }
-  }, [imageUri, imageBase64, getToken]);
+  }, [getToken, imageBase64, imageUri]);
 
-  // 분석은 화면 진입당 정확히 1회만 실행 (clerk-expo getToken 참조 불안정 가드 — body/result.tsx 동일)
+  // clerk-expo getToken 참조가 바뀌어도 화면 진입당 분석은 한 번만 실행한다.
   const hasStartedRef = useRef(false);
   useEffect(() => {
     if (hasStartedRef.current) return;
     hasStartedRef.current = true;
-    analyzeHair();
+    void analyzeHair();
   }, [analyzeHair]);
 
-  const handleProductRecommendation = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const handleProductRecommendation = useCallback((): void => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({ pathname: '/products', params: { category: 'haircare' } });
-  };
+  }, []);
 
   if (isLoading) {
     return <AnalysisLoadingState message="헤어 상태를 분석 중이에요..." testID="hair-loading" />;
@@ -132,315 +115,144 @@ export default function HairResultScreen() {
     return (
       <AnalysisErrorState
         message={errorMessage}
-        onRetry={() => router.replace('/(analysis)/hair')}
         onGoHome={() => router.replace('/(tabs)')}
+        onRetry={() => router.replace('/(analysis)/hair')}
         testID="hair-error"
       />
     );
   }
 
-  // RadarChart 데이터 (4축)
-  const radarData: RadarDataItem[] = [
-    { label: '윤기', value: result.scores.shine, maxValue: 100 },
-    { label: '탄력', value: result.scores.elasticity, maxValue: 100 },
-    { label: '밀도', value: result.scores.density, maxValue: 100 },
-    { label: '두피', value: result.scores.scalpHealth, maxValue: 100 },
-  ];
-
-  // 평균 점수
-  const avgScore = Math.round(
-    (result.scores.shine +
-      result.scores.elasticity +
-      result.scores.density +
-      result.scores.scalpHealth) /
-      4
-  );
-
-  // --- 헤더 콘텐츠 ---
-  const headerContent = (
-    <View style={localStyles.headerContent}>
-      <AIBadge variant="small" />
-      {result.dbSaveFailed && (
-        <AnalysisSaveFailureNotice onRetry={() => router.replace('/(analysis)/hair')} />
-      )}
-      <Text style={[localStyles.subInfo, { color: colors.mutedForeground }]}>
-        {SCALP_LABELS[result.scalpCondition]} · 손상도 {result.damageLevel}%
-      </Text>
-      <View style={[localStyles.scoreBadge, { backgroundColor: accent.base }]}>
-        <Text style={[localStyles.scoreBadgeText, { color: colors.card }]}>종합 {avgScore}점</Text>
-      </View>
-    </View>
-  );
-
-  // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 조립 (새 fetch/AI 없음)
   const topActions = buildHairTopActions({
     careRoutine: result.careRoutine,
     recommendedStyles: result.recommendedStyles,
   });
-
-  // --- 요약 탭 (결론 먼저: 액션 → 시그니처 → 상세는 접기) ---
-  const summaryTab = (
-    <View style={localStyles.tabContent}>
-      {/* ① 그래서, 이렇게 하세요 */}
-      <TopActionsCard actions={topActions} />
-
-      {/* ② 시그니처 — 주요 고민 */}
-      {result.mainConcerns.length > 0 && (
-        <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>주요 고민</Text>
-          <GradientCard variant="hair" style={localStyles.tipsCard}>
-            {result.mainConcerns.map((concern, i) => (
-              <View key={i} style={localStyles.tipItem}>
-                <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
-                <Text style={[localStyles.tipText, { color: colors.foreground }]}>{concern}</Text>
-              </View>
-            ))}
-          </GradientCard>
-        </Animated.View>
-      )}
-
-      {/* ③ 모발 점수 — 접기 (정보 삭제 아님, 접기만) */}
-      <ProgressiveDisclosure
-        expandLabel="모발 점수 자세히 보기"
-        collapseLabel="접기"
-        summary={
-          <Text style={[localStyles.discloseSummary, { color: colors.mutedForeground }]}>
-            종합 {avgScore}점 · 윤기·탄력·밀도·두피
-          </Text>
-        }
-        detail={
-          <View style={localStyles.metricsGap}>
-            <MetricBar label="윤기" value={result.scores.shine} />
-            <MetricBar label="탄력" value={result.scores.elasticity} />
-            <MetricBar label="밀도" value={result.scores.density} />
-            <MetricBar label="두피 건강" value={result.scores.scalpHealth} />
-          </View>
-        }
-      />
-    </View>
-  );
-
-  // --- 상세 탭 ---
-  const detailTab = (
-    <View style={localStyles.tabContent}>
-      <Animated.View entering={FadeInUp.duration(TIMING.normal)} style={localStyles.chartContainer}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-          모발 밸런스 차트
-        </Text>
-        <RadarChart
-          data={radarData}
-          size={220}
-          animated
-          fillColor={accent.base}
-          strokeColor={accent.base}
-        />
-      </Animated.View>
-
-      <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
-        <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>손상 정도</Text>
-        <MetricBar label={`손상도 ${result.damageLevel}%`} value={result.damageLevel} />
-      </Animated.View>
-    </View>
-  );
-
-  // 두피 타입별 주의 성분 + 의료 상담 필요 고민 안내 (웹 W2 포팅)
   const cautionIngredients = getHairCautionIngredients(result.scalpCondition);
   const scalpConcernNotice = getScalpConcernNotice(result.mainConcerns);
 
-  // --- 추천 탭 ---
-  const recommendTab = (
-    <View style={localStyles.tabContent}>
-      {result.careRoutine.length > 0 && (
-        <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            추천 케어 루틴
-          </Text>
-          <GradientCard variant="hair" style={localStyles.tipsCard}>
-            {result.careRoutine.map((routine, i) => (
-              <View key={i} style={localStyles.tipItem}>
-                <Text style={[localStyles.stepNum, { color: accent.base }]}>{i + 1}.</Text>
-                <Text style={[localStyles.tipText, { color: colors.foreground }]}>{routine}</Text>
-              </View>
-            ))}
-          </GradientCard>
-        </Animated.View>
-      )}
+  const sections: ReportSection[] = [];
+  if (result.mainConcerns.length > 0) {
+    sections.push({
+      key: 'concerns',
+      title: '주요 고민',
+      summary: result.mainConcerns[0],
+      content: <ReportTextList items={result.mainConcerns} testID="hair-concerns" />,
+    });
+  }
 
-      {result.recommendedStyles.length > 0 && (
-        <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            추천 헤어스타일
-          </Text>
-          <View style={localStyles.tagContainer}>
-            {result.recommendedStyles.map((style, i) => (
-              <View
-                key={i}
-                style={[
-                  localStyles.tag,
-                  { backgroundColor: isDark ? `${accent.dark}20` : `${accent.light}30` },
-                ]}
-              >
-                <Text style={[localStyles.tagText, { color: accent.base }]}>{style}</Text>
-              </View>
-            ))}
-          </View>
-        </Animated.View>
-      )}
+  sections.push({
+    key: 'condition',
+    title: '항목별 컨디션',
+    summary: '윤기·탄력·밀도·두피 건강',
+    content: (
+      <ReportRowTable testID="hair-condition-rows">
+        <ReportAttrRow label="윤기" value={`${result.scores.shine}점`} />
+        <ReportAttrRow label="탄력" value={`${result.scores.elasticity}점`} />
+        <ReportAttrRow label="밀도" value={`${result.scores.density}점`} />
+        <ReportAttrRow label="두피 건강" value={`${result.scores.scalpHealth}점`} />
+      </ReportRowTable>
+    ),
+  });
 
-      {/* 주의 성분 — 추천만으로는 "무엇을 피할지" 모른다 (웹 W2 포팅) */}
-      {cautionIngredients.length > 0 && (
-        <Animated.View entering={FadeInUp.delay(150).duration(TIMING.normal)}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            주의 성분 (피하면 좋아요)
-          </Text>
-          <GradientCard variant="hair" style={localStyles.tipsCard}>
-            {cautionIngredients.map((ingredient, i) => (
-              <View key={i} style={localStyles.tipItem}>
-                <Text style={[localStyles.tipBullet, { color: accent.base }]}>•</Text>
-                <Text style={[localStyles.tipText, { color: colors.foreground }]}>
-                  {ingredient}
-                </Text>
-              </View>
-            ))}
-          </GradientCard>
-        </Animated.View>
-      )}
+  if (result.careRoutine.length > 0 || result.recommendedStyles.length > 0) {
+    sections.push({
+      key: 'care',
+      title: '케어와 스타일',
+      summary: result.careRoutine[0] ?? result.recommendedStyles[0],
+      content: (
+        <View style={styles.sectionGroups} testID="hair-care-and-style">
+          {result.careRoutine.length > 0 ? (
+            <ReportTextList
+              heading="추천 케어 루틴"
+              items={result.careRoutine}
+              testID="hair-care"
+            />
+          ) : null}
+          {result.recommendedStyles.length > 0 ? (
+            <ReportTextList
+              heading="추천 헤어스타일"
+              items={result.recommendedStyles}
+              testID="hair-styles"
+            />
+          ) : null}
+        </View>
+      ),
+    });
+  }
 
-      {/* 두피 고민 안내 — 진단이 아닌 "전문의 상담 권유"만 (경계 준수) */}
-      {scalpConcernNotice && (
-        <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-          <View style={[localStyles.noticeCard, { borderColor: colors.border }]}>
-            <Text style={[localStyles.noticeText, { color: colors.mutedForeground }]}>
-              {scalpConcernNotice}
-            </Text>
-          </View>
-        </Animated.View>
-      )}
-    </View>
-  );
+  if (cautionIngredients.length > 0 || scalpConcernNotice) {
+    sections.push({
+      key: 'cautions',
+      title: '주의할 점',
+      summary: cautionIngredients[0] ?? scalpConcernNotice ?? undefined,
+      content: (
+        <View style={styles.sectionGroups} testID="hair-cautions">
+          {cautionIngredients.length > 0 ? (
+            <ReportTextList
+              heading="피하면 좋은 성분"
+              items={cautionIngredients}
+              testID="hair-caution-ingredients"
+            />
+          ) : null}
+          {scalpConcernNotice ? <Text style={styles.noticeText}>{scalpConcernNotice}</Text> : null}
+        </View>
+      ),
+    });
+  }
 
   return (
     <>
+      {/* 축하 연출은 창업자 결정 대기 범위라 이번 진단지 수리에서 유지한다. */}
       <CelebrationEffect
-        type="analysis_complete"
-        visible={showCelebration}
         onComplete={() => {
           setShowCelebration(false);
           setShowBadge(true);
         }}
+        type="analysis_complete"
+        visible={showCelebration}
       />
       <BadgeDrop
         badge={{ icon: '💇', name: '헤어 전문가', description: '헤어 분석 완료!' }}
-        visible={showBadge}
         onDismiss={() => setShowBadge(false)}
+        visible={showBadge}
       />
-      <ResultLayout
-        moduleKey="hair"
-        title="헤어 분석 결과"
-        verdict={`${TEXTURE_LABELS[result.texture]} / ${THICKNESS_LABELS[result.thickness]}`}
+      <ReportResultLayout
+        attributes={
+          <ReportRowTable testID="hair-report-attrs">
+            <ReportAttrRow label="두피" value={SCALP_LABELS[result.scalpCondition]} />
+            <ReportAttrRow label="손상도" value={`${result.damageLevel}%`} />
+          </ReportRowTable>
+        }
+        conclusion={<ReportActionList actions={topActions} testID="hair-report-actions" />}
+        eyebrow="헤어 분석 결과"
+        imageStyle={styles.hairImage}
         imageUri={imageUri}
-        imageStyle={localStyles.hairImage}
-        headerContent={headerContent}
-        trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
-        usedFallback={usedFallback}
-        summaryTab={summaryTab}
-        detailTab={detailTab}
-        recommendTab={recommendTab}
-        primaryActionText="💇 헤어 제품 추천"
+        moduleKey="hair"
         onPrimaryAction={handleProductRecommendation}
+        onSaveRetry={() => router.replace('/(analysis)/hair')}
+        primaryActionText="헤어 제품 추천"
         retryPath="/(analysis)/hair"
+        saveFailed={result.dbSaveFailed}
+        sections={sections}
         testID="hair-analysis-result"
+        usedFallback={usedFallback}
+        verdict={`${TEXTURE_LABELS[result.texture]} · ${THICKNESS_LABELS[result.thickness]}`}
       />
     </>
   );
 }
 
-const localStyles = StyleSheet.create({
-  headerContent: {
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  subInfo: {
-    fontSize: typography.size.sm,
-  },
-  scoreBadge: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.xl,
-    marginTop: spacing.xs,
-  },
-  scoreBadgeText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
-  },
+const styles = StyleSheet.create({
   hairImage: {
-    width: 160,
-    height: 200,
-    borderRadius: radii.xl,
-    borderWidth: 3,
-  },
-  tabContent: {
-    gap: spacing.mlg,
-    paddingBottom: spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.bold,
-    marginBottom: spacing.smx,
-  },
-  discloseSummary: {
-    fontSize: typography.size.sm,
-  },
-  metricsGap: {
-    gap: 14,
-  },
-  chartContainer: {
-    alignItems: 'center',
-  },
-  tipsCard: {
-    padding: spacing.md,
-    gap: spacing.smd,
-  },
-  tipItem: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  tipBullet: {
-    fontSize: typography.size.base,
-    lineHeight: 22,
-  },
-  stepNum: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
-    lineHeight: 22,
-    minWidth: 20,
-  },
-  tipText: {
-    fontSize: typography.size.sm,
-    lineHeight: 22,
-    flex: 1,
-  },
-  tagContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  tag: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.circle,
-  },
-  tagText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
-  noticeCard: {
-    borderWidth: 1,
     borderRadius: radii.lg,
-    padding: spacing.md,
+    height: 168,
+    width: 126,
+  },
+  sectionGroups: {
+    gap: spacing.mlg,
   },
   noticeText: {
+    color: REPORT_COLORS.mutedInk,
     fontSize: typography.size.sm,
-    lineHeight: 20,
+    lineHeight: 21,
   },
 });

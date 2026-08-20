@@ -1,156 +1,86 @@
-/**
- * PC-1 퍼스널 컬러 진단 — 결과 화면 V2
- *
- * ResultLayout 기반 3탭 구성:
- *  요약: 시즌 타입 + 대표 컬러 팔레트 + 같은 타입 연예인
- *  상세: 웜/쿨 분석 + 피해야 할 색상
- *  추천: 스타일링 팁 + 메이크업 포인트
- */
+/** PC-1 퍼스널 컬러 결과 — ADR-120 진단지 문법. */
 import { useAuth } from '@clerk/clerk-expo';
-import type { PersonalColorSeason } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import {
-  AnalysisLoadingState,
   AnalysisErrorState,
-  AnalysisSaveFailureNotice,
-  ResultLayout,
-  ColorPalette,
+  AnalysisLoadingState,
   ColorHarmonyGuide,
-  MetricBar,
   DrapingPreview,
-  TopActionsCard,
-  useAnalysisStyles,
+  ReportActionList,
+  ReportAttrRow,
+  ReportColorBand,
+  ReportDivider,
+  ReportResultLayout,
+  ReportRowTable,
+  ReportTextList,
+  type ReportSection,
 } from '@/components/analysis';
-import { AIBadge } from '@/components/common/AIBadge';
-import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
-import { GradientCard, CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { buildPersonalColorTopActions, type TopAction } from '@/lib/analysis';
-import { TIMING } from '@/lib/animations';
+import { BadgeDrop, CelebrationEffect } from '@/components/ui';
+import { buildPersonalColorTopActions } from '@/lib/analysis';
+import {
+  PERSONAL_COLOR_REPORT_DATA,
+  type PersonalColorReportSeasonInfo,
+} from '@/lib/analysis/personal-color-report-data';
 import {
   getPersonalColorSubtypeLabel,
-  requestPersonalColorAnalysis,
   PersonalColorApiError,
+  requestPersonalColorAnalysis,
   type PersonalColorApiResult,
 } from '@/lib/api/personalColor';
 import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { useTheme, typography, radii, spacing } from '@/lib/theme';
+import { radii, spacing } from '@/lib/theme';
 
-// --- 정적 데이터 ---
-
-interface SeasonInfo {
-  name: string;
-  subType: string;
-  tone: 'warm' | 'cool';
-  description: string;
-  bestColors: string[];
-  worstColors: string[];
-  celebrities: string[];
-  stylingTips: string[];
-}
-
-const SEASON_DATA: Record<PersonalColorSeason, SeasonInfo> = {
-  Spring: {
-    name: '봄 웜톤',
-    subType: '밝고 화사한 웜 언더톤',
-    tone: 'warm',
-    description:
-      '밝고 화사한 색상이 잘 어울리는 타입이에요. 코랄, 피치, 아이보리 등 따뜻하고 맑은 색상이 피부를 환하게 밝혀줘요.',
-    bestColors: ['#FFB6C1', '#FFDAB9', '#FFA07A', '#F0E68C', '#98FB98', '#FFD700'],
-    worstColors: ['#000000', '#808080', '#4B0082', '#191970'],
-    celebrities: ['아이유', '수지', '윤아'],
-    stylingTips: [
-      '코랄 립과 피치 블러셔로 생기 있는 메이크업을 해보세요',
-      '골드 주얼리가 피부톤을 더 따뜻하게 해줘요',
-      '크림화이트, 아이보리 같은 웜한 밝은 색상이 최적이에요',
-    ],
-  },
-  Summer: {
-    name: '여름 쿨톤',
-    subType: '부드럽고 우아한 쿨 언더톤',
-    tone: 'cool',
-    description:
-      '부드럽고 차분한 색상이 잘 어울리는 타입이에요. 라벤더, 로즈핑크, 스카이블루 등 시원하고 우아한 색상을 추천드려요.',
-    bestColors: ['#E6E6FA', '#DDA0DD', '#B0C4DE', '#87CEEB', '#FFC0CB', '#C8A2C8'],
-    worstColors: ['#FF4500', '#FF8C00', '#DAA520', '#8B4513'],
-    celebrities: ['블랙핑크 제니', '김태희', '손예진'],
-    stylingTips: [
-      '로즈핑크 립과 라벤더 아이섀도가 피부를 맑게 해줘요',
-      '실버 주얼리가 쿨톤 피부와 자연스럽게 어울려요',
-      '파스텔 블루, 라일락 같은 차분한 색상으로 우아함을 연출하세요',
-    ],
-  },
-  Autumn: {
-    name: '가을 웜톤',
-    subType: '깊고 풍부한 웜 언더톤',
-    tone: 'warm',
-    description:
-      '깊고 풍부한 색상이 잘 어울리는 타입이에요. 버건디, 머스타드, 카키 등 차분하고 고급스러운 색상을 추천드려요.',
-    bestColors: ['#8B4513', '#DAA520', '#BC8F8F', '#CD853F', '#556B2F', '#A0522D'],
-    worstColors: ['#FF69B4', '#00BFFF', '#E6E6FA', '#F0FFFF'],
-    celebrities: ['제니퍼 로페즈', '김희선', '공효진'],
-    stylingTips: [
-      '브릭레드 립과 테라코타 블러셔로 깊이감을 더하세요',
-      '골드, 브론즈 주얼리가 가을 웜톤과 완벽한 조화를 이뤄요',
-      '카키, 올리브, 버건디 등 깊은 색상으로 고급스러움을 연출하세요',
-    ],
-  },
-  Winter: {
-    name: '겨울 쿨톤',
-    subType: '선명하고 강렬한 쿨 언더톤',
-    tone: 'cool',
-    description:
-      '선명하고 대비가 강한 색상이 잘 어울리는 타입이에요. 블랙, 화이트, 로열블루 등 강렬하고 세련된 색상을 추천드려요.',
-    bestColors: ['#000000', '#FFFFFF', '#4169E1', '#DC143C', '#800080', '#008B8B'],
-    worstColors: ['#FFDAB9', '#F5DEB3', '#FFE4C4', '#DEB887'],
-    celebrities: ['김연아', '전지현', '송혜교'],
-    stylingTips: [
-      '레드, 베리 립으로 선명한 인상을 만들어보세요',
-      '실버, 플래티넘 주얼리가 겨울 쿨톤의 세련됨을 강조해요',
-      '블랙, 네이비, 화이트 같은 고대비 조합이 가장 잘 어울려요',
-    ],
-  },
+const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요.';
+const TONE_EXPLANATION: Record<PersonalColorReportSeasonInfo['tone'], string> = {
+  warm: '피부 아래에 노란 기운이 도는 타입으로, 금색 주얼리와 따뜻한 색조가 잘 어울려요.',
+  cool: '피부 아래에 파란 기운이 도는 타입으로, 은색 주얼리와 시원한 색조가 잘 어울려요.',
 };
 
-// --- 메인 컴포넌트 ---
+function getMakeupRows(
+  tone: PersonalColorReportSeasonInfo['tone']
+): { label: string; value: string }[] {
+  return tone === 'warm'
+    ? [
+        { label: '립 컬러', value: '코랄, 피치 계열' },
+        { label: '아이섀도', value: '골드, 브론즈 계열' },
+        { label: '블러셔', value: '피치, 살구 계열' },
+        { label: '주얼리', value: '골드, 로즈골드' },
+      ]
+    : [
+        { label: '립 컬러', value: '로즈, 베리 계열' },
+        { label: '아이섀도', value: '실버, 라벤더 계열' },
+        { label: '블러셔', value: '핑크, 로즈 계열' },
+        { label: '주얼리', value: '실버, 플래티넘' },
+      ];
+}
 
 export default function PersonalColorResultScreen(): React.JSX.Element {
-  const { module } = useAnalysisStyles();
-  const { colors } = useTheme();
-  const accent = module.personalColor;
   const { getToken } = useAuth();
-
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
   }>();
-
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<PersonalColorApiResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>('분석에 실패했어요.');
+  const [errorMessage, setErrorMessage] = useState(DEFAULT_ERROR_MESSAGE);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
 
-  // 퍼스널 컬러 분석 — 웹 POST /api/analyze/personal-color 정본
-  // (실 AI + personal_color_assessments 저장 + 연령/생체 게이트)
-  const analyzePersonalColor = useCallback(async () => {
+  const analyzePersonalColor = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setUsedFallback(false);
+    setResult(null);
 
     try {
       let base64Data = imageBase64;
-      if (!base64Data && imageUri) {
-        base64Data = await imageToBase64(imageUri);
-      }
-      if (!base64Data) {
-        throw new Error('이미지 데이터가 없습니다.');
-      }
+      if (!base64Data && imageUri) base64Data = await imageToBase64(imageUri);
+      if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
 
       const token = await getToken();
       if (!token) {
@@ -162,8 +92,6 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
       }
 
       const response = await requestPersonalColorAnalysis({ imageBase64: base64Data }, token);
-
-      // 서버 실측 필드가 비면 시즌 고정표를 쓰므로 AI 실측처럼 표시하지 않는다.
       const usesStaticDiagnosisFallback =
         response.seasonSubtype === null ||
         response.bestColors.length === 0 ||
@@ -176,26 +104,24 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
         screen: 'personal-color-result',
         tags: { module: 'PC-1', action: 'analyze' },
       });
-      // 게이트(연령·생체 동의)·검증 에러는 서버의 한국어 메시지를 그대로 보여준다
       setErrorMessage(
-        error instanceof PersonalColorApiError ? error.message : '분석에 실패했어요.'
+        error instanceof PersonalColorApiError ? error.message : DEFAULT_ERROR_MESSAGE
       );
       setResult(null);
     } finally {
       setIsLoading(false);
     }
-  }, [imageUri, imageBase64, getToken]);
+  }, [getToken, imageBase64, imageUri]);
 
-  // 분석은 화면 진입당 정확히 1회만 실행 (clerk-expo getToken 참조 불안정 가드 — body/result.tsx 동일)
   const hasStartedRef = useRef(false);
   useEffect(() => {
     if (hasStartedRef.current) return;
     hasStartedRef.current = true;
-    analyzePersonalColor();
+    void analyzePersonalColor();
   }, [analyzePersonalColor]);
 
-  const handleProductRecommendation = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const handleProductRecommendation = useCallback((): void => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
       pathname: '/products',
       params: { season: result?.season || '', category: 'makeup' },
@@ -215,447 +141,167 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
     return (
       <AnalysisErrorState
         message={errorMessage}
-        onRetry={() => router.replace('/(analysis)/personal-color')}
         onGoHome={() => router.replace('/(tabs)')}
+        onRetry={() => router.replace('/(analysis)/personal-color')}
         testID="personal-color-error"
       />
     );
   }
 
-  const fallbackSeason = SEASON_DATA[result.season];
-  const season: SeasonInfo = {
+  const fallbackSeason = PERSONAL_COLOR_REPORT_DATA[result.season];
+  const season: PersonalColorReportSeasonInfo = {
     ...fallbackSeason,
-    // 서버 실측이 있으면 그것이 정본이며, 고정 시즌 표는 구 응답의 빈 필드에만 폴백한다.
     subType: result.seasonSubtype
       ? getPersonalColorSubtypeLabel(result.seasonSubtype)
       : fallbackSeason.subType,
     bestColors: result.bestColors.length > 0 ? result.bestColors : fallbackSeason.bestColors,
     worstColors: result.worstColors.length > 0 ? result.worstColors : fallbackSeason.worstColors,
   };
-
-  // 결론 액션(ADR-111 표현 원칙 1) — 기존 결과 데이터에서 규칙 조립 (새 fetch/AI 없음)
+  const description = result.description || season.description;
+  const makeupRows = getMakeupRows(season.tone);
   const topActions = buildPersonalColorTopActions({
     bestColors: season.bestColors,
     toneLabel: season.name,
     stylingTips: season.stylingTips,
-  });
-
-  // 웜/쿨 분석 점수 (confidence 기반)
-  const warmScore =
-    season.tone === 'warm'
-      ? Math.round(result.confidence * 100)
-      : Math.round((1 - result.confidence) * 100);
-  const coolScore = 100 - warmScore;
+  }).filter((action) => !action.swatches);
+  const sections: ReportSection[] = [
+    {
+      key: 'basis',
+      title: '판정 근거',
+      summary: description,
+      content: (
+        <ReportTextList
+          items={[description, TONE_EXPLANATION[season.tone]]}
+          testID="pc-basis-list"
+        />
+      ),
+    },
+    {
+      key: 'avoid-colors',
+      title: '피하면 좋은 색',
+      summary: `${season.worstColors.length}가지 색을 확인해보세요`,
+      content: (
+        <ReportColorBand colors={season.worstColors} testID="pc-worst-colors" title="회피 색" />
+      ),
+    },
+    {
+      key: 'harmony',
+      title: '배색 가이드',
+      summary: '대표 색을 기준으로 계산한 조합이에요',
+      content: <ColorHarmonyGuide baseHex={season.bestColors[0]} testID="pc-color-harmony-guide" />,
+    },
+    ...(imageUri
+      ? [
+          {
+            key: 'draping',
+            title: '드레이핑 비교',
+            summary: '얼굴 아래 색천을 바꿔 차이를 비교해보세요',
+            content: (
+              <DrapingPreview
+                avoidPalette={season.worstColors}
+                imageUri={imageUri}
+                palette={season.bestColors}
+                seasonDescription={`${season.tone === 'warm' ? '웜톤' : '쿨톤'} ${season.subType}`}
+                seasonName={season.name}
+                testID="draping-preview"
+              />
+            ),
+          },
+        ]
+      : []),
+    {
+      key: 'styling',
+      title: '스타일링 참고',
+      summary: season.stylingTips[0],
+      content: (
+        <View style={styles.evidenceGroup}>
+          <ReportTextList
+            heading="스타일링 팁"
+            items={season.stylingTips}
+            testID="pc-styling-tips"
+          />
+          <ReportDivider testID="pc-celebrity-divider" />
+          <ReportTextList heading="참고 인물" items={season.celebrities} testID="pc-celebrities" />
+        </View>
+      ),
+    },
+    {
+      key: 'makeup',
+      title: '메이크업 포인트',
+      summary: makeupRows[0].value,
+      content: (
+        <ReportRowTable testID="pc-makeup-rows">
+          {makeupRows.map((row) => (
+            <ReportAttrRow key={row.label} label={row.label} value={row.value} />
+          ))}
+        </ReportRowTable>
+      ),
+    },
+  ];
 
   return (
     <>
+      {/* 축하 연출 존폐는 창업자 결정 대기 범위이므로 이번 진단지 수리에서 유지한다. */}
       <CelebrationEffect
-        type="analysis_complete"
-        visible={showCelebration}
         onComplete={() => {
           setShowCelebration(false);
           setShowBadge(true);
         }}
+        type="analysis_complete"
+        visible={showCelebration}
       />
       <BadgeDrop
         badge={{ icon: '🎨', name: '컬러 전문가', description: '퍼스널 컬러 진단 완료!' }}
-        visible={showBadge}
         onDismiss={() => setShowBadge(false)}
+        visible={showBadge}
       />
-      <ResultLayout
-        moduleKey="personalColor"
-        title="퍼스널 컬러 진단"
-        verdict={season.name}
-        imageUri={imageUri}
-        imageStyle={localStyles.resultImage}
-        trustBadgeType={usedFallback ? 'questionnaire' : 'ai'}
+      <ReportResultLayout
+        attributes={
+          <ReportRowTable testID="pc-report-attrs">
+            <ReportAttrRow label="세부 톤" value={season.subType} />
+            <ReportAttrRow label="언더톤" value={season.tone === 'warm' ? '웜' : '쿨'} />
+          </ReportRowTable>
+        }
+        conclusion={
+          <View style={styles.conclusion}>
+            <ReportColorBand colors={season.bestColors} testID="pc-best-colors" title="대표 색" />
+            {topActions.length > 0 ? (
+              <>
+                <ReportDivider testID="pc-action-divider" />
+                <ReportActionList actions={topActions} testID="pc-report-actions" />
+              </>
+            ) : null}
+          </View>
+        }
         confidence={usedFallback ? undefined : result.confidence}
-        usedFallback={usedFallback}
-        headerContent={
-          <>
-            <AIBadge variant="small" />
-            {result.dbSaveFailed && (
-              <AnalysisSaveFailureNotice
-                onRetry={() => router.replace('/(analysis)/personal-color')}
-              />
-            )}
-            <HeaderContent
-              subType={season.subType}
-              description={result.description || season.description}
-              textColor={colors.mutedForeground}
-            />
-          </>
-        }
-        summaryTab={
-          <SummaryTab season={season} accent={accent} colors={colors} topActions={topActions} />
-        }
-        detailTab={
-          <DetailTab
-            warmScore={warmScore}
-            coolScore={coolScore}
-            season={season}
-            accent={accent}
-            colors={colors}
-          />
-        }
-        recommendTab={
-          <RecommendTab season={season} accent={accent} colors={colors} imageUri={imageUri} />
-        }
-        primaryActionText="💄 내 색상에 맞는 제품"
+        eyebrow="퍼스널 컬러 진단 결과"
+        imageStyle={styles.resultImage}
+        imageUri={imageUri}
+        moduleKey="personalColor"
         onPrimaryAction={handleProductRecommendation}
+        onSaveRetry={() => router.replace('/(analysis)/personal-color')}
+        primaryActionText="내 색상에 맞는 제품 보기"
         retryPath="/(analysis)/personal-color"
+        saveFailed={result.dbSaveFailed}
+        sections={sections}
         testID="analysis-personal-color-result-screen"
+        usedFallback={usedFallback}
+        verdict={season.name}
       />
     </>
   );
 }
 
-// --- 서브 컴포넌트 ---
-
-function HeaderContent({
-  subType,
-  description,
-  textColor,
-}: {
-  subType: string;
-  description: string;
-  textColor: string;
-}): React.JSX.Element {
-  return (
-    <View style={localStyles.headerContent}>
-      <Text style={[localStyles.subType, { color: textColor }]}>{subType}</Text>
-      <Text style={[localStyles.description, { color: textColor }]}>{description}</Text>
-    </View>
-  );
-}
-
-interface TabProps {
-  season: SeasonInfo;
-  accent: { base: string; light: string; dark: string };
-  colors: ReturnType<typeof useTheme>['colors'];
-}
-
-/** 요약 탭 (결론 먼저: 액션 → 시그니처 팔레트 → 배색·연예인은 접기) */
-function SummaryTab({
-  season,
-  accent,
-  colors,
-  topActions,
-}: TabProps & { topActions: TopAction[] }): React.JSX.Element {
-  const { isDark } = useTheme();
-  const bestColorItems = season.bestColors.map((hex, i) => ({
-    color: hex,
-    name: `Color ${i + 1}`,
-  }));
-
-  return (
-    <View style={localStyles.tabContent}>
-      {/* ① 그래서, 이렇게 하세요 */}
-      <TopActionsCard actions={topActions} />
-
-      {/* ② 시그니처 — 추천 컬러 팔레트 */}
-      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            추천 컬러 팔레트
-          </Text>
-          <ColorPalette colors={bestColorItems} columns={3} animated testID="pc-best-colors" />
-        </GradientCard>
-      </Animated.View>
-
-      {/* ③ 배색 가이드 + 같은 타입 연예인 — 접기 (정보 삭제 아님, 접기만) */}
-      <ProgressiveDisclosure
-        expandLabel="배색 가이드·닮은꼴 더 보기"
-        collapseLabel="접기"
-        summary={
-          <Text style={[localStyles.discloseSummary, { color: colors.mutedForeground }]}>
-            배색 가이드와 같은 타입 연예인
-          </Text>
-        }
-        detail={
-          <View style={localStyles.discloseBody}>
-            {/* 배색 가이드 — 대표색 기반 배색 이론 코디 안내 (ADR-105, 웹과 동일) */}
-            {season.bestColors.length > 0 && (
-              <ColorHarmonyGuide
-                baseHex={season.bestColors[0]}
-                style={localStyles.sectionCard}
-                testID="pc-color-harmony-guide"
-              />
-            )}
-
-            <GradientCard variant="personalColor" style={localStyles.sectionCard}>
-              <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-                같은 타입의 연예인
-              </Text>
-              <View style={localStyles.tagRow}>
-                {season.celebrities.map((name, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      localStyles.tag,
-                      { backgroundColor: isDark ? `${accent.dark}20` : `${accent.light}30` },
-                    ]}
-                  >
-                    <Text style={[localStyles.tagText, { color: accent.base }]}>{name}</Text>
-                  </View>
-                ))}
-              </View>
-            </GradientCard>
-          </View>
-        }
-      />
-    </View>
-  );
-}
-
-/** 상세 탭: 웜/쿨 분석 + 피해야 할 색상 */
-function DetailTab({
-  warmScore,
-  coolScore,
-  season,
-  colors,
-}: TabProps & { warmScore: number; coolScore: number }): React.JSX.Element {
-  const worstColorItems = season.worstColors.map((hex, i) => ({
-    color: hex,
-    name: `Avoid ${i + 1}`,
-  }));
-
-  return (
-    <View style={localStyles.tabContent}>
-      <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            웜톤/쿨톤 분석
-          </Text>
-          <View style={localStyles.metricsContainer}>
-            <MetricBar label="웜톤 (Warm)" value={warmScore} testID="pc-warm-score" />
-            <MetricBar label="쿨톤 (Cool)" value={coolScore} testID="pc-cool-score" />
-          </View>
-        </GradientCard>
-      </Animated.View>
-
-      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)}>
-        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            피해야 할 색상
-          </Text>
-          <Text style={[localStyles.sectionDescription, { color: colors.mutedForeground }]}>
-            다음 색상은 피부 톤을 칙칙하게 보이게 할 수 있어요
-          </Text>
-          <ColorPalette colors={worstColorItems} columns={4} animated testID="pc-worst-colors" />
-        </GradientCard>
-      </Animated.View>
-
-      <Animated.View entering={FadeInUp.delay(300).duration(TIMING.normal)}>
-        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            {season.tone === 'warm' ? '웜톤이란?' : '쿨톤이란?'}
-          </Text>
-          <Text style={[localStyles.sectionDescription, { color: colors.mutedForeground }]}>
-            {season.tone === 'warm'
-              ? '피부 아래에 노란 기운이 도는 타입이에요. 금색 주얼리, 따뜻한 색조의 옷이 얼굴을 환하게 밝혀줘요.'
-              : '피부 아래에 파란 기운이 도는 타입이에요. 은색 주얼리, 시원한 색조의 옷이 피부를 맑게 보이게 해줘요.'}
-          </Text>
-        </GradientCard>
-      </Animated.View>
-    </View>
-  );
-}
-
-/** 추천 탭: 스타일링 팁 + 메이크업 포인트 */
-function RecommendTab({
-  season,
-  accent,
-  colors,
-  imageUri,
-}: TabProps & { imageUri?: string }): React.JSX.Element {
-  return (
-    <View style={localStyles.tabContent}>
-      {/* 드레이핑 비교 — 내 사진 아래에 베스트/회피 색천을 대보고 차이를 본다 (웹 패리티) */}
-      {imageUri && (
-        <Animated.View entering={FadeInUp.delay(50).duration(TIMING.normal)}>
-          <GradientCard variant="personalColor" style={localStyles.sectionCard}>
-            <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-              드레이핑 비교
-            </Text>
-            <DrapingPreview
-              imageUri={imageUri}
-              palette={season.bestColors}
-              avoidPalette={season.worstColors}
-              seasonName={season.name}
-              seasonDescription={`${season.tone === 'warm' ? '웜톤' : '쿨톤'} ${season.subType}`}
-              testID="draping-preview"
-            />
-          </GradientCard>
-        </Animated.View>
-      )}
-
-      <Animated.View entering={FadeInUp.delay(imageUri ? 150 : 100).duration(TIMING.normal)}>
-        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            맞춤 스타일링 팁
-          </Text>
-          {season.stylingTips.map((tip, i) => (
-            <View key={i} style={localStyles.tipItem}>
-              <View style={[localStyles.tipBullet, { backgroundColor: accent.base }]} />
-              <Text style={[localStyles.tipText, { color: colors.mutedForeground }]}>{tip}</Text>
-            </View>
-          ))}
-        </GradientCard>
-      </Animated.View>
-
-      <Animated.View entering={FadeInUp.delay(imageUri ? 250 : 200).duration(TIMING.normal)}>
-        <GradientCard variant="personalColor" style={localStyles.sectionCard}>
-          <Text style={[localStyles.sectionTitle, { color: colors.foreground }]}>
-            메이크업 포인트
-          </Text>
-          <View style={localStyles.makeupGrid}>
-            <MakeupTip
-              label="립 컬러"
-              value={season.tone === 'warm' ? '코랄, 피치 계열' : '로즈, 베리 계열'}
-              accentColor={accent.base}
-              subTextColor={colors.mutedForeground}
-            />
-            <MakeupTip
-              label="아이섀도"
-              value={season.tone === 'warm' ? '골드, 브론즈 계열' : '실버, 라벤더 계열'}
-              accentColor={accent.base}
-              subTextColor={colors.mutedForeground}
-            />
-            <MakeupTip
-              label="블러셔"
-              value={season.tone === 'warm' ? '피치, 살구 계열' : '핑크, 로즈 계열'}
-              accentColor={accent.base}
-              subTextColor={colors.mutedForeground}
-            />
-            <MakeupTip
-              label="주얼리"
-              value={season.tone === 'warm' ? '골드, 로즈골드' : '실버, 플래티넘'}
-              accentColor={accent.base}
-              subTextColor={colors.mutedForeground}
-            />
-          </View>
-        </GradientCard>
-      </Animated.View>
-    </View>
-  );
-}
-
-function MakeupTip({
-  label,
-  value,
-  accentColor,
-  subTextColor,
-}: {
-  label: string;
-  value: string;
-  accentColor: string;
-  subTextColor: string;
-}): React.JSX.Element {
-  return (
-    <View style={localStyles.makeupTipItem}>
-      <Text style={[localStyles.makeupTipLabel, { color: accentColor }]}>{label}</Text>
-      <Text style={[localStyles.makeupTipValue, { color: subTextColor }]}>{value}</Text>
-    </View>
-  );
-}
-
-// --- 스타일 ---
-
-const localStyles = StyleSheet.create({
+const styles = StyleSheet.create({
+  conclusion: {
+    gap: spacing.md,
+  },
+  evidenceGroup: {
+    gap: spacing.md,
+  },
   resultImage: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    borderWidth: 3,
-  },
-  headerContent: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-  },
-  subType: {
-    fontSize: typography.size.sm,
-  },
-  description: {
-    fontSize: typography.size.sm,
-    lineHeight: 22,
-    textAlign: 'center',
-    marginTop: spacing.xs,
-  },
-  tabContent: {
-    gap: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  sectionCard: {
-    padding: spacing.mlg,
-  },
-  sectionTitle: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.bold,
-    marginBottom: spacing.smx,
-  },
-  sectionDescription: {
-    fontSize: typography.size.sm,
-    lineHeight: 20,
-    marginBottom: spacing.smx,
-  },
-  discloseSummary: {
-    fontSize: typography.size.sm,
-  },
-  discloseBody: {
-    gap: spacing.md,
-  },
-  tagRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  tag: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.circle,
-  },
-  tagText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
-  metricsContainer: {
-    gap: 14,
-  },
-  tipItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.smd,
-    marginBottom: spacing.smx,
-  },
-  tipBullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginTop: spacing.sm,
-  },
-  tipText: {
-    flex: 1,
-    fontSize: typography.size.sm,
-    lineHeight: 22,
-  },
-  makeupGrid: {
-    gap: spacing.smx,
-  },
-  makeupTipItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0,0,0,0.06)',
-  },
-  makeupTipLabel: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.semibold,
-  },
-  makeupTipValue: {
-    fontSize: typography.size.sm,
+    borderRadius: radii.lg,
+    height: 168,
+    width: 132,
   },
 });

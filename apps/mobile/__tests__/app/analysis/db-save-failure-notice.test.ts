@@ -16,7 +16,10 @@ describe('단독 분석 결과 저장 실패 고지 배선', () => {
       'utf8'
     );
 
-    expect(source).toContain('AnalysisSaveFailureNotice');
-    expect(source).toMatch(/dbSaveFailed\s*&&\s*\(/);
+    const usesLegacyNotice =
+      source.includes('AnalysisSaveFailureNotice') && /dbSaveFailed\s*&&\s*\(/.test(source);
+    const usesReportNotice = /saveFailed=\{[^}]*dbSaveFailed[^}]*\}/.test(source);
+
+    expect(usesLegacyNotice || usesReportNotice).toBe(true);
   });
 });

@@ -6,12 +6,12 @@
  *
  * @see lib/color/harmony.ts
  */
-import { Palette } from 'lucide-react-native';
 import { useMemo } from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
+import { REPORT_COLORS } from './report/tokens';
 import { complementary, analogous, triadic, tonOnTone } from '../../lib/color/harmony';
-import { useTheme, spacing, radii, typography } from '../../lib/theme';
+import { spacing, radii, typography } from '../../lib/theme';
 
 export interface ColorHarmonyGuideProps {
   /** 기준 대표색 HEX (퍼스널컬러 베스트 컬러 첫 항목) */
@@ -49,8 +49,6 @@ export function ColorHarmonyGuide({
   style,
   testID = 'color-harmony-guide',
 }: ColorHarmonyGuideProps): React.JSX.Element {
-  const { colors, brand } = useTheme();
-
   const harmony = useMemo(
     () => ({
       tonOnTone: tonOnTone(baseHex, 3),
@@ -85,36 +83,27 @@ export function ColorHarmonyGuide({
   ];
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: colors.card, borderColor: colors.border },
-        style,
-      ]}
-      testID={testID}
-      accessibilityLabel="배색 가이드"
-    >
+    <View style={[styles.container, style]} testID={testID} accessibilityLabel="배색 가이드">
       <View style={styles.header}>
-        <Palette size={18} color={brand.primary} />
-        <Text style={[styles.title, { color: colors.foreground }]}>배색 가이드</Text>
+        <Text style={styles.title}>배색 가이드</Text>
       </View>
-      <Text style={[styles.description, { color: colors.mutedForeground }]}>
+      <Text style={styles.description}>
         {baseName ? `대표색 "${baseName}"` : '대표색'}을 기준으로 함께 쓰면 좋은 색을 색채학 배색
         이론으로 계산했어요.
       </Text>
       {rows.map((row) => (
         <View key={row.title} style={styles.row}>
           <View style={styles.rowHeader}>
-            <Text style={[styles.rowTitle, { color: colors.foreground }]}>{row.title}</Text>
-            <Text style={[styles.rowDesc, { color: colors.mutedForeground }]}>{row.desc}</Text>
+            <Text style={styles.rowTitle}>{row.title}</Text>
+            <Text style={styles.rowDesc}>{row.desc}</Text>
           </View>
           <View style={styles.swatchRow}>
             {row.colors.map((hex, i) => (
               <Swatch
                 key={`${row.title}-${i}-${hex}`}
                 hex={hex}
-                borderColor={colors.border}
-                labelColor={colors.mutedForeground}
+                borderColor={REPORT_COLORS.rule}
+                labelColor={REPORT_COLORS.mutedInk}
               />
             ))}
           </View>
@@ -126,6 +115,8 @@ export function ColorHarmonyGuide({
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: REPORT_COLORS.paper,
+    borderColor: REPORT_COLORS.rule,
     borderRadius: radii.xl,
     borderWidth: 1,
     padding: spacing.md,
@@ -137,10 +128,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   title: {
+    color: REPORT_COLORS.ink,
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
   description: {
+    color: REPORT_COLORS.mutedInk,
     fontSize: typography.size.sm,
     lineHeight: typography.size.sm * 1.5,
     marginBottom: spacing.md,
@@ -152,10 +145,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   rowTitle: {
+    color: REPORT_COLORS.ink,
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
   },
   rowDesc: {
+    color: REPORT_COLORS.mutedInk,
     fontSize: typography.size.xs,
     marginTop: 2,
   },
