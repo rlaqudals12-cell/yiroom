@@ -52,7 +52,9 @@ import {
   removeFromWishlist,
   toggleWishlist,
   checkWishlistStatus,
+  checkWishlistStatusOrThrow,
   getUserWishlist,
+  getUserWishlistOrThrow,
   checkWishlistStatusBulk,
   getWishlistCount,
 } from '@/lib/wishlist';
@@ -204,6 +206,20 @@ describe('wishlist', () => {
 
       expect(result).toBe(false);
     });
+
+    it('API용 strict 조회는 DB 에러를 false로 삼키지 않는다', async () => {
+      const dbError = { message: 'database unavailable' };
+      setResult({ data: null, error: dbError });
+
+      await expect(
+        checkWishlistStatusOrThrow(
+          mockSupabaseClient as never,
+          TEST_USER_ID,
+          TEST_PRODUCT_TYPE,
+          TEST_PRODUCT_ID
+        )
+      ).rejects.toBe(dbError);
+    });
   });
 
   // ========================================================================
@@ -286,6 +302,15 @@ describe('wishlist', () => {
       const result = await getUserWishlist(mockSupabaseClient as never, TEST_USER_ID);
 
       expect(result).toEqual([]);
+    });
+
+    it('API용 strict 조회는 DB 에러를 빈 목록으로 삼키지 않는다', async () => {
+      const dbError = { message: 'database unavailable' };
+      setResult({ data: null, error: dbError });
+
+      await expect(getUserWishlistOrThrow(mockSupabaseClient as never, TEST_USER_ID)).rejects.toBe(
+        dbError
+      );
     });
   });
 

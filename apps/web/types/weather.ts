@@ -23,6 +23,14 @@ export type KoreaRegion =
   | 'gyeongnam'
   | 'jeju';
 
+/**
+ * 날씨 조회 위치의 출처.
+ *
+ * `default`는 사용자 위치가 아닌 서울 기본값이므로 소비 화면에서 반드시
+ * "서울 기준"으로 고지한다.
+ */
+export type WeatherLocationSource = 'default' | 'region' | 'geolocation';
+
 // 지역별 좌표
 export interface RegionCoordinates {
   lat: number;
@@ -83,6 +91,17 @@ export interface WeatherData {
   current: CurrentWeather;
   forecast: HourlyForecast[]; // 6시간 예보
   cachedAt: string; // ISO 형식
+  /** 실측 API가 아닌 stale cache/예시값이면 true */
+  usedFallback?: boolean;
+}
+
+/**
+ * `/api/weather`가 클라이언트에 보장하는 정규화된 응답.
+ * 서비스 내부 데이터와 달리 위치 출처와 폴백 여부를 항상 명시한다.
+ */
+export interface WeatherApiResponse extends WeatherData {
+  locationSource: WeatherLocationSource;
+  usedFallback: boolean;
 }
 
 // 캐시된 날씨 데이터

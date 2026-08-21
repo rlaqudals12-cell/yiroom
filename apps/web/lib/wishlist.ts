@@ -23,6 +23,16 @@ interface WishlistRow {
   created_at: string;
 }
 
+function mapWishlistRows(rows: WishlistRow[]): WishlistItem[] {
+  return rows.map((row) => ({
+    id: row.id,
+    clerkUserId: row.clerk_user_id,
+    productType: row.product_type as ProductType,
+    productId: row.product_id,
+    createdAt: row.created_at,
+  }));
+}
+
 /**
  * 위시리스트에 제품 추가
  */
@@ -121,6 +131,28 @@ export async function checkWishlistStatus(
 }
 
 /**
+ * API 경계용 위시리스트 상태 조회.
+ * 왜: DB 실패를 `false`로 삼키면 미저장 상태처럼 보이므로 API는 오류를 구분해 전달한다.
+ */
+export async function checkWishlistStatusOrThrow(
+  supabase: SupabaseClient,
+  clerkUserId: string,
+  productType: ProductType,
+  productId: string
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('user_wishlists')
+    .select('id')
+    .eq('clerk_user_id', clerkUserId)
+    .eq('product_type', productType)
+    .eq('product_id', productId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return !!data;
+}
+
+/**
  * 사용자의 위시리스트 조회
  */
 export async function getUserWishlist(
@@ -145,13 +177,29 @@ export async function getUserWishlist(
     return [];
   }
 
-  return (data as WishlistRow[]).map((row) => ({
-    id: row.id,
-    clerkUserId: row.clerk_user_id,
-    productType: row.product_type as ProductType,
-    productId: row.product_id,
-    createdAt: row.created_at,
-  }));
+  return mapWishlistRows(data as WishlistRow[]);
+}
+
+/**
+ * API 경계용 위시리스트 조회.
+ * 왜: DB 실패를 빈 목록으로 위장하지 않고 호출자에게 올려 표준 오류 봉투로 변환한다.
+ */
+export async function getUserWishlistOrThrow(
+  supabase: SupabaseClient,
+  clerkUserId: string,
+  productType?: ProductType
+): Promise<WishlistItem[]> {
+  let query = supabase
+    .from('user_wishlists')
+    .select('*')
+    .eq('clerk_user_id', clerkUserId)
+    .order('created_at', { ascending: false });
+
+  if (productType) query = query.eq('product_type', productType);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return mapWishlistRows((data ?? []) as WishlistRow[]);
 }
 
 /**

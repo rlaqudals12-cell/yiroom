@@ -6,6 +6,7 @@
  */
 
 import { styleLogger } from '@/lib/utils/logger';
+import { createSeededRandom } from '@/lib/utils/seeded-random';
 import type { KoreaRegion, WeatherData, HourlyForecast, CachedWeatherData } from '@/types/weather';
 import { WEATHER_CACHE_TTL_MS } from '@/types/weather';
 
@@ -162,8 +163,8 @@ async function fetchForecast(
  * UV 지수 추정 (시간대 기반)
  * One Call API는 유료이므로 시간대로 대략적 추정
  */
-function estimateUVI(): number {
-  const hour = new Date().getHours();
+function estimateUVI(referenceTime: Date = new Date()): number {
+  const hour = referenceTime.getHours();
 
   // 밤/이른 아침/저녁은 UV 낮음
   if (hour < 6 || hour > 19) return 0;
@@ -211,6 +212,7 @@ export async function getWeatherByRegion(region: KoreaRegion): Promise<WeatherDa
       },
       forecast: forecast.hourly,
       cachedAt: new Date().toISOString(),
+      usedFallback: false,
       expiresAt: Date.now() + WEATHER_CACHE_TTL_MS,
     };
 
@@ -224,7 +226,7 @@ export async function getWeatherByRegion(region: KoreaRegion): Promise<WeatherDa
     // 캐시된 데이터가 있으면 만료되어도 반환 (fallback)
     if (cached) {
       styleLogger.debug(`Returning stale cache for ${region}`);
-      return cached;
+      return { ...cached, usedFallback: true };
     }
 
     // Mock 데이터 반환
@@ -261,11 +263,21 @@ export async function getWeatherByCoords(lat: number, lon: number): Promise<Weat
 /**
  * Mock 날씨 데이터 생성 (API 실패 시 fallback)
  */
-export function generateMockWeather(region: KoreaRegion): WeatherData {
-  const coords = REGION_COORDS[region] || REGION_COORDS.seoul;
+const FALLBACK_TIME_BUCKET_MS = 3 * 60 * 60 * 1000;
 
-  // 현재 월 기준 계절 판단
-  const month = new Date().getMonth() + 1;
+/** 같은 지역·3시간 버킷은 항상 같은 비관측 예시를 돌려준다. */
+export function generateMockWeather(
+  region: KoreaRegion,
+  referenceTime: Date = new Date()
+): WeatherData {
+  const coords = REGION_COORDS[region] || REGION_COORDS.seoul;
+  const bucketStartMs =
+    Math.floor(referenceTime.getTime() / FALLBACK_TIME_BUCKET_MS) * FALLBACK_TIME_BUCKET_MS;
+  const bucketTime = new Date(bucketStartMs);
+  const random = createSeededRandom(`weather-fallback:${region}:${bucketStartMs}`);
+
+  // 같은 시간 버킷에서 월·예보 시각까지 고정해 재호출 순서에 흔들리지 않게 한다.
+  const month = bucketTime.getMonth() + 1;
   let baseTemp: number;
   let description: string;
 
@@ -287,16 +299,15 @@ export function generateMockWeather(region: KoreaRegion): WeatherData {
     description = '흐림';
   }
 
-  const now = new Date();
   const forecast: HourlyForecast[] = [];
 
   for (let i = 1; i <= 6; i++) {
-    const forecastHour = (now.getHours() + i * 3) % 24;
+    const forecastHour = (bucketTime.getHours() + i * 3) % 24;
     forecast.push({
       time: `${forecastHour.toString().padStart(2, '0')}:00`,
-      temp: baseTemp + Math.floor(Math.random() * 4) - 2,
-      feelsLike: baseTemp + Math.floor(Math.random() * 4) - 3,
-      precipitation: Math.floor(Math.random() * 30),
+      temp: baseTemp + Math.floor(random() * 4) - 2,
+      feelsLike: baseTemp + Math.floor(random() * 4) - 3,
+      precipitation: Math.floor(random() * 30),
       description,
       icon: '01d',
     });
@@ -310,13 +321,14 @@ export function generateMockWeather(region: KoreaRegion): WeatherData {
       feelsLike: baseTemp - 2,
       humidity: 60,
       windSpeed: 2.5,
-      uvi: estimateUVI(),
+      uvi: estimateUVI(bucketTime),
       description,
       icon: '01d',
       precipitation: 10,
     },
     forecast,
-    cachedAt: new Date().toISOString(),
+    cachedAt: referenceTime.toISOString(),
+    usedFallback: true,
   };
 }
 

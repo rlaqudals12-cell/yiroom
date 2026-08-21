@@ -8,7 +8,13 @@
  */
 
 import { NextResponse } from 'next/server';
-import type { KoreaRegion } from '@/types/weather';
+import { auth } from '@clerk/nextjs/server';
+import type {
+  KoreaRegion,
+  WeatherApiResponse,
+  WeatherData,
+  WeatherLocationSource,
+} from '@/types/weather';
 import {
   getWeatherByRegion,
   getWeatherByCoords,
@@ -36,7 +42,33 @@ const VALID_REGIONS: KoreaRegion[] = [
   'jeju',
 ];
 
+function weatherResponse(weather: WeatherData, locationSource: WeatherLocationSource) {
+  const body = {
+    ...weather,
+    // 요청 출처는 지역 캐시에 넣지 않는다. 같은 지역의 기본값/실측 요청이 서로 오염되기 때문이다.
+    locationSource,
+    usedFallback: weather.usedFallback === true,
+  } satisfies WeatherApiResponse;
+
+  return NextResponse.json(body);
+}
+
 export async function GET(request: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'AUTH_ERROR',
+          message: 'User not authenticated',
+          userMessage: '로그인이 필요합니다.',
+        },
+      },
+      { status: 401 }
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const regionParam = searchParams.get('region');
@@ -56,7 +88,7 @@ export async function GET(request: Request) {
       }
 
       const weather = await getWeatherByRegion(regionParam as KoreaRegion);
-      return NextResponse.json(weather);
+      return weatherResponse(weather, 'region');
     }
 
     // 위도/경도로 조회
@@ -73,27 +105,21 @@ export async function GET(request: Request) {
 
       // 한국 범위 검증 (대략적)
       if (lat < 33 || lat > 39 || lon < 124 || lon > 132) {
-        return NextResponse.json(
-          { error: 'Coordinates must be within Korea.' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Coordinates must be within Korea.' }, { status: 400 });
       }
 
       const weather = await getWeatherByCoords(lat, lon);
-      return NextResponse.json(weather);
+      return weatherResponse(weather, 'geolocation');
     }
 
     // 파라미터 없으면 서울 기본값
     const weather = await getWeatherByRegion('seoul');
-    return NextResponse.json(weather);
+    return weatherResponse(weather, 'default');
   } catch (error) {
     console.error('[Weather API] Error:', error);
 
     // API 에러 시 Mock 데이터 반환
     const mockWeather = generateMockWeather('seoul');
-    return NextResponse.json({
-      ...mockWeather,
-      _fallback: true,
-    });
+    return weatherResponse({ ...mockWeather, usedFallback: true }, 'default');
   }
 }

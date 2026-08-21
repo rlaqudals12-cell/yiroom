@@ -2,6 +2,8 @@
  * 날씨 서비스 테스트
  */
 
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   generateMockWeather,
@@ -24,6 +26,7 @@ describe('weatherService', () => {
       expect(weather.current).toBeDefined();
       expect(weather.current.temp).toBeDefined();
       expect(weather.forecast.length).toBe(6);
+      expect(weather.usedFallback).toBe(true);
     });
 
     it('부산 지역의 Mock 날씨를 생성한다', () => {
@@ -72,6 +75,33 @@ describe('weatherService', () => {
       expect(typeof current.description).toBe('string');
       expect(typeof current.icon).toBe('string');
       expect(typeof current.precipitation).toBe('number');
+    });
+
+    it('같은 지역과 3시간 버킷은 같은 현재·예보 값을 만든다', () => {
+      const first = generateMockWeather('seoul', new Date('2026-08-21T00:05:00.000Z'));
+      const second = generateMockWeather('seoul', new Date('2026-08-21T02:55:00.000Z'));
+
+      expect(second.current).toEqual(first.current);
+      expect(second.forecast).toEqual(first.forecast);
+      expect(second.usedFallback).toBe(true);
+    });
+
+    it('같은 지역과 기준 시각은 전체 응답이 동일하다', () => {
+      const referenceTime = new Date('2026-08-21T00:05:00.000Z');
+
+      expect(generateMockWeather('seoul', referenceTime)).toEqual(
+        generateMockWeather('seoul', referenceTime)
+      );
+    });
+
+    it('폴백 구현에 비결정적 Math.random을 다시 도입하지 않는다', () => {
+      const source = fs.readFileSync(
+        path.resolve(process.cwd(), 'lib/style/weatherService.ts'),
+        'utf8'
+      );
+
+      expect(source).not.toContain('Math.random(');
+      expect(source).toContain('createSeededRandom');
     });
   });
 

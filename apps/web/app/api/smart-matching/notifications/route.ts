@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
 import {
   getNotifications,
   getUnreadCount,
@@ -14,31 +15,83 @@ import {
 } from '@/lib/smart-matching';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 
-export async function GET(request: NextRequest) {
+const notificationTypeSchema = z.enum([
+  'product_running_low',
+  'expiry_approaching',
+  'price_drop',
+  'back_in_stock',
+  'new_recommendation',
+  'size_available',
+  'similar_product',
+  'reorder_reminder',
+]);
+
+const querySchema = z.object({
+  unread: z.enum(['true', 'false']).optional(),
+  type: notificationTypeSchema.optional(),
+  count: z.enum(['true', 'false']).optional(),
+});
+
+const markAllSchema = z.object({ action: z.literal('markAllAsRead') }).strict();
+const createSchema = z
+  .object({
+    notificationType: notificationTypeSchema,
+    title: z.string().trim().min(1).max(120),
+    message: z.string().trim().min(1).max(500),
+    imageUrl: z.string().url().max(2048).optional(),
+    productId: z.string().uuid().optional(),
+    inventoryItemId: z.string().uuid().optional(),
+    actionUrl: z.string().trim().min(1).max(2048).optional(),
+    scheduledFor: z.string().datetime({ offset: true }).optional(),
+  })
+  .strict();
+
+function errorResponse(
+  code: 'AUTH_ERROR' | 'VALIDATION_ERROR' | 'INTERNAL_ERROR',
+  message: string,
+  userMessage: string,
+  status: number
+): NextResponse {
+  return NextResponse.json({ success: false, error: { code, message, userMessage } }, { status });
+}
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+      return errorResponse('AUTH_ERROR', 'Authentication required', '로그인이 필요합니다.', 401);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const parsed = querySchema.safeParse({
+      unread: searchParams.get('unread') ?? undefined,
+      type: searchParams.get('type') ?? undefined,
+      count: searchParams.get('count') ?? undefined,
+    });
+    if (!parsed.success) {
+      return errorResponse(
+        'VALIDATION_ERROR',
+        'Invalid notification query',
+        '알림 조회 조건을 확인해주세요.',
+        400
+      );
     }
 
     const db = createClerkSupabaseClient();
-
-    const { searchParams } = new URL(request.url);
-    const unreadOnly = searchParams.get('unread') === 'true';
-    const type = searchParams.get('type');
-    const countOnly = searchParams.get('count') === 'true';
+    const unreadOnly = parsed.data.unread === 'true';
+    const countOnly = parsed.data.count === 'true';
 
     if (countOnly) {
       const count = await getUnreadCount(userId, db);
-      return NextResponse.json({ unreadCount: count });
+      return NextResponse.json({ success: true, data: { unreadCount: count } });
     }
 
     const notifications = await getNotifications(
       userId,
       {
         unreadOnly,
-        type: type as import('@/types/smart-matching').NotificationType | undefined,
+        type: parsed.data.type,
         limit: 50,
       },
       db
@@ -46,61 +99,81 @@ export async function GET(request: NextRequest) {
 
     const unreadCount = await getUnreadCount(userId, db);
 
-    return NextResponse.json({
-      notifications,
-      unreadCount,
-    });
+    return NextResponse.json({ success: true, data: { notifications, unreadCount } });
   } catch (error) {
     console.error('[API] Notifications GET error:', error);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return errorResponse(
+      'INTERNAL_ERROR',
+      'Failed to get notifications',
+      '알림을 불러오지 못했습니다.',
+      500
+    );
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+      return errorResponse('AUTH_ERROR', 'Authentication required', '로그인이 필요합니다.', 401);
+    }
+
+    const body: unknown = await request.json().catch(() => null);
+    const markAll = markAllSchema.safeParse(body);
+
+    // 전체 읽음 처리
+    if (markAll.success) {
+      const db = createClerkSupabaseClient();
+      const success = await markAllAsRead(userId, db);
+      if (!success) {
+        return errorResponse(
+          'INTERNAL_ERROR',
+          'Failed to mark notifications as read',
+          '알림을 읽음 처리하지 못했습니다.',
+          500
+        );
+      }
+      return NextResponse.json({ success: true, data: { success: true } });
+    }
+
+    const parsed = createSchema.safeParse(body);
+    if (!parsed.success) {
+      return errorResponse(
+        'VALIDATION_ERROR',
+        'Invalid notification payload',
+        '알림 내용을 확인해주세요.',
+        400
+      );
     }
 
     const db = createClerkSupabaseClient();
-
-    const body = await request.json();
-
-    // 전체 읽음 처리
-    if (body.action === 'markAllAsRead') {
-      const success = await markAllAsRead(userId, db);
-      return NextResponse.json({ success });
-    }
-
-    // 알림 생성 (시스템 내부용)
-    if (!body.notificationType || !body.title || !body.message) {
-      return NextResponse.json({ error: '필수 필드가 누락되었습니다.' }, { status: 400 });
-    }
-
     const result = await createNotification(
       {
         clerkUserId: userId,
-        notificationType: body.notificationType,
-        title: body.title,
-        message: body.message,
-        imageUrl: body.imageUrl,
-        productId: body.productId,
-        inventoryItemId: body.inventoryItemId,
-        actionUrl: body.actionUrl,
-        scheduledFor: body.scheduledFor ? new Date(body.scheduledFor) : undefined,
+        ...parsed.data,
+        scheduledFor: parsed.data.scheduledFor ? new Date(parsed.data.scheduledFor) : undefined,
       },
       db
     );
 
     if (!result) {
-      return NextResponse.json({ error: '알림 생성에 실패했습니다.' }, { status: 500 });
+      return errorResponse(
+        'INTERNAL_ERROR',
+        'Failed to create notification',
+        '알림을 만들지 못했습니다.',
+        500
+      );
     }
 
-    return NextResponse.json(result, { status: 201 });
+    return NextResponse.json({ success: true, data: result }, { status: 201 });
   } catch (error) {
     console.error('[API] Notifications POST error:', error);
-    return NextResponse.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
+    return errorResponse(
+      'INTERNAL_ERROR',
+      'Failed to process notification request',
+      '알림 요청을 처리하지 못했습니다.',
+      500
+    );
   }
 }

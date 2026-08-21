@@ -110,22 +110,32 @@ export async function createNotification(
 
 /**
  * 알림 읽음 처리
+ *
+ * clerkUserId를 주면 소유자 필터를 앱 계층에서도 강제한다(RLS 단일 의존 금지 —
+ * 0행 갱신을 성공으로 위장하지 않도록 영향 행 수까지 검사).
  */
-export async function markAsRead(notificationId: string, db = supabase): Promise<boolean> {
-  const { error } = await db
+export async function markAsRead(
+  notificationId: string,
+  db = supabase,
+  clerkUserId?: string
+): Promise<boolean> {
+  let query = db
     .from('smart_notifications')
     .update({
       read: true,
       read_at: new Date().toISOString(),
     })
     .eq('id', notificationId);
+  if (clerkUserId) query = query.eq('clerk_user_id', clerkUserId);
+
+  const { data, error } = await query.select('id');
 
   if (error) {
     smartMatchingLogger.error('알림 읽음 처리 실패:', error);
     return false;
   }
 
-  return true;
+  return (data?.length ?? 0) > 0;
 }
 
 /**
@@ -150,17 +160,24 @@ export async function markAllAsRead(clerkUserId: string, db = supabase): Promise
 }
 
 /**
- * 알림 삭제
+ * 알림 삭제 — 소유자 필터·영향 행 검사는 markAsRead와 동일한 이유.
  */
-export async function deleteNotification(notificationId: string, db = supabase): Promise<boolean> {
-  const { error } = await db.from('smart_notifications').delete().eq('id', notificationId);
+export async function deleteNotification(
+  notificationId: string,
+  db = supabase,
+  clerkUserId?: string
+): Promise<boolean> {
+  let query = db.from('smart_notifications').delete().eq('id', notificationId);
+  if (clerkUserId) query = query.eq('clerk_user_id', clerkUserId);
+
+  const { data, error } = await query.select('id');
 
   if (error) {
     smartMatchingLogger.error('알림 삭제 실패:', error);
     return false;
   }
 
-  return true;
+  return (data?.length ?? 0) > 0;
 }
 
 /**

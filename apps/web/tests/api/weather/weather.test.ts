@@ -4,6 +4,16 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { WeatherApiResponse } from '@/types/weather';
+
+const { mockAuth } = vi.hoisted(() => ({
+  mockAuth: vi.fn(),
+}));
+
+vi.mock('@clerk/nextjs/server', () => ({
+  auth: mockAuth,
+}));
+
 import { GET } from '@/app/api/weather/route';
 
 // Mock weatherService
@@ -42,6 +52,7 @@ function createRequest(url: string): Request {
 describe('Weather API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuth.mockResolvedValue({ userId: 'user-1' });
   });
 
   describe('GET /api/weather', () => {
@@ -59,6 +70,10 @@ describe('Weather API', () => {
 
       expect(response.status).toBe(200);
       expect(getWeatherByRegion).toHaveBeenCalledWith('seoul');
+
+      const data = (await response.json()) as WeatherApiResponse;
+      expect(data.locationSource).toBe('default');
+      expect(data.usedFallback).toBe(false);
     });
 
     it('지역 코드로 날씨를 조회한다', async () => {
@@ -76,8 +91,25 @@ describe('Weather API', () => {
       expect(response.status).toBe(200);
       expect(getWeatherByRegion).toHaveBeenCalledWith('busan');
 
-      const data = await response.json();
+      const data = (await response.json()) as WeatherApiResponse;
       expect(data.region).toBe('busan');
+      expect(data.locationSource).toBe('region');
+    });
+
+    it('같은 지역 캐시를 써도 요청별 위치 출처를 응답에서 다시 붙인다', async () => {
+      const cachedWeather = {
+        region: 'seoul',
+        location: '서울',
+        current: { temp: 15, feelsLike: 13 },
+        forecast: [],
+      };
+      vi.mocked(getWeatherByRegion).mockResolvedValue(cachedWeather as never);
+
+      const defaultResponse = await GET(createRequest('http://localhost/api/weather'));
+      const regionResponse = await GET(createRequest('http://localhost/api/weather?region=seoul'));
+
+      expect((await defaultResponse.json()).locationSource).toBe('default');
+      expect((await regionResponse.json()).locationSource).toBe('region');
     });
 
     it('잘못된 지역 코드는 400을 반환한다', async () => {
@@ -99,19 +131,18 @@ describe('Weather API', () => {
       };
       vi.mocked(getWeatherByCoords).mockResolvedValueOnce(mockWeather as never);
 
-      const request = createRequest(
-        'http://localhost/api/weather?lat=37.5665&lon=126.978'
-      );
+      const request = createRequest('http://localhost/api/weather?lat=37.5665&lon=126.978');
       const response = await GET(request);
 
       expect(response.status).toBe(200);
       expect(getWeatherByCoords).toHaveBeenCalledWith(37.5665, 126.978);
+
+      const data = (await response.json()) as WeatherApiResponse;
+      expect(data.locationSource).toBe('geolocation');
     });
 
     it('잘못된 좌표는 400을 반환한다', async () => {
-      const request = createRequest(
-        'http://localhost/api/weather?lat=abc&lon=def'
-      );
+      const request = createRequest('http://localhost/api/weather?lat=abc&lon=def');
       const response = await GET(request);
 
       expect(response.status).toBe(400);
@@ -120,9 +151,7 @@ describe('Weather API', () => {
     });
 
     it('한국 범위 밖의 좌표는 400을 반환한다', async () => {
-      const request = createRequest(
-        'http://localhost/api/weather?lat=50&lon=100'
-      );
+      const request = createRequest('http://localhost/api/weather?lat=50&lon=100');
       const response = await GET(request);
 
       expect(response.status).toBe(400);
@@ -131,9 +160,7 @@ describe('Weather API', () => {
     });
 
     it('API 에러 시 Mock 데이터를 반환한다', async () => {
-      vi.mocked(getWeatherByRegion).mockRejectedValueOnce(
-        new Error('API Error')
-      );
+      vi.mocked(getWeatherByRegion).mockRejectedValueOnce(new Error('API Error'));
 
       const request = createRequest('http://localhost/api/weather?region=seoul');
       const response = await GET(request);
@@ -141,8 +168,20 @@ describe('Weather API', () => {
       expect(response.status).toBe(200);
       expect(generateMockWeather).toHaveBeenCalled();
 
+      const data = (await response.json()) as WeatherApiResponse;
+      expect(data.usedFallback).toBe(true);
+      expect(data.locationSource).toBe('default');
+    });
+
+    it('인증되지 않은 요청은 날씨 서비스 호출 전에 401을 반환한다', async () => {
+      mockAuth.mockResolvedValueOnce({ userId: null });
+
+      const response = await GET(createRequest('http://localhost/api/weather'));
+
+      expect(response.status).toBe(401);
+      expect(getWeatherByRegion).not.toHaveBeenCalled();
       const data = await response.json();
-      expect(data._fallback).toBe(true);
+      expect(data.error.userMessage).toBe('로그인이 필요합니다.');
     });
   });
 });
