@@ -5,6 +5,7 @@
  * testID: analysis-posture-result-screen
  */
 import React from 'react';
+import { fireEvent } from '@testing-library/react-native';
 
 import { renderWithTheme } from '../../helpers/test-utils';
 
@@ -56,6 +57,10 @@ jest.mock('expo-linear-gradient', () => ({
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
+}));
+
+jest.mock('expo-font', () => ({
+  useFonts: jest.fn(() => [true, null]),
 }));
 
 jest.mock('../../../lib/animations', () => ({
@@ -119,7 +124,9 @@ jest.mock('../../../lib/monitoring/sentry', () => ({
 // 분석 공통 컴포넌트 mock
 jest.mock('../../../components/analysis', () => {
   const { View, Text } = require('react-native');
+  const report = jest.requireActual('../../../components/analysis/report');
   return {
+    ...report,
     AnalysisLoadingState: ({ message, testID }: { message: string; testID?: string }) => (
       <View testID={testID}>
         <Text>{message}</Text>
@@ -130,9 +137,6 @@ jest.mock('../../../components/analysis', () => {
         <Text>{message}</Text>
       </View>
     ),
-    AnalysisTrustBadge: ({ testID }: { testID?: string; [key: string]: unknown }) => (
-      <View testID={testID} />
-    ),
     AnalysisResultButtons: ({
       testID,
       primaryText,
@@ -141,33 +145,6 @@ jest.mock('../../../components/analysis', () => {
       primaryText?: string;
       [key: string]: unknown;
     }) => <View testID={testID}>{primaryText ? <Text>{primaryText}</Text> : null}</View>,
-    MetricBar: ({ label, value }: { label: string; value: number }) => (
-      <View>
-        <Text>
-          {label}: {value}
-        </Text>
-      </View>
-    ),
-    useAnalysisStyles: jest.fn(() => ({
-      styles: {
-        container: {},
-        content: {},
-        imageContainer: {},
-        resultCard: {},
-        label: {},
-        subLabel: {},
-        section: {},
-        sectionTitle: {},
-        listItem: {},
-      },
-      module: {
-        posture: { base: '#6366f1' },
-      },
-      colors: {
-        foreground: '#000',
-        mutedForeground: '#666',
-      },
-    })),
   };
 });
 
@@ -225,10 +202,23 @@ describe('PostureResultScreen', () => {
   });
 
   it('분석 완료 후 결과 화면이 렌더링된다', async () => {
-    const { findByTestId } = renderWithTheme(<PostureResultScreen />);
+    const { findByTestId, getAllByText, queryByText } = renderWithTheme(<PostureResultScreen />);
     // analyzePosture mock이 resolve되면 결과 화면 표시
     const resultScreen = await findByTestId('analysis-posture-result-screen');
     expect(resultScreen).toBeTruthy();
+    expect(getAllByText('거북목').length).toBeGreaterThan(0);
+    expect(queryByText(/종합 점수/)).toBeNull();
+    expect(queryByText('72점')).toBeNull();
+    expect(queryByText('정렬 점수')).toBeNull();
+  });
+
+  it('교정 설명은 기본 접힘이고 사용자가 펼쳤을 때만 보인다', async () => {
+    const screen = renderWithTheme(<PostureResultScreen />);
+    await screen.findByTestId('analysis-posture-result-screen');
+
+    expect(screen.queryByText(/턱을 뒤로 당기세요/)).toBeNull();
+    fireEvent.press(screen.getByTestId('posture-exercises-trigger'));
+    expect(screen.getByText(/턱을 뒤로 당기세요/)).toBeTruthy();
   });
 
   it('분석 실패 시 에러 상태가 표시된다', async () => {

@@ -98,19 +98,21 @@ describe('헤어 결과 진단지 표현', () => {
 
     await waitFor(() => expect(screen.getByTestId('hair-analysis-result')).toBeTruthy());
 
-    expect(screen.getByText('웨이브 · 굵은 모발')).toBeTruthy();
-    expect(screen.getByText('지성 두피')).toBeTruthy();
-    expect(screen.getByText('20%')).toBeTruthy();
+    expect(screen.getAllByText('웨이브 · 굵은 모발').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('지성 두피').length).toBeGreaterThan(0);
+    expect(screen.getByText('20% · 높을수록 손상이 큰 값')).toBeTruthy();
     expect(screen.queryByText('60점')).toBeNull();
     expect(screen.queryByText(/종합.*점/)).toBeNull();
     expect(screen.queryByTestId('hair-analysis-result-grade')).toBeNull();
 
     fireEvent.press(screen.getByTestId('hair-analysis-result-section-condition-trigger'));
 
-    expect(screen.getByText('60점')).toBeTruthy();
-    expect(screen.getByText('72점')).toBeTruthy();
-    expect(screen.getByText('55점')).toBeTruthy();
-    expect(screen.getByText('65점')).toBeTruthy();
+    expect(screen.getByText('60')).toBeTruthy();
+    expect(screen.getByText('72')).toBeTruthy();
+    expect(screen.getByText('55')).toBeTruthy();
+    expect(screen.getByText('65')).toBeTruthy();
+    expect(screen.queryByText(/\d+점/)).toBeNull();
+    expect(screen.getByTestId('hair-analysis-result-share')).toBeTruthy();
   });
 
   it('서버 폴백을 예시 결과·낮은 신뢰도로 고지한다', async () => {

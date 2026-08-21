@@ -97,6 +97,13 @@ describe('ReportResultLayout', () => {
     expect(screen.getByText('접힌 근거 내용')).toBeTruthy();
   });
 
+  it('공유 표면을 진단지 본문 뒤의 독립 슬롯에 둔다', () => {
+    const screen = renderWithTheme(createLayout({ shareContent: <Text>공유 카드</Text> }));
+
+    expect(screen.getByTestId('hair-report-share')).toBeTruthy();
+    expect(screen.getByText('공유 카드')).toBeTruthy();
+  });
+
   it('폴백은 예시 결과와 낮은 신뢰도를 결론 가까이에 고지한다', () => {
     const screen = renderWithTheme(createLayout({ usedFallback: true }));
 

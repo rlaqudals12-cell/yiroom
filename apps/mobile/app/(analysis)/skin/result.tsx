@@ -4,12 +4,11 @@ import type { SkinType } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { Text } from 'react-native';
 
 import {
   AnalysisErrorState,
   AnalysisLoadingState,
-  REPORT_COLORS,
   ReportActionList,
   ReportAttrRow,
   ReportResultLayout,
@@ -17,6 +16,10 @@ import {
   ReportTextList,
   type ReportSection,
 } from '@/components/analysis';
+import {
+  SkinResultShare,
+  skinResultStyles as styles,
+} from '@/components/analysis/skin/SkinResultSupport';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import { buildSkinTopActions, formatReportReading } from '@/lib/analysis';
 import { requestSkinAnalysis, SkinApiError } from '@/lib/api/skin';
@@ -24,7 +27,6 @@ import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
 import { SKIN_TYPE_DATA, type SkinMetrics, type SkinMetricsDelta } from '@/lib/skincare';
 import { useClerkSupabaseClient } from '@/lib/supabase';
-import { spacing, typography } from '@/lib/theme';
 
 const INGREDIENT_DATA: Record<SkinType, { good: string[]; avoid: string[] }> = {
   dry: {
@@ -268,6 +270,14 @@ export default function SkinResultScreen(): React.JSX.Element {
         retryPath="/(analysis)/skin"
         saveFailed={dbSaveFailed}
         sections={sections}
+        shareContent={
+          <SkinResultShare
+            description={typeData.description}
+            recommendedIngredient={ingredients.good[0]}
+            typeName={typeData.name}
+            usedFallback={usedFallback}
+          />
+        }
         testID="skin-analysis-result"
         usedFallback={usedFallback}
         verdict={typeData.name}
@@ -275,17 +285,3 @@ export default function SkinResultScreen(): React.JSX.Element {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  skinImage: {
-    borderRadius: 52,
-    height: 104,
-    width: 104,
-  },
-  evidenceText: {
-    color: REPORT_COLORS.mutedInk,
-    fontSize: typography.size.sm,
-    lineHeight: 21,
-    paddingBottom: spacing.xs,
-  },
-});

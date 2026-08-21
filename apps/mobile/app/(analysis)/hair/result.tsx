@@ -16,6 +16,7 @@ import {
   ReportTextList,
   type ReportSection,
 } from '@/components/analysis';
+import { AxisResultShareSection } from '@/components/share';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import {
   buildHairTopActions,
@@ -145,10 +146,10 @@ export default function HairResultScreen(): React.JSX.Element {
     summary: '윤기·탄력·밀도·두피 건강',
     content: (
       <ReportRowTable testID="hair-condition-rows">
-        <ReportAttrRow label="윤기" value={`${result.scores.shine}점`} />
-        <ReportAttrRow label="탄력" value={`${result.scores.elasticity}점`} />
-        <ReportAttrRow label="밀도" value={`${result.scores.density}점`} />
-        <ReportAttrRow label="두피 건강" value={`${result.scores.scalpHealth}점`} />
+        <ReportAttrRow label="윤기" value={String(result.scores.shine)} />
+        <ReportAttrRow label="탄력" value={String(result.scores.elasticity)} />
+        <ReportAttrRow label="밀도" value={String(result.scores.density)} />
+        <ReportAttrRow label="두피 건강" value={String(result.scores.scalpHealth)} />
       </ReportRowTable>
     ),
   });
@@ -219,7 +220,10 @@ export default function HairResultScreen(): React.JSX.Element {
         attributes={
           <ReportRowTable testID="hair-report-attrs">
             <ReportAttrRow label="두피" value={SCALP_LABELS[result.scalpCondition]} />
-            <ReportAttrRow label="손상도" value={`${result.damageLevel}%`} />
+            <ReportAttrRow
+              label="손상도"
+              value={`${result.damageLevel}% · 높을수록 손상이 큰 값`}
+            />
           </ReportRowTable>
         }
         conclusion={<ReportActionList actions={topActions} testID="hair-report-actions" />}
@@ -233,6 +237,18 @@ export default function HairResultScreen(): React.JSX.Element {
         retryPath="/(analysis)/hair"
         saveFailed={result.dbSaveFailed}
         sections={sections}
+        shareContent={
+          <AxisResultShareSection
+            analysisType="hair"
+            badges={[{ label: '두피', value: SCALP_LABELS[result.scalpCondition] }]}
+            heading="내 헤어 카드"
+            oneLine={
+              result.mainConcerns[0] ?? result.careRoutine[0] ?? SCALP_LABELS[result.scalpCondition]
+            }
+            usedFallback={usedFallback}
+            verdict={`${TEXTURE_LABELS[result.texture]} · ${THICKNESS_LABELS[result.thickness]}`}
+          />
+        }
         testID="hair-analysis-result"
         usedFallback={usedFallback}
         verdict={`${TEXTURE_LABELS[result.texture]} · ${THICKNESS_LABELS[result.thickness]}`}

@@ -41,6 +41,12 @@ jest.mock('react-native-safe-area-context', () => {
 
 const mockGetToken = jest.fn().mockResolvedValue('jwt-token');
 
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn() },
+}));
+
+const { router: mockRouter } = require('expo-router');
+
 // Clerk mock
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: () => ({ getToken: mockGetToken }),
@@ -216,12 +222,14 @@ describe('ShelfScreen', () => {
     });
   });
 
-  it('빈 제품함에서 아직 연결되지 않은 모바일 스캔 동선을 약속하지 않는다', async () => {
+  it('빈 제품함에서도 실제로 연결된 바코드 추가 동선을 제공한다', async () => {
     mockGetProductShelf.mockResolvedValueOnce({ items: [], total: 0 });
 
-    const { getByText, queryByText } = renderWithTheme(<ShelfScreen />);
+    const { getByText, getByTestId } = renderWithTheme(<ShelfScreen />);
 
     await waitFor(() => expect(getByText('아직 저장한 제품이 없어요.')).toBeTruthy());
-    expect(queryByText('바코드 스캔으로 제품을 추가해보세요')).toBeNull();
+    fireEvent.press(getByTestId('shelf-add-product'));
+
+    expect(mockRouter.push).toHaveBeenCalledWith('/(inventory)/barcode-scan');
   });
 });

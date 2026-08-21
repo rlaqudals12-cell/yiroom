@@ -18,6 +18,7 @@ import {
   type ReportSection,
 } from '@/components/analysis';
 import { BodyReportEvidence } from '@/components/analysis/body/BodyReportEvidence';
+import { AxisResultShareSection } from '@/components/share';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import { buildBodyTopActions } from '@/lib/analysis';
 import { BodyApiError, requestBodyAnalysis, type BodyAnalysisApiResult } from '@/lib/api/body';
@@ -233,6 +234,16 @@ export default function BodyResultScreen(): React.JSX.Element {
         retryPath="/(analysis)/body"
         saveFailed={analysis.dbSaveFailed}
         sections={sections}
+        shareContent={
+          <AxisResultShareSection
+            analysisType="body"
+            badges={analysis.strengths[0] ? [{ label: '강점', value: analysis.strengths[0] }] : []}
+            heading="내 체형 카드"
+            oneLine={bodyDescription}
+            usedFallback={analysis.usedMock}
+            verdict={analysis.bodyTypeLabel}
+          />
+        }
         testID="body-analysis-result"
         usedFallback={analysis.usedMock}
         verdict={analysis.bodyTypeLabel}

@@ -9,7 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { findByBarcode } from '../../lib/smart-matching/barcodes';
+import { findByBarcode, findByProductId } from '../../lib/smart-matching/barcodes';
 import { getFeedbackList } from '../../lib/smart-matching/feedback';
 import { getMeasurements } from '../../lib/smart-matching/measurements';
 import {
@@ -20,6 +20,14 @@ import {
 import { getPreferences } from '../../lib/smart-matching/preferences';
 import { getPriceWatches } from '../../lib/smart-matching/price-watches';
 import { getSizeHistory } from '../../lib/smart-matching/size-history';
+import {
+  getProductMeasurements,
+  getSizeChart,
+  getSizeChartsByBrand,
+  searchSizeCharts,
+  upsertProductMeasurements,
+  upsertSizeChart,
+} from '../../lib/smart-matching/size-charts';
 
 const mockQuery = {
   select: jest.fn(),
@@ -89,7 +97,7 @@ describe('Smart Matching 사용자 데이터는 인증 웹 API를 경유한다',
     {
       name: 'notifications',
       path: '/api/smart-matching/notifications',
-      payload: { notifications: [], unreadCount: 0 },
+      payload: { success: true, data: { notifications: [], unreadCount: 0 } },
       call: () => getNotifications('user-1', undefined, 'clerk-token'),
     },
     {
@@ -153,7 +161,7 @@ describe('Smart Matching 사용자 데이터는 인증 웹 API를 경유한다',
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
-  it('API가 있는 7모듈에는 public Supabase singleton import가 남지 않는다', () => {
+  it('인증 경계 또는 명시적 미지원 계약인 8모듈에는 public Supabase singleton import가 남지 않는다', () => {
     const moduleDir = path.resolve(__dirname, '../../lib/smart-matching');
     const moduleNames = [
       'barcodes.ts',
@@ -163,6 +171,7 @@ describe('Smart Matching 사용자 데이터는 인증 웹 API를 경유한다',
       'preferences.ts',
       'price-watches.ts',
       'size-history.ts',
+      'size-charts.ts',
     ];
     const forbiddenImport = ['/lib/supabase/', 'client'].join('');
 
@@ -184,7 +193,24 @@ describe('Smart Matching 사용자 데이터는 인증 웹 API를 경유한다',
     expect(source.match(/getMeasurements\(clerkUserId, clerkToken\)/g)).toHaveLength(3);
   });
 
-  it('RLS 정책이 없는 알림 생성·삭제는 실패하는 API를 호출하지 않고 명시적으로 중단한다', async () => {
+  it('알림 생성·삭제도 인증 API와 표준 봉투를 사용한다', async () => {
+    mockFetch
+      .mockResolvedValueOnce(
+        jsonResponse({
+          success: true,
+          data: {
+            id: '11111111-1111-4111-8111-111111111111',
+            clerkUserId: 'user-1',
+            notificationType: 'price_drop',
+            title: '가격 알림',
+            message: '가격이 내려갔어요.',
+            read: false,
+            createdAt: '2026-08-21T00:00:00.000Z',
+          },
+        })
+      )
+      .mockResolvedValueOnce(jsonResponse({ success: true, data: { success: true } }));
+
     await expect(
       createNotification(
         {
@@ -195,11 +221,48 @@ describe('Smart Matching 사용자 데이터는 인증 웹 API를 경유한다',
         },
         'clerk-token'
       )
-    ).rejects.toMatchObject({ status: 501, code: 'API_NOT_AVAILABLE' });
-    await expect(deleteNotification('notification-1', 'clerk-token')).rejects.toMatchObject({
-      status: 501,
-      code: 'API_NOT_AVAILABLE',
-    });
+    ).resolves.toMatchObject({ notificationType: 'price_drop' });
+    await expect(
+      deleteNotification('11111111-1111-4111-8111-111111111111', 'clerk-token')
+    ).resolves.toBe(true);
+
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      1,
+      'https://api.example.com/api/smart-matching/notifications',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ Authorization: 'Bearer clerk-token' }),
+      })
+    );
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
+      'https://api.example.com/api/smart-matching/notifications/11111111-1111-4111-8111-111111111111',
+      expect.objectContaining({ method: 'DELETE' })
+    );
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('소비자가 없는 원시 사이즈 CRUD와 제품 ID 바코드 역조회는 API 미지원으로 고정한다', async () => {
+    const unsupportedCalls = [
+      () => getSizeChart('brand-1', 'top'),
+      () => getSizeChartsByBrand('brand-1'),
+      () => searchSizeCharts({ brandName: '브랜드' }),
+      () =>
+        upsertSizeChart({
+          brandId: 'brand-1',
+          brandName: '브랜드',
+          category: 'top',
+          sizeMappings: [],
+        }),
+      () => getProductMeasurements('product-1'),
+      () => upsertProductMeasurements({ productId: 'product-1', sizeMeasurements: [] }),
+      () => findByProductId('product-1', 'clerk-token'),
+    ];
+
+    for (const call of unsupportedCalls) {
+      await expect(call()).rejects.toMatchObject({ status: 501, code: 'API_NOT_AVAILABLE' });
+    }
     expect(mockFetch).not.toHaveBeenCalled();
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 });

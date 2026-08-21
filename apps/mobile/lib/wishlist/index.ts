@@ -1,83 +1,109 @@
 /**
- * 위시리스트 레거시 호환 모듈
+ * 인증 위시리스트 웹 API 클라이언트
  *
- * 모바일 전용 API가 생기기 전까지 DB를 우회하지 않고 명시적으로 거부한다.
- *
- * @module lib/wishlist
+ * 모바일은 user_wishlists를 직접 읽거나 쓰지 않고 Clerk JWT를 웹 정본 API에 전달한다.
  */
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { missingSmartMatchingApi, requestSmartMatching } from '@/lib/smart-matching/api-client';
+import type { ProductType } from '@/types/product';
 
 export interface WishlistItem {
   id: string;
-  clerk_user_id: string;
-  product_type: string;
-  product_id: string;
-  created_at: string;
+  clerkUserId: string;
+  productType: ProductType;
+  productId: string;
+  createdAt: string;
+  /** 웹 API가 실제 제품 테이블에서 확인한 경우에만 제공된다. */
+  name?: string;
+  brand?: string;
+  priceKrw?: number;
 }
 
 export interface AddToWishlistInput {
-  product_type: string;
-  product_id: string;
+  productType: ProductType;
+  productId: string;
+}
+
+interface ApiEnvelope<T> {
+  success: true;
+  data: T;
 }
 
 export async function getWishlist(
-  _supabase: SupabaseClient,
-  _userId: string,
-  _limit = 50
+  clerkToken: string,
+  productType?: ProductType
 ): Promise<WishlistItem[]> {
-  throw new Error('위시리스트 조회는 현재 지원하지 않아요.');
+  const query = productType ? `?productType=${encodeURIComponent(productType)}` : '';
+  const payload = await requestSmartMatching<ApiEnvelope<{ items: WishlistItem[] }>>(
+    `/api/wishlist${query}`,
+    clerkToken,
+    { method: 'GET' }
+  );
+  return payload.data.items;
 }
 
 export async function isInWishlist(
-  _supabase: SupabaseClient,
-  _userId: string,
-  _productId: string,
-  _productType?: string
+  clerkToken: string,
+  productType: ProductType,
+  productId: string
 ): Promise<boolean> {
-  throw new Error('위시리스트 조회는 현재 지원하지 않아요.');
+  const query = new URLSearchParams({ productType, productId });
+  const payload = await requestSmartMatching<ApiEnvelope<{ isWishlisted: boolean }>>(
+    `/api/wishlist?${query.toString()}`,
+    clerkToken,
+    { method: 'GET' }
+  );
+  return payload.data.isWishlisted;
 }
 
-export async function getWishlistCount(
-  _supabase: SupabaseClient,
-  _userId: string
-): Promise<number> {
-  throw new Error('위시리스트 조회는 현재 지원하지 않아요.');
-}
-
-function unsupportedWrite(): never {
-  throw new Error('위시리스트 저장은 현재 지원하지 않아요.');
+export async function getWishlistCount(clerkToken: string): Promise<number> {
+  const items = await getWishlist(clerkToken);
+  return items.length;
 }
 
 export async function addToWishlist(
-  _supabase: SupabaseClient,
-  _userId: string,
-  _input: AddToWishlistInput
-): Promise<WishlistItem> {
-  return unsupportedWrite();
+  clerkToken: string,
+  input: AddToWishlistInput
+): Promise<boolean> {
+  const payload = await requestSmartMatching<ApiEnvelope<{ isWishlisted: boolean }>>(
+    '/api/wishlist',
+    clerkToken,
+    { method: 'POST', body: JSON.stringify(input) }
+  );
+  return payload.data.isWishlisted;
 }
 
 export async function removeFromWishlist(
-  _supabase: SupabaseClient,
-  _userId: string,
-  _productId: string
-): Promise<void> {
-  return unsupportedWrite();
+  clerkToken: string,
+  productType: ProductType,
+  productId: string
+): Promise<boolean> {
+  const payload = await requestSmartMatching<ApiEnvelope<{ isWishlisted: boolean }>>(
+    '/api/wishlist',
+    clerkToken,
+    {
+      method: 'DELETE',
+      body: JSON.stringify({ productType, productId }),
+    }
+  );
+  return !payload.data.isWishlisted;
 }
 
 export async function toggleWishlist(
-  _supabase: SupabaseClient,
-  _userId: string,
-  _productId: string
+  clerkToken: string,
+  productType: ProductType,
+  productId: string
 ): Promise<boolean> {
-  return unsupportedWrite();
+  const current = await isInWishlist(clerkToken, productType, productId);
+  if (current) {
+    await removeFromWishlist(clerkToken, productType, productId);
+    return false;
+  }
+  await addToWishlist(clerkToken, { productType, productId });
+  return true;
 }
 
-export async function updateWishlistNote(
-  _supabase: SupabaseClient,
-  _userId: string,
-  _productId: string,
-  _note: string
-): Promise<void> {
-  return unsupportedWrite();
+/** 메모 필드는 DB/API 계약에 없으므로 로컬 성공으로 위장하지 않는다. */
+export async function updateWishlistNote(): Promise<void> {
+  return missingSmartMatchingApi('위시리스트 메모 저장');
 }

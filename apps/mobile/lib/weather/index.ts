@@ -9,5 +9,11 @@ export {
   generateMockWeather,
   clearWeatherCache,
 } from './weatherService';
-export type { KoreaRegion, WeatherData, CurrentWeather, HourlyForecast } from './types';
+export type {
+  KoreaRegion,
+  WeatherData,
+  WeatherLocationSource,
+  CurrentWeather,
+  HourlyForecast,
+} from './types';
 export { REGION_INFO, WEATHER_CACHE_TTL_MS } from './types';

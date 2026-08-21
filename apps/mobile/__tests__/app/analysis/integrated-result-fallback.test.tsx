@@ -8,8 +8,10 @@
  * (design-contracts §3 · ADR-007)
  */
 import React from 'react';
-import { useLocalSearchParams } from 'expo-router';
-import { waitFor } from '@testing-library/react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { fireEvent, waitFor } from '@testing-library/react-native';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { renderWithTheme } from '../../helpers/test-utils';
 import type { AxisCode, IntegratedAnalysisResult } from '../../../lib/api';
@@ -32,7 +34,10 @@ jest.mock('@/lib/api', () => ({
 
 // 공유카드는 SVG·캡처 의존이 커서 대체 (고지 배선 검증에 불필요)
 jest.mock('@/components/share', () => ({
-  PersonaShareSection: () => null,
+  PersonaShareSection: () => {
+    const { View } = require('react-native');
+    return <View testID="persona-share-section" />;
+  },
 }));
 
 jest.mock('@/hooks/useHasClosetItems', () => ({
@@ -54,6 +59,7 @@ jest.mock('@/components/ui', () => {
 import IntegratedResultScreen from '../../../app/(analysis)/integrated/result/[sessionId]';
 
 const mockUseLocalSearchParams = useLocalSearchParams as unknown as jest.Mock;
+const mockRouterReplace = router.replace as jest.Mock;
 
 function buildResult(usedFallback: AxisCode[]): IntegratedAnalysisResult {
   return {
@@ -111,6 +117,56 @@ describe('통합 결과 화면 — 축별 Mock 고지 배선', () => {
     expect(getByTestId('axis-fallback-notice')).toBeTruthy();
     expect(getByTestId('integrated-result-verdict')).toBeTruthy();
     expect(getByText('피부, 체형')).toBeTruthy();
+  });
+
+  it('세리프 결론·5축 속성표·공유 카드를 진단지 구조로 유지한다', () => {
+    setPayload(buildResult([]));
+    const screen = renderWithTheme(<IntegratedResultScreen />);
+
+    expect(screen.getByTestId('integrated-result-verdict')).toBeTruthy();
+    expect(screen.getByTestId('integrated-result-verdict-title')).toHaveTextContent(
+      '나를 아는 한 줄'
+    );
+    expect(screen.getByTestId('integrated-axis-summary')).toBeTruthy();
+    expect(screen.getAllByTestId('report-attr-row')).toHaveLength(5);
+    expect(screen.getByTestId('persona-share-section')).toBeTruthy();
+  });
+
+  it('행동 근거는 기본 접힘이고 사용자가 요청할 때만 펼친다', () => {
+    setPayload(buildResult([]));
+    const screen = renderWithTheme(<IntegratedResultScreen />);
+
+    expect(screen.getByTestId('action-plan-section')).toBeTruthy();
+    expect(screen.queryByTestId('action-plan-items')).toBeNull();
+    fireEvent.press(screen.getByTestId('action-plan-section-trigger'));
+    expect(screen.getByTestId('action-plan-items')).toBeTruthy();
+  });
+
+  it('partial 결과는 미완료 축만 다시 분석하는 경로를 보존한다', () => {
+    const partial = {
+      ...buildResult([]),
+      status: 'partial' as const,
+      axesCompleted: ['personal_color', 'skin', 'body', 'makeup'] as AxisCode[],
+      axesFailed: ['hair'] as AxisCode[],
+    };
+    setPayload(partial);
+    const screen = renderWithTheme(<IntegratedResultScreen />);
+
+    fireEvent.press(screen.getByText('미완료 축 다시 분석'));
+    expect(mockRouterReplace).toHaveBeenCalledWith('/(analysis)/integrated?retryAxes=hair');
+  });
+
+  it('통합 결과 소스에 점수 게이지·레이더·그라데이션 표면이 다시 들어오지 않는다', () => {
+    const sourcePaths = [
+      'app/(analysis)/integrated/result/[sessionId].tsx',
+      'components/analysis/integrated/IntegratedResultReport.tsx',
+      'components/analysis/integrated/IntegratedResultSections.tsx',
+    ];
+    const source = sourcePaths
+      .map((path) => readFileSync(join(process.cwd(), path), 'utf8'))
+      .join('\n');
+
+    expect(source).not.toMatch(/MetricBar|RadarChart|CircularProgress|LinearGradient/);
   });
 
   it('직전 응답 결과 보기는 fresh 출처로 한 번만 기록한다', async () => {

@@ -8,6 +8,7 @@ import type { CompatibilityResult, ProductIngredient } from '@/types/scan';
 import { getApiBaseUrl } from './base-url';
 
 export type ProductShelfStatus = 'owned' | 'wishlist' | 'used_up' | 'archived';
+export type ProductShelfScanMethod = 'barcode' | 'ocr' | 'search' | 'manual';
 
 export interface ProductShelfItem {
   id: string;
@@ -23,9 +24,26 @@ export interface ProductShelfItem {
   scannedAt: string;
 }
 
+export interface AddProductShelfItemInput {
+  productId?: string;
+  productName: string;
+  productBrand?: string;
+  productBarcode?: string;
+  productImageUrl?: string;
+  productIngredients?: ProductIngredient[];
+  scanMethod: ProductShelfScanMethod;
+  status?: ProductShelfStatus;
+  userNote?: string;
+}
+
 interface ProductShelfListResponse {
   items?: ProductShelfItem[];
   total?: number;
+}
+
+interface ProductShelfAddResponse {
+  success?: boolean;
+  data?: ProductShelfItem;
 }
 
 function requireToken(clerkToken: string): void {
@@ -78,6 +96,27 @@ export async function getProductShelf(
     items: Array.isArray(payload?.items) ? payload.items : [],
     total: typeof payload?.total === 'number' ? payload.total : 0,
   };
+}
+
+export async function addProductShelfItem(
+  input: AddProductShelfItemInput,
+  clerkToken: string,
+  baseUrl?: string
+): Promise<ProductShelfItem> {
+  const payload = await requestProductShelf(
+    '/api/scan/shelf',
+    clerkToken,
+    { method: 'POST', body: JSON.stringify(input) },
+    baseUrl
+  );
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('제품함 추가 결과를 확인하지 못했어요.');
+  }
+  const envelope = payload as ProductShelfAddResponse;
+  if (envelope.success !== true || !envelope.data) {
+    throw new Error('제품함 추가 결과를 확인하지 못했어요.');
+  }
+  return envelope.data;
 }
 
 export async function getProductShelfItem(

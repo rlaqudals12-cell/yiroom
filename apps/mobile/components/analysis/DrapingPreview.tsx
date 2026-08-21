@@ -13,7 +13,7 @@
  */
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
@@ -61,6 +61,7 @@ interface DrapeFigureProps {
   captionColor: string;
   captionStrong: boolean;
   selectedBorderColor: string;
+  onImageError: () => void;
 }
 
 /** 사진 1장 + 하단 색천 + 색 스와치 (베스트/회피 각 1열) */
@@ -75,6 +76,7 @@ function DrapeFigure({
   captionColor,
   captionStrong,
   selectedBorderColor,
+  onImageError,
 }: DrapeFigureProps): React.JSX.Element {
   const hex = paletteColors[Math.min(selected, paletteColors.length - 1)];
   const colorName = getKoreanColorName(hex);
@@ -88,6 +90,7 @@ function DrapeFigure({
           style={[StyleSheet.absoluteFill, styles.image]}
           contentFit="cover"
           accessibilityLabel={caption}
+          onError={onImageError}
         />
         {/* 색천 — 사진 하단 13%에만. 얼굴 영역은 원본 그대로 둔다 */}
         <Animated.View
@@ -152,6 +155,8 @@ interface DrapingPreviewProps {
   imageHeight?: number;
   style?: ViewStyle;
   testID?: string;
+  /** 사진·팔레트 오류 뒤 분석 입력으로 돌아가는 경로. */
+  onRetry?: () => void;
 }
 
 export function DrapingPreview({
@@ -163,9 +168,15 @@ export function DrapingPreview({
   imageHeight = 300,
   style,
   testID = 'draping-preview',
+  onRetry,
 }: DrapingPreviewProps): React.JSX.Element {
   const [bestIndex, setBestIndex] = useState(0);
   const [avoidIndex, setAvoidIndex] = useState(0);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [imageUri]);
 
   const handleBestSelect = useCallback((index: number) => {
     Haptics.selectionAsync();
@@ -177,15 +188,31 @@ export function DrapingPreview({
     setAvoidIndex(index);
   }, []);
 
+  const renderFailure = (message: string, detailTestID: string): React.JSX.Element => (
+    <View style={[styles.failure, style]} testID={testID}>
+      <Text style={styles.honestNote} testID={detailTestID}>
+        {message}
+      </Text>
+      {onRetry ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onRetry}
+          style={styles.retryButton}
+          testID="draping-retry"
+        >
+          <Text style={styles.retryText}>사진 다시 선택</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+
+  if (imageUri.trim().length === 0 || imageFailed) {
+    return renderFailure('사진을 불러오지 못해 드레이핑을 보여드릴 수 없어요.', 'draping-error');
+  }
+
   // 진단 색이 없으면 지어내지 않는다 (조용한 숨김 대신 사유 표기)
   if (palette.length === 0) {
-    return (
-      <View testID={testID} style={style}>
-        <Text style={styles.honestNote} testID="draping-empty">
-          진단된 색이 없어 드레이핑을 보여드릴 수 없어요.
-        </Text>
-      </View>
-    );
+    return renderFailure('진단된 색이 없어 드레이핑을 보여드릴 수 없어요.', 'draping-empty');
   }
 
   return (
@@ -216,6 +243,7 @@ export function DrapingPreview({
           captionColor={REPORT_COLORS.ink}
           captionStrong
           selectedBorderColor={REPORT_COLORS.ink}
+          onImageError={() => setImageFailed(true)}
         />
         {avoidPalette.length > 0 && (
           <DrapeFigure
@@ -229,6 +257,7 @@ export function DrapingPreview({
             captionColor={REPORT_COLORS.mutedInk}
             captionStrong={false}
             selectedBorderColor={REPORT_COLORS.mutedInk}
+            onImageError={() => setImageFailed(true)}
           />
         )}
       </View>

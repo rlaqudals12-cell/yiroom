@@ -392,11 +392,30 @@ describe('DrapingPreview', () => {
       expect(queryByTestId('draping-band-best')).toBeNull();
     });
 
-    it('imageUri가 빈 문자열이어도 렌더링되어야 한다', () => {
+    it('imageUri가 비어 있으면 오류를 고지하고 재시도할 수 있다', () => {
+      const onRetry = jest.fn();
       const { getByTestId } = renderWithTheme(
-        <DrapingPreview imageUri="" palette={SPRING_PALETTE} />
+        <DrapingPreview imageUri="" onRetry={onRetry} palette={SPRING_PALETTE} />
       );
       expect(getByTestId('draping-preview')).toBeTruthy();
+      expect(getByTestId('draping-error')).toHaveTextContent(/사진을 불러오지 못해/);
+
+      fireEvent.press(getByTestId('draping-retry'));
+      expect(onRetry).toHaveBeenCalledTimes(1);
+    });
+
+    it('사진 로드가 실패하면 비교를 내리고 재시도 경로를 제공한다', () => {
+      const onRetry = jest.fn();
+      const { getAllByTestId, getByTestId, queryByTestId } = renderWithTheme(
+        <DrapingPreview imageUri={IMAGE_URI} onRetry={onRetry} palette={SPRING_PALETTE} />
+      );
+
+      fireEvent(getAllByTestId('expo-image')[0], 'error');
+
+      expect(getByTestId('draping-error')).toBeTruthy();
+      expect(queryByTestId('draping-band-best')).toBeNull();
+      fireEvent.press(getByTestId('draping-retry'));
+      expect(onRetry).toHaveBeenCalledTimes(1);
     });
 
     it('커스텀 imageHeight가 사진 최대 높이로 적용되어야 한다', () => {

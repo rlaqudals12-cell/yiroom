@@ -6,6 +6,8 @@
  */
 import React from 'react';
 
+import { fireEvent, waitFor } from '@testing-library/react-native';
+
 import { renderWithTheme } from '../../helpers/test-utils';
 
 // ============================================================
@@ -14,16 +16,12 @@ import { renderWithTheme } from '../../helpers/test-utils';
 
 jest.mock('lucide-react-native', () => {
   const { View } = require('react-native');
-  return new Proxy(
-    {},
-    { get: () => (props: Record<string, unknown>) => <View {...props} /> }
-  );
+  return new Proxy({}, { get: () => (props: Record<string, unknown>) => <View {...props} /> });
 });
 
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
-  const createChainable = (): unknown =>
-    new Proxy({}, { get: () => createChainable });
+  const createChainable = (): unknown => new Proxy({}, { get: () => createChainable });
   return {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: unknown) => c },
@@ -87,13 +85,9 @@ jest.mock('../../../components/ui', () => {
       testID?: string;
       [key: string]: unknown;
     }) => <View testID={testID}>{children}</View>,
-    GlassCard: ({
-      children,
-      ...props
-    }: {
-      children: React.ReactNode;
-      [key: string]: unknown;
-    }) => <View {...props}>{children}</View>,
+    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
     DataStateWrapper: ({
       children,
       isLoading,
@@ -103,18 +97,8 @@ jest.mock('../../../components/ui', () => {
       isLoading: boolean;
       isEmpty: boolean;
       [key: string]: unknown;
-    }) =>
-      isLoading || isEmpty ? (
-        <View testID="data-state-wrapper" />
-      ) : (
-        <View>{children}</View>
-      ),
-    SectionHeader: ({
-      title,
-    }: {
-      title: string;
-      [key: string]: unknown;
-    }) => (
+    }) => (isLoading || isEmpty ? <View testID="data-state-wrapper" /> : <View>{children}</View>),
+    SectionHeader: ({ title }: { title: string; [key: string]: unknown }) => (
       <View>
         <Text>{title}</Text>
       </View>
@@ -126,14 +110,7 @@ jest.mock('../../../components/ui', () => {
       children: React.ReactNode;
       [key: string]: unknown;
     }) => <View {...props}>{children}</View>,
-    StatCard: ({
-      label,
-      value,
-    }: {
-      label: string;
-      value: string;
-      [key: string]: unknown;
-    }) => (
+    StatCard: ({ label, value }: { label: string; value: string; [key: string]: unknown }) => (
       <View>
         <Text>{label}</Text>
         <Text>{value}</Text>
@@ -168,12 +145,23 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
 }));
 
+const mockGetToken = jest.fn().mockResolvedValue('jwt-token');
+jest.mock('@clerk/clerk-expo', () => ({
+  useAuth: () => ({ getToken: mockGetToken }),
+}));
+
+const mockAddItem = jest.fn().mockResolvedValue(undefined);
 jest.mock('../../../lib/inventory', () => ({
   useInventory: () => ({
-    addItem: jest.fn().mockResolvedValue(undefined),
+    addItem: mockAddItem,
     items: [],
     isLoading: false,
   }),
+}));
+
+const mockAddProductShelfItem = jest.fn();
+jest.mock('../../../lib/api/product-shelf', () => ({
+  addProductShelfItem: (...args: unknown[]) => mockAddProductShelfItem(...args),
 }));
 
 jest.mock('../../../lib/nutrition/barcodeService', () => ({
@@ -208,6 +196,9 @@ import BarcodeScanScreen from '../../../app/(inventory)/barcode-scan';
 describe('BarcodeScanScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetToken.mockResolvedValue('jwt-token');
+    mockAddProductShelfItem.mockResolvedValue({ id: 'shelf-1' });
+    mockSupabase.single.mockResolvedValue({ data: null, error: null });
   });
 
   it('testID "barcode-scan-screen"이 존재한다', () => {
@@ -225,5 +216,110 @@ describe('BarcodeScanScreen', () => {
     const { getByText } = renderWithTheme(<BarcodeScanScreen />);
     // 카메라 모드 + idle 상태 + 권한 부여 → 카메라 뷰 렌더
     expect(getByText('바코드를 프레임 안에 맞춰주세요')).toBeTruthy();
+  });
+
+  it('제품함 CTA는 화장대 쓰기와 분리된 인증 POST만 호출한다', async () => {
+    mockSupabase.single.mockResolvedValueOnce({
+      data: {
+        id: '22222222-2222-4222-8222-222222222222',
+        name: '수분 크림',
+        brand: '이룸랩',
+        category: 'skincare',
+        image_url: null,
+        price: 19000,
+        barcode: '8801234567890',
+      },
+      error: null,
+    });
+    const { getByLabelText, getByPlaceholderText, getByTestId, getByText } = renderWithTheme(
+      <BarcodeScanScreen />
+    );
+
+    fireEvent.press(getByLabelText('수동 입력으로 전환'));
+    const input = getByPlaceholderText('8~14자리 바코드 숫자');
+    fireEvent.changeText(input, '8801234567890');
+    fireEvent(input, 'submitEditing');
+    await waitFor(() => expect(getByTestId('add-to-product-shelf')).toBeTruthy());
+
+    fireEvent.press(getByTestId('add-to-product-shelf'));
+
+    await waitFor(() => expect(getByText('제품함에 추가했어요!')).toBeTruthy());
+    expect(mockAddProductShelfItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        productName: '수분 크림',
+        scanMethod: 'barcode',
+        status: 'owned',
+      }),
+      'jwt-token'
+    );
+    expect(mockAddItem).not.toHaveBeenCalled();
+  });
+
+  it('제품함 POST 실패를 화장대 성공으로 섞지 않고 단독 실패로 표시한다', async () => {
+    mockSupabase.single.mockResolvedValueOnce({
+      data: {
+        id: '22222222-2222-4222-8222-222222222222',
+        name: '수분 크림',
+        brand: '이룸랩',
+        category: 'skincare',
+        image_url: null,
+        price: 19000,
+        barcode: '8801234567890',
+      },
+      error: null,
+    });
+    mockAddProductShelfItem.mockRejectedValueOnce(new Error('network'));
+    const { getByLabelText, getByPlaceholderText, getByTestId, getByText } = renderWithTheme(
+      <BarcodeScanScreen />
+    );
+
+    fireEvent.press(getByLabelText('수동 입력으로 전환'));
+    const input = getByPlaceholderText('8~14자리 바코드 숫자');
+    fireEvent.changeText(input, '8801234567890');
+    fireEvent(input, 'submitEditing');
+    await waitFor(() => expect(getByTestId('add-to-product-shelf')).toBeTruthy());
+    fireEvent.press(getByTestId('add-to-product-shelf'));
+
+    await waitFor(() => expect(getByText('제품함에 추가하지 못했어요')).toBeTruthy());
+    expect(mockAddItem).not.toHaveBeenCalled();
+  });
+
+  it('제품함 추가 중 연속 탭을 한 번의 POST로 제한한다', async () => {
+    mockSupabase.single.mockResolvedValueOnce({
+      data: {
+        id: '22222222-2222-4222-8222-222222222222',
+        name: '수분 크림',
+        brand: '이룸랩',
+        category: 'skincare',
+        image_url: null,
+        price: 19000,
+        barcode: '8801234567890',
+      },
+      error: null,
+    });
+    let finishRequest: ((value: { id: string }) => void) | undefined;
+    mockAddProductShelfItem.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishRequest = resolve;
+        })
+    );
+    const { getByLabelText, getByPlaceholderText, getByTestId, getByText } = renderWithTheme(
+      <BarcodeScanScreen />
+    );
+
+    fireEvent.press(getByLabelText('수동 입력으로 전환'));
+    const input = getByPlaceholderText('8~14자리 바코드 숫자');
+    fireEvent.changeText(input, '8801234567890');
+    fireEvent(input, 'submitEditing');
+    await waitFor(() => expect(getByTestId('add-to-product-shelf')).toBeTruthy());
+
+    fireEvent.press(getByTestId('add-to-product-shelf'));
+    fireEvent.press(getByTestId('add-to-product-shelf'));
+
+    await waitFor(() => expect(getByText('제품함에 추가 중')).toBeTruthy());
+    expect(mockAddProductShelfItem).toHaveBeenCalledTimes(1);
+    finishRequest?.({ id: 'shelf-1' });
+    await waitFor(() => expect(getByText('제품함에 추가했어요!')).toBeTruthy());
   });
 });

@@ -108,6 +108,34 @@ describe('PersonaShareSection', () => {
     });
   });
 
+  it('단일 축 카드의 제목·공유 계측 축을 소비처가 지정할 수 있다', async () => {
+    mockCaptureRef.mockResolvedValue('file://skin-card.png');
+    mockIsAvailable.mockResolvedValue(true);
+    mockShareAsync.mockResolvedValue(undefined);
+
+    const { getByTestId, getByText } = renderWithTheme(
+      <PersonaShareSection
+        analysisType="skin"
+        data={DATA}
+        dialogTitle="내 피부 카드 공유"
+        heading="내 피부 카드"
+        inviteText="나도 진단하기"
+      />
+    );
+
+    expect(getByText('내 피부 카드')).toBeTruthy();
+    expect(getByText('나도 진단하기')).toBeTruthy();
+    fireEvent.press(getByTestId('persona-share-image'));
+
+    await waitFor(() => {
+      expect(mockShareAsync).toHaveBeenCalledWith(
+        'file://skin-card.png',
+        expect.objectContaining({ dialogTitle: '내 피부 카드 공유' })
+      );
+      expect(mockTrackAnalysisShare).toHaveBeenCalledWith('skin', 'image', 'mock_jwt_token');
+    });
+  });
+
   it('캡처 실패 시 정직하게 알린다 (조용한 무반응 금지)', async () => {
     mockCaptureRef.mockRejectedValue(new Error('capture failed'));
 

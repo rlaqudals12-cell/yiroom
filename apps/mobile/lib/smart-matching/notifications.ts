@@ -17,6 +17,11 @@ type SerializedNotification = Omit<
   createdAt: string;
 };
 
+interface ApiEnvelope<T> {
+  success: true;
+  data: T;
+}
+
 function toNotification(payload: SerializedNotification): SmartNotification {
   return {
     ...payload,
@@ -44,12 +49,14 @@ export async function getNotifications(
   if (options?.type) query.set('type', options.type);
 
   const suffix = query.size > 0 ? `?${query.toString()}` : '';
-  const payload = await requestSmartMatching<{
-    notifications: SerializedNotification[];
-    unreadCount: number;
-  }>(`/api/smart-matching/notifications${suffix}`, clerkToken, { method: 'GET' });
+  const payload = await requestSmartMatching<
+    ApiEnvelope<{
+      notifications: SerializedNotification[];
+      unreadCount: number;
+    }>
+  >(`/api/smart-matching/notifications${suffix}`, clerkToken, { method: 'GET' });
 
-  const notifications = payload.notifications.map(toNotification);
+  const notifications = payload.data.notifications.map(toNotification);
   return options?.limit ? notifications.slice(0, options.limit) : notifications;
 }
 
@@ -57,19 +64,19 @@ export async function getNotifications(
  * 읽지 않은 알림 개수 조회
  */
 export async function getUnreadCount(_clerkUserId: string, clerkToken?: string): Promise<number> {
-  const payload = await requestSmartMatching<{ unreadCount: number }>(
+  const payload = await requestSmartMatching<ApiEnvelope<{ unreadCount: number }>>(
     '/api/smart-matching/notifications?count=true',
     clerkToken,
     { method: 'GET' }
   );
-  return payload.unreadCount;
+  return payload.data.unreadCount;
 }
 
 /**
  * 알림 생성
  */
 export async function createNotification(
-  _input: {
+  input: {
     clerkUserId: string;
     notificationType: NotificationType;
     title: string;
@@ -80,29 +87,45 @@ export async function createNotification(
     actionUrl?: string;
     scheduledFor?: Date;
   },
-  _clerkToken?: string
+  clerkToken?: string
 ): Promise<SmartNotification | null> {
-  // 왜: 현재 DB 정책에는 사용자 알림 INSERT 권한이 없어 기존 POST도 항상 실패한다.
-  return missingSmartMatchingApi('알림 생성');
+  const payload = await requestSmartMatching<ApiEnvelope<SerializedNotification>>(
+    '/api/smart-matching/notifications',
+    clerkToken,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        notificationType: input.notificationType,
+        title: input.title,
+        message: input.message,
+        imageUrl: input.imageUrl,
+        productId: input.productId,
+        inventoryItemId: input.inventoryItemId,
+        actionUrl: input.actionUrl,
+        scheduledFor: input.scheduledFor?.toISOString(),
+      }),
+    }
+  );
+  return toNotification(payload.data);
 }
 
 /**
  * 알림 읽음 처리
  */
 export async function markAsRead(notificationId: string, clerkToken?: string): Promise<boolean> {
-  const payload = await requestSmartMatching<{ success: boolean }>(
+  const payload = await requestSmartMatching<ApiEnvelope<{ success: boolean }>>(
     `/api/smart-matching/notifications/${encodeURIComponent(notificationId)}`,
     clerkToken,
     { method: 'PATCH' }
   );
-  return payload.success;
+  return payload.data.success;
 }
 
 /**
  * 모든 알림 읽음 처리
  */
 export async function markAllAsRead(_clerkUserId: string, clerkToken?: string): Promise<boolean> {
-  const payload = await requestSmartMatching<{ success: boolean }>(
+  const payload = await requestSmartMatching<ApiEnvelope<{ success: boolean }>>(
     '/api/smart-matching/notifications',
     clerkToken,
     {
@@ -110,18 +133,22 @@ export async function markAllAsRead(_clerkUserId: string, clerkToken?: string): 
       body: JSON.stringify({ action: 'markAllAsRead' }),
     }
   );
-  return payload.success;
+  return payload.data.success;
 }
 
 /**
  * 알림 삭제
  */
 export async function deleteNotification(
-  _notificationId: string,
-  _clerkToken?: string
+  notificationId: string,
+  clerkToken?: string
 ): Promise<boolean> {
-  // 왜: 현재 DB 정책에는 사용자 알림 DELETE 권한이 없어 성공한 것처럼 요청하지 않는다.
-  return missingSmartMatchingApi('알림 삭제');
+  const payload = await requestSmartMatching<ApiEnvelope<{ success: boolean }>>(
+    `/api/smart-matching/notifications/${encodeURIComponent(notificationId)}`,
+    clerkToken,
+    { method: 'DELETE' }
+  );
+  return payload.data.success;
 }
 
 /**

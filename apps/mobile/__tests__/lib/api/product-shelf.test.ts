@@ -1,4 +1,5 @@
 import {
+  addProductShelfItem,
   getProductShelf,
   getProductShelfItem,
   updateProductShelfItem,
@@ -82,6 +83,37 @@ describe('제품함 웹 API 클라이언트', () => {
       expect.objectContaining({
         method: 'PUT',
         body: JSON.stringify({ status: 'used_up' }),
+      })
+    );
+  });
+
+  it('제품 추가는 인증된 기존 POST 경계를 사용한다', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, data: API_ITEM }),
+    });
+
+    await expect(
+      addProductShelfItem(
+        {
+          productId: '22222222-2222-4222-8222-222222222222',
+          productName: '수분 크림',
+          productBrand: '이룸랩',
+          productBarcode: '8801234567890',
+          scanMethod: 'barcode',
+          status: 'owned',
+        },
+        'jwt-token',
+        'https://api.example.com'
+      )
+    ).resolves.toMatchObject({ id: 'shelf-1', productName: '수분 크림' });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.example.com/api/scan/shelf',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ Authorization: 'Bearer jwt-token' }),
+        body: expect.stringContaining('"scanMethod":"barcode"'),
       })
     );
   });

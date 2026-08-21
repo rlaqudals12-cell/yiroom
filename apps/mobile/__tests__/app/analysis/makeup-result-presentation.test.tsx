@@ -103,9 +103,10 @@ describe('메이크업 결과 진단지 표현', () => {
 
     await waitFor(() => expect(screen.getByTestId('makeup-analysis-result')).toBeTruthy());
 
-    expect(screen.getByText('계란형 · 쿨톤')).toBeTruthy();
-    expect(screen.getByText('아몬드형')).toBeTruthy();
-    expect(screen.getByText('큐피드 보우')).toBeTruthy();
+    expect(screen.getAllByText('계란형 · 쿨톤').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('아몬드형').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('큐피드 보우').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('makeup-analysis-result-share')).toBeTruthy();
     expect(screen.getByTestId('makeup-best-colors-swatch-3')).toBeTruthy();
     expect(screen.queryByText('88')).toBeNull();
     expect(screen.queryByText(/종합.*점/)).toBeNull();

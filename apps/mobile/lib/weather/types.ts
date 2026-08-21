@@ -22,6 +22,9 @@ export type KoreaRegion =
   | 'gyeongnam'
   | 'jeju';
 
+/** `default`는 사용자 위치가 아닌 서울 기본값이므로 UI에서 "서울 기준"을 고지한다. */
+export type WeatherLocationSource = 'default' | 'region' | 'geolocation';
+
 export interface CurrentWeather {
   temp: number;
   feelsLike: number;
@@ -50,6 +53,8 @@ export interface WeatherData {
   cachedAt: string;
   /** 실시간 관측값이 아닌 대체 데이터인지 여부 */
   usedFallback: boolean;
+  /** 조회 좌표의 출처 — 기본 서울과 실제 위치를 구분하는 정직성 계약 */
+  locationSource: WeatherLocationSource;
 }
 
 export const REGION_INFO: Record<KoreaRegion, { lat: number; lon: number; nameKr: string }> = {

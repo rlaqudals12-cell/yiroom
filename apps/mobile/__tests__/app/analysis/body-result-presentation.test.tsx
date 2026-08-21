@@ -98,16 +98,17 @@ describe('체형 결과 진단지 표현', () => {
 
     await waitFor(() => expect(screen.getByTestId('body-analysis-result')).toBeTruthy());
 
-    expect(screen.getByText('스트레이트')).toBeTruthy();
+    expect(screen.getAllByText('스트레이트').length).toBeGreaterThan(0);
     expect(screen.getByText('20.2')).toBeTruthy();
     expect(screen.getByText('참고 수치')).toBeTruthy();
-    expect(screen.getByText('직선적인 실루엣이 돋보이는 체형이에요.')).toBeTruthy();
+    expect(screen.getAllByText('직선적인 실루엣이 돋보이는 체형이에요.').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('body-analysis-result-share')).toBeTruthy();
     expect(screen.queryByText('허리선을 정돈하면 전체 비율이 또렷해 보여요.')).toBeNull();
     expect(screen.queryByText(/종합.*점/)).toBeNull();
     expect(screen.queryByTestId('body-analysis-result-grade')).toBeNull();
 
     fireEvent.press(screen.getByTestId('body-analysis-result-section-basis-trigger'));
-    expect(screen.getByText('직선적인 실루엣이 돋보이는 체형이에요.')).toBeTruthy();
+    expect(screen.getAllByText('직선적인 실루엣이 돋보이는 체형이에요.').length).toBeGreaterThan(0);
     expect(screen.getByText('허리선을 정돈하면 전체 비율이 또렷해 보여요.')).toBeTruthy();
   });
 

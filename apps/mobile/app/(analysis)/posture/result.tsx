@@ -1,32 +1,29 @@
-/**
- * Posture 자세 분석 - 결과 화면
- */
+/** 자세 분석 결과를 ADR-120 진단지 문법으로 표시한다. */
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useCallback, useEffect, useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
-  AnalysisLoadingState,
   AnalysisErrorState,
-  AnalysisTrustBadge,
+  AnalysisLoadingState,
   AnalysisResultButtons,
-  MetricBar,
-  useAnalysisStyles,
+  ReportAttrRow,
+  ReportEvidenceDisclosure,
+  ReportHero,
+  ReportRowTable,
+  ReportTextList,
+  REPORT_COLORS,
 } from '@/components/analysis';
-import { AIBadge } from '@/components/common/AIBadge';
-import { ScreenContainer, GlassCard } from '@/components/ui';
-import { CelebrationEffect, BadgeDrop } from '@/components/ui';
-import { TIMING } from '@/lib/animations';
+import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import {
   analyzePosture as analyzeWithGemini,
   imageToBase64,
   type PostureAnalysisResult,
 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { typography, radii, spacing } from '@/lib/theme';
+import { radii, shadows, spacing, typography } from '@/lib/theme';
 
-// 한국어 라벨 매핑
 const POSTURE_TYPE_LABELS: Record<PostureAnalysisResult['postureType'], string> = {
   normal: '정상 자세',
   forward_head: '거북목',
@@ -36,15 +33,11 @@ const POSTURE_TYPE_LABELS: Record<PostureAnalysisResult['postureType'], string> 
   kyphosis: '굽은 등',
 };
 
-export default function PostureResultScreen() {
-  const { styles, module, colors } = useAnalysisStyles();
-  const accent = module.posture;
-
+export default function PostureResultScreen(): React.JSX.Element {
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
   }>();
-
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<PostureAnalysisResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
@@ -56,9 +49,7 @@ export default function PostureResultScreen() {
     setUsedFallback(false);
     try {
       let base64Data = imageBase64;
-      if (!base64Data && imageUri) {
-        base64Data = await imageToBase64(imageUri);
-      }
+      if (!base64Data && imageUri) base64Data = await imageToBase64(imageUri);
       if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
 
       const response = await analyzeWithGemini(base64Data);
@@ -74,14 +65,14 @@ export default function PostureResultScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [imageUri, imageBase64]);
+  }, [imageBase64, imageUri]);
 
   useEffect(() => {
-    analyzePosture();
+    void analyzePosture();
   }, [analyzePosture]);
 
-  const handleRetry = () => router.replace('/(analysis)/posture');
-  const handleGoHome = () => router.replace('/(tabs)');
+  const handleRetry = (): void => router.replace('/(analysis)/posture');
+  const handleGoHome = (): void => router.replace('/(tabs)');
 
   if (isLoading) {
     return <AnalysisLoadingState message="자세를 분석 중이에요..." testID="posture-loading" />;
@@ -91,167 +82,156 @@ export default function PostureResultScreen() {
     return (
       <AnalysisErrorState
         message="분석에 실패했습니다."
-        onRetry={handleRetry}
         onGoHome={handleGoHome}
+        onRetry={handleRetry}
         testID="posture-error"
       />
     );
   }
 
+  const firstExercise = result.exercises[0];
+
   return (
     <>
       <CelebrationEffect
-        type="analysis_complete"
-        visible={showCelebration}
         onComplete={() => {
           setShowCelebration(false);
           setShowBadge(true);
         }}
+        type="analysis_complete"
+        visible={showCelebration}
       />
       <BadgeDrop
         badge={{ icon: '🧘', name: '자세 교정사', description: '자세 분석 완료!' }}
-        visible={showBadge}
         onDismiss={() => setShowBadge(false)}
+        visible={showBadge}
       />
-      <ScreenContainer
-        testID="analysis-posture-result-screen"
-        style={styles.container}
-        contentContainerStyle={styles.content}
-        backgroundGradient="analysis"
+      <SafeAreaView
         edges={['bottom']}
+        style={styles.ground}
+        testID="analysis-posture-result-screen"
       >
-        {imageUri && (
-          <Animated.View entering={FadeInDown.delay(0).duration(300)} style={styles.imageContainer}>
-            <Image
-              source={{ uri: imageUri }}
-              style={[localStyles.resultImage, { borderColor: accent.base }]}
+        <ScrollView contentContainerStyle={styles.content}>
+          <View style={styles.sheet}>
+            <ReportHero
+              eyebrow="자세 분석 결과"
+              subtitle={result.issues[0]}
+              testID="posture-report-hero"
+              title={POSTURE_TYPE_LABELS[result.postureType]}
             />
-          </Animated.View>
-        )}
 
-        {/* 주요 결과 */}
-        <Animated.View entering={FadeInDown.delay(60).duration(TIMING.normal)}>
-          <GlassCard shadowSize="lg" style={{ ...styles.resultCard }}>
-            <AnalysisTrustBadge
-              type={usedFallback ? 'questionnaire' : 'ai'}
-              testID="posture-trust-badge"
-            />
-            <AIBadge variant="small" />
-            <Text style={styles.label}>자세 유형 분석 결과</Text>
-            <Text style={[localStyles.mainResult, { color: accent.base }]}>
-              {POSTURE_TYPE_LABELS[result.postureType]}
-            </Text>
-            <Text style={styles.subLabel}>종합 점수 {result.overallScore}점</Text>
-          </GlassCard>
-        </Animated.View>
+            {usedFallback ? (
+              <View accessibilityRole="alert" style={styles.fallback} testID="posture-fallback">
+                <Text style={styles.fallbackTitle}>예시 결과예요</Text>
+                <Text style={styles.fallbackText}>
+                  AI 분석을 이용할 수 없어 참고용 결과를 표시하고 있어요.
+                </Text>
+              </View>
+            ) : null}
 
-        {/* 점수 */}
-        <Animated.View entering={FadeInDown.delay(120).duration(TIMING.normal)}>
-          <GlassCard shadowSize="md" style={{ ...styles.section }}>
-            <Text style={styles.sectionTitle}>정렬 점수</Text>
-            <View style={localStyles.metricsGap}>
-              <MetricBar label="머리 정렬" value={result.scores.headAlignment} />
-              <MetricBar label="어깨 균형" value={result.scores.shoulderBalance} />
-              <MetricBar label="척추 정렬" value={result.scores.spineAlignment} />
-              <MetricBar label="골반 정렬" value={result.scores.hipAlignment} />
+            {imageUri ? <Image source={{ uri: imageUri }} style={styles.resultImage} /> : null}
+
+            <View style={styles.attributes}>
+              <ReportRowTable testID="posture-report-attrs">
+                <ReportAttrRow label="우선 확인" value={result.issues[0] ?? '특이사항 없음'} />
+                <ReportAttrRow label="먼저 할 운동" value={firstExercise?.name ?? '추천 없음'} />
+                {firstExercise?.duration ? (
+                  <ReportAttrRow label="권장 시간" value={firstExercise.duration} />
+                ) : null}
+              </ReportRowTable>
             </View>
-          </GlassCard>
-        </Animated.View>
 
-        {/* 발견된 문제 */}
-        {result.issues.length > 0 && (
-          <Animated.View entering={FadeInDown.delay(180).duration(TIMING.normal)}>
-            <GlassCard shadowSize="md" style={{ ...styles.section }}>
-              <Text style={styles.sectionTitle}>발견된 문제</Text>
-              {result.issues.map((issue, i) => (
-                <Text key={i} style={styles.listItem}>
-                  · {issue}
-                </Text>
-              ))}
-            </GlassCard>
-          </Animated.View>
-        )}
+            {result.issues.length > 0 ? (
+              <ReportEvidenceDisclosure
+                summary={result.issues[0]}
+                testID="posture-issues"
+                title="발견 근거"
+              >
+                <ReportTextList items={result.issues} />
+              </ReportEvidenceDisclosure>
+            ) : null}
 
-        {/* 교정 운동 */}
-        {result.exercises.length > 0 && (
-          <Animated.View entering={FadeInDown.delay(240).duration(TIMING.normal)}>
-            <GlassCard shadowSize="md" style={{ ...styles.section }}>
-              <Text style={styles.sectionTitle}>추천 교정 운동</Text>
-              {result.exercises.map((exercise, i) => (
-                <View key={i} style={localStyles.exerciseCard}>
-                  <Text style={[localStyles.exerciseName, { color: colors.foreground }]}>
-                    {i + 1}. {exercise.name}
-                  </Text>
-                  <Text style={[localStyles.exerciseDesc, { color: colors.mutedForeground }]}>
-                    {exercise.description}
-                  </Text>
-                  <Text style={[localStyles.exerciseDuration, { color: colors.mutedForeground }]}>
-                    {exercise.duration}
-                  </Text>
-                </View>
-              ))}
-            </GlassCard>
-          </Animated.View>
-        )}
+            {result.exercises.length > 0 ? (
+              <ReportEvidenceDisclosure
+                summary={firstExercise?.name}
+                testID="posture-exercises"
+                title="교정 운동"
+              >
+                <ReportTextList
+                  items={result.exercises.map(
+                    (exercise) =>
+                      `${exercise.name} — ${exercise.description} (${exercise.duration})`
+                  )}
+                />
+              </ReportEvidenceDisclosure>
+            ) : null}
 
-        {/* 생활 습관 팁 */}
-        {result.dailyTips.length > 0 && (
-          <Animated.View entering={FadeInDown.delay(300).duration(TIMING.normal)}>
-            <GlassCard shadowSize="md" style={{ ...styles.section }}>
-              <Text style={styles.sectionTitle}>생활 습관 조언</Text>
-              {result.dailyTips.map((tip, i) => (
-                <Text key={i} style={styles.listItem}>
-                  {i + 1}. {tip}
-                </Text>
-              ))}
-            </GlassCard>
-          </Animated.View>
-        )}
+            {result.dailyTips.length > 0 ? (
+              <ReportEvidenceDisclosure
+                summary={result.dailyTips[0]}
+                testID="posture-daily-tips"
+                title="생활 습관 조언"
+              >
+                <ReportTextList items={result.dailyTips} />
+              </ReportEvidenceDisclosure>
+            ) : null}
 
-        {/* 자세 분석은 오펀(숨김 웰니스 축) — 존재하지 않는 운동 탭 CTA 제거, 홈/재분석만 */}
-        <AnalysisResultButtons
-          onGoHome={handleGoHome}
-          onRetry={handleRetry}
-          testID="posture-result-buttons"
-        />
-      </ScreenContainer>
+            <Text style={styles.trustText}>
+              분석 결과는 참고 정보이며, 의학적 진단을 대체하지 않아요.
+            </Text>
+          </View>
+
+          <AnalysisResultButtons
+            onGoHome={handleGoHome}
+            onRetry={handleRetry}
+            testID="posture-result-buttons"
+          />
+        </ScrollView>
+      </SafeAreaView>
     </>
   );
 }
 
-const localStyles = StyleSheet.create({
-  resultImage: {
-    width: 160,
-    height: 300,
+const styles = StyleSheet.create({
+  ground: { backgroundColor: REPORT_COLORS.ground, flex: 1 },
+  content: { gap: spacing.md, padding: spacing.md, paddingBottom: spacing.xxl },
+  sheet: {
+    ...shadows.card,
+    backgroundColor: REPORT_COLORS.paper,
+    borderColor: REPORT_COLORS.rule,
     borderRadius: radii.xl,
-    borderWidth: 4,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: spacing.mlg,
   },
-  mainResult: {
-    fontSize: typography.size['2xl'],
-    fontWeight: typography.weight.bold,
-    marginBottom: spacing.sm,
+  fallback: {
+    backgroundColor: REPORT_COLORS.warningWash,
+    borderColor: REPORT_COLORS.rule,
+    borderRadius: radii.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: spacing.xs,
+    marginTop: spacing.md,
+    padding: spacing.smd,
   },
-  metricsGap: {
-    gap: 14,
-  },
-  exerciseCard: {
-    marginBottom: spacing.md,
-    paddingBottom: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0,0,0,0.06)',
-  },
-  exerciseName: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-    marginBottom: spacing.xs,
-  },
-  exerciseDesc: {
+  fallbackTitle: {
+    color: REPORT_COLORS.warningInk,
     fontSize: typography.size.sm,
-    lineHeight: 22,
-    marginBottom: spacing.xs,
+    fontWeight: typography.weight.semibold,
   },
-  exerciseDuration: {
+  fallbackText: { color: REPORT_COLORS.mutedInk, fontSize: typography.size.xs, lineHeight: 18 },
+  resultImage: {
+    alignSelf: 'flex-start',
+    borderColor: REPORT_COLORS.rule,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    height: 240,
+    marginTop: spacing.mlg,
+    width: 128,
+  },
+  attributes: { marginVertical: spacing.mlg },
+  trustText: {
+    color: REPORT_COLORS.mutedInk,
     fontSize: typography.size.xs,
-    fontWeight: typography.weight.medium,
+    lineHeight: 18,
+    marginTop: spacing.md,
   },
 });

@@ -44,6 +44,21 @@ jest.mock('react-native-safe-area-context', () => {
 
 const { useLocalSearchParams } = require('expo-router');
 
+const mockGetToken = jest.fn().mockResolvedValue('jwt-token');
+jest.mock('@clerk/clerk-expo', () => ({
+  useAuth: () => ({ getToken: mockGetToken, isSignedIn: true }),
+  useUser: () => ({ user: { id: 'user-1' } }),
+}));
+
+const mockIsInWishlist = jest.fn();
+const mockAddToWishlist = jest.fn();
+const mockRemoveFromWishlist = jest.fn();
+jest.mock('../../../lib/wishlist', () => ({
+  isInWishlist: (...args: unknown[]) => mockIsInWishlist(...args),
+  addToWishlist: (...args: unknown[]) => mockAddToWishlist(...args),
+  removeFromWishlist: (...args: unknown[]) => mockRemoveFromWishlist(...args),
+}));
+
 // cosmetic 레포 mock — 이 화면의 유일한 제품 데이터 소스여야 한다
 const mockGetCosmeticProductById = jest.fn();
 jest.mock('../../../lib/products/repositories/cosmetic', () => ({
@@ -110,6 +125,10 @@ describe('ProductDetailScreen — 정직성 (Mock 폴백 재발 방지)', () => 
   beforeEach(() => {
     jest.clearAllMocks();
     useLocalSearchParams.mockReturnValue({ id: REAL_PRODUCT.id });
+    mockGetToken.mockResolvedValue('jwt-token');
+    mockIsInWishlist.mockResolvedValue(false);
+    mockAddToWishlist.mockResolvedValue(true);
+    mockRemoveFromWishlist.mockResolvedValue(true);
   });
 
   it('DB 제품이 있으면 실제 제품 정보를 표시한다', async () => {
@@ -159,17 +178,65 @@ describe('ProductDetailScreen — 정직성 (Mock 폴백 재발 방지)', () => 
     expect(queryByText('나와의 매칭')).toBeNull();
   });
 
-  it('저장 API가 없는 찜 버튼은 로컬 성공을 가장하지 않는다', async () => {
+  it('찜 버튼은 인증 API가 성공한 뒤에만 선택 상태를 바꾼다', async () => {
     mockGetCosmeticProductById.mockResolvedValue(REAL_PRODUCT);
-    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
-    const { getByTestId } = renderWithTheme(<ProductDetailScreen />);
+    const { getByTestId, getByLabelText } = renderWithTheme(<ProductDetailScreen />);
 
     await waitFor(() => expect(getByTestId('product-favorite-button')).toBeTruthy());
     fireEvent.press(getByTestId('product-favorite-button'));
 
-    expect(alertSpy).toHaveBeenCalledWith(
-      '기능 준비 중',
-      '제품 찜하기 저장은 현재 지원하지 않아요.'
+    await waitFor(() =>
+      expect(mockAddToWishlist).toHaveBeenCalledWith('jwt-token', {
+        productType: 'cosmetic',
+        productId: REAL_PRODUCT.id,
+      })
     );
+    expect(getByLabelText('제품 찜 해제')).toBeTruthy();
+  });
+
+  it('초기 찜 상태 조회가 끝나기 전에는 쓰기를 막아 늦은 GET이 토글을 덮지 않는다', async () => {
+    mockGetCosmeticProductById.mockResolvedValue(REAL_PRODUCT);
+    let resolveStatus!: (value: boolean) => void;
+    mockIsInWishlist.mockImplementationOnce(
+      () =>
+        new Promise<boolean>((resolve) => {
+          resolveStatus = resolve;
+        })
+    );
+    const { getByTestId } = renderWithTheme(<ProductDetailScreen />);
+
+    await waitFor(() => expect(getByTestId('product-favorite-button')).toBeTruthy());
+    const button = getByTestId('product-favorite-button');
+    expect(button.props.accessibilityState).toMatchObject({ disabled: true, busy: true });
+    fireEvent.press(button);
+    expect(mockAddToWishlist).not.toHaveBeenCalled();
+
+    resolveStatus(false);
+    await waitFor(() =>
+      expect(getByTestId('product-favorite-button').props.accessibilityState).toMatchObject({
+        disabled: false,
+        busy: false,
+      })
+    );
+    fireEvent.press(getByTestId('product-favorite-button'));
+    await waitFor(() => expect(mockAddToWishlist).toHaveBeenCalledTimes(1));
+  });
+
+  it('찜 API 실패를 로컬 성공으로 위장하지 않는다', async () => {
+    mockGetCosmeticProductById.mockResolvedValue(REAL_PRODUCT);
+    mockAddToWishlist.mockRejectedValue(new Error('network'));
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const { getByTestId, getByLabelText } = renderWithTheme(<ProductDetailScreen />);
+
+    await waitFor(() => expect(getByTestId('product-favorite-button')).toBeTruthy());
+    fireEvent.press(getByTestId('product-favorite-button'));
+
+    await waitFor(() =>
+      expect(alertSpy).toHaveBeenCalledWith(
+        '저장하지 못했어요',
+        '네트워크 연결을 확인한 뒤 다시 시도해주세요.'
+      )
+    );
+    expect(getByLabelText('제품 찜하기')).toBeTruthy();
   });
 });

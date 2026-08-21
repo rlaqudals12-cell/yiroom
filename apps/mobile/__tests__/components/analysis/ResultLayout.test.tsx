@@ -267,7 +267,7 @@ describe('ResultLayout 컴포넌트', () => {
       expect(getByText('민감성 피부')).toBeTruthy();
       const verdict = getByTestId('analysis-result-layout-verdict');
       const style = StyleSheet.flatten(verdict.props.style);
-      expect(style.fontFamily).toBe('NotoSerifKR_600SemiBold');
+      expect(style.fontFamily).toBe('NanumMyeongjo_700Bold');
     });
 
     it('정적 세리프 weight 위에 fontWeight를 중첩하지 않아야 한다', () => {

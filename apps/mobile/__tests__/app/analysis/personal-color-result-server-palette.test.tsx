@@ -113,8 +113,9 @@ describe('퍼스널컬러 결과 서버 팔레트·진단지 배선', () => {
       expect(screen.getByTestId('analysis-personal-color-result-screen')).toBeTruthy()
     );
 
-    expect(screen.getByText('봄 웜톤')).toBeTruthy();
-    expect(screen.getByText('브라이트')).toBeTruthy();
+    expect(screen.getAllByText('봄 웜톤').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('브라이트').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('analysis-personal-color-result-screen-share')).toBeTruthy();
     expect(
       StyleSheet.flatten(screen.getByTestId('pc-best-colors-swatch-0').props.style).backgroundColor
     ).toBe('#123456');

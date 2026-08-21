@@ -1,22 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { submitFeedback, getMyFeedbacks } from '@/lib/feedback';
-import {
-  getUserMessages,
-  getUnreadCount,
-  markAsRead,
-  sendSystemMessage,
-} from '@/lib/messages';
+import { getUserMessages, getUnreadCount, markAsRead, sendSystemMessage } from '@/lib/messages';
 import { getLatestAnalysisScores } from '@/lib/wellness/queries';
 import { achieveMilestone, getUserMilestones } from '@/lib/milestones/index';
 import { getRecentScans, recordScan } from '@/lib/scan';
-import {
-  addToWishlist,
-  getWishlistCount,
-  getWishlist,
-  isInWishlist,
-  toggleWishlist,
-} from '@/lib/wishlist/index';
 
 const from = jest.fn();
 const supabase = { from } as unknown as SupabaseClient;
@@ -25,28 +13,10 @@ describe('대응 API가 없는 레거시 저장 기능', () => {
   beforeEach(() => from.mockClear());
 
   it('피드백 레거시 함수는 성공을 반환하지 않는다', async () => {
-    await expect(submitFeedback(supabase, 'user-1', 'bug', '제목입니다', '충분히 긴 내용입니다')).resolves.toBe(false);
-    await expect(getMyFeedbacks(supabase, 'user-1')).resolves.toEqual([]);
-    expect(from).not.toHaveBeenCalled();
-  });
-
-  it('레거시 위시리스트는 읽기와 쓰기 모두 API가 없어 명시적으로 거부한다', async () => {
-    await expect(getWishlist(supabase, 'user-1')).rejects.toThrow('조회는 현재 지원하지 않아요');
-    await expect(isInWishlist(supabase, 'user-1', 'product-1')).rejects.toThrow(
-      '조회는 현재 지원하지 않아요'
-    );
-    await expect(getWishlistCount(supabase, 'user-1')).rejects.toThrow(
-      '조회는 현재 지원하지 않아요'
-    );
     await expect(
-      addToWishlist(supabase, 'user-1', {
-        product_type: 'cosmetic',
-        product_id: 'product-1',
-      })
-    ).rejects.toThrow('현재 지원하지 않아요');
-    await expect(toggleWishlist(supabase, 'user-1', 'product-1')).rejects.toThrow(
-      '현재 지원하지 않아요'
-    );
+      submitFeedback(supabase, 'user-1', 'bug', '제목입니다', '충분히 긴 내용입니다')
+    ).resolves.toBe(false);
+    await expect(getMyFeedbacks(supabase, 'user-1')).resolves.toEqual([]);
     expect(from).not.toHaveBeenCalled();
   });
 

@@ -32,6 +32,8 @@ export interface ReportResultLayoutProps {
   imageStyle?: ImageStyle;
   attributes?: ReactNode;
   conclusion?: ReactNode;
+  /** 진단지 본문과 분리해 보여줄 공유·저장 후속 표면. */
+  shareContent?: ReactNode;
   sections: ReportSection[];
   confidence?: number;
   usedFallback?: boolean;
@@ -95,6 +97,7 @@ export function ReportResultLayout({
   imageStyle,
   attributes,
   conclusion,
+  shareContent,
   sections,
   confidence,
   usedFallback = false,
@@ -231,6 +234,8 @@ export function ReportResultLayout({
             </Text>
           </View>
         </View>
+
+        {shareContent ? <View testID={`${testID}-share`}>{shareContent}</View> : null}
 
         <View style={styles.followups} testID={`${testID}-followups`}>
           <Pressable

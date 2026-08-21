@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   AnalysisErrorState,
@@ -19,6 +19,11 @@ import {
   ReportTextList,
   type ReportSection,
 } from '@/components/analysis';
+import {
+  PersonalColorResultShare,
+  getPersonalColorMakeupRows,
+  personalColorResultStyles as styles,
+} from '@/components/analysis/personal-color/PersonalColorResultSupport';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import { buildPersonalColorTopActions } from '@/lib/analysis';
 import {
@@ -33,31 +38,12 @@ import {
 } from '@/lib/api/personalColor';
 import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
-import { radii, spacing } from '@/lib/theme';
 
 const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요.';
 const TONE_EXPLANATION: Record<PersonalColorReportSeasonInfo['tone'], string> = {
   warm: '피부 아래에 노란 기운이 도는 타입으로, 금색 주얼리와 따뜻한 색조가 잘 어울려요.',
   cool: '피부 아래에 파란 기운이 도는 타입으로, 은색 주얼리와 시원한 색조가 잘 어울려요.',
 };
-
-function getMakeupRows(
-  tone: PersonalColorReportSeasonInfo['tone']
-): { label: string; value: string }[] {
-  return tone === 'warm'
-    ? [
-        { label: '립 컬러', value: '코랄, 피치 계열' },
-        { label: '아이섀도', value: '골드, 브론즈 계열' },
-        { label: '블러셔', value: '피치, 살구 계열' },
-        { label: '주얼리', value: '골드, 로즈골드' },
-      ]
-    : [
-        { label: '립 컬러', value: '로즈, 베리 계열' },
-        { label: '아이섀도', value: '실버, 라벤더 계열' },
-        { label: '블러셔', value: '핑크, 로즈 계열' },
-        { label: '주얼리', value: '실버, 플래티넘' },
-      ];
-}
 
 export default function PersonalColorResultScreen(): React.JSX.Element {
   const { getToken } = useAuth();
@@ -158,7 +144,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
     worstColors: result.worstColors.length > 0 ? result.worstColors : fallbackSeason.worstColors,
   };
   const description = result.description || season.description;
-  const makeupRows = getMakeupRows(season.tone);
+  const makeupRows = getPersonalColorMakeupRows(season.tone);
   const topActions = buildPersonalColorTopActions({
     bestColors: season.bestColors,
     toneLabel: season.name,
@@ -200,6 +186,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
               <DrapingPreview
                 avoidPalette={season.worstColors}
                 imageUri={imageUri}
+                onRetry={() => router.replace('/(analysis)/personal-color')}
                 palette={season.bestColors}
                 seasonDescription={`${season.tone === 'warm' ? '웜톤' : '쿨톤'} ${season.subType}`}
                 seasonName={season.name}
@@ -284,6 +271,13 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
         retryPath="/(analysis)/personal-color"
         saveFailed={result.dbSaveFailed}
         sections={sections}
+        shareContent={
+          <PersonalColorResultShare
+            description={description}
+            season={season}
+            usedFallback={usedFallback}
+          />
+        }
         testID="analysis-personal-color-result-screen"
         usedFallback={usedFallback}
         verdict={season.name}
@@ -291,17 +285,3 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  conclusion: {
-    gap: spacing.md,
-  },
-  evidenceGroup: {
-    gap: spacing.md,
-  },
-  resultImage: {
-    borderRadius: radii.lg,
-    height: 168,
-    width: 132,
-  },
-});

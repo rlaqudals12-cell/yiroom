@@ -98,7 +98,8 @@ describe('피부 결과 진단지 표현', () => {
 
     await waitFor(() => expect(screen.getByTestId('skin-analysis-result')).toBeTruthy());
 
-    expect(screen.getByText('복합성 피부')).toBeTruthy();
+    expect(screen.getAllByText('복합성 피부').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('skin-analysis-result-share')).toBeTruthy();
     expect(screen.getByText('65')).toBeTruthy();
     expect(screen.getByText('40')).toBeTruthy();
     expect(screen.getByText('25')).toBeTruthy();

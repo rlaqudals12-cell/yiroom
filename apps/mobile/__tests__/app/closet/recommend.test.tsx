@@ -44,7 +44,10 @@ jest.mock('../../../lib/weather', () => ({
   useWeather: (...args: unknown[]) => mockUseWeather(...args),
 }));
 
-function setupWeatherMock(usedFallback = false): void {
+function setupWeatherMock(
+  usedFallback = false,
+  locationSource: 'default' | 'region' | 'geolocation' = 'default'
+): void {
   mockUseWeather.mockReturnValue({
     weather: {
       region: 'seoul',
@@ -62,6 +65,7 @@ function setupWeatherMock(usedFallback = false): void {
       forecast: [],
       cachedAt: '2026-08-18T00:00:00.000Z',
       usedFallback,
+      locationSource,
     },
     isLoading: false,
     error: null,
@@ -564,6 +568,24 @@ describe('RecommendScreen 코디 저장 기능', () => {
       });
 
       expect(mockSaveOutfit.mock.calls[0][0].description).toBe('Spring · 스트레이트');
+    });
+  });
+
+  describe('날씨 위치 출처', () => {
+    it('서울 기본값은 현재 위치처럼 보이지 않게 서울 기준 배지를 표시한다', () => {
+      const { getByTestId, getByText } = renderWithTheme(<RecommendScreen />);
+
+      expect(getByTestId('weather-location-source-badge')).toBeTruthy();
+      expect(getByText('서울 기준')).toBeTruthy();
+    });
+
+    it('실제 위치 좌표에서 온 날씨에는 기본 서울 배지를 표시하지 않는다', () => {
+      setupWeatherMock(false, 'geolocation');
+
+      const { queryByTestId, getByText } = renderWithTheme(<RecommendScreen />);
+
+      expect(queryByTestId('weather-location-source-badge')).toBeNull();
+      expect(getByText('서울')).toBeTruthy();
     });
   });
 

@@ -1,52 +1,18 @@
 /**
- * 브랜드 사이즈 차트 Repository
- * @description 브랜드별 사이즈 매핑, 제품 실측 데이터 관리
+ * 브랜드 사이즈 차트 계산 도우미
+ * @description 원시 차트 CRUD는 웹 API가 없어 명시적으로 중단하고 순수 추천 로직만 제공한다.
  */
 
-import { supabase } from '@/lib/supabase/client';
-import { smartMatchingLogger } from '@/lib/utils/logger';
 import type {
   BrandSizeChart,
-  BrandSizeChartDB,
   ProductMeasurements,
-  ProductMeasurementsDB,
   ClothingCategory,
   SizeMapping,
   SizeMeasurement,
   MeasurementSource,
 } from '@/types/smart-matching';
 
-// ============================================
-// 변환 함수
-// ============================================
-
-function mapSizeChartRow(row: BrandSizeChartDB): BrandSizeChart {
-  return {
-    id: row.id,
-    brandId: row.brand_id,
-    brandName: row.brand_name,
-    country: row.country ?? undefined,
-    category: row.category as ClothingCategory,
-    fitStyle: row.fit_style as BrandSizeChart['fitStyle'],
-    sizeMappings: row.size_mappings,
-    source: row.source ?? undefined,
-    lastVerified: row.last_verified ? new Date(row.last_verified) : undefined,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
-  };
-}
-
-function mapProductMeasurementsRow(row: ProductMeasurementsDB): ProductMeasurements {
-  return {
-    id: row.id,
-    productId: row.product_id,
-    sizeMeasurements: row.size_measurements,
-    source: row.source as MeasurementSource | undefined,
-    reliability: row.reliability,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
-  };
-}
+import { missingSmartMatchingApi } from './api-client';
 
 // ============================================
 // 브랜드 사이즈 차트
@@ -56,74 +22,34 @@ function mapProductMeasurementsRow(row: ProductMeasurementsDB): ProductMeasureme
  * 브랜드 사이즈 차트 조회
  */
 export async function getSizeChart(
-  brandId: string,
-  category: ClothingCategory
+  _brandId: string,
+  _category: ClothingCategory
 ): Promise<BrandSizeChart | null> {
-  const { data, error } = await supabase
-    .from('brand_size_charts')
-    .select('*')
-    .eq('brand_id', brandId)
-    .eq('category', category)
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return mapSizeChartRow(data as BrandSizeChartDB);
+  return missingSmartMatchingApi('원시 브랜드 사이즈 차트 조회');
 }
 
 /**
  * 브랜드의 모든 사이즈 차트 조회
  */
-export async function getSizeChartsByBrand(brandId: string): Promise<BrandSizeChart[]> {
-  const { data, error } = await supabase
-    .from('brand_size_charts')
-    .select('*')
-    .eq('brand_id', brandId);
-
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as BrandSizeChartDB[]).map(mapSizeChartRow);
+export async function getSizeChartsByBrand(_brandId: string): Promise<BrandSizeChart[]> {
+  return missingSmartMatchingApi('브랜드별 원시 사이즈 차트 조회');
 }
 
 /**
  * 사이즈 차트 검색
  */
-export async function searchSizeCharts(query: {
+export async function searchSizeCharts(_query: {
   brandName?: string;
   category?: ClothingCategory;
   country?: string;
 }): Promise<BrandSizeChart[]> {
-  let dbQuery = supabase.from('brand_size_charts').select('*');
-
-  if (query.brandName) {
-    dbQuery = dbQuery.ilike('brand_name', `%${query.brandName}%`);
-  }
-
-  if (query.category) {
-    dbQuery = dbQuery.eq('category', query.category);
-  }
-
-  if (query.country) {
-    dbQuery = dbQuery.eq('country', query.country);
-  }
-
-  const { data, error } = await dbQuery;
-
-  if (error || !data) {
-    return [];
-  }
-
-  return (data as BrandSizeChartDB[]).map(mapSizeChartRow);
+  return missingSmartMatchingApi('원시 사이즈 차트 검색');
 }
 
 /**
  * 사이즈 차트 생성/업데이트
  */
-export async function upsertSizeChart(input: {
+export async function upsertSizeChart(_input: {
   brandId: string;
   brandName: string;
   category: ClothingCategory;
@@ -132,27 +58,7 @@ export async function upsertSizeChart(input: {
   sizeMappings: SizeMapping[];
   source?: string;
 }): Promise<BrandSizeChart | null> {
-  const { data, error } = await supabase
-    .from('brand_size_charts')
-    .upsert({
-      brand_id: input.brandId,
-      brand_name: input.brandName,
-      category: input.category,
-      country: input.country ?? null,
-      fit_style: input.fitStyle ?? null,
-      size_mappings: input.sizeMappings,
-      source: input.source ?? null,
-      last_verified: new Date().toISOString().split('T')[0],
-    })
-    .select()
-    .single();
-
-  if (error) {
-    smartMatchingLogger.error('사이즈차트 Upsert 실패:', error);
-    return null;
-  }
-
-  return mapSizeChartRow(data as BrandSizeChartDB);
+  return missingSmartMatchingApi('원시 사이즈 차트 저장');
 }
 
 // ============================================
@@ -163,49 +69,21 @@ export async function upsertSizeChart(input: {
  * 제품 실측 데이터 조회
  */
 export async function getProductMeasurements(
-  productId: string
+  _productId: string
 ): Promise<ProductMeasurements | null> {
-  const { data, error } = await supabase
-    .from('product_measurements')
-    .select('*')
-    .eq('product_id', productId)
-    .order('reliability', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return mapProductMeasurementsRow(data as ProductMeasurementsDB);
+  return missingSmartMatchingApi('원시 제품 실측 조회');
 }
 
 /**
  * 제품 실측 데이터 생성/업데이트
  */
-export async function upsertProductMeasurements(input: {
+export async function upsertProductMeasurements(_input: {
   productId: string;
   sizeMeasurements: SizeMeasurement[];
   source?: MeasurementSource;
   reliability?: number;
 }): Promise<ProductMeasurements | null> {
-  const { data, error } = await supabase
-    .from('product_measurements')
-    .upsert({
-      product_id: input.productId,
-      size_measurements: input.sizeMeasurements,
-      source: input.source ?? 'user_report',
-      reliability: input.reliability ?? 0.5,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    smartMatchingLogger.error('제품실측 Upsert 실패:', error);
-    return null;
-  }
-
-  return mapProductMeasurementsRow(data as ProductMeasurementsDB);
+  return missingSmartMatchingApi('원시 제품 실측 저장');
 }
 
 // ============================================

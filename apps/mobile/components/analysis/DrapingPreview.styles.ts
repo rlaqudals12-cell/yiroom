@@ -4,6 +4,10 @@ import { REPORT_COLORS } from './report/tokens';
 import { radii, spacing, typography } from '../../lib/theme';
 
 export const drapingPreviewStyles = StyleSheet.create({
+  failure: {
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
   seasonInfo: {
     gap: spacing.xxs,
     marginBottom: spacing.sm,
@@ -72,5 +76,19 @@ export const drapingPreviewStyles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 16,
     marginTop: spacing.smd,
+  },
+  retryButton: {
+    alignItems: 'center',
+    borderColor: REPORT_COLORS.rule,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+  },
+  retryText: {
+    color: REPORT_COLORS.ink,
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
   },
 });

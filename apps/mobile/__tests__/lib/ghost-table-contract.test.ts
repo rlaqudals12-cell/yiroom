@@ -47,15 +47,15 @@ describe('유령 테이블 회귀 방지', () => {
 
     const offenders = files.flatMap((file) => {
       const source = fs.readFileSync(file, 'utf8');
-      return GHOST_TABLES.filter((table) =>
-        source.includes(`.from('${table}')`)
-      ).map((table) => `${path.relative(MOBILE_ROOT, file)} -> ${table}`);
+      return GHOST_TABLES.filter((table) => source.includes(`.from('${table}')`)).map(
+        (table) => `${path.relative(MOBILE_ROOT, file)} -> ${table}`
+      );
     });
 
     expect(offenders).toEqual([]);
   });
 
-  it('API가 없는 체중·제품 찜 화면은 저장 성공을 가장하지 않는다', () => {
+  it('체중은 미지원 고지를 유지하고 제품 찜은 인증 API에만 배선한다', () => {
     const weightSource = fs.readFileSync(
       path.join(MOBILE_ROOT, 'app', '(reports)', 'weight-goal.tsx'),
       'utf8'
@@ -64,12 +64,19 @@ describe('유령 테이블 회귀 방지', () => {
       path.join(MOBILE_ROOT, 'app', 'products', '[id].tsx'),
       'utf8'
     );
+    const wishlistHookSource = fs.readFileSync(
+      path.join(MOBILE_ROOT, 'lib', 'wishlist', 'useProductWishlist.ts'),
+      'utf8'
+    );
 
     expect(weightSource).toContain('체중 기록 저장은 현재 지원하지 않아요.');
     expect(weightSource).not.toContain('아직 체중 기록이 없어요');
     expect(weightSource.match(/editable=\{false\}/g)).toHaveLength(2);
     expect(weightSource).not.toContain('체중이 기록되었어요!');
-    expect(productSource).toContain('제품 찜하기 저장은 현재 지원하지 않아요.');
+    expect(productSource).toContain("useProductWishlist(id, 'cosmetic')");
+    expect(wishlistHookSource).toContain('addToWishlist(token');
+    expect(wishlistHookSource).toContain('removeFromWishlist(token');
+    expect(productSource).not.toContain('제품 찜하기 저장은 현재 지원하지 않아요.');
     expect(productSource).not.toContain('DB 저장 실패 시 로컬 상태만 유지');
   });
 

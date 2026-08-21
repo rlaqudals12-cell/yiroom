@@ -9,3 +9,4 @@ export {
   type PersonaCardFormat,
 } from './PersonaShareCard';
 export { PersonaShareSection } from './PersonaShareSection';
+export { AxisResultShareSection, type AxisResultShareSectionProps } from './AxisResultShareSection';

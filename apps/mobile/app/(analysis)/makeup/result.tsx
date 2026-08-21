@@ -17,6 +17,7 @@ import {
   ReportTextList,
   type ReportSection,
 } from '@/components/analysis';
+import { AxisResultShareSection } from '@/components/share';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import { buildMakeupTopActions } from '@/lib/analysis';
 import {
@@ -228,6 +229,20 @@ export default function MakeupResultScreen(): React.JSX.Element {
         retryPath="/(analysis)/makeup"
         saveFailed={result.dbSaveFailed}
         sections={sections}
+        shareContent={
+          <AxisResultShareSection
+            analysisType="makeup"
+            badges={[
+              { label: '눈매', value: EYE_SHAPE_LABELS[result.eyeShape] },
+              { label: '입술', value: LIP_SHAPE_LABELS[result.lipShape] },
+            ]}
+            heading="내 메이크업 카드"
+            oneLine={result.recommendations.base}
+            palette={result.bestColors}
+            usedFallback={result.usedMock}
+            verdict={`${FACE_SHAPE_LABELS[result.faceShape]} · ${UNDERTONE_LABELS[result.undertone]}`}
+          />
+        }
         testID="makeup-analysis-result"
         usedFallback={result.usedMock}
         verdict={`${FACE_SHAPE_LABELS[result.faceShape]} · ${UNDERTONE_LABELS[result.undertone]}`}

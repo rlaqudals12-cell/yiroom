@@ -13,27 +13,33 @@
  *
  *   사진은 카드에 절대 포함되지 않는다(생체정보 — PersonaShareCard 참조).
  */
-import { useRef, useState } from 'react';
-import { Pressable, Share, StyleSheet, Text, View, type View as ViewType } from 'react-native';
 import { useAuth } from '@clerk/clerk-expo';
 import * as Sharing from 'expo-sharing';
-import { captureRef } from 'react-native-view-shot';
 import { Download, Share2 } from 'lucide-react-native';
+import { useRef, useState } from 'react';
+import { Pressable, Share, Text, View, type View as ViewType } from 'react-native';
+import { captureRef } from 'react-native-view-shot';
 
-import { GlassCard } from '@/components/ui';
-import { trackAnalysisShare } from '@/lib/analytics/tracker';
-import { useTheme, radii, spacing, typography } from '@/lib/theme';
+import { REPORT_COLORS } from '@/components/analysis';
 import {
   CARD_WIDTH,
   PersonaShareCard,
   type PersonaCardFormat,
 } from '@/components/share/PersonaShareCard';
+import { trackAnalysisShare, type MobileAnalysisType } from '@/lib/analytics/tracker';
 import type { PersonaCardData } from '@/lib/share/card-data';
+
+import { personaShareSectionStyles as styles } from './PersonaShareSection.styles';
 
 interface PersonaShareSectionProps {
   data: PersonaCardData;
   /** 발급 번호(웹 API 실측 순번) — null이면 미표기(지어내지 않음) */
   serialNo?: number | null;
+  /** 공유 계측 축. 기존 통합 결과 소비처 호환을 위해 integrated가 기본값이다. */
+  analysisType?: MobileAnalysisType;
+  heading?: string;
+  dialogTitle?: string;
+  inviteText?: string;
 }
 
 /**
@@ -50,8 +56,11 @@ const FORMATS: readonly { key: PersonaCardFormat; label: string }[] = [
 export function PersonaShareSection({
   data,
   serialNo,
+  analysisType = 'integrated',
+  heading = '내 컬러 카드',
+  dialogTitle = '내 컬러 카드 공유',
+  inviteText = '너의 계절은?',
 }: PersonaShareSectionProps): React.JSX.Element {
-  const { colors, brand } = useTheme();
   const { getToken } = useAuth();
   const cardRef = useRef<ViewType>(null);
   const [format, setFormat] = useState<PersonaCardFormat>('square');
@@ -80,11 +89,11 @@ export function PersonaShareSection({
       }
       await Sharing.shareAsync(uri, {
         mimeType: 'image/png',
-        dialogTitle: '내 컬러 카드 공유',
+        dialogTitle,
       });
       void getToken()
         .catch(() => null)
-        .then((token) => trackAnalysisShare('integrated', 'image', token));
+        .then((token) => trackAnalysisShare(analysisType, 'image', token));
     } catch {
       setMessage('카드 이미지를 만들지 못했어요. 다시 시도해주세요.');
     } finally {
@@ -101,7 +110,7 @@ export function PersonaShareSection({
       if (result.action === Share.sharedAction) {
         void getToken()
           .catch(() => null)
-          .then((token) => trackAnalysisShare('integrated', 'link', token));
+          .then((token) => trackAnalysisShare(analysisType, 'link', token));
       }
     } catch {
       // 사용자가 시트를 닫은 경우 — 실패 아님
@@ -109,11 +118,9 @@ export function PersonaShareSection({
   };
 
   return (
-    <GlassCard style={styles.wrap} testID="persona-share-section">
-      <Text style={[styles.heading, { color: colors.foreground }]}>내 컬러 카드</Text>
-      <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-        저장하거나 스토리에 올려보세요
-      </Text>
+    <View style={styles.wrap} testID="persona-share-section">
+      <Text style={styles.heading}>{heading}</Text>
+      <Text style={styles.subtitle}>저장하거나 스토리에 올려보세요</Text>
 
       {/* 포맷 토글 — 피드(1:1) / 스토리(9:16) */}
       <View style={styles.toggleRow} testID="persona-share-format-toggle">
@@ -127,15 +134,15 @@ export function PersonaShareSection({
               accessibilityState={{ selected: active }}
               style={[
                 styles.toggle,
-                { borderColor: active ? brand.primary : colors.border },
-                active && { backgroundColor: `${brand.primary}14` },
+                { borderColor: active ? REPORT_COLORS.ink : REPORT_COLORS.rule },
+                active && { backgroundColor: REPORT_COLORS.wash },
               ]}
               testID={`persona-share-format-${f.key}`}
             >
               <Text
                 style={[
                   styles.toggleLabel,
-                  { color: active ? brand.primary : colors.mutedForeground },
+                  { color: active ? REPORT_COLORS.ink : REPORT_COLORS.mutedInk },
                 ]}
               >
                 {f.label}
@@ -166,7 +173,7 @@ export function PersonaShareSection({
               palette={data.palette}
               worstPalette={data.worstPalette}
               serialNo={serialNo}
-              inviteText="너의 계절은?"
+              inviteText={inviteText}
               format={format}
             />
           </View>
@@ -178,7 +185,7 @@ export function PersonaShareSection({
           onPress={handleImageShare}
           disabled={isBusy}
           accessibilityRole="button"
-          style={[styles.primaryButton, { backgroundColor: brand.primary }, isBusy && styles.dim]}
+          style={[styles.primaryButton, isBusy && styles.dim]}
           testID="persona-share-image"
         >
           <Download size={16} color="#FFFFFF" />
@@ -187,96 +194,19 @@ export function PersonaShareSection({
         <Pressable
           onPress={handleTextShare}
           accessibilityRole="button"
-          style={[styles.secondaryButton, { borderColor: colors.border }]}
+          style={styles.secondaryButton}
           testID="persona-share-text"
         >
-          <Share2 size={16} color={colors.foreground} />
-          <Text style={[styles.secondaryLabel, { color: colors.foreground }]}>링크 공유</Text>
+          <Share2 size={16} color={REPORT_COLORS.ink} />
+          <Text style={styles.secondaryLabel}>링크 공유</Text>
         </Pressable>
       </View>
 
       {message && (
-        <Text
-          style={[styles.message, { color: colors.mutedForeground }]}
-          testID="persona-share-message"
-        >
+        <Text style={styles.message} testID="persona-share-message">
           {message}
         </Text>
       )}
-    </GlassCard>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: {
-    padding: spacing.lg,
-  },
-  heading: {
-    fontSize: typography.size.base,
-    fontWeight: '700',
-  },
-  subtitle: {
-    marginTop: 2,
-    fontSize: typography.size.xs,
-  },
-  toggleRow: {
-    marginTop: spacing.md,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  toggle: {
-    borderWidth: 1,
-    borderRadius: radii.full,
-    paddingHorizontal: 14,
-    paddingVertical: 5,
-  },
-  toggleLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  cardWrap: {
-    marginTop: spacing.md,
-    alignItems: 'center',
-  },
-  buttonRow: {
-    marginTop: spacing.md,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  primaryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderRadius: radii.full,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-  },
-  primaryLabel: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderRadius: radii.full,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-  },
-  secondaryLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  dim: {
-    opacity: 0.6,
-  },
-  message: {
-    marginTop: spacing.sm,
-    textAlign: 'center',
-    fontSize: typography.size.xs,
-  },
-});

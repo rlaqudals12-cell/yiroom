@@ -1,120 +1,28 @@
-/**
- * 위시리스트 (즐겨찾기) 화면
- * 로컬 AsyncStorage 기반 즐겨찾기 제품 목록
- */
+/** 인증 웹 API 기반 위시리스트 화면 */
 import { router } from 'expo-router';
-import { Heart, Trash2, ShoppingBag } from 'lucide-react-native';
-import { useCallback, useMemo } from 'react';
-import { View, Text, FlatList, Pressable, Alert, StyleSheet } from 'react-native';
+import { Heart, ShoppingBag } from 'lucide-react-native';
+import { useCallback } from 'react';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { ScreenContainer, GlassCard } from '../../components/ui';
-import {
-  useFavoritesStore,
-  type FavoriteItem,
-  type FavoriteProductType,
-} from '../../lib/stores/favoritesStore';
-import { useTheme, brand, typography, spacing, radii } from '../../lib/theme';
-
-const TYPE_LABELS: Record<FavoriteProductType, string> = {
-  cosmetic: '화장품',
-  supplement: '건강보조',
-  equipment: '운동기구',
-  healthfood: '건강식품',
-};
-
-const TYPE_EMOJIS: Record<FavoriteProductType, string> = {
-  cosmetic: '💄',
-  supplement: '💊',
-  equipment: '🏋️',
-  healthfood: '🥗',
-};
+import type { WishlistDisplayItem } from './useWishlistScreen';
+import { useWishlistScreen } from './useWishlistScreen';
+import { WISHLIST_TYPE_LABELS } from './wishlist-screen.constants';
+import { WishlistItemCard } from './WishlistItemCard';
+import { GlassCard, ScreenContainer } from '../../components/ui';
+import { brand, radii, spacing, typography, useTheme } from '../../lib/theme';
+import type { ProductType } from '../../types/product';
 
 export default function WishlistScreen(): React.JSX.Element {
-  const { colors, isDark } = useTheme();
-  const items = useFavoritesStore((s) => s.items);
-  const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
-  const clearAll = useFavoritesStore((s) => s.clearAll);
+  const { colors } = useTheme();
+  const { items, isLoading, error, typeCounts, loadWishlist, removeItem, clearItems } =
+    useWishlistScreen();
 
-  const handleRemove = useCallback(
-    (item: FavoriteItem): void => {
-      Alert.alert('즐겨찾기 삭제', `"${item.name}"을(를) 즐겨찾기에서 삭제할까요?`, [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: () => removeFavorite(item.productId),
-        },
-      ]);
-    },
-    [removeFavorite]
-  );
-
-  const handleClearAll = useCallback((): void => {
-    if (items.length === 0) return;
-    Alert.alert('전체 삭제', '모든 즐겨찾기를 삭제할까요?', [
-      { text: '취소', style: 'cancel' },
-      { text: '삭제', style: 'destructive', onPress: clearAll },
-    ]);
-  }, [items.length, clearAll]);
-
-  const handlePress = useCallback((item: FavoriteItem): void => {
-    router.push({
-      pathname: '/products/[id]',
-      params: { id: item.productId },
-    });
+  const openItem = useCallback((item: WishlistDisplayItem): void => {
+    router.push({ pathname: '/products/[id]', params: { id: item.productId } });
   }, []);
-
-  // 타입별 그룹 카운트
-  const typeCounts = useMemo(() => {
-    const counts: Partial<Record<FavoriteProductType, number>> = {};
-    items.forEach((item) => {
-      counts[item.productType] = (counts[item.productType] ?? 0) + 1;
-    });
-    return counts;
-  }, [items]);
-
-  const renderItem = ({ item }: { item: FavoriteItem }): React.JSX.Element => (
-    <Pressable
-      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
-      onPress={() => handlePress(item)}
-      testID="wishlist-item"
-    >
-      <View style={styles.cardContent}>
-        <View style={styles.cardInfo}>
-          <Text style={[styles.itemName, { color: colors.foreground }]} numberOfLines={1}>
-            {item.name}
-          </Text>
-          <Text style={[styles.itemBrand, { color: colors.muted }]} numberOfLines={1}>
-            {item.brand}
-          </Text>
-          <View style={styles.metaRow}>
-            <View
-              style={[
-                styles.typeChip,
-                { backgroundColor: isDark ? colors.card : colors.muted + '20' },
-              ]}
-            >
-              <Text style={[styles.typeText, { color: colors.foreground }]}>
-                {TYPE_EMOJIS[item.productType]} {TYPE_LABELS[item.productType]}
-              </Text>
-            </View>
-            {item.priceKrw != null && (
-              <Text style={[styles.priceText, { color: colors.foreground }]}>
-                {item.priceKrw.toLocaleString()}원
-              </Text>
-            )}
-          </View>
-        </View>
-        <Pressable onPress={() => handleRemove(item)} hitSlop={8} testID="remove-wishlist-btn">
-          <Trash2 size={18} color={colors.muted} />
-        </Pressable>
-      </View>
-    </Pressable>
-  );
 
   const renderHeader = (): React.JSX.Element => (
     <View style={styles.headerSection}>
-      {/* 요약 */}
       <GlassCard shadowSize="md" style={{ marginBottom: spacing.sm }}>
         <View style={styles.summaryRow}>
           <Heart size={20} color={brand.primary} />
@@ -124,20 +32,17 @@ export default function WishlistScreen(): React.JSX.Element {
         </View>
         {Object.keys(typeCounts).length > 0 && (
           <View style={styles.typeCountRow}>
-            {(Object.entries(typeCounts) as [FavoriteProductType, number][]).map(
-              ([type, count]) => (
-                <Text key={type} style={[styles.typeCountText, { color: colors.muted }]}>
-                  {TYPE_EMOJIS[type]} {count}
-                </Text>
-              )
-            )}
+            {(Object.entries(typeCounts) as [ProductType, number][]).map(([type, count]) => (
+              <Text key={type} style={[styles.typeCountText, { color: colors.muted }]}>
+                {WISHLIST_TYPE_LABELS[type]} {count}
+              </Text>
+            ))}
           </View>
         )}
       </GlassCard>
 
-      {/* 전체 삭제 */}
       {items.length > 0 && (
-        <Pressable onPress={handleClearAll} style={styles.clearBtn}>
+        <Pressable onPress={clearItems} style={styles.clearButton}>
           <Text style={[styles.clearText, { color: colors.destructive }]}>전체 삭제</Text>
         </Pressable>
       )}
@@ -147,18 +52,24 @@ export default function WishlistScreen(): React.JSX.Element {
   const renderEmpty = (): React.JSX.Element => (
     <View style={styles.emptyContainer}>
       <ShoppingBag size={48} color={colors.muted} />
-      <Text style={[styles.emptyTitle, { color: colors.foreground }]}>아직 즐겨찾기가 없어요</Text>
-      <Text style={[styles.emptyDesc, { color: colors.muted }]}>
-        제품 상세에서 ❤️ 버튼을 눌러{'\n'}마음에 드는 제품을 저장해보세요
+      <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+        {isLoading ? '찜 목록을 불러오고 있어요' : (error ?? '아직 즐겨찾기가 없어요')}
       </Text>
-      <Pressable
-        style={[styles.browseBtn, { backgroundColor: brand.primary }]}
-        onPress={() => router.push('/products')}
-      >
-        <Text style={[styles.browseBtnText, { color: brand.primaryForeground }]}>
-          제품 둘러보기
-        </Text>
-      </Pressable>
+      <Text style={[styles.emptyDescription, { color: colors.muted }]}>
+        {error
+          ? '잠시 후 다시 시도해주세요.'
+          : '제품 상세에서 찜 버튼을 눌러 마음에 드는 제품을 저장해보세요.'}
+      </Text>
+      {!isLoading && (
+        <Pressable
+          style={[styles.primaryButton, { backgroundColor: brand.primary }]}
+          onPress={error ? () => void loadWishlist() : () => router.push('/products')}
+        >
+          <Text style={[styles.primaryButtonText, { color: brand.primaryForeground }]}>
+            {error ? '다시 시도' : '제품 둘러보기'}
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 
@@ -171,8 +82,10 @@ export default function WishlistScreen(): React.JSX.Element {
     >
       <FlatList
         data={items}
-        keyExtractor={(item) => item.productId}
-        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <WishlistItemCard item={item} onOpen={openItem} onRemove={removeItem} />
+        )}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
@@ -183,111 +96,31 @@ export default function WishlistScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  listContent: {
-    padding: spacing.md,
-    paddingBottom: spacing.xl * 2,
-  },
-  // 헤더
-  headerSection: {
-    marginBottom: spacing.md,
-  },
-  summaryCard: {
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    padding: spacing.md,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  summaryText: {
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.semibold,
-  },
-  typeCountRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginTop: spacing.sm,
-  },
-  typeCountText: {
-    fontSize: typography.size.sm,
-  },
-  clearBtn: {
-    alignSelf: 'flex-end',
-    marginTop: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  clearText: {
-    fontSize: typography.size.sm,
-  },
-  // 카드
-  card: {
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    padding: spacing.md,
-  },
-  cardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cardInfo: {
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  itemName: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-  },
-  itemBrand: {
-    fontSize: typography.size.sm,
-    marginTop: spacing.xxs,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  typeChip: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs,
-    borderRadius: radii.full,
-  },
-  typeText: {
-    fontSize: typography.size.xs,
-  },
-  priceText: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.medium,
-  },
-  // 빈 상태
-  emptyContainer: {
-    alignItems: 'center',
-    paddingVertical: spacing.xl * 2,
-  },
+  listContent: { padding: spacing.md, paddingBottom: spacing.xl * 2 },
+  headerSection: { marginBottom: spacing.md },
+  summaryRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  summaryText: { fontSize: typography.size.lg, fontWeight: typography.weight.semibold },
+  typeCountRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm },
+  typeCountText: { fontSize: typography.size.sm },
+  clearButton: { alignSelf: 'flex-end', marginTop: spacing.sm, paddingVertical: spacing.xs },
+  clearText: { fontSize: typography.size.sm },
+  emptyContainer: { alignItems: 'center', paddingVertical: spacing.xl * 2 },
   emptyTitle: {
     fontSize: typography.size.lg,
     fontWeight: typography.weight.semibold,
     marginTop: spacing.md,
     marginBottom: spacing.xs,
   },
-  emptyDesc: {
+  emptyDescription: {
     fontSize: typography.size.base,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: spacing.lg,
   },
-  browseBtn: {
+  primaryButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     borderRadius: radii.xl,
   },
-  browseBtnText: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
-  },
+  primaryButtonText: { fontSize: typography.size.base, fontWeight: typography.weight.semibold },
 });

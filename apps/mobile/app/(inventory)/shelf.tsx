@@ -110,6 +110,16 @@ export default function ShelfScreen(): React.JSX.Element {
         </GlassCard>
       </Animated.View>
 
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="바코드로 제품함에 추가"
+        onPress={() => router.push('/(inventory)/barcode-scan')}
+        style={[styles.addButton, { borderColor: colors.border }]}
+        testID="shelf-add-product"
+      >
+        <Text style={[styles.filterLabel, { color: colors.foreground }]}>바코드로 제품 추가</Text>
+      </Pressable>
+
       {/* 제품 목록 */}
       <FlatList
         data={filteredItems}
@@ -241,6 +251,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: spacing.md,
     paddingHorizontal: spacing.md,
+    borderRadius: radii.full,
+    borderWidth: 1,
+  },
+  addButton: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: spacing.mlg,
+    marginBottom: spacing.md,
     borderRadius: radii.full,
     borderWidth: 1,
   },
