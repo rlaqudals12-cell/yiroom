@@ -31,6 +31,10 @@ vi.mock('@/lib/gamification', () => ({
   addXp: vi.fn(),
 }));
 
+vi.mock('@/lib/api/image-consent', () => ({
+  checkConsentAndUploadImages: vi.fn(),
+}));
+
 vi.mock('@/lib/alerts', () => ({
   createScalpHealthNutritionAlert: vi.fn(),
   createHairLossPreventionAlert: vi.fn(),
@@ -45,6 +49,7 @@ import { analyzeHair } from '@/lib/gemini';
 import { generateMockHairAnalysisResult } from '@/lib/mock/hair-analysis';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { addXp } from '@/lib/gamification';
+import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
 import {
   createScalpHealthNutritionAlert,
   createHairLossPreventionAlert,
@@ -224,6 +229,11 @@ describe('POST /api/analyze/hair', () => {
       mockGeminiResponse as unknown as Awaited<ReturnType<typeof analyzeHair>>
     );
     vi.mocked(addXp).mockResolvedValue(null);
+    vi.mocked(checkConsentAndUploadImages).mockResolvedValue({
+      hasConsent: true,
+      consentId: 'hair-consent',
+      uploadedImages: { hair: 'user_test123/1234567890_hair.jpg' },
+    });
     vi.mocked(createScalpHealthNutritionAlert).mockReturnValue({
       type: 'scalp_health_nutrition',
       priority: 'high',
@@ -314,6 +324,33 @@ describe('POST /api/analyze/hair', () => {
       expect(json.usedMock).toBe(true);
       expect(generateMockHairAnalysisResult).toHaveBeenCalled();
       expect(analyzeHair).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('이미지 저장 동의', () => {
+    it('저장 동의가 없으면 헤어 원본을 Storage에 올리지 않고 분석만 저장한다', async () => {
+      vi.mocked(checkConsentAndUploadImages).mockResolvedValue({
+        hasConsent: false,
+        consentId: null,
+        uploadedImages: { hair: null },
+      });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(checkConsentAndUploadImages).toHaveBeenCalledWith(
+        mockSupabase,
+        'user_test123',
+        'hair',
+        'hair-images',
+        { hair: 'data:image/jpeg;base64,/9j/test' }
+      );
+      expect(mockSupabase.storage.from).not.toHaveBeenCalled();
     });
   });
 

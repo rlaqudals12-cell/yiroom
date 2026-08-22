@@ -130,7 +130,11 @@ describe('GET /api/cron/cleanup-consents', () => {
             }),
           };
         }
-        return { select: vi.fn() };
+        return {
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
       });
 
       mockStorage.from.mockReturnValue({
@@ -149,6 +153,69 @@ describe('GET /api/cron/cleanup-consents', () => {
       expect(json.success).toBe(true);
       expect(json.processed).toBe(1);
       expect(json.deletedImages).toBe(2);
+    });
+
+    it('hair와 makeup 만료 동의의 버킷 파일과 DB 이미지 포인터를 함께 정리한다', async () => {
+      const expiredConsents = [
+        {
+          id: 'consent-hair',
+          clerk_user_id: 'user-123',
+          analysis_type: 'hair',
+          retention_until: '2025-01-01T00:00:00Z',
+        },
+        {
+          id: 'consent-makeup',
+          clerk_user_id: 'user-123',
+          analysis_type: 'makeup',
+          retention_until: '2025-01-01T00:00:00Z',
+        },
+      ];
+      const pointerUpdates: string[] = [];
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'image_consents') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                lt: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({ data: expiredConsents, error: null }),
+                }),
+              }),
+            }),
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ error: null }),
+            }),
+          };
+        }
+        if (table === 'hair_analyses' || table === 'makeup_analyses') {
+          pointerUpdates.push(table);
+          return {
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ error: null }),
+            }),
+          };
+        }
+        return {};
+      });
+
+      mockStorage.from.mockImplementation((bucket: string) => ({
+        list: vi.fn().mockResolvedValue({
+          data: [{ name: `${bucket}.jpg` }],
+          error: null,
+        }),
+        remove: vi.fn().mockResolvedValue({ error: null }),
+      }));
+
+      const request = new NextRequest('http://localhost:3000/api/cron/cleanup-consents');
+      const response = await GET(request);
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.processed).toBe(2);
+      expect(json.deletedImages).toBe(2);
+      expect(mockStorage.from).toHaveBeenCalledWith('hair-images');
+      expect(mockStorage.from).toHaveBeenCalledWith('makeup-images');
+      expect(pointerUpdates).toEqual(['hair_analyses', 'makeup_analyses']);
     });
 
     it('DB 조회 에러 시 500을 반환한다', async () => {

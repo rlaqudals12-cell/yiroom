@@ -1,7 +1,7 @@
-# 🗄️ Database 스키마 v7.6 (생체동의 컬럼 — ADR-119)
+# 🗄️ Database 스키마 v7.7 (선택 동의 계측 게이트)
 
-**버전**: v7.6 (user_agreements 생체동의 3컬럼 + 감사로그 730일 — 상세는 문서 말미)
-**업데이트**: 2026년 7월 12일
+**버전**: v7.7 (user_agreements 이용기록 분석 동의 3컬럼 — 상세는 문서 말미)
+**업데이트**: 2026년 8월 21일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템 + 운동/영양 + 헤어/정신건강
@@ -2688,6 +2688,28 @@ ALTER TABLE user_agreements
 
 > 마이그레이션: `supabase/migrations/20260712_biometric_consent.sql` — **2026-07-12 prod SQL Editor 수동 적용·검증 완료**
 
+## user_agreements 이용기록 분석 동의 컬럼 (2026-08-21 — prod 미적용)
+
+모바일 사용성 계측은 별도의 선택 동의가 확인된 경우에만 전송한다. 기존 이용자는 이 동의를
+한 사실이 없으므로 기본값은 `false`이며, 동의 조회가 끝나기 전 모바일 tracker도 fail-closed로
+전송하지 않는다. 기존 `marketing_agreed`와 같은 행에서 관리한다.
+
+```sql
+ALTER TABLE user_agreements
+  ADD COLUMN IF NOT EXISTS analytics_agreed BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS analytics_agreed_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS analytics_withdrawn_at TIMESTAMPTZ;
+```
+
+- 소비: `app/api/agreement/preferences`(인증·Zod·표준 봉투), 모바일
+  `lib/api/consent-preferences.ts`, `lib/analytics/tracker.ts`·`lifecycle.ts`.
+- 기존 `user_agreements` RLS 정책이 행 단위로 그대로 적용되며 별도 정책은 필요하지 않다.
+- 마케팅 동의 컬럼은 기존 `marketing_agreed`·`marketing_agreed_at`·
+  `marketing_withdrawn_at`을 재사용한다.
+
+> 마이그레이션: `supabase/migrations/202608210200_analytics_consent.sql` —
+> **prod SQL Editor 수동 gap-apply 대기** (`supabase db push` 금지).
+
 ### 감사로그 보존 정합 (2026-07-12)
 
 - `audit_logs`·`image_access_logs` 보존 = **730일**(안전성 확보조치 기준 §8, 민감정보 취급 시스템 2년). 앱 계층 정리는 `cron/cleanup-audit-logs`(hard-delete-users 크론에 병합 호출)로 실효.
@@ -2695,6 +2717,6 @@ ALTER TABLE user_agreements
 
 ---
 
-**버전**: v7.6 (user_agreements 생체동의 3컬럼 — BIPA/PIPA §23, ADR-119 + 감사로그 730일 정합)
-**최종 업데이트**: 2026년 7월 12일
+**버전**: v7.7 (user_agreements 선택 동의 계측 게이트 + 생체동의·감사로그 정합)
+**최종 업데이트**: 2026년 8월 21일
 **상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness + 쇼핑 고도화 + 인벤토리/옷장 동기화 + 법적 컴플라이언스 게이트 완료 ✅

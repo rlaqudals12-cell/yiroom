@@ -32,6 +32,23 @@ export const USER_STORAGE_BUCKETS = [
   'uploads', // 기타 업로드
 ] as const;
 
+/**
+ * 생체정보 동의 철회 시 파기할 분석 이미지 버킷.
+ *
+ * 음식·옷장·피드처럼 생체 분석과 무관한 사용자 파일은 철회 범위를 넘어가므로 제외한다.
+ * AI 트윈은 원본이 아니라 생성 이미지이지만 얼굴에서 파생된 표현 데이터라 함께 파기한다.
+ */
+export const BIOMETRIC_STORAGE_BUCKETS = [
+  'skin-images',
+  'body-images',
+  'personal-color-images',
+  'hair-images',
+  'makeup-images',
+  'posture-images',
+  'integrated-sessions',
+  'twins',
+] as const satisfies readonly (typeof USER_STORAGE_BUCKETS)[number][];
+
 /** Supabase Storage list/remove API 한 번에 다루는 최대 파일 수. */
 const STORAGE_PAGE_SIZE = 1000;
 
@@ -41,6 +58,8 @@ export interface PurgeResult {
   /** 파기 실패한 버킷 라벨 목록 (`storage:<bucket>`) */
   failedBuckets: string[];
 }
+
+type UserStorageBucket = (typeof USER_STORAGE_BUCKETS)[number];
 
 /**
  * `{prefix}/` 하위의 모든 파일 경로를 재귀 수집한다.
@@ -92,14 +111,15 @@ async function collectUserFiles(
  * @param supabase Service Role 클라이언트 (RLS 우회)
  * @param userId Clerk 사용자 ID (스토리지 최상위 폴더명)
  */
-export async function purgeUserStorage(
+export async function purgeUserStorageBuckets(
   supabase: ServiceClient,
-  userId: string
+  userId: string,
+  buckets: readonly UserStorageBucket[]
 ): Promise<PurgeResult> {
   let deleted = 0;
   const failedBuckets: string[] = [];
 
-  for (const bucket of USER_STORAGE_BUCKETS) {
+  for (const bucket of buckets) {
     try {
       const filePaths = await collectUserFiles(supabase, bucket, userId);
       if (filePaths.length === 0) continue;
@@ -118,4 +138,12 @@ export async function purgeUserStorage(
   }
 
   return { deleted, failedBuckets };
+}
+
+/** 계정 삭제·보존기간 만료 시 사용자 소유 전체 스토리지를 파기한다. */
+export async function purgeUserStorage(
+  supabase: ServiceClient,
+  userId: string
+): Promise<PurgeResult> {
+  return purgeUserStorageBuckets(supabase, userId, USER_STORAGE_BUCKETS);
 }

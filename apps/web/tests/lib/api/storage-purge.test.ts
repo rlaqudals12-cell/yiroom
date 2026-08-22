@@ -5,7 +5,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { purgeUserStorage, USER_STORAGE_BUCKETS } from '@/lib/api/storage-purge';
+import {
+  BIOMETRIC_STORAGE_BUCKETS,
+  purgeUserStorage,
+  purgeUserStorageBuckets,
+  USER_STORAGE_BUCKETS,
+} from '@/lib/api/storage-purge';
 
 interface ListResult {
   data: Array<{ name: string; id: string | null }> | null;
@@ -59,6 +64,21 @@ function makeStorageMock(
 }
 
 describe('purgeUserStorage', () => {
+  it('생체 철회 범위에는 통합분석을 포함하고 음식·옷장·피드는 포함하지 않는다', async () => {
+    expect(BIOMETRIC_STORAGE_BUCKETS).toContain('integrated-sessions');
+    expect(BIOMETRIC_STORAGE_BUCKETS).toContain('hair-images');
+    expect(BIOMETRIC_STORAGE_BUCKETS).toContain('makeup-images');
+    expect(BIOMETRIC_STORAGE_BUCKETS).not.toContain('food-images' as never);
+    expect(BIOMETRIC_STORAGE_BUCKETS).not.toContain('inventory-images' as never);
+    expect(BIOMETRIC_STORAGE_BUCKETS).not.toContain('feed-images' as never);
+
+    const { supabase, from } = makeStorageMock({});
+    await purgeUserStorageBuckets(supabase, 'user-1', BIOMETRIC_STORAGE_BUCKETS);
+
+    const visitedBuckets = new Set(from.mock.calls.map(([bucket]) => bucket));
+    expect(visitedBuckets).toEqual(new Set(BIOMETRIC_STORAGE_BUCKETS));
+  });
+
   it('실제 업로드 코드가 쓰는 모든 사용자 버킷을 파기 대상에 포함한다', () => {
     const uploadBucketContracts = [
       ['skin-images', 'app/api/analyze/skin/route.ts'],

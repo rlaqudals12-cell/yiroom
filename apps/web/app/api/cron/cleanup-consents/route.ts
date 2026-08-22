@@ -25,6 +25,31 @@ const ANALYSIS_STORAGE_BUCKETS: Record<string, string> = {
   skin: 'skin-images',
   body: 'body-images',
   'personal-color': 'personal-color-images',
+  hair: 'hair-images',
+  makeup: 'makeup-images',
+};
+
+// 만료 파기 후 분석 결과가 삭제된 Storage 경로를 계속 가리키지 않도록 함께 비운다.
+const ANALYSIS_IMAGE_POINTERS: Record<
+  string,
+  { table: string; values: Record<string, string | null> }
+> = {
+  skin: { table: 'skin_analyses', values: { image_url: '' } },
+  body: {
+    table: 'body_analyses',
+    values: {
+      image_url: '',
+      left_side_image_url: null,
+      right_side_image_url: null,
+      back_image_url: null,
+    },
+  },
+  'personal-color': {
+    table: 'personal_color_assessments',
+    values: { face_image_url: null, left_image_url: null, right_image_url: null },
+  },
+  hair: { table: 'hair_analyses', values: { image_url: '' } },
+  makeup: { table: 'makeup_analyses', values: { image_url: '' } },
 };
 
 interface ExpiredConsent {
@@ -122,10 +147,8 @@ export async function GET(request: NextRequest) {
             .list(consent.clerk_user_id);
 
           if (listError) {
-            console.warn(
-              `[Cron Cleanup] Storage list error for ${consent.clerk_user_id}:`,
-              listError.message
-            );
+            console.warn(`[Cron Cleanup] Storage list error (${consent.analysis_type})`);
+            result.errors!.push(`Storage list failed for ${consent.analysis_type}`);
           } else if (files && files.length > 0) {
             // 이미지 삭제
             const filePaths = files.map((file) => `${consent.clerk_user_id}/${file.name}`);
@@ -134,13 +157,31 @@ export async function GET(request: NextRequest) {
               .remove(filePaths);
 
             if (deleteError) {
-              console.error(`[Cron Cleanup] Storage delete error:`, deleteError.message);
+              console.error(`[Cron Cleanup] Storage delete error (${consent.analysis_type})`);
+              result.errors!.push(`Storage delete failed for ${consent.analysis_type}`);
             } else {
               result.deletedImages += filePaths.length;
               console.info(
-                `[Cron Cleanup] Deleted ${filePaths.length} images for ${consent.clerk_user_id}`
+                `[Cron Cleanup] Deleted ${filePaths.length} ${consent.analysis_type} images`
               );
             }
+          }
+        }
+
+        const pointer = ANALYSIS_IMAGE_POINTERS[consent.analysis_type];
+        if (pointer) {
+          try {
+            const { error: pointerError } = await supabase
+              .from(pointer.table)
+              .update(pointer.values)
+              .eq('clerk_user_id', consent.clerk_user_id);
+            if (pointerError) {
+              console.error(`[Cron Cleanup] Pointer cleanup error (${consent.analysis_type})`);
+              result.errors!.push(`Pointer cleanup failed for ${consent.analysis_type}`);
+            }
+          } catch {
+            console.error(`[Cron Cleanup] Pointer cleanup error (${consent.analysis_type})`);
+            result.errors!.push(`Pointer cleanup failed for ${consent.analysis_type}`);
           }
         }
 

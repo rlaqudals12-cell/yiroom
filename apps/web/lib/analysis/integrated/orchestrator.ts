@@ -332,11 +332,11 @@ export async function runIntegratedAnalysis(
     ? reserveExecutionDeadline(deadline, RESPONSE_RESERVE_MS)
     : undefined;
 
-  // 왜: Storage 경로에 세션 ID가 필요하므로 업로드 전에 먼저 생성
+  // 왜: 세션 식별자는 분석 축 실행과 결과 행 생성에 공통으로 필요하다.
   const sessionId = crypto.randomUUID();
 
-  // 1. 이미지 Storage 업로드 (얼굴 필수, 전신 선택)
-  let uploadedUrls: { faceImageUrl: string; bodyImageUrl: string | null };
+  // 1. 원본 비저장 상태 초기화 (레거시 Storage URL 반환형과 호환)
+  let uploadedUrls: { faceImageUrl: string | null; bodyImageUrl: string | null };
   try {
     uploadedUrls = await awaitIntegratedStage(
       uploadSessionImages(
@@ -350,12 +350,12 @@ export async function runIntegratedAnalysis(
       '[Integrated] image upload deadline exceeded'
     );
   } catch (uploadError) {
-    // 왜: Storage 업로드 실패는 복구 불가 — 세션을 만들지 않고 throw
-    console.error('[Integrated] image upload failed:', uploadError);
+    // 왜: 초기화 실패 시 이미지 보관 상태를 확정할 수 없으므로 세션을 만들지 않는다.
+    console.error('[Integrated] image persistence initialization failed:', uploadError);
     throw uploadError instanceof Error ? uploadError : new Error('이미지 업로드에 실패했어요.');
   }
 
-  // 2. 세션 생성 (업로드된 Storage 경로로)
+  // 2. 세션 생성 (신규 분석은 원본 이미지 경로를 저장하지 않음)
   const session = await awaitIntegratedStage(
     createSession({
       id: sessionId,

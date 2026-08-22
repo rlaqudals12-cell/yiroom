@@ -10,6 +10,7 @@ import {
 } from '@/lib/api/error-response';
 import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import { requireBiometricConsent } from '@/lib/api/biometric-consent';
+import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
 import {
   generateMockHairAnalysisResult,
   type HairAnalysisResult,
@@ -115,28 +116,16 @@ export async function POST(req: NextRequest) {
     try {
       const supabase = createServiceRoleClient();
 
-      // 이미지 업로드
-      let imageUrl: string | null = null;
-      try {
-        const fileName = `${userId}/${Date.now()}_hair.jpg`;
-        const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-        const buffer = Buffer.from(base64Data, 'base64');
-
-        const { data, error } = await supabase.storage
-          .from('hair-images')
-          .upload(fileName, buffer, {
-            contentType: 'image/jpeg',
-            upsert: false,
-          });
-
-        if (error) {
-          console.error('[H-1] Image upload error:', error);
-        } else {
-          imageUrl = data.path;
-        }
-      } catch (uploadError) {
-        console.error('[H-1] Image upload exception:', uploadError);
-      }
+      // 분석 처리는 필수 생체동의로 허용하되, 원본 보존은 별도 이미지 저장 동의가 있을 때만 한다.
+      // 동의 조회 실패도 hasConsent=false로 닫혀 이미지가 서버에 남지 않는다.
+      const { uploadedImages } = await checkConsentAndUploadImages(
+        supabase,
+        userId,
+        'hair',
+        'hair-images',
+        { hair: imageBase64 }
+      );
+      const imageUrl = uploadedImages.hair ?? null;
 
       // metrics에서 각 지표 추출
       const getMetricValue = (id: string) => {

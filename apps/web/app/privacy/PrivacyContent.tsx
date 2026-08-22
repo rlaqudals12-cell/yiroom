@@ -113,8 +113,8 @@ function KoreanContent() {
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>회원 정보: 회원 탈퇴 시까지 (탈퇴 후 30일 이내 파기)</li>
           <li>
-            분석 이미지: 저장에 동의한 경우 동의일로부터 1년간 보관 후 자동 파기되며, 그 전에도 요청
-            시 언제든 삭제할 수 있습니다 (회원 탈퇴 시 파기)
+            분석 이미지: 저장에 동의한 경우 동의일로부터 1년간 보관 후 자동 파기되며, 그 전에도 동의
+            철회·삭제 요청 시 즉시 파기됩니다 (회원 탈퇴 시 파기)
           </li>
           <li>
             AI 코치 대화: 대화 이어보기 기능 제공을 위해 서버에 저장되며, 설정 또는 삭제 요청으로
@@ -133,14 +133,15 @@ function KoreanContent() {
         </p>
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>
-            <strong>수집 항목:</strong> 피부 분석용 얼굴 이미지, 체형 분석용 전신 이미지, 퍼스널
-            컬러 분석용 이미지
+            <strong>수집 항목:</strong> 피부·메이크업 분석용 얼굴 이미지, 헤어 분석용 모발·두피
+            이미지, 체형 분석용 전신 이미지, 퍼스널 컬러 분석용 이미지
           </li>
           <li>
-            <strong>처리 목적:</strong> AI 기반 피부/체형/퍼스널컬러 분석 및 변화 추적
+            <strong>처리 목적:</strong> AI 기반 피부/체형/퍼스널컬러/헤어/메이크업 분석 및 변화 추적
           </li>
           <li>
-            <strong>보유 기간:</strong> 삭제 요청 또는 회원 탈퇴 시까지 (요청 시 즉시 파기)
+            <strong>보유 기간:</strong> 저장 동의 시 동의일로부터 1년간 보관 후 자동 파기, 동의
+            철회·삭제 요청 또는 회원 탈퇴 시 즉시 파기
           </li>
           <li>
             <strong>동의 방법:</strong> 가입 시 약관 동의 단계에서 별도의 필수 동의 항목으로 수집
@@ -470,8 +471,8 @@ function EnglishContent() {
           </li>
           <li>
             Analysis images: When you consent to storage, retained for 1 year from the consent date
-            and then automatically destroyed; can be deleted earlier anytime upon request (destroyed
-            upon account deletion)
+            and then automatically destroyed; destroyed earlier upon consent withdrawal or deletion
+            request (destroyed upon account deletion)
           </li>
           <li>
             AI coach conversations: Stored on our servers so you can resume previous conversations;
@@ -493,16 +494,18 @@ function EnglishContent() {
         </p>
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>
-            <strong>Data collected:</strong> Facial images for skin analysis, full-body images for
-            body type analysis, images for personal color analysis
+            <strong>Data collected:</strong> Facial images for skin and makeup analysis, hair and
+            scalp images for hair analysis, full-body images for body type analysis, and images for
+            personal color analysis
           </li>
           <li>
-            <strong>Purpose:</strong> AI-powered skin, body type, and personal color analysis, and
-            progress tracking
+            <strong>Purpose:</strong> AI-powered skin, body type, personal color, hair, and makeup
+            analysis, and progress tracking
           </li>
           <li>
-            <strong>Retention:</strong> Until deletion request or account deletion (destroyed
-            immediately upon request)
+            <strong>Retention:</strong> If you consent to image storage, retained for 1 year from
+            the consent date and then automatically destroyed; destroyed earlier upon withdrawal,
+            deletion request, or account deletion
           </li>
           <li>
             <strong>Consent method:</strong> Collected as a separate, mandatory consent item during

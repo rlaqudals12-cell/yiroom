@@ -2,6 +2,7 @@
 
 **Phase**: L-2 (출시 준비)
 **작성일**: 2026-01-08
+**업데이트**: 2026-08-21 (모바일 선택 동의 저장·계측 게이트)
 **우선순위**: 🔴 높음 (출시 필수)
 **관련**: SDD-VISUAL-SKIN-REPORT.md (이미지 저장 동의)
 
@@ -64,10 +65,11 @@ So that 서비스를 안전하게 이용할 수 있다
 - [x] 동의 API (`/api/agreement`)
 - [x] 첫 로그인 시 동의 페이지로 리디렉션
 - [x] 설정 > 마케팅 수신 동의 관리
+- [x] 모바일 설정 > 이용기록 분석·마케팅 선택 동의 서버 저장
+- [x] 분석 동의 기반 모바일 tracker fail-closed 게이트
 
 ### OUT (제외)
 
-- [ ] 모바일 앱 (별도 Phase에서 처리)
 - [ ] 미성년자 법정대리인 동의 (추후 검토)
 - [ ] 제3자 정보 제공 동의 (현재 없음)
 
@@ -86,6 +88,7 @@ CREATE TABLE user_agreements (
   terms_agreed BOOLEAN NOT NULL DEFAULT false,       -- (필수) 이용약관
   privacy_agreed BOOLEAN NOT NULL DEFAULT false,     -- (필수) 개인정보 수집/이용
   marketing_agreed BOOLEAN NOT NULL DEFAULT false,   -- (선택) 마케팅 정보 수신
+  analytics_agreed BOOLEAN NOT NULL DEFAULT false,   -- (선택) 이용기록 분석
 
   -- 동의 버전 (약관 변경 시 재동의 필요)
   terms_version TEXT NOT NULL DEFAULT '1.0',
@@ -96,6 +99,8 @@ CREATE TABLE user_agreements (
   privacy_agreed_at TIMESTAMPTZ,
   marketing_agreed_at TIMESTAMPTZ,
   marketing_withdrawn_at TIMESTAMPTZ,
+  analytics_agreed_at TIMESTAMPTZ,
+  analytics_withdrawn_at TIMESTAMPTZ,
 
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
@@ -211,6 +216,53 @@ ON user_agreements(clerk_user_id);
   "marketingAgreed": true
 }
 ```
+
+### 5.4 GET /api/agreement/preferences
+
+모바일 설정의 이용기록 분석·마케팅 선택 동의를 조회한다. 동의 행이 없으면 두 값 모두
+`false`이며, 인증 전에는 조회할 수 없다.
+
+**Response 200:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "analyticsConsent": false,
+    "marketingConsent": true
+  }
+}
+```
+
+### 5.5 PATCH /api/agreement/preferences
+
+한 항목 또는 두 항목을 함께 변경한다. 인증·Zod 검증 후 `user_agreements`에 upsert하며,
+동의/철회 시각과 감사 로그를 함께 남긴다.
+
+**Request Body:**
+
+```json
+{
+  "analyticsConsent": false,
+  "marketingConsent": true
+}
+```
+
+**Response 200:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "analyticsConsent": false,
+    "marketingConsent": true
+  }
+}
+```
+
+오류는 `{ "success": false, "error": { "code", "message", "userMessage" } }`
+표준 봉투를 사용한다. 모바일 tracker는 서버 조회가 끝나기 전과
+`analyticsConsent: false` 상태에서 이벤트를 큐에 넣거나 전송하지 않는다.
 
 ---
 
@@ -549,20 +601,22 @@ describe('Agreement API', () => {
 
 ## 12. 파일 변경 목록
 
-| 파일                                                   | 변경 내용           |
-| ------------------------------------------------------ | ------------------- |
-| `supabase/migrations/202601080600_user_agreements.sql` | 신규                |
-| `app/agreement/page.tsx`                               | 신규                |
-| `app/api/agreement/route.ts`                           | 신규                |
-| `components/agreement/index.ts`                        | 신규                |
-| `components/agreement/types.ts`                        | 신규                |
-| `components/agreement/AgreementCheckbox.tsx`           | 신규                |
-| `components/agreement/AgreementAllCheckbox.tsx`        | 신규                |
-| `app/(main)/layout.tsx`                                | 동의 체크 로직 추가 |
-| `app/(main)/settings/privacy/page.tsx`                 | 마케팅 토글 추가    |
-| `tests/api/agreement/route.test.ts`                    | 신규                |
-| `tests/components/agreement/*.test.tsx`                | 신규                |
-| `tests/pages/agreement.test.tsx`                       | 신규                |
+| 파일                                                     | 변경 내용           |
+| -------------------------------------------------------- | ------------------- |
+| `supabase/migrations/202601080600_user_agreements.sql`   | 신규                |
+| `app/agreement/page.tsx`                                 | 신규                |
+| `app/api/agreement/route.ts`                             | 신규                |
+| `app/api/agreement/preferences/route.ts`                 | 선택 동의 조회·저장 |
+| `supabase/migrations/202608210200_analytics_consent.sql` | 분석 동의 컬럼 추가 |
+| `components/agreement/index.ts`                          | 신규                |
+| `components/agreement/types.ts`                          | 신규                |
+| `components/agreement/AgreementCheckbox.tsx`             | 신규                |
+| `components/agreement/AgreementAllCheckbox.tsx`          | 신규                |
+| `app/(main)/layout.tsx`                                  | 동의 체크 로직 추가 |
+| `app/(main)/settings/privacy/page.tsx`                   | 마케팅 토글 추가    |
+| `tests/api/agreement/route.test.ts`                      | 신규                |
+| `tests/components/agreement/*.test.tsx`                  | 신규                |
+| `tests/pages/agreement.test.tsx`                         | 신규                |
 
 ---
 

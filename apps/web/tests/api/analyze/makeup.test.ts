@@ -30,6 +30,10 @@ vi.mock('@/lib/gamification', () => ({
   addXp: vi.fn(),
 }));
 
+vi.mock('@/lib/api/image-consent', () => ({
+  checkConsentAndUploadImages: vi.fn(),
+}));
+
 vi.mock('@/lib/alerts', () => ({
   createSkinToneNutritionAlert: vi.fn(),
   createCollagenBoostAlert: vi.fn(),
@@ -50,6 +54,7 @@ import { analyzeMakeup } from '@/lib/gemini';
 import { generateMockMakeupAnalysisResult, type MakeupConcernId } from '@/lib/mock/makeup-analysis';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { addXp } from '@/lib/gamification';
+import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
 import { createSkinToneNutritionAlert, createCollagenBoostAlert } from '@/lib/alerts';
 import { NextRequest } from 'next/server';
 import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
@@ -227,6 +232,11 @@ describe('POST /api/analyze/makeup', () => {
       mockGeminiResponse as Awaited<ReturnType<typeof analyzeMakeup>>
     );
     vi.mocked(addXp).mockResolvedValue(null);
+    vi.mocked(checkConsentAndUploadImages).mockResolvedValue({
+      hasConsent: true,
+      consentId: 'makeup-consent',
+      uploadedImages: { makeup: 'user_test123/1234567890_makeup.jpg' },
+    });
     vi.mocked(createSkinToneNutritionAlert).mockReturnValue({
       type: 'skin_tone_nutrition',
       priority: 'medium',
@@ -314,6 +324,33 @@ describe('POST /api/analyze/makeup', () => {
       expect(json.usedMock).toBe(true);
       expect(generateMockMakeupAnalysisResult).toHaveBeenCalled();
       expect(analyzeMakeup).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('이미지 저장 동의', () => {
+    it('저장 동의가 없으면 메이크업 원본을 Storage에 올리지 않고 분석만 저장한다', async () => {
+      vi.mocked(checkConsentAndUploadImages).mockResolvedValue({
+        hasConsent: false,
+        consentId: null,
+        uploadedImages: { makeup: null },
+      });
+
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(checkConsentAndUploadImages).toHaveBeenCalledWith(
+        mockSupabase,
+        'user_test123',
+        'makeup',
+        'makeup-images',
+        { makeup: 'data:image/jpeg;base64,/9j/test' }
+      );
+      expect(mockSupabase.storage.from).not.toHaveBeenCalled();
     });
   });
 
@@ -659,6 +696,11 @@ describe('POST /api/analyze/makeup - 추가 시나리오', () => {
       mockGeminiResponse as Awaited<ReturnType<typeof analyzeMakeup>>
     );
     vi.mocked(addXp).mockResolvedValue(null);
+    vi.mocked(checkConsentAndUploadImages).mockResolvedValue({
+      hasConsent: true,
+      consentId: 'makeup-consent',
+      uploadedImages: { makeup: 'user_test123/1234567890_makeup.jpg' },
+    });
     vi.mocked(createSkinToneNutritionAlert).mockReturnValue({
       type: 'skin_tone_nutrition',
       priority: 'medium',
@@ -728,11 +770,10 @@ describe('POST /api/analyze/makeup - 추가 시나리오', () => {
 
   describe('이미지 업로드 실패', () => {
     it('이미지 업로드 실패 시에도 분석은 정상 진행된다', async () => {
-      mockSupabase.storage.from = vi.fn().mockReturnValue({
-        upload: vi.fn().mockResolvedValue({
-          data: null,
-          error: { message: 'Storage upload failed' },
-        }),
+      vi.mocked(checkConsentAndUploadImages).mockResolvedValue({
+        hasConsent: true,
+        consentId: 'makeup-consent',
+        uploadedImages: { makeup: null },
       });
 
       const response = await POST(
@@ -748,9 +789,7 @@ describe('POST /api/analyze/makeup - 추가 시나리오', () => {
     });
 
     it('이미지 업로드 예외 시에도 분석은 정상 진행된다', async () => {
-      mockSupabase.storage.from = vi.fn().mockReturnValue({
-        upload: vi.fn().mockRejectedValue(new Error('Network error')),
-      });
+      vi.mocked(checkConsentAndUploadImages).mockRejectedValue(new Error('Network error'));
 
       const response = await POST(
         createMockPostRequest({
