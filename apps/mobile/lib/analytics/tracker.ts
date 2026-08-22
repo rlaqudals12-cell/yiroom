@@ -22,6 +22,8 @@ import {
 let eventQueue: AnalyticsEventInput[] = [];
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;
 let queueGeneration = 0;
+// 서버 동의를 확인하기 전에는 수집하지 않는다. true가 된 뒤에만 전송·큐잉을 허용한다.
+let analyticsConsent: boolean | null = null;
 
 // 설정
 const BATCH_SIZE = 10;
@@ -53,9 +55,31 @@ interface TrackEventOptions {
 }
 
 function canDeliver(clerkToken: string | null | undefined): clerkToken is string {
+  if (analyticsConsent !== true) return false;
   if (!clerkToken) return false;
   // 명시 URL은 dev/preview QA 서버를 허용한다. 폴백 prod URL은 production 채널만 허용한다.
   return hasConfiguredApiBaseUrl() || Updates.channel === 'production';
+}
+
+/**
+ * 서버에서 읽거나 저장한 이용기록 분석 동의를 tracker에 반영한다.
+ * false/null 전환은 대기 큐·재시도도 즉시 폐기해 철회 뒤 지연 전송을 막는다.
+ */
+export function setAnalyticsConsent(consent: boolean | null): void {
+  analyticsConsent = consent;
+  if (consent === true) return;
+
+  if (flushTimeout) {
+    clearTimeout(flushTimeout);
+    flushTimeout = null;
+  }
+  eventQueue = [];
+  queueGeneration += 1;
+}
+
+/** 현재 세션에서 서버 확인까지 마친 분석 동의만 true로 본다. */
+export function isAnalyticsConsentGranted(): boolean {
+  return analyticsConsent === true;
 }
 
 /**
@@ -158,12 +182,7 @@ export async function flushEvents(clerkToken?: string | null): Promise<void> {
 
 /** 로그아웃·계정 전환 시 이전 계정의 큐와 세션을 함께 폐기한다. */
 export function resetAnalyticsIdentity(): void {
-  if (flushTimeout) {
-    clearTimeout(flushTimeout);
-    flushTimeout = null;
-  }
-  eventQueue = [];
-  queueGeneration += 1;
+  setAnalyticsConsent(null);
   endSession();
 }
 

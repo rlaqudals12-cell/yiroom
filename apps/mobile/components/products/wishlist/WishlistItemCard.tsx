@@ -1,9 +1,10 @@
 import { Trash2 } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useTheme, typography, spacing, radii } from '@/lib/theme';
+
 import type { WishlistDisplayItem } from './useWishlistScreen';
 import { WISHLIST_TYPE_LABELS } from './wishlist-screen.constants';
-import { useTheme, typography, spacing, radii } from '../../lib/theme';
 
 interface WishlistItemCardProps {
   item: WishlistDisplayItem;

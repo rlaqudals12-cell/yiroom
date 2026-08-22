@@ -4,10 +4,11 @@ import { Heart, ShoppingBag } from 'lucide-react-native';
 import { useCallback } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { WishlistDisplayItem } from './useWishlistScreen';
-import { useWishlistScreen } from './useWishlistScreen';
-import { WISHLIST_TYPE_LABELS } from './wishlist-screen.constants';
-import { WishlistItemCard } from './WishlistItemCard';
+import type { WishlistDisplayItem } from '@/components/products/wishlist/useWishlistScreen';
+import { useWishlistScreen } from '@/components/products/wishlist/useWishlistScreen';
+import { WISHLIST_TYPE_LABELS } from '@/components/products/wishlist/wishlist-screen.constants';
+import { WishlistItemCard } from '@/components/products/wishlist/WishlistItemCard';
+
 import { GlassCard, ScreenContainer } from '../../components/ui';
 import { brand, radii, spacing, typography, useTheme } from '../../lib/theme';
 import type { ProductType } from '../../types/product';

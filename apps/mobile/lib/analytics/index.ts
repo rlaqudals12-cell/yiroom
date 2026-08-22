@@ -20,6 +20,8 @@ export {
 export {
   trackEvent,
   flushEvents,
+  setAnalyticsConsent,
+  isAnalyticsConsentGranted,
   trackPageView,
   trackFeatureUse,
   trackAppStarted,

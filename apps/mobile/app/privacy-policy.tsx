@@ -197,8 +197,8 @@ function KoreanContent({ colors }: ContentProps) {
           회원 정보: 회원 탈퇴 시까지 (탈퇴 후 30일 이내 파기)
         </BulletItem>
         <BulletItem colors={colors}>
-          분석 이미지: 저장에 동의한 경우 동의일로부터 1년간 보관 후 자동 파기되며, 그 전에도 요청
-          시 언제든 삭제할 수 있습니다 (회원 탈퇴 시 파기)
+          분석 이미지: 저장에 동의한 경우 동의일로부터 1년간 보관 후 자동 파기되며, 그 전에도 동의
+          철회·삭제 요청 시 즉시 파기됩니다 (회원 탈퇴 시 파기)
         </BulletItem>
         <BulletItem colors={colors}>
           AI 코치 대화: 대화 이어보기 기능 제공을 위해 서버에 저장되며, 설정 또는 삭제 요청으로
@@ -218,14 +218,15 @@ function KoreanContent({ colors }: ContentProps) {
           별도의 동의를 받습니다.
         </Paragraph>
         <BulletItem colors={colors}>
-          수집 항목: 피부 분석용 얼굴 이미지, 체형 분석용 전신 이미지, 퍼스널 컬러 분석용 이미지
+          수집 항목: 피부·메이크업 분석용 얼굴 이미지, 헤어 분석용 모발·두피 이미지, 체형 분석용
+          전신 이미지, 퍼스널 컬러 분석용 이미지
         </BulletItem>
         <BulletItem colors={colors}>
-          처리 목적: AI 기반 피부/체형/퍼스널컬러 분석 및 변화 추적
+          처리 목적: AI 기반 피부/체형/퍼스널컬러/헤어/메이크업 분석 및 변화 추적
         </BulletItem>
         <BulletItem colors={colors}>
-          보유 기간: 저장 동의 시 동의일로부터 1년간 보관 후 자동 파기, 회원 탈퇴 또는 삭제 요청 시
-          즉시 파기
+          보유 기간: 저장 동의 시 동의일로부터 1년간 보관 후 자동 파기, 동의 철회·삭제 요청 또는
+          회원 탈퇴 시 즉시 파기
         </BulletItem>
         <BulletItem colors={colors}>
           동의 방법: 가입 시 약관 동의 단계에서 별도의 필수 동의 항목으로 수집 (이미지 촬영 전 사전

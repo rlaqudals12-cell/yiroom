@@ -67,6 +67,21 @@ export {
   AgreementApiError,
 } from './agreement';
 export type { AgreementStatus, AgreementGate, AgreementChecks, AgreementGender } from './agreement';
+
+// 이용기록 분석·마케팅 선택 동의 (웹 저장 정본)
+export {
+  fetchConsentPreferences,
+  updateConsentPreferences,
+  ConsentPreferencesApiError,
+} from './consent-preferences';
+export type { ConsentPreferences, ConsentPreferencesPatch } from './consent-preferences';
+
+// 생체정보 동의 철회 + 선택 저장 이미지 즉시 파기 (웹 API 정본)
+export { revokeBiometricConsent, BiometricConsentApiError } from './biometric-consent';
+export type {
+  BiometricWithdrawalResult,
+  PartialBiometricWithdrawalResult,
+} from './biometric-consent';
 export type {
   IntegratedAnalysisInput,
   IntegratedAnalysisResult,

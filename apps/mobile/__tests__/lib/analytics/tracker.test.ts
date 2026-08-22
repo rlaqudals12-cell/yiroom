@@ -18,6 +18,9 @@ describe('mobile analytics tracker', () => {
     mockUpdatesChannel = 'preview';
     process.env.EXPO_PUBLIC_YIROOM_API_URL = 'https://analytics.example.test/';
     global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200 }) as jest.Mock;
+    const { setAnalyticsConsent } =
+      require('../../../lib/analytics/tracker') as typeof import('../../../lib/analytics/tracker');
+    setAnalyticsConsent(true);
   });
 
   afterEach(() => {
@@ -98,6 +101,50 @@ describe('mobile analytics tracker', () => {
 
     await trackAppStarted(null);
     await flushEvents('later-token');
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('동의 상태 로딩 전에는 토큰이 있어도 전송하거나 큐잉하지 않는다', async () => {
+    const { flushEvents, setAnalyticsConsent, trackAppStarted } =
+      require('../../../lib/analytics/tracker') as typeof import('../../../lib/analytics/tracker');
+    setAnalyticsConsent(null);
+
+    await trackAppStarted('clerk-token');
+    setAnalyticsConsent(true);
+    await flushEvents('clerk-token');
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('분석 동의 false에서는 fetch와 지연 큐 전송이 모두 0회다', async () => {
+    const { flushEvents, setAnalyticsConsent, trackEvent } =
+      require('../../../lib/analytics/tracker') as typeof import('../../../lib/analytics/tracker');
+    setAnalyticsConsent(false);
+
+    await trackEvent(
+      { eventType: 'feature_use', eventName: 'Should Not Queue' },
+      { clerkToken: 'clerk-token' }
+    );
+    setAnalyticsConsent(true);
+    await flushEvents('clerk-token');
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('옵트아웃은 이미 대기 중인 이벤트와 재시도 타이머도 폐기한다', async () => {
+    jest.useFakeTimers();
+    const { flushEvents, setAnalyticsConsent, trackEvent } =
+      require('../../../lib/analytics/tracker') as typeof import('../../../lib/analytics/tracker');
+
+    await trackEvent(
+      { eventType: 'feature_use', eventName: 'Queued Before Opt Out' },
+      { clerkToken: 'clerk-token' }
+    );
+    setAnalyticsConsent(false);
+    setAnalyticsConsent(true);
+    await jest.advanceTimersByTimeAsync(10_000);
+    await flushEvents('clerk-token');
 
     expect(global.fetch).not.toHaveBeenCalled();
   });
@@ -184,13 +231,20 @@ describe('mobile analytics tracker', () => {
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({ ok: false, status: 503 })
       .mockResolvedValueOnce({ ok: true, status: 200 });
-    const { resetAnalyticsIdentity, trackAnalysisComplete, trackAppStarted } =
+    const {
+      resetAnalyticsIdentity,
+      setAnalyticsConsent,
+      trackAnalysisComplete,
+      trackAppStarted,
+    } =
       require('../../../lib/analytics/tracker') as typeof import('../../../lib/analytics/tracker');
 
     await trackAnalysisComplete('body', { status: 'completed' }, 'token-a');
     const accountABody = JSON.parse(String((global.fetch as jest.Mock).mock.calls[0][1].body));
 
     resetAnalyticsIdentity();
+    // 새 계정은 서버 동의 조회가 완료된 뒤에만 tracker를 다시 연다.
+    setAnalyticsConsent(true);
     await trackAppStarted('token-b');
     await jest.advanceTimersByTimeAsync(10000);
 

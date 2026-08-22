@@ -5,8 +5,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert } from 'react-native';
 
-import { useUserAnalyses } from '@/hooks/useUserAnalyses';
-
 import {
   BODY_TYPE_LABELS,
   getCurrentSeasons,
@@ -14,15 +12,17 @@ import {
   getOutfitItemIds,
   mapBodyType,
   mapSeason,
-} from './recommend.utils';
-import { RecommendOutfitSection } from './RecommendOutfitSection';
+} from '@/components/closet/recommend/recommend.utils';
+import { RecommendOutfitSection } from '@/components/closet/recommend/RecommendOutfitSection';
 import {
   RecommendEmptyState,
   RecommendFloatingActions,
   RecommendLoadingState,
   RecommendSummaryCard,
-} from './RecommendScreenParts';
-import { RecommendWeatherCard } from './RecommendWeatherCard';
+} from '@/components/closet/recommend/RecommendScreenParts';
+import { RecommendWeatherCard } from '@/components/closet/recommend/RecommendWeatherCard';
+import { useUserAnalyses } from '@/hooks/useUserAnalyses';
+
 import { ScreenContainer } from '../../components/ui';
 import type { OutfitSuggestion } from '../../lib/inventory/useClosetMatcher';
 import { useClosetMatcher } from '../../lib/inventory/useClosetMatcher';

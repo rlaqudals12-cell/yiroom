@@ -1,6 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
 
-import { WishlistItemCard } from '../../../app/products/WishlistItemCard';
+import { WishlistItemCard } from '../../../components/products/wishlist/WishlistItemCard';
 import { renderWithTheme } from '../../helpers/test-utils';
 
 jest.mock('lucide-react-native', () => {

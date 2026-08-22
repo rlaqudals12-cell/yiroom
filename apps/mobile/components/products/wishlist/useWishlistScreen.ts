@@ -2,9 +2,10 @@ import { useAuth } from '@clerk/clerk-expo';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert } from 'react-native';
 
+import { getWishlist, removeFromWishlist, type WishlistItem } from '@/lib/wishlist';
+import type { ProductType } from '@/types/product';
+
 import { WISHLIST_TYPE_LABELS } from './wishlist-screen.constants';
-import { getWishlist, removeFromWishlist, type WishlistItem } from '../../lib/wishlist';
-import type { ProductType } from '../../types/product';
 
 export interface WishlistDisplayItem extends WishlistItem {
   name?: string;

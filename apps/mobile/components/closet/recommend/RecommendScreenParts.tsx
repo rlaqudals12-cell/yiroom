@@ -3,12 +3,12 @@ import React from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import type { RecommendationSummary } from '@/lib/inventory/useClosetMatcher';
 import { useTheme } from '@/lib/theme';
 
 import { styles } from './recommend.styles';
-import { GlassCard, ScreenContainer, SuccessCheckmark } from '../../components/ui';
-import type { RecommendationSummary } from '../../lib/inventory/useClosetMatcher';
 
 export function RecommendLoadingState() {
   const { colors, module: moduleTheme } = useTheme();

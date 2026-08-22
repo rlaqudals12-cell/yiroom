@@ -1,4 +1,4 @@
-import type { ProductType } from '../../types/product';
+import type { ProductType } from '@/types/product';
 
 export const WISHLIST_TYPE_LABELS: Record<ProductType, string> = {
   cosmetic: '화장품',

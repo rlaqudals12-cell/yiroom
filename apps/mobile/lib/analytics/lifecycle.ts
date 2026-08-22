@@ -1,8 +1,15 @@
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
+import { fetchConsentPreferences } from '@/lib/api/consent-preferences';
+
 import { getSessionId } from './session';
-import { flushEvents, resetAnalyticsIdentity, trackAppStarted } from './tracker';
+import {
+  flushEvents,
+  resetAnalyticsIdentity,
+  setAnalyticsConsent,
+  trackAppStarted,
+} from './tracker';
 
 type GetClerkToken = () => Promise<string | null>;
 
@@ -24,9 +31,22 @@ export function useAnalyticsLifecycle(
         return null;
       }
     };
-    const sendSessionStart = (): void => {
-      void getAnalyticsToken().then((token) => {
-        if (mounted) void trackAppStarted(token);
+    const loadConsentAndSendSessionStart = (): void => {
+      void getAnalyticsToken().then(async (token) => {
+        if (!mounted || !token) {
+          if (mounted) setAnalyticsConsent(null);
+          return;
+        }
+
+        try {
+          const preferences = await fetchConsentPreferences(token);
+          if (!mounted) return;
+          setAnalyticsConsent(preferences.analyticsConsent);
+          if (preferences.analyticsConsent) await trackAppStarted(token);
+        } catch {
+          // 조회 실패도 동의로 추정하지 않는다. 다음 활성화 때 다시 조회한다.
+          if (mounted) setAnalyticsConsent(null);
+        }
       });
     };
 
@@ -36,10 +56,11 @@ export function useAnalyticsLifecycle(
     const identityChanged = !isFirstEffect && previousIdentity !== currentIdentity;
 
     if (identityChanged) resetAnalyticsIdentity();
+    if (isFirstEffect && !currentIdentity) setAnalyticsConsent(null);
     previousIdentityRef.current = currentIdentity;
 
     if (currentIdentity && (isFirstEffect || identityChanged)) {
-      sendSessionStart();
+      loadConsentAndSendSessionStart();
     }
 
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -57,7 +78,7 @@ export function useAnalyticsLifecycle(
         wasBackgroundedRef.current = false;
         if (!currentIdentity) return;
         // 짧은 앱 전환은 같은 세션이다. 30분 비활성으로 세션이 만료된 경우만 새 시작을 센다.
-        if (getSessionId() === null) sendSessionStart();
+        if (getSessionId() === null) loadConsentAndSendSessionStart();
       }
     });
 

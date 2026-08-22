@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import { Alert, Share } from 'react-native';
-import { act, render, fireEvent } from '@testing-library/react-native';
+import { act, render, fireEvent, waitFor } from '@testing-library/react-native';
 
 import { useAuth, useUser } from '@clerk/clerk-expo';
 
@@ -87,13 +87,72 @@ jest.mock('../../../lib/api/account', () => ({
   },
 }));
 
+jest.mock('../../../lib/api/consent-preferences', () => ({
+  fetchConsentPreferences: jest.fn(),
+  updateConsentPreferences: jest.fn(),
+  ConsentPreferencesApiError: class ConsentPreferencesApiError extends Error {
+    public readonly status: number;
+    public readonly code: string | undefined;
+
+    constructor(message: string, status: number, code?: string) {
+      super(message);
+      this.name = 'ConsentPreferencesApiError';
+      this.status = status;
+      this.code = code;
+    }
+  },
+}));
+
+jest.mock('../../../lib/api/biometric-consent', () => ({
+  revokeBiometricConsent: jest.fn(),
+  BiometricConsentApiError: class BiometricConsentApiError extends Error {
+    public readonly status: number;
+    public readonly code: string | undefined;
+    public readonly partialResult: unknown;
+
+    constructor(message: string, status: number, code?: string, partialResult?: unknown) {
+      super(message);
+      this.name = 'BiometricConsentApiError';
+      this.status = status;
+      this.code = code;
+      this.partialResult = partialResult;
+    }
+  },
+}));
+
+jest.mock('../../../lib/analytics', () => ({
+  setAnalyticsConsent: jest.fn(),
+}));
+
 jest.spyOn(Alert, 'alert');
 jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
 
 import { AccountApiError, deleteAccount } from '../../../lib/api/account';
+import {
+  BiometricConsentApiError,
+  revokeBiometricConsent,
+} from '../../../lib/api/biometric-consent';
+import {
+  ConsentPreferencesApiError,
+  fetchConsentPreferences,
+  updateConsentPreferences,
+} from '../../../lib/api/consent-preferences';
+import { setAnalyticsConsent } from '../../../lib/analytics';
 import PrivacySettingsScreen from '../../../app/settings/privacy';
 
 const mockDeleteAccount = deleteAccount as jest.MockedFunction<typeof deleteAccount>;
+const mockRevokeBiometricConsent = revokeBiometricConsent as jest.MockedFunction<
+  typeof revokeBiometricConsent
+>;
+const mockFetchConsentPreferences = fetchConsentPreferences as jest.MockedFunction<
+  typeof fetchConsentPreferences
+>;
+const mockUpdateConsentPreferences = updateConsentPreferences as jest.MockedFunction<
+  typeof updateConsentPreferences
+>;
+const mockSetAnalyticsConsent = setAnalyticsConsent as jest.MockedFunction<
+  typeof setAnalyticsConsent
+>;
 const mockGetToken = jest.fn();
 const mockSignOut = jest.fn();
 
@@ -141,6 +200,20 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
       success: true,
       message: '계정이 성공적으로 삭제되었습니다.',
       deletedAt: '2026-08-18T00:00:00.000Z',
+    });
+    mockRevokeBiometricConsent.mockResolvedValue({
+      consentRevoked: true,
+      imagesDeleted: 3,
+      databaseTargetsCleared: 11,
+      fullyPurged: true,
+    });
+    mockFetchConsentPreferences.mockResolvedValue({
+      analyticsConsent: true,
+      marketingConsent: false,
+    });
+    mockUpdateConsentPreferences.mockResolvedValue({
+      analyticsConsent: true,
+      marketingConsent: false,
     });
     (useAuth as unknown as jest.Mock).mockReturnValue({
       isSignedIn: true,
@@ -196,10 +269,13 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
       expect(getByLabelText('마케팅 정보 수신')).toBeTruthy();
     });
 
-    it('분석 데이터 수집 동의 기본값이 true이다', () => {
+    it('서버에서 분석 동의를 읽어 tracker와 스위치에 반영한다', async () => {
       const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
-      const toggle = getByLabelText('분석 데이터 수집 동의');
-      expect(toggle.props.value).toBe(true);
+      await waitFor(() => {
+        expect(mockFetchConsentPreferences).toHaveBeenCalledWith('mock_jwt_token');
+        expect(getByLabelText('분석 데이터 수집 동의').props.value).toBe(true);
+        expect(mockSetAnalyticsConsent).toHaveBeenLastCalledWith(true);
+      });
     });
 
     it('마케팅 정보 수신 기본값이 false이다', () => {
@@ -208,11 +284,66 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
       expect(toggle.props.value).toBe(false);
     });
 
-    it('마케팅 정보 수신 토글을 변경할 수 있다', () => {
+    it('마케팅 동의 변경을 서버에 저장한 뒤 응답 상태를 반영한다', async () => {
+      mockUpdateConsentPreferences.mockResolvedValue({
+        analyticsConsent: true,
+        marketingConsent: true,
+      });
       const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
+      await waitFor(() => expect(getByLabelText('마케팅 정보 수신').props.disabled).toBe(false));
       const toggle = getByLabelText('마케팅 정보 수신');
       fireEvent(toggle, 'valueChange', true);
-      expect(toggle.props.value).toBe(true);
+      await waitFor(() => {
+        expect(mockUpdateConsentPreferences).toHaveBeenCalledWith(
+          { marketingConsent: true },
+          'mock_jwt_token'
+        );
+        expect(getByLabelText('마케팅 정보 수신').props.value).toBe(true);
+      });
+    });
+
+    it('분석 옵트아웃 저장 성공 즉시 tracker 게이트를 닫는다', async () => {
+      mockUpdateConsentPreferences.mockResolvedValue({
+        analyticsConsent: false,
+        marketingConsent: false,
+      });
+      const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
+      await waitFor(() =>
+        expect(getByLabelText('분석 데이터 수집 동의').props.value).toBe(true)
+      );
+
+      fireEvent(getByLabelText('분석 데이터 수집 동의'), 'valueChange', false);
+
+      await waitFor(() => {
+        expect(mockUpdateConsentPreferences).toHaveBeenCalledWith(
+          { analyticsConsent: false },
+          'mock_jwt_token'
+        );
+        expect(mockSetAnalyticsConsent).toHaveBeenLastCalledWith(false);
+        expect(getByLabelText('분석 데이터 수집 동의').props.value).toBe(false);
+      });
+    });
+
+    it('서버 저장 실패 시 동의 상태를 바꾸지 않고 사용자 메시지를 표시한다', async () => {
+      mockUpdateConsentPreferences.mockRejectedValue(
+        new ConsentPreferencesApiError('동의 설정을 저장할 수 없어요.', 500, 'DB_ERROR')
+      );
+      const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
+      await waitFor(() =>
+        expect(getByLabelText('분석 데이터 수집 동의').props.value).toBe(true)
+      );
+
+      fireEvent(getByLabelText('분석 데이터 수집 동의'), 'valueChange', false);
+
+      expect(mockSetAnalyticsConsent).toHaveBeenLastCalledWith(false);
+
+      await waitFor(() => {
+        expect(getByLabelText('분석 데이터 수집 동의').props.value).toBe(true);
+        expect(Alert.alert).toHaveBeenLastCalledWith(
+          '동의 설정을 저장하지 못했어요',
+          '이 기기의 이용기록 전송은 중단했지만 서버 설정을 저장하지 못했어요. 네트워크 연결 후 다시 시도해주세요.'
+        );
+      });
     });
   });
 
@@ -275,6 +406,62 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
       expect(getByLabelText('계정 삭제')).toBeTruthy();
     });
 
+    it('생체정보 철회 범위와 분석 결과 유지 여부를 확인한 뒤 서버 파기를 호출한다', async () => {
+      const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
+      fireEvent.press(getByLabelText('생체정보 동의 철회'));
+
+      const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+      expect(alertCall[0]).toBe('생체정보 동의 철회');
+      expect(alertCall[1]).toContain('분석 원본 이미지를 즉시 삭제');
+      expect(alertCall[1]).toContain('텍스트 분석 결과는 유지');
+      const buttons = alertCall[2] as Array<{
+        text: string;
+        onPress?: () => void | Promise<void>;
+      }>;
+
+      await act(async () => {
+        await buttons.find((button) => button.text === '철회 및 이미지 삭제')?.onPress?.();
+      });
+
+      expect(mockRevokeBiometricConsent).toHaveBeenCalledWith('mock_jwt_token');
+      expect(Alert.alert).toHaveBeenLastCalledWith(
+        '철회 완료',
+        expect.stringContaining('서버에 저장된 분석 이미지를 삭제')
+      );
+    });
+
+    it('부분 파기 실패를 전체 성공으로 표시하지 않고 서버 사용자 메시지를 보여준다', async () => {
+      mockRevokeBiometricConsent.mockRejectedValue(
+        new BiometricConsentApiError(
+          '생체정보 동의는 철회했지만 일부 이미지 파기가 끝나지 않았습니다. 잠시 후 다시 시도해주세요.',
+          500,
+          'PARTIAL_PURGE_ERROR',
+          {
+            consentRevoked: true,
+            imagesDeleted: 2,
+            databaseTargetsCleared: 9,
+            fullyPurged: false,
+          }
+        )
+      );
+      const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
+      fireEvent.press(getByLabelText('생체정보 동의 철회'));
+      const buttons = (Alert.alert as jest.Mock).mock.calls[0][2] as Array<{
+        text: string;
+        onPress?: () => void | Promise<void>;
+      }>;
+
+      await act(async () => {
+        await buttons.find((button) => button.text === '철회 및 이미지 삭제')?.onPress?.();
+      });
+
+      expect(Alert.alert).toHaveBeenLastCalledWith(
+        '철회를 완료하지 못했어요',
+        expect.stringContaining('일부 이미지 파기가 끝나지 않았습니다')
+      );
+      expect(Alert.alert).not.toHaveBeenLastCalledWith('철회 완료', expect.any(String));
+    });
+
     it('계정 삭제 텍스트가 destructive 색상으로 표시된다', () => {
       const { getByText } = renderWithTheme(<PrivacySettingsScreen />);
       const deleteText = getByText('계정 삭제');
@@ -320,7 +507,7 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
         await destructiveButton?.onPress?.();
       });
 
-      expect(mockGetToken).toHaveBeenCalledTimes(1);
+      expect(mockGetToken).toHaveBeenCalledTimes(2);
       expect(mockDeleteAccount).toHaveBeenCalledWith('test@example.com', 'mock_jwt_token');
       expect(mockUpdate).not.toHaveBeenCalled();
       expect(mockSignOut).toHaveBeenCalledTimes(1);

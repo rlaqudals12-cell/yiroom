@@ -1,10 +1,10 @@
-import { resolveClothingCategory } from '../../lib/inventory/clothingCategory';
-import type { ClothingCategory, InventoryItem, Season } from '../../lib/inventory/types';
+import { resolveClothingCategory } from '@/lib/inventory/clothingCategory';
+import type { ClothingCategory, InventoryItem, Season } from '@/lib/inventory/types';
 import type {
   BodyType3,
   OutfitSuggestion,
   PersonalColorSeason,
-} from '../../lib/inventory/useClosetMatcher';
+} from '@/lib/inventory/useClosetMatcher';
 
 export const BODY_TYPE_LABELS: Record<BodyType3, string> = {
   S: '스트레이트',

@@ -76,12 +76,19 @@ describe('PrivacyPolicyScreen (개인정보처리방침)', () => {
       expect(queryByText(/세션 종료 시 삭제/)).toBeNull();
     });
 
-    it('생체이미지 보유기간이 동의일로부터 1년 자동 파기 + 탈퇴·요청 시 즉시 파기로 표기된다', () => {
+    it('생체이미지 보유기간이 1년 상한 + 철회·요청·탈퇴 시 즉시 파기로 표기된다', () => {
       const { getByText } = renderWithTheme(<PrivacyPolicyScreen />);
       expect(
         getByText(/보유 기간: 저장 동의 시 동의일로부터 1년간 보관 후 자동 파기/)
       ).toBeTruthy();
-      expect(getByText(/회원 탈퇴 또는 삭제 요청 시 즉시 파기/)).toBeTruthy();
+      expect(getByText(/동의 철회·삭제 요청 또는 회원 탈퇴 시 즉시 파기/)).toBeTruthy();
+    });
+
+    it('헤어·메이크업 분석 이미지도 생체정보 수집항목과 목적에 포함한다', () => {
+      const { getByText } = renderWithTheme(<PrivacyPolicyScreen />);
+      expect(getByText(/피부·메이크업 분석용 얼굴 이미지/)).toBeTruthy();
+      expect(getByText(/헤어 분석용 모발·두피 이미지/)).toBeTruthy();
+      expect(getByText(/피부\/체형\/퍼스널컬러\/헤어\/메이크업 분석/)).toBeTruthy();
     });
   });
 

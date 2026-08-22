@@ -4,12 +4,12 @@ import React from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import type { OutfitSuggestion } from '@/lib/inventory/useClosetMatcher';
 import { useTheme } from '@/lib/theme';
 
 import { styles } from './recommend.styles';
-import { GlassCard } from '../../components/ui';
-import type { OutfitSuggestion } from '../../lib/inventory/useClosetMatcher';
 
 interface RecommendOutfitSectionProps {
   outfit: OutfitSuggestion | null;

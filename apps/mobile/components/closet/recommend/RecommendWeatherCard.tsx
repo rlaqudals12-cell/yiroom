@@ -3,13 +3,13 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { GlassCard } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import type { PersonalColorSeason } from '@/lib/inventory/useClosetMatcher';
 import { useTheme } from '@/lib/theme';
+import type { WeatherData } from '@/lib/weather';
 
 import { styles } from './recommend.styles';
-import { GlassCard } from '../../components/ui';
-import type { PersonalColorSeason } from '../../lib/inventory/useClosetMatcher';
-import type { WeatherData } from '../../lib/weather';
 
 interface RecommendWeatherCardProps {
   weather: WeatherData | null;

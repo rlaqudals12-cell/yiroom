@@ -4,11 +4,18 @@ import { AppState, type AppStateStatus } from 'react-native';
 const mockTrackAppStarted = jest.fn();
 const mockFlushEvents = jest.fn();
 const mockResetAnalyticsIdentity = jest.fn();
+const mockSetAnalyticsConsent = jest.fn();
+const mockFetchConsentPreferences = jest.fn();
+
+jest.mock('../../../lib/api/consent-preferences', () => ({
+  fetchConsentPreferences: (...args: unknown[]) => mockFetchConsentPreferences(...args),
+}));
 
 jest.mock('../../../lib/analytics/tracker', () => ({
   trackAppStarted: (...args: unknown[]) => mockTrackAppStarted(...args),
   flushEvents: (...args: unknown[]) => mockFlushEvents(...args),
   resetAnalyticsIdentity: (...args: unknown[]) => mockResetAnalyticsIdentity(...args),
+  setAnalyticsConsent: (...args: unknown[]) => mockSetAnalyticsConsent(...args),
 }));
 
 import { useAnalyticsLifecycle } from '../../../lib/analytics/lifecycle';
@@ -20,6 +27,10 @@ describe('useAnalyticsLifecycle', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFetchConsentPreferences.mockResolvedValue({
+      analyticsConsent: true,
+      marketingConsent: false,
+    });
     onAppStateChange = undefined;
     jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, listener) => {
       onAppStateChange = listener;
@@ -77,6 +88,32 @@ describe('useAnalyticsLifecycle', () => {
 
     rerender({ signedIn: true, userId: 'user-a' });
     await waitFor(() => expect(mockTrackAppStarted).toHaveBeenCalledTimes(1));
+  });
+
+  it('서버의 분석 동의가 false면 gate를 닫고 앱 시작 이벤트를 보내지 않는다', async () => {
+    mockFetchConsentPreferences.mockResolvedValue({
+      analyticsConsent: false,
+      marketingConsent: true,
+    });
+    const getToken = jest.fn().mockResolvedValue('clerk-token');
+
+    renderHook(() => useAnalyticsLifecycle(getToken, true, 'user-a'));
+
+    await waitFor(() => {
+      expect(mockFetchConsentPreferences).toHaveBeenCalledWith('clerk-token');
+      expect(mockSetAnalyticsConsent).toHaveBeenCalledWith(false);
+    });
+    expect(mockTrackAppStarted).not.toHaveBeenCalled();
+  });
+
+  it('동의 조회 실패를 옵트인으로 추정하지 않는다', async () => {
+    mockFetchConsentPreferences.mockRejectedValue(new Error('network'));
+    const getToken = jest.fn().mockResolvedValue('clerk-token');
+
+    renderHook(() => useAnalyticsLifecycle(getToken, true, 'user-a'));
+
+    await waitFor(() => expect(mockSetAnalyticsConsent).toHaveBeenCalledWith(null));
+    expect(mockTrackAppStarted).not.toHaveBeenCalled();
   });
 
   it('A 로그아웃과 B 로그인 경계에서 이전 큐·세션을 각각 초기화한다', async () => {
