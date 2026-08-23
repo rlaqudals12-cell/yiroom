@@ -4,6 +4,15 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const consentMocks = vi.hoisted(() => ({
+  signConsentedAnalysisImageUrls: vi.fn(),
+}));
+
+vi.mock('@/lib/consent/image-access', () => ({
+  signConsentedAnalysisImageUrls: consentMocks.signConsentedAnalysisImageUrls,
+}));
+
 import { GET } from '@/app/api/analysis/compare/route';
 
 // Mock Clerk auth
@@ -39,6 +48,10 @@ describe('Analysis Compare API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue({ userId: 'user-123' } as never);
+    consentMocks.signConsentedAnalysisImageUrls.mockImplementation(
+      async (_supabase, _userId, _type, values: Array<string | null | undefined>) =>
+        values.map((value) => value || null)
+    );
   });
 
   describe('GET /api/analysis/compare', () => {
@@ -193,17 +206,21 @@ describe('Analysis Compare API', () => {
         ],
         error: null,
       });
+      consentMocks.signConsentedAnalysisImageUrls.mockResolvedValueOnce([
+        'https://storage.example/signed-before.jpg',
+        'https://storage.example/signed-after.jpg',
+      ]);
 
       const response = await GET(
         createRequest('http://localhost/api/analysis/compare?type=skin&from=uuid1&to=uuid2')
       );
       const data = await response.json();
 
-      expect(mockSupabase.storage.from).toHaveBeenCalledWith('skin-images');
-      expect(mockCreateSignedUrls).toHaveBeenCalledTimes(1);
-      expect(mockCreateSignedUrls).toHaveBeenCalledWith(
-        [fromData.image_url, toData.image_url],
-        expect.any(Number)
+      expect(consentMocks.signConsentedAnalysisImageUrls).toHaveBeenCalledWith(
+        mockSupabase,
+        'user-123',
+        'skin',
+        [fromData.image_url, toData.image_url]
       );
       expect(data.before.imageUrl).toBe('https://storage.example/signed-before.jpg');
       expect(data.after.imageUrl).toBe('https://storage.example/signed-after.jpg');
@@ -232,14 +249,19 @@ describe('Analysis Compare API', () => {
         data: [{ path: toData.image_url, signedUrl: null, error: 'not found' }],
         error: null,
       });
+      consentMocks.signConsentedAnalysisImageUrls.mockResolvedValueOnce([null, null]);
 
       const response = await GET(
         createRequest('http://localhost/api/analysis/compare?type=hair&from=hair-1&to=hair-2')
       );
       const data = await response.json();
 
-      expect(mockSupabase.storage.from).toHaveBeenCalledWith('hair-images');
-      expect(mockCreateSignedUrls).toHaveBeenCalledWith([toData.image_url], expect.any(Number));
+      expect(consentMocks.signConsentedAnalysisImageUrls).toHaveBeenCalledWith(
+        mockSupabase,
+        'user-123',
+        'hair',
+        [fromData.image_url, toData.image_url]
+      );
       expect(data.before.imageUrl).toBeUndefined();
       expect(data.after.imageUrl).toBeUndefined();
       expect(JSON.stringify(data)).not.toContain('integrated://');

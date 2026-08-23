@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import { QuestionnaireForm } from '@/app/(main)/analysis/integrated/_components/QuestionnaireForm';
 
@@ -20,5 +20,32 @@ describe('QuestionnaireForm', () => {
     expect(
       screen.getByText('전신 사진으로 체형을 자동 분석해요. 수동 입력은 필요 없어요.')
     ).toBeInTheDocument();
+  });
+
+  it('원본 저장은 선택·기본 OFF이며 미동의 분석과 1년 파기 계약을 고지한다', async () => {
+    const onChange = vi.fn();
+    render(<QuestionnaireForm onChange={onChange} showBodyFields />);
+
+    const checkbox = screen.getByTestId('image-storage-consent-checkbox');
+    expect(checkbox).not.toBeChecked();
+    expect(screen.getByTestId('integrated-image-storage-consent')).toHaveTextContent(
+      '동의하지 않아도 분석은 진행돼요'
+    );
+    expect(screen.getByTestId('integrated-image-storage-consent')).toHaveTextContent(
+      '보관 1년이 되면 일일 파기 작업으로 삭제를 시작'
+    );
+    await waitFor(() =>
+      expect(onChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({ imageStorageConsent: false })
+      )
+    );
+
+    fireEvent.click(checkbox);
+
+    await waitFor(() =>
+      expect(onChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({ imageStorageConsent: true })
+      )
+    );
   });
 });

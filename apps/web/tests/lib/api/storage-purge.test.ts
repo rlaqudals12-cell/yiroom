@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   BIOMETRIC_STORAGE_BUCKETS,
+  purgeStoragePrefix,
   purgeUserStorage,
   purgeUserStorageBuckets,
   USER_STORAGE_BUCKETS,
@@ -64,6 +65,35 @@ function makeStorageMock(
 }
 
 describe('purgeUserStorage', () => {
+  it('세션 prefix만 재귀 수집해 포인터 없는 통합 원본을 회수한다', async () => {
+    const prefix = 'user-1/00000000-0000-4000-8000-000000000001';
+    const { supabase, remove } = makeStorageMock({
+      [`integrated-sessions:${prefix}`]: {
+        data: [
+          { name: 'face.jpg', id: 'face-1' },
+          { name: 'nested', id: null },
+        ],
+        error: null,
+      },
+      [`integrated-sessions:${prefix}/nested`]: {
+        data: [{ name: 'body.webp', id: 'body-1' }],
+        error: null,
+      },
+    });
+
+    await expect(purgeStoragePrefix(supabase, 'integrated-sessions', prefix)).resolves.toBe(2);
+    expect(remove).toHaveBeenCalledWith([`${prefix}/face.jpg`, `${prefix}/nested/body.webp`]);
+  });
+
+  it('빈 경로·상위 이동을 prefix 파기로 전달하지 않는다', async () => {
+    const { supabase, from } = makeStorageMock({});
+
+    await expect(purgeStoragePrefix(supabase, 'integrated-sessions', '../user-1')).rejects.toThrow(
+      'Unsafe storage prefix'
+    );
+    expect(from).not.toHaveBeenCalled();
+  });
+
   it('생체 철회 범위에는 통합분석을 포함하고 음식·옷장·피드는 포함하지 않는다', async () => {
     expect(BIOMETRIC_STORAGE_BUCKETS).toContain('integrated-sessions');
     expect(BIOMETRIC_STORAGE_BUCKETS).toContain('hair-images');

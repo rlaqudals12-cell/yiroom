@@ -5,6 +5,7 @@ import {
   calculateRetentionUntil,
   getDaysUntilExpiry,
   checkConsentEligibility,
+  isImageConsentActive,
   LATEST_CONSENT_VERSION,
 } from '@/lib/consent/version-check';
 import type { ImageConsent } from '@/components/analysis/consent/types';
@@ -22,6 +23,23 @@ describe('version-check', () => {
     created_at: '2026-01-08T00:00:00Z',
     updated_at: '2026-01-08T00:00:00Z',
   };
+
+  describe('isImageConsentActive', () => {
+    const now = new Date('2026-08-23T00:00:00.000Z');
+
+    it('최신 버전이며 보관 기한이 남은 동의만 활성이다', () => {
+      expect(isImageConsentActive(mockConsent, now)).toBe(true);
+    });
+
+    it.each([
+      ['철회됨', { ...mockConsent, consent_given: false }],
+      ['구버전', { ...mockConsent, consent_version: 'v0.9' }],
+      ['만료됨', { ...mockConsent, retention_until: '2026-08-22T00:00:00.000Z' }],
+      ['기한 없음', { ...mockConsent, retention_until: null }],
+    ])('%s 동의는 비활성이다', (_label, consent) => {
+      expect(isImageConsentActive(consent, now)).toBe(false);
+    });
+  });
 
   describe('shouldRequestReconsent', () => {
     it('동의가 null일 때 재동의 불필요', () => {
@@ -141,20 +159,29 @@ describe('version-check', () => {
   });
 
   describe('checkConsentEligibility', () => {
-    describe('생년월일 없음 (묵시적 성인 확인)', () => {
-      it('생년월일이 null일 때 동의 가능 (묵시적 성인 확인)', () => {
+    describe('생년월일 없음 (fail-closed)', () => {
+      it('생년월일이 null이면 동의할 수 없다', () => {
         const result = checkConsentEligibility(null);
 
-        expect(result.canConsent).toBe(true);
-        expect(result.ageUnverified).toBe(true);
-        expect(result.reason).toBeUndefined();
+        expect(result).toEqual({
+          canConsent: false,
+          reason: 'no_birthdate',
+          requiredAction: '프로필에 생년월일을 입력해주세요',
+        });
       });
 
-      it('생년월일이 undefined일 때 동의 가능 (묵시적 성인 확인)', () => {
+      it('생년월일이 undefined이면 동의할 수 없다', () => {
         const result = checkConsentEligibility(undefined);
 
-        expect(result.canConsent).toBe(true);
-        expect(result.ageUnverified).toBe(true);
+        expect(result.canConsent).toBe(false);
+        expect(result.reason).toBe('no_birthdate');
+      });
+
+      it('유효하지 않은 생년월일도 동의할 수 없다', () => {
+        const result = checkConsentEligibility('not-a-date');
+
+        expect(result.canConsent).toBe(false);
+        expect(result.reason).toBe('no_birthdate');
       });
     });
 

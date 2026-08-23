@@ -5,11 +5,12 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
+import { LATEST_CONSENT_VERSION } from '@/lib/consent/version-check';
 
 // 재사용 가능 여부 결과
 export interface PhotoReuseEligibility {
   eligible: boolean;
-  reason?: 'no_consent' | 'expired' | 'no_image' | 'low_quality' | 'wrong_angle';
+  reason?: 'no_consent' | 'expired' | 'no_image' | 'low_quality' | 'wrong_angle' | 'unknown';
   sourceImage?: {
     id: string;
     analysisType: 'personal-color';
@@ -43,23 +44,62 @@ interface AnalysisImageRow {
   created_at: string;
 }
 
+interface ImageConsentRow {
+  consent_given?: boolean | null;
+  consent_version?: string | null;
+  retention_until?: string | null;
+}
+
+class ProtectedImageAccessError extends Error {
+  readonly status: number;
+
+  constructor(status: number) {
+    super('Protected image access failed');
+    this.name = 'ProtectedImageAccessError';
+    this.status = status;
+  }
+}
+
+function getConsentUnavailableReason(
+  consent: ImageConsentRow | null,
+  now = new Date()
+): PhotoReuseEligibility['reason'] | null {
+  if (consent?.consent_given !== true) return 'no_consent';
+
+  const retentionUntil = consent.retention_until ? new Date(consent.retention_until) : null;
+  if (retentionUntil && !Number.isNaN(retentionUntil.getTime()) && retentionUntil <= now) {
+    return 'expired';
+  }
+
+  if (
+    consent.consent_version !== LATEST_CONSENT_VERSION ||
+    !retentionUntil ||
+    Number.isNaN(retentionUntil.getTime())
+  ) {
+    return 'no_consent';
+  }
+
+  return null;
+}
+
 /**
  * Supabase Storage에서 서명된 URL 가져오기
  */
-async function getSignedUrl(
-  supabase: SupabaseClient,
-  storagePath: string,
-  expiresIn = 3600
-): Promise<string> {
+async function getSignedUrl(storagePath: string, expiresIn = 3600): Promise<string> {
   // storage_path 형식: bucket/path/to/file.jpg
   const [bucket, ...pathParts] = storagePath.split('/');
   const path = pathParts.join('/');
 
-  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn);
+  const response = await fetch('/api/storage/signed-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bucket, path, expiresIn }),
+  });
+  const data = (await response.json().catch(() => null)) as { signedUrl?: string } | null;
 
-  if (error || !data?.signedUrl) {
-    console.error('[photo-reuse] Failed to get signed URL:', error);
-    throw new Error('Failed to get signed URL');
+  if (!response.ok || !data?.signedUrl) {
+    console.error('[photo-reuse] Protected signed URL request failed');
+    throw new ProtectedImageAccessError(response.status);
   }
 
   return data.signedUrl;
@@ -75,6 +115,22 @@ export async function checkPhotoReuseEligibility(
   _targetAnalysisType: 'skin' | 'body'
 ): Promise<PhotoReuseEligibility> {
   try {
+    // 재사용 원본은 퍼스널컬러 사진이다. 이미지 목록에서 consent=true를 선필터링하면
+    // 미동의와 단순 사진 부재를 구분할 수 없으므로 저장 동의를 먼저 별도로 확인한다.
+    const { data: consent, error: consentError } = await supabase
+      .from('image_consents')
+      .select('consent_given, consent_version, retention_until')
+      .eq('analysis_type', 'personal-color')
+      .maybeSingle();
+
+    if (consentError) {
+      console.error('[photo-reuse] Consent query error:', consentError.code, consentError.message);
+      return { eligible: false, reason: 'unknown' };
+    }
+
+    const consentUnavailableReason = getConsentUnavailableReason(consent);
+    if (consentUnavailableReason) return { eligible: false, reason: consentUnavailableReason };
+
     // 최근 7일 내 동의받은 퍼스널컬러 이미지 조회
     const cutoffDate = new Date(
       Date.now() - REUSE_CONDITIONS.maxAgeDays * 24 * 60 * 60 * 1000
@@ -98,7 +154,7 @@ export async function checkPhotoReuseEligibility(
         return { eligible: false, reason: 'no_image' };
       }
       console.error('[photo-reuse] DB query error:', error?.code, error?.message);
-      return { eligible: false, reason: 'no_image' };
+      return { eligible: false, reason: 'unknown' };
     }
 
     if (!images || images.length === 0) {
@@ -118,9 +174,9 @@ export async function checkPhotoReuseEligibility(
     }
 
     // 서명된 URL 생성
-    const imageUrl = await getSignedUrl(supabase, image.storage_path);
+    const imageUrl = await getSignedUrl(image.storage_path);
     const thumbnailUrl = image.thumbnail_path
-      ? await getSignedUrl(supabase, image.thumbnail_path)
+      ? await getSignedUrl(image.thumbnail_path)
       : undefined;
 
     return {
@@ -135,8 +191,14 @@ export async function checkPhotoReuseEligibility(
       },
     };
   } catch (error) {
+    if (
+      error instanceof ProtectedImageAccessError &&
+      (error.status === 401 || error.status === 403)
+    ) {
+      return { eligible: false, reason: 'no_consent' };
+    }
     console.error('[photo-reuse] Error checking eligibility:', error);
-    return { eligible: false, reason: 'no_image' };
+    return { eligible: false, reason: 'unknown' };
   }
 }
 

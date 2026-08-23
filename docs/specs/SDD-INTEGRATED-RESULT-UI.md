@@ -5,7 +5,8 @@
 > **선행 스펙**: [SDD-INTEGRATED-ANALYSIS](./SDD-INTEGRATED-ANALYSIS.md) (Phase A 완료)
 >
 > **Phase B 완료 (2026-04-23)**: 10 ATOM 전체 구현, 18 신규 tests pass (누적 40 tests), typecheck/lint 0 errors.
-> **Storage 버킷 설정**: Supabase 대시보드에서 `integrated-sessions` 버킷 수동 생성 필요 (배포 전)
+> **Storage 버킷 설정**: `202608230400_integrated_sessions_storage_bucket.sql`을 prod SQL
+> Editor에서 수동 gap-apply한다(`supabase db push` 금지).
 
 ---
 
@@ -297,85 +298,37 @@ interface Props {
 버킷 이름: `integrated-sessions`
 
 - 공개: false (private)
-- 파일 크기: <5MB
-- MIME: image/jpeg, image/png, image/webp
+- 파일 크기: 버킷 한도 10MB(요청 본문은 기존 4.5MB 한도에 맞춰 전처리)
+- MIME: image/jpeg, image/png, image/webp, image/heic, image/heif
 
-### 5.2 Storage Uploader 모듈
+### 5.2 Storage Uploader 원자 경계
 
-```typescript
-// lib/analysis/integrated/internal/storage-uploader.ts
+- `questionnaire.imageStorageConsent === true`에서만 service-role 클라이언트를 만들고 업로드한다.
+- 얼굴/전신 upload의 promise reject와 resolved `{error}`, 각 단계 deadline을 같은 rollback
+  helper가 처리한다. remove도 reject와 resolved `{error}`를 모두 확인하고 완료를 await한다.
+- rollback 성공은 `ImageStorageOperationError(cleanupConfirmed=true)`, rollback 실패는
+  원본·정리 오류와 candidate path를 가진 `ImageStorageRollbackError`로 구분한다.
 
-export interface UploadedImageUrls {
-  faceImageUrl: string; // Storage 경로
-  bodyImageUrl: string | null;
-}
+### 5.3 Orchestrator 순서
 
-export async function uploadSessionImages(
-  sessionId: string,
-  clerkUserId: string,
-  faceBase64: string,
-  bodyBase64: string | null
-): Promise<UploadedImageUrls> {
-  const supabase = createServiceRoleClient();
+1. `crypto.randomUUID()`로 ID를 만들고 이미지 포인터가 null인 pending 세션을 먼저 INSERT한다.
+   `clientRequestId`가 이 시점부터 이탈 복구 잠금 역할을 한다.
+2. 업로더를 외부 `Promise.race` 없이 직접 await한다. deadline+정리는 업로더가 소유한다.
+3. 업로드 성공 뒤 글로벌 생체 동의를 다시 확인하고, 통과한 경우에만 포인터를 UPDATE한다.
+   도중 철회는 attach 전 rollback하며, attach 응답이 불확실하면 Storage rollback 후 DB
+   포인터도 멱등하게 비운다.
+4. 정리 확인된 선택 저장 실패는 비민감 실패 코드/시각을 남기고 5축 분석을 계속한다.
+   정리 미확인은 분석을 중단하고 candidate path를 failed 세션의 영속 cleanup-pending 큐가
+   소유한다. 일일 cron이 1년을 기다리지 않고 재시도한다.
 
-  const faceBuffer = base64ToBuffer(faceBase64);
-  const facePath = `${clerkUserId}/${sessionId}/face.jpg`;
+### 5.4 보유기간 파기
 
-  const { error: faceError } = await supabase.storage
-    .from('integrated-sessions')
-    .upload(facePath, faceBuffer, { contentType: 'image/jpeg', upsert: false });
-
-  if (faceError) throw new Error(`Face upload failed: ${faceError.message}`);
-
-  let bodyImageUrl: string | null = null;
-  if (bodyBase64) {
-    const bodyBuffer = base64ToBuffer(bodyBase64);
-    const bodyPath = `${clerkUserId}/${sessionId}/body.jpg`;
-    const { error: bodyError } = await supabase.storage
-      .from('integrated-sessions')
-      .upload(bodyPath, bodyBuffer, { contentType: 'image/jpeg', upsert: false });
-    if (bodyError) throw new Error(`Body upload failed: ${bodyError.message}`);
-    bodyImageUrl = bodyPath;
-  }
-
-  return { faceImageUrl: facePath, bodyImageUrl };
-}
-```
-
-### 5.3 Orchestrator 수정
-
-기존 `orchestrator.ts`의 `createSession` 호출 전에 Storage 업로드 단계 삽입:
-
-```typescript
-// orchestrator.ts
-const urls = await uploadSessionImages(
-  sessionId, // ← 임시 UUID 생성 후 세션 ID로 사용
-  clerkUserId,
-  input.faceImageBase64,
-  input.bodyImageBase64 ?? null
-);
-
-const session = await createSession({
-  clerkUserId,
-  faceImageUrl: urls.faceImageUrl,
-  bodyImageUrl: urls.bodyImageUrl,
-  // ...
-});
-```
-
-> **주의**: sessionId를 먼저 생성해야 Storage 경로에 사용 가능. 따라서 세션 ID를 `gen_random_uuid()` 대신 클라이언트 측에서 생성하거나, 아니면 Storage 업로드 이후 세션 생성.
-
-### 5.4 구현 방식 결정
-
-**선택 A** (권장): `crypto.randomUUID()` — orchestrator 시작 시 sessionId 먼저 생성
-
-```typescript
-const sessionId = crypto.randomUUID();
-const urls = await uploadSessionImages(sessionId, userId, face, body);
-const session = await createSession({ id: sessionId, ...urls });
-```
-
-`createSession`에 `id` 파라미터 추가 필요 (Phase A 세션 스토어 수정).
+`cleanup-consents`는 `(created_at,id)` 안정 keyset의 100건 페이지를 실행 예산 안에서 반복한다.
+1년 도래 세션과 cleanup-pending 세션에 더해, 24시간 지난 `failed/pending` 동의 세션을
+canonical 세션 prefix로 재귀 파기한다. 따라서 포인터 부착·재시도 큐 기록 전에 요청이 죽어도
+원본을 회수하고, 성공 시 `_imageStoragePurgedAt`으로 재매칭을 막는다. 실패/backlog는
+`remaining` 지표와 감사 로그에 남긴다. Storage 자체 lifecycle은 현재 없으므로 물리 삭제
+완료 시각을 숨기거나 거짓으로 보장하지 않는다.
 
 ### 5.5 서명된 URL 발급
 

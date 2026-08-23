@@ -25,10 +25,16 @@ import type {
   MakeupAxisData,
 } from './types';
 import {
+  attachSessionImagePointers,
+  assertBiometricConsentForImageAttach,
+  clearSessionImagePointers,
   createSession,
   finalizeSession,
   markSessionFailed,
+  recordSessionImageCleanupPending,
+  recordSessionImageStorageFailure,
   type FinalizeSessionInput,
+  type ImageStorageFailureCode,
 } from './internal/session-store';
 import {
   runPersonalColorAxis,
@@ -49,7 +55,12 @@ import {
   type AxisRecord,
   type IntegratedProfileSnapshot,
 } from './profile-snapshot';
-import { uploadSessionImages } from './internal/storage-uploader';
+import {
+  ImageStorageOperationError,
+  ImageStorageRollbackError,
+  rollbackUploadedSessionImages,
+  uploadSessionImages,
+} from './internal/storage-uploader';
 import { composePersona } from './internal/persona-composer';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { withGamification } from '@/lib/api/analysis-helpers/gamification';
@@ -293,6 +304,92 @@ function determineStatus(
   return 'partial';
 }
 
+function classifyStorageFailure(error: ImageStorageOperationError): ImageStorageFailureCode {
+  if (error.stage === 'consent_recheck') return 'consent_revoked';
+  if (error.stage === 'pointer_attach') return 'pointer_attach_failed';
+  if (
+    error.stage === 'face_deadline' ||
+    error.stage === 'body_deadline' ||
+    error.originalError instanceof DeadlineExceededError
+  ) {
+    return 'upload_deadline';
+  }
+  return 'upload_failed';
+}
+
+async function persistStorageFailureMarker(
+  sessionId: string,
+  questionnaire: Record<string, unknown>,
+  failure: ImageStorageFailureCode
+): Promise<void> {
+  try {
+    await recordSessionImageStorageFailure({ sessionId, questionnaire, failure });
+  } catch (markerError) {
+    // 선택 저장 실패는 핵심 분석을 막지 않되, 감사 마커 기록 실패는 운영 로그에서 숨기지 않는다.
+    console.error('[Integrated image storage audit] failure marker write failed', {
+      sessionId,
+      failure,
+      error: markerError instanceof Error ? markerError.message : String(markerError),
+    });
+  }
+}
+
+async function rollbackAndClearUncertainAttach(
+  sessionId: string,
+  uploadedUrls: { faceImageUrl: string | null; bodyImageUrl: string | null },
+  attachError: unknown
+): Promise<never> {
+  try {
+    await rollbackUploadedSessionImages(uploadedUrls, attachError, 'pointer_attach');
+  } catch (rollbackResult) {
+    if (rollbackResult instanceof ImageStorageOperationError) {
+      try {
+        await clearSessionImagePointers(sessionId);
+      } catch (pointerClearError) {
+        throw new ImageStorageRollbackError(
+          'pointer_attach',
+          attachError,
+          pointerClearError,
+          [uploadedUrls.faceImageUrl, uploadedUrls.bodyImageUrl].filter(
+            (path): path is string => typeof path === 'string' && path.length > 0
+          )
+        );
+      }
+    }
+    throw rollbackResult;
+  }
+
+  // rollback helper는 성공 정리도 typed error로 반환하므로 도달할 수 없다.
+  throw new ImageStorageOperationError('pointer_attach', attachError);
+}
+
+async function persistCleanupPending(
+  sessionId: string,
+  questionnaire: Record<string, unknown>,
+  error: ImageStorageRollbackError
+): Promise<void> {
+  const faceImageUrl = error.candidatePaths.find((path) => /\/face\.[^/]+$/i.test(path)) ?? null;
+  const bodyImageUrl = error.candidatePaths.find((path) => /\/body\.[^/]+$/i.test(path)) ?? null;
+
+  // 일시 DB 오류 한 번에 재시도 큐 자체가 사라지지 않도록 즉시 1회 재시도한다.
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await recordSessionImageCleanupPending({
+        sessionId,
+        questionnaire,
+        failure: 'cleanup_failed',
+        faceImageUrl,
+        bodyImageUrl,
+      });
+      return;
+    } catch (queueError) {
+      lastError = queueError;
+    }
+  }
+  throw lastError;
+}
+
 /**
  * 통합 분석 실행 진입점.
  *
@@ -335,40 +432,82 @@ export async function runIntegratedAnalysis(
   // 왜: 세션 식별자는 분석 축 실행과 결과 행 생성에 공통으로 필요하다.
   const sessionId = crypto.randomUUID();
 
-  // 1. 원본 비저장 상태 초기화 (레거시 Storage URL 반환형과 호환)
-  let uploadedUrls: { faceImageUrl: string | null; bodyImageUrl: string | null };
-  try {
-    uploadedUrls = await awaitIntegratedStage(
-      uploadSessionImages(
-        sessionId,
-        clerkUserId,
-        input.faceImageBase64,
-        input.bodyImageBase64 ?? null,
-        axesDeadline
-      ),
-      axesDeadline,
-      '[Integrated] image upload deadline exceeded'
-    );
-  } catch (uploadError) {
-    // 왜: 초기화 실패 시 이미지 보관 상태를 확정할 수 없으므로 세션을 만들지 않는다.
-    console.error('[Integrated] image persistence initialization failed:', uploadError);
-    throw uploadError instanceof Error ? uploadError : new Error('이미지 업로드에 실패했어요.');
-  }
+  // 1. null 포인터 pending 세션을 먼저 만든다. clientRequestId가 이 시점부터 재요청 잠금이 된다.
+  // createSession에는 외부 Promise.race를 두지 않는다. 늦게 성공한 INSERT가 호출자 몰래 남는 것을 막기 위함이다.
+  const session = await createSession({
+    id: sessionId,
+    clerkUserId,
+    faceImageUrl: null,
+    bodyImageUrl: null,
+    questionnaire: input.questionnaire as unknown as Record<string, unknown>,
+    ...(input.clientRequestId ? { clientRequestId: input.clientRequestId } : {}),
+  });
 
-  // 2. 세션 생성 (신규 분석은 원본 이미지 경로를 저장하지 않음)
-  const session = await awaitIntegratedStage(
-    createSession({
-      id: sessionId,
+  // 2. 선택 저장은 업로더가 deadline+rollback 원자 경계를 소유한다. 정리 확인 실패만 분석을 중단한다.
+  try {
+    const uploadedUrls = await uploadSessionImages(
+      sessionId,
       clerkUserId,
-      faceImageUrl: uploadedUrls.faceImageUrl,
-      bodyImageUrl: uploadedUrls.bodyImageUrl,
-      questionnaire: input.questionnaire as unknown as Record<string, unknown>,
-      // 이탈 복구용 상관 ID — 클라이언트가 보냈을 때만 (구 클라이언트는 미전송)
-      ...(input.clientRequestId ? { clientRequestId: input.clientRequestId } : {}),
-    }),
-    axesDeadline,
-    '[Integrated] session creation deadline exceeded'
-  );
+      input.faceImageBase64,
+      input.bodyImageBase64 ?? null,
+      input.questionnaire.imageStorageConsent,
+      axesDeadline
+    );
+
+    if (uploadedUrls.faceImageUrl || uploadedUrls.bodyImageUrl) {
+      try {
+        await assertBiometricConsentForImageAttach(clerkUserId);
+      } catch (consentError) {
+        // 업로드 중 철회가 들어오면 DB 포인터를 붙이지 않고 즉시 원본을 보상 파기한다.
+        await rollbackUploadedSessionImages(uploadedUrls, consentError, 'consent_recheck');
+      }
+      try {
+        await attachSessionImagePointers({ sessionId, ...uploadedUrls });
+      } catch (attachError) {
+        await rollbackAndClearUncertainAttach(sessionId, uploadedUrls, attachError);
+      }
+    }
+  } catch (storageError) {
+    if (storageError instanceof ImageStorageOperationError) {
+      console.error('[Integrated image storage] optional persistence failed after cleanup', {
+        sessionId,
+        stage: storageError.stage,
+        error:
+          storageError.originalError instanceof Error
+            ? storageError.originalError.message
+            : String(storageError.originalError),
+      });
+      await persistStorageFailureMarker(
+        sessionId,
+        session.questionnaire,
+        classifyStorageFailure(storageError)
+      );
+    } else {
+      const rollbackError =
+        storageError instanceof ImageStorageRollbackError
+          ? storageError.rollbackError
+          : storageError;
+      console.error('[Integrated image storage audit] cleanup unconfirmed; analysis aborted', {
+        sessionId,
+        stage: storageError instanceof ImageStorageRollbackError ? storageError.stage : 'unknown',
+        error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+      });
+      if (storageError instanceof ImageStorageRollbackError) {
+        try {
+          await persistCleanupPending(sessionId, session.questionnaire, storageError);
+        } catch (queueError) {
+          console.error('[Integrated image storage audit] cleanup retry queue write failed', {
+            sessionId,
+            error: queueError instanceof Error ? queueError.message : String(queueError),
+          });
+        }
+      } else {
+        await persistStorageFailureMarker(sessionId, session.questionnaire, 'cleanup_failed');
+      }
+      await markSessionFailed(sessionId, [...selected]);
+      throw storageError;
+    }
+  }
 
   // update persona와 M-1이 서로 다른 "최신값"을 읽지 않도록 세션 생성 시점 스냅샷을 1회만 잡는다.
   // 축 AI와 병렬로 조회하되, cutoff는 session.created_at이라 이후 결과가 과거값으로 끼어들지 않는다.

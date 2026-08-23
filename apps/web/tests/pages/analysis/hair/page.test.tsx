@@ -24,7 +24,17 @@ vi.mock('@clerk/nextjs', () => ({
 const mockSingle = vi.fn();
 const mockLimit = vi.fn(() => ({ single: mockSingle }));
 const mockOrder = vi.fn(() => ({ limit: mockLimit }));
-const mockSelect = vi.fn(() => ({ order: mockOrder }));
+const mockMaybeSingle = vi.fn().mockResolvedValue({
+  data: {
+    analysis_type: 'hair',
+    consent_given: true,
+    consent_version: 'v1.0',
+    retention_until: '2099-01-01T00:00:00.000Z',
+  },
+  error: null,
+});
+const mockEq = vi.fn(() => ({ maybeSingle: mockMaybeSingle }));
+const mockSelect = vi.fn(() => ({ order: mockOrder, eq: mockEq }));
 const mockFrom = vi.fn(() => ({ select: mockSelect }));
 
 vi.mock('@/lib/supabase/clerk-client', () => ({
@@ -60,6 +70,30 @@ vi.mock('@/lib/mock/hair-analysis', async () => {
 // Mock 이미지 압축 유틸리티
 vi.mock('@/lib/utils/image-compression', () => ({
   compressFileToBase64: vi.fn().mockResolvedValue('data:image/jpeg;base64,mockBase64'),
+}));
+
+vi.mock('@/components/analysis/consent', () => ({
+  ImageConsentModal: ({
+    isOpen,
+    onConsent,
+    onSkip,
+    analysisType,
+  }: {
+    isOpen: boolean;
+    onConsent: () => void;
+    onSkip: () => void;
+    analysisType: string;
+  }) =>
+    isOpen ? (
+      <div data-testid="image-consent-modal" data-analysis-type={analysisType}>
+        <button type="button" onClick={onConsent} data-testid="consent-agree">
+          저장하기
+        </button>
+        <button type="button" onClick={onSkip} data-testid="consent-skip">
+          건너뛰기
+        </button>
+      </div>
+    ) : null,
 }));
 
 // Mock fetch (분석 API 호출)
@@ -719,5 +753,136 @@ describe('HairAnalysisPage 엣지 케이스', () => {
 
       expect(screen.getByText('hair.careTips')).toBeInTheDocument();
     });
+  });
+});
+
+describe('HairAnalysisPage 이미지 저장 선택 동의', () => {
+  const analysisResponse = {
+    ok: true,
+    json: () =>
+      Promise.resolve({
+        result: {
+          overallScore: 82,
+          hairType: 'wavy',
+          hairTypeLabel: '웨이브',
+          hairThicknessLabel: '보통',
+          scalpType: 'normal',
+          scalpTypeLabel: '중성 두피',
+          concerns: [],
+          insight: '건강한 모발이에요',
+          metrics: [],
+          recommendedIngredients: [],
+          careTips: [],
+          analyzedAt: new Date().toISOString(),
+        },
+        data: {},
+      }),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    sessionStorage.clear();
+    mockSingle.mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
+    mockMaybeSingle.mockResolvedValue({ data: null, error: null });
+  });
+
+  async function selectPhotoAndStart(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByText('action.selectPhoto'));
+    fireEvent.change(screen.getByLabelText('hair.photoSelectAria'), {
+      target: { files: [new File(['test'], 'hair.jpg', { type: 'image/jpeg' })] },
+    });
+    await user.click(screen.getByLabelText('hair.startAnalysisAria'));
+  }
+
+  it('미동의 사용자가 분석을 시작하면 헤어용 모달을 먼저 연다', async () => {
+    const user = userEvent.setup();
+    render(<HairAnalysisPage />);
+
+    await selectPhotoAndStart(user);
+
+    const modal = screen.getByTestId('image-consent-modal');
+    expect(modal).toHaveAttribute('data-analysis-type', 'hair');
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('건너뛰면 동의 저장 없이 분석만 실행한다', async () => {
+    const user = userEvent.setup();
+    mockFetch.mockResolvedValue(analysisResponse);
+    render(<HairAnalysisPage />);
+
+    await selectPhotoAndStart(user);
+    await user.click(screen.getByTestId('consent-skip'));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/analyze/hair',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+    const analyzeCall = mockFetch.mock.calls.find(([input]) => input === '/api/analyze/hair');
+    expect(JSON.parse(analyzeCall?.[1]?.body as string)).toEqual(
+      expect.objectContaining({ imageStorageAllowed: false })
+    );
+    expect(mockFetch).not.toHaveBeenCalledWith('/api/consent', expect.anything());
+  });
+
+  it('저장하기를 선택하면 hair 동의를 기록한 뒤 분석한다', async () => {
+    const user = userEvent.setup();
+    mockFetch.mockImplementation((input: RequestInfo | URL) => {
+      if (input === '/api/consent') {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ consent: { analysis_type: 'hair', consent_given: true } }),
+        });
+      }
+      return Promise.resolve(analysisResponse);
+    });
+    render(<HairAnalysisPage />);
+
+    await selectPhotoAndStart(user);
+    await user.click(screen.getByTestId('consent-agree'));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/consent',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ analysisType: 'hair' }),
+        })
+      );
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/analyze/hair',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+    const analyzeCall = mockFetch.mock.calls.find(([input]) => input === '/api/analyze/hair');
+    expect(JSON.parse(analyzeCall?.[1]?.body as string)).toEqual(
+      expect.objectContaining({ imageStorageAllowed: true })
+    );
+  });
+
+  it('동의 저장 실패를 알리고 명시적 미저장으로 분석을 계속한다', async () => {
+    const user = userEvent.setup();
+    mockFetch.mockImplementation((input: RequestInfo | URL) => {
+      if (input === '/api/consent') {
+        return Promise.resolve({
+          ok: false,
+          json: () => Promise.resolve({ error: 'temporary failure' }),
+        });
+      }
+      return Promise.resolve(analysisResponse);
+    });
+    render(<HairAnalysisPage />);
+
+    await selectPhotoAndStart(user);
+    await user.click(screen.getByTestId('consent-agree'));
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      '사진은 저장하지 않고 분석을 진행해요.'
+    );
+    const analyzeCall = mockFetch.mock.calls.find(([input]) => input === '/api/analyze/hair');
+    expect(JSON.parse(analyzeCall?.[1]?.body as string)).toEqual(
+      expect.objectContaining({ imageStorageAllowed: false })
+    );
   });
 });

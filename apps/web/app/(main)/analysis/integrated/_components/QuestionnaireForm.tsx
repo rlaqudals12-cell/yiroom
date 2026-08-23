@@ -19,6 +19,8 @@ export interface QuestionnaireData {
   skin: SkinQuestionnaire;
   hair: HairQuestionnaire;
   body: BodyQuestionnaire;
+  /** 이번 분석 원본 사진의 선택 저장 동의 (회차별, 기본 OFF) */
+  imageStorageConsent: boolean;
   /** 성별 (추천 분기 전용, 선택) — 분석 판정엔 미주입 */
   gender?: RecommendationGender;
   /** 상황/TPO (선택) */
@@ -91,6 +93,7 @@ export function QuestionnaireForm({
   const [weightKg, setWeightKg] = useState<number | ''>('');
   const [shoulderCm, setShoulderCm] = useState<number | ''>('');
   const [waistCm, setWaistCm] = useState<number | ''>('');
+  const [imageStorageConsent, setImageStorageConsent] = useState(false);
 
   const emitChange = useCallback(() => {
     const data: QuestionnaireData = {
@@ -106,6 +109,7 @@ export function QuestionnaireForm({
         shoulderWidthCm: shoulderCm === '' ? undefined : shoulderCm,
         waistCm: waistCm === '' ? undefined : waistCm,
       },
+      imageStorageConsent,
       gender,
       situation,
     };
@@ -121,6 +125,7 @@ export function QuestionnaireForm({
     weightKg,
     shoulderCm,
     waistCm,
+    imageStorageConsent,
     onChange,
   ]);
 
@@ -319,6 +324,27 @@ export function QuestionnaireForm({
           전신 사진으로 체형을 자동 분석해요. 수동 입력은 필요 없어요.
         </p>
       )}
+
+      <fieldset data-testid="integrated-image-storage-consent">
+        <legend className="mb-2 text-sm font-semibold text-foreground">
+          원본 사진 저장 <span className="text-muted-foreground">(선택)</span>
+        </legend>
+        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card px-3 py-3">
+          <input
+            type="checkbox"
+            checked={imageStorageConsent}
+            onChange={(event) => setImageStorageConsent(event.target.checked)}
+            className="mt-0.5 size-4 accent-foreground"
+            data-testid="image-storage-consent-checkbox"
+          />
+          <span className="text-xs leading-relaxed text-muted-foreground">
+            동의하지 않아도 분석은 진행돼요. 동의하면 이번 원본 사진을 비공개 저장소에 보관해
+            드레이핑 비교 같은 사진 기반 결과에 사용해요. 보관 1년이 되면 일일 파기 작업으로 삭제를
+            시작하고, 실패하면 완료될 때까지 재시도해요. 생체정보 동의 철회나 계정 삭제 시에도
+            파기해요.
+          </span>
+        </label>
+      </fieldset>
     </div>
   );
 }

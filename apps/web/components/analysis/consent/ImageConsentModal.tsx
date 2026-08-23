@@ -8,8 +8,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Camera, TrendingUp, Calendar, Shield, ExternalLink, Loader2 } from 'lucide-react';
+import { Camera, FileImage, Shield, ExternalLink, Loader2 } from 'lucide-react';
 import { ANALYSIS_TYPE_LABELS, type ImageConsentModalProps } from './types';
+import { LATEST_CONSENT_VERSION } from '@/lib/consent/version-check';
 
 /**
  * 이미지 저장 동의 모달
@@ -30,46 +31,46 @@ export function ImageConsentModal({
   onConsent,
   onSkip,
   analysisType,
-  consentVersion = 'v1.0',
+  consentVersion = LATEST_CONSENT_VERSION,
   isLoading = false,
 }: ImageConsentModalProps) {
   const typeLabel = ANALYSIS_TYPE_LABELS[analysisType];
 
-  // 혜택 목록
+  // 모든 축에서 실제로 제공하는 저장·결과 확인·철회 범위만 안내한다.
   const benefits = [
     {
-      icon: TrendingUp,
-      text: '피부 상태 변화 추적 (Before/After)',
-    },
-    {
-      icon: Calendar,
-      text: '월별 개선 그래프 확인',
-    },
-    {
       icon: Camera,
-      text: '맞춤 스킨케어 조언',
+      text: `${typeLabel}에 사용한 사진을 분석 기록과 함께 저장해요`,
+    },
+    {
+      icon: FileImage,
+      text: '저장된 사진은 해당 분석 결과에서 다시 확인할 수 있어요',
+    },
+    {
+      icon: Shield,
+      text: '저장하지 않아도 이번 분석은 그대로 진행돼요',
     },
   ];
 
   // 저장 정보
   const storageInfo = [
-    { label: '저장 기간', value: '동의일로부터 1년 (만료 시 자동 파기)' },
-    { label: '저장 위치', value: '암호화된 클라우드 (한국 리전)' },
-    { label: '삭제', value: '설정 > 개인정보에서 언제든 가능' },
+    { label: '저장 기간', value: '동의일로부터 최대 1년 (만료 시 자동 파기)' },
+    { label: '저장 위치', value: '암호화된 비공개 클라우드 저장소' },
+    { label: '삭제', value: '동의 철회·삭제 요청 시 저장 사진 파기' },
   ];
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent
-        className="max-w-md mx-auto"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        data-testid="image-consent-modal"
-      >
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !isLoading) onSkip();
+      }}
+    >
+      <DialogContent className="max-w-md mx-auto" data-testid="image-consent-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
             <Camera className="w-5 h-5 text-primary" />
-            피부 변화를 추적할까요?
+            {typeLabel} 사진을 저장할까요?
           </DialogTitle>
           <DialogDescription className="sr-only">{typeLabel} 사진 저장 동의 요청</DialogDescription>
         </DialogHeader>
@@ -125,6 +126,7 @@ export function ImageConsentModal({
           <Button
             onClick={onConsent}
             disabled={isLoading}
+            variant="outline"
             className="flex-1"
             data-testid="consent-agree-button"
           >
@@ -143,8 +145,7 @@ export function ImageConsentModal({
         </div>
 
         {/* 안심 메시지 */}
-        <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
-          <span className="text-amber-500">💡</span>
+        <p className="text-xs text-center text-muted-foreground">
           건너뛰어도 이번 분석 결과는 볼 수 있어요
         </p>
       </DialogContent>

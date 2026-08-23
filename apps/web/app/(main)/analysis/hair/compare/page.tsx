@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AnalysisCompareImageNotice } from '@/components/analysis/consent/AnalysisCompareImageNotice';
 import { cn } from '@/lib/utils';
 import { selectByKey, selectByCondition, getTrendDirection } from '@/lib/utils/conditional-helpers';
 import type { AnalysisCompareResponse, HairAnalysisHistoryItem } from '@/types/analysis-history';
@@ -210,6 +211,12 @@ function HairCompareContent() {
             altPrefix="헤어"
           />
         )}
+        <AnalysisCompareImageNotice
+          afterImageUrl={after.imageUrl}
+          analysisType="hair"
+          beforeImageUrl={before.imageUrl}
+          testId="hair-compare-image-storage-notice"
+        />
 
         {/* 전체 점수 변화 */}
         <Card className="bg-card border-border">

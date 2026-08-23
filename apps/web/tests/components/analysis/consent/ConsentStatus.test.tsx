@@ -91,7 +91,7 @@ describe('ConsentStatus', () => {
         <ConsentStatus consent={mockConsentWithdrawn} analysisType="skin" showDetails={true} />
       );
 
-      expect(screen.getByText('변화 추적 기능이 꺼져 있어요')).toBeInTheDocument();
+      expect(screen.getByText('원본 사진을 저장하지 않아요')).toBeInTheDocument();
     });
   });
 
@@ -100,6 +100,29 @@ describe('ConsentStatus', () => {
       render(<ConsentStatus consent={mockConsentGiven} analysisType="skin" showDetails={false} />);
 
       expect(screen.queryByText(/만료:/)).not.toBeInTheDocument();
+    });
+
+    it('보관 기간이 지난 동의는 활성 상태로 표시하지 않는다', () => {
+      render(
+        <ConsentStatus
+          consent={{ ...mockConsentGiven, retention_until: '2025-01-01T00:00:00Z' }}
+          analysisType="skin"
+        />
+      );
+
+      expect(screen.getByText('재동의 필요')).toBeInTheDocument();
+      expect(screen.getByTestId('icon-CameraOff')).toBeInTheDocument();
+    });
+
+    it('구버전 동의는 활성 상태로 표시하지 않는다', () => {
+      render(
+        <ConsentStatus
+          consent={{ ...mockConsentGiven, consent_version: 'v0.9' }}
+          analysisType="skin"
+        />
+      );
+
+      expect(screen.getByText('재동의 필요')).toBeInTheDocument();
     });
 
     it('retention_until이 null일 때 만료일을 표시하지 않는다', () => {
@@ -113,6 +136,8 @@ describe('ConsentStatus', () => {
       );
 
       expect(screen.queryByText(/만료:/)).not.toBeInTheDocument();
+      expect(screen.getByText('재동의 필요')).toBeInTheDocument();
+      expect(screen.getByText(/기존 동의가 만료됐거나 최신 버전이 아니에요/)).toBeInTheDocument();
     });
   });
 

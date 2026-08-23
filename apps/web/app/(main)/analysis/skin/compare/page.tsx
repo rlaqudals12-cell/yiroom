@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AnalysisCompareImageNotice } from '@/components/analysis/consent/AnalysisCompareImageNotice';
 import { cn } from '@/lib/utils';
 import { selectByKey, selectByCondition, getTrendDirection } from '@/lib/utils/conditional-helpers';
 import type { AnalysisCompareResponse, SkinAnalysisHistoryItem } from '@/types/analysis-history';
@@ -209,6 +210,12 @@ function SkinCompareContent() {
             altPrefix="피부"
           />
         )}
+        <AnalysisCompareImageNotice
+          afterImageUrl={after.imageUrl}
+          analysisType="skin"
+          beforeImageUrl={before.imageUrl}
+          testId="skin-compare-image-storage-notice"
+        />
 
         {/* 전체 점수 변화 */}
         <Card className="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30">

@@ -23,6 +23,7 @@ import {
 import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import { requireBiometricConsent } from '@/lib/api/biometric-consent';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -43,6 +44,7 @@ const skinAnalysisSchema = z.object({
   leftImageBase64: base64ImageSchema.optional(),
   rightImageBase64: base64ImageSchema.optional(),
   useMock: z.boolean().optional().default(false),
+  imageStorageAllowed: z.boolean().optional(),
 });
 
 /**
@@ -89,8 +91,14 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return validationError(parsed.error.errors[0]?.message || '입력 정보를 확인해주세요.');
     }
-    const { imageBase64, frontImageBase64, leftImageBase64, rightImageBase64, useMock } =
-      parsed.data;
+    const {
+      imageBase64,
+      frontImageBase64,
+      leftImageBase64,
+      rightImageBase64,
+      useMock,
+      imageStorageAllowed,
+    } = parsed.data;
 
     // 하위 호환: imageBase64 또는 frontImageBase64 중 하나 필수
     const primaryImage = frontImageBase64 || imageBase64;
@@ -232,65 +240,21 @@ export async function POST(req: NextRequest) {
     try {
       const supabase = createServiceRoleClient();
 
-      // 이미지 저장 동의 확인 (PIPA 준수)
-      const { data: consentData } = await supabase
-        .from('image_consents')
-        .select('consent_given')
-        .eq('clerk_user_id', userId)
-        .eq('analysis_type', 'skin')
-        .maybeSingle();
+      const { uploadedImages } = await checkConsentAndUploadImages(
+        supabase,
+        userId,
+        'skin',
+        'skin-images',
+        {
+          front: primaryImage,
+          left: leftImageBase64,
+          right: rightImageBase64,
+        },
+        { imageStorageAllowed }
+      );
 
-      const hasImageConsent = consentData?.consent_given === true;
-
-      // 이미지 업로드 헬퍼 (동의가 있는 경우에만 사용)
-      // 반환값: Storage 경로 (private bucket이므로 결과 페이지에서 signed URL 생성)
-      const uploadImage = async (base64: string, suffix: string): Promise<string | null> => {
-        if (!hasImageConsent) return null;
-
-        const fileName = `${userId}/${Date.now()}_${suffix}.jpg`;
-        const base64Data = base64.replace(/^data:image\/\w+;base64,/, '');
-        const buffer = Buffer.from(base64Data, 'base64');
-
-        const { data, error } = await supabase.storage
-          .from('skin-images')
-          .upload(fileName, buffer, {
-            contentType: 'image/jpeg',
-            upsert: false,
-          });
-
-        if (error) {
-          console.error(`Image upload error (${suffix}):`, error);
-          return null;
-        }
-
-        // Private bucket이므로 경로만 저장 (결과 페이지에서 signed URL 생성)
-        return data.path;
-      };
-
-      // 다각도 이미지 업로드 (동의가 있는 경우에만)
-      let frontImageUrl: string | null = null;
-      let _leftImageUrl: string | null = null;
-      let _rightImageUrl: string | null = null;
-
-      if (hasImageConsent) {
-        // 정면 이미지 업로드
-        if (primaryImage) {
-          frontImageUrl = await uploadImage(primaryImage, 'front');
-        }
-
-        // 좌측 이미지 업로드 (선택) - 미래 다각도 분석용
-        if (leftImageBase64) {
-          _leftImageUrl = await uploadImage(leftImageBase64, 'left');
-        }
-
-        // 우측 이미지 업로드 (선택) - 미래 다각도 분석용
-        if (rightImageBase64) {
-          _rightImageUrl = await uploadImage(rightImageBase64, 'right');
-        }
-      }
-
-      // 하위 호환: 기존 imageUrl은 frontImageUrl 사용
-      const imageUrl = frontImageUrl;
+      // 하위 호환: 기존 imageUrl은 정면 이미지 경로를 사용한다.
+      const imageUrl = uploadedImages.front ?? null;
 
       // 퍼스널 컬러 조회 (자동 연동 + 파운데이션 추천)
       const { data: pcData } = await supabase

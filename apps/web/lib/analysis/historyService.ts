@@ -16,6 +16,7 @@ import type {
   MakeupAnalysisHistoryItem,
   PeriodFilter,
 } from '@/types/analysis-history';
+import { signConsentedAnalysisImageUrls } from '@/lib/consent/image-access';
 
 // 기간별 일수 매핑
 const PERIOD_DAYS_MAP: Record<PeriodFilter, number | null> = {
@@ -35,6 +36,24 @@ const TABLE_MAP: Record<AnalysisType, string> = {
   hair: 'hair_analyses',
   makeup: 'makeup_analyses',
 };
+
+async function signHistoryImages(
+  supabase: SupabaseClient,
+  type: AnalysisType,
+  userId: string,
+  items: AnalysisHistoryItem[]
+): Promise<void> {
+  const signed = await signConsentedAnalysisImageUrls(
+    supabase,
+    userId,
+    type,
+    items.map((item) => item.imageUrl)
+  );
+
+  items.forEach((item, index) => {
+    item.imageUrl = signed[index] ?? undefined;
+  });
+}
 
 export interface HistoryQueryOptions {
   /** 분석 타입 */
@@ -344,6 +363,8 @@ export async function getAnalysisHistory(
       break;
   }
 
+  await signHistoryImages(supabase, type, userId, analyses);
+
   const trend = calculateTrend(analyses);
 
   return {
@@ -449,6 +470,8 @@ export async function compareAnalyses(
       throw new Error('Invalid analysis type');
   }
 
+  await signHistoryImages(supabase, type, userId, [beforeItem, afterItem]);
+
   const overallChange = afterItem.overallScore - beforeItem.overallScore;
   const period = calculatePeriod(beforeItem.date, afterItem.date);
   const insights = generateCompareInsights(type, beforeItem, afterItem, detailChanges);
@@ -503,10 +526,9 @@ export async function getFirstAndLatestAnalysis(
 
   // 타입별 변환
   const transform = getTransformFn(type);
-  return {
-    first: transform(firstRow),
-    latest: transform(latestRow),
-  };
+  const items = [transform(firstRow), transform(latestRow)];
+  await signHistoryImages(supabase, type, userId, items);
+  return { first: items[0], latest: items[1] };
 }
 
 /**

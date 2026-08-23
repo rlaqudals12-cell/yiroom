@@ -38,6 +38,12 @@ const makeupStyleSchema = z.enum(['natural', 'glam', 'cute', 'chic', 'vintage', 
 
 const colorCategorySchema = z.enum(['foundation', 'lip', 'eyeshadow', 'blush', 'contour']);
 
+const makeupAnalysisRequestSchema = z.object({
+  imageBase64: z.string().min(1),
+  useMock: z.boolean().optional().default(false),
+  imageStorageAllowed: z.boolean().optional(),
+});
+
 // Gemini 응답 문자열 배열에서 유효한 값만 필터링
 function filterValidConcerns(concerns: string[]): MakeupConcernId[] {
   return concerns.filter((c): c is MakeupConcernId => makeupConcernSchema.safeParse(c).success);
@@ -91,12 +97,11 @@ export async function POST(req: NextRequest) {
       return rateLimitResult.response!;
     }
 
-    const body = await req.json();
-    const { imageBase64, useMock = false } = body;
-
-    if (!imageBase64) {
+    const parsed = makeupAnalysisRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
       return validationError('이미지가 필요합니다.');
     }
+    const { imageBase64, useMock, imageStorageAllowed } = parsed.data;
 
     // 연령 확인 게이트 (fail-closed) — 생체분석 전 만 14세 이상 서버 강제
     const ageDenied = await requireAgeVerified(userId);
@@ -171,7 +176,8 @@ export async function POST(req: NextRequest) {
         userId,
         'makeup',
         'makeup-images',
-        { makeup: imageBase64 }
+        { makeup: imageBase64 },
+        { imageStorageAllowed }
       );
       const imageUrl = uploadedImages.makeup ?? null;
 

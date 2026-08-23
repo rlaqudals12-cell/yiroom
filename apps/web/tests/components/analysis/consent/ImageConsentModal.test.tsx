@@ -15,8 +15,7 @@ vi.mock('lucide-react', async (importOriginal) => {
   return {
     ...actual,
     Camera: createMockIcon('Camera'),
-    TrendingUp: createMockIcon('TrendingUp'),
-    Calendar: createMockIcon('Calendar'),
+    FileImage: createMockIcon('FileImage'),
     Shield: createMockIcon('Shield'),
     ExternalLink: createMockIcon('ExternalLink'),
     Loader2: createMockIcon('Loader2'),
@@ -42,37 +41,41 @@ describe('ImageConsentModal', () => {
       render(<ImageConsentModal {...defaultProps} />);
 
       expect(screen.getByTestId('image-consent-modal')).toBeInTheDocument();
-      expect(screen.getByText('피부 변화를 추적할까요?')).toBeInTheDocument();
+      expect(screen.getByText('피부 분석 사진을 저장할까요?')).toBeInTheDocument();
     });
 
     it('피부 분석 타입에 맞는 라벨을 표시한다', () => {
       render(<ImageConsentModal {...defaultProps} analysisType="skin" />);
 
-      // DialogDescription에 타입 라벨이 포함됨
-      expect(screen.getByText(/피부 분석/)).toBeInTheDocument();
+      expect(screen.getByText('피부 분석 사진을 저장할까요?')).toBeInTheDocument();
     });
 
     it('체형 분석 타입에 맞는 라벨을 표시한다', () => {
       render(<ImageConsentModal {...defaultProps} analysisType="body" />);
 
-      expect(screen.getByText(/체형 분석/)).toBeInTheDocument();
+      expect(screen.getByText('체형 분석 사진을 저장할까요?')).toBeInTheDocument();
     });
 
     it('혜택 목록을 표시한다', () => {
       render(<ImageConsentModal {...defaultProps} />);
 
-      expect(screen.getByText('피부 상태 변화 추적 (Before/After)')).toBeInTheDocument();
-      expect(screen.getByText('월별 개선 그래프 확인')).toBeInTheDocument();
-      expect(screen.getByText('맞춤 스킨케어 조언')).toBeInTheDocument();
+      expect(
+        screen.getByText('피부 분석에 사용한 사진을 분석 기록과 함께 저장해요')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('저장된 사진은 해당 분석 결과에서 다시 확인할 수 있어요')
+      ).toBeInTheDocument();
+      expect(screen.getByText('저장하지 않아도 이번 분석은 그대로 진행돼요')).toBeInTheDocument();
     });
 
     it('저장 정보를 표시한다', () => {
       render(<ImageConsentModal {...defaultProps} />);
 
       expect(screen.getByText(/저장 기간:/)).toBeInTheDocument();
-      expect(screen.getByText(/동의일로부터 1년/)).toBeInTheDocument();
+      expect(screen.getByText(/동의일로부터 최대 1년/)).toBeInTheDocument();
       expect(screen.getByText(/저장 위치:/)).toBeInTheDocument();
-      expect(screen.getByText(/암호화된 클라우드/)).toBeInTheDocument();
+      expect(screen.getByText(/암호화된 비공개 클라우드/)).toBeInTheDocument();
+      expect(screen.getByText(/동의 철회·삭제 요청 시 저장 사진 파기/)).toBeInTheDocument();
     });
 
     it('동의 버전을 표시한다', () => {
@@ -114,6 +117,17 @@ describe('ImageConsentModal', () => {
       expect(onSkip).toHaveBeenCalledTimes(1);
     });
 
+    it('동의와 건너뛰기 버튼을 같은 시각 위계로 표시한다', () => {
+      render(<ImageConsentModal {...defaultProps} />);
+
+      const consentButton = screen.getByTestId('consent-agree-button');
+      const skipButton = screen.getByTestId('consent-skip-button');
+
+      expect(consentButton).toHaveClass('flex-1');
+      expect(skipButton).toHaveClass('flex-1');
+      expect(consentButton.className).toBe(skipButton.className);
+    });
+
     it('로딩 중일 때 버튼들이 비활성화된다', () => {
       render(<ImageConsentModal {...defaultProps} isLoading={true} />);
 
@@ -151,17 +165,41 @@ describe('ImageConsentModal', () => {
       render(<ImageConsentModal {...defaultProps} />);
 
       // DialogDescription이 sr-only로 존재
-      expect(screen.getByText(/피부 분석/)).toBeInTheDocument();
+      expect(screen.getByText('피부 분석 사진 저장 동의 요청')).toBeInTheDocument();
     });
 
-    it('외부 클릭으로 모달이 닫히지 않는다', () => {
-      render(<ImageConsentModal {...defaultProps} />);
+    it('닫기 버튼은 건너뛰기와 동일하게 처리한다', () => {
+      const onSkip = vi.fn();
+      render(<ImageConsentModal {...defaultProps} onSkip={onSkip} />);
 
-      const modal = screen.getByTestId('image-consent-modal');
-      expect(modal).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: '닫기' }));
 
-      // onPointerDownOutside가 preventDefault를 호출하도록 설정됨
-      // (실제 동작 테스트는 E2E에서 수행)
+      expect(onSkip).toHaveBeenCalledTimes(1);
+    });
+
+    it('Escape로 닫으면 건너뛰기와 동일하게 처리한다', () => {
+      const onSkip = vi.fn();
+      render(<ImageConsentModal {...defaultProps} onSkip={onSkip} />);
+
+      fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+
+      expect(onSkip).toHaveBeenCalledTimes(1);
+    });
+
+    it('모달 바깥을 누르면 건너뛰기와 동일하게 처리한다', async () => {
+      const onSkip = vi.fn();
+      render(<ImageConsentModal {...defaultProps} onSkip={onSkip} />);
+
+      // Radix DismissableLayer는 마운트 직후 다음 태스크에서 바깥 pointer 리스너를 연결한다.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      fireEvent.pointerDown(document.body, {
+        button: 0,
+        ctrlKey: false,
+        pointerType: 'mouse',
+      });
+      fireEvent.click(document.body);
+
+      expect(onSkip).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -175,13 +213,19 @@ describe('ImageConsentModal', () => {
 
     it('모든 분석 타입에 대해 라벨을 표시한다', () => {
       const { rerender } = render(<ImageConsentModal {...defaultProps} analysisType="skin" />);
-      expect(screen.getByText(/피부 분석/)).toBeInTheDocument();
+      expect(screen.getByText('피부 분석 사진을 저장할까요?')).toBeInTheDocument();
 
       rerender(<ImageConsentModal {...defaultProps} analysisType="body" />);
-      expect(screen.getByText(/체형 분석/)).toBeInTheDocument();
+      expect(screen.getByText('체형 분석 사진을 저장할까요?')).toBeInTheDocument();
 
       rerender(<ImageConsentModal {...defaultProps} analysisType="personal-color" />);
-      expect(screen.getByText(/퍼스널 컬러/)).toBeInTheDocument();
+      expect(screen.getByText('퍼스널 컬러 사진을 저장할까요?')).toBeInTheDocument();
+
+      rerender(<ImageConsentModal {...defaultProps} analysisType="hair" />);
+      expect(screen.getByText('헤어 분석 사진을 저장할까요?')).toBeInTheDocument();
+
+      rerender(<ImageConsentModal {...defaultProps} analysisType="makeup" />);
+      expect(screen.getByText('메이크업 분석 사진을 저장할까요?')).toBeInTheDocument();
     });
   });
 });

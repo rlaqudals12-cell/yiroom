@@ -11,7 +11,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
-import { signPrivateImageUrls } from '@/lib/storage';
+import { signConsentedAnalysisImageUrls } from '@/lib/consent/image-access';
 import { normalizeColors } from '@/lib/color/normalize-colors';
 import type {
   AnalysisType,
@@ -445,16 +445,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unsupported analysis type' }, { status: 400 });
     }
 
-    const imageBucketMap: Record<AnalysisType, string> = {
-      skin: 'skin-images',
-      body: 'body-images',
-      'personal-color': 'personal-color-images',
-      hair: 'hair-images',
-      makeup: 'makeup-images',
-    };
-    const [beforeImageUrl, afterImageUrl] = await signPrivateImageUrls(
+    const [beforeImageUrl, afterImageUrl] = await signConsentedAnalysisImageUrls(
       supabase,
-      imageBucketMap[type],
+      userId,
+      type,
       [beforeItem.imageUrl, afterItem.imageUrl]
     );
 

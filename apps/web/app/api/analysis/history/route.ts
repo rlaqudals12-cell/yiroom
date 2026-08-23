@@ -21,6 +21,7 @@ import type {
   MakeupAnalysisHistoryItem,
   PeriodFilter,
 } from '@/types/analysis-history';
+import { signConsentedAnalysisImageUrls } from '@/lib/consent/image-access';
 
 // 기간별 일수
 const PERIOD_DAYS_MAP: Record<PeriodFilter, number | null> = {
@@ -226,6 +227,17 @@ export async function GET(request: Request) {
         },
       }));
     }
+
+    // 비공개 Storage 경로는 응답 경계에서 일괄 서명하고, 실패 시 raw 경로를 숨긴다.
+    const signedImageUrls = await signConsentedAnalysisImageUrls(
+      supabase,
+      userId,
+      type,
+      analyses.map((item) => item.imageUrl)
+    );
+    analyses.forEach((item, index) => {
+      item.imageUrl = signedImageUrls[index] ?? undefined;
+    });
 
     // 트렌드 계산 (최근 2개 비교)
     let trend: 'improving' | 'declining' | 'stable' = 'stable';

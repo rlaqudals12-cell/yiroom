@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import {
@@ -32,6 +33,12 @@ const XP_ANALYSIS_COMPLETE = 10;
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
 
+const hairAnalysisRequestSchema = z.object({
+  imageBase64: z.string().min(1),
+  useMock: z.boolean().optional().default(false),
+  imageStorageAllowed: z.boolean().optional(),
+});
+
 /**
  * H-1 헤어 분석 API
  *
@@ -60,12 +67,11 @@ export async function POST(req: NextRequest) {
       return rateLimitResult.response!;
     }
 
-    const body = await req.json();
-    const { imageBase64, useMock = false } = body;
-
-    if (!imageBase64) {
+    const parsed = hairAnalysisRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
       return validationError('이미지가 필요합니다.');
     }
+    const { imageBase64, useMock, imageStorageAllowed } = parsed.data;
 
     // 연령 확인 게이트 (fail-closed) — 생체분석 전 만 14세 이상 서버 강제
     const ageDenied = await requireAgeVerified(userId);
@@ -123,7 +129,8 @@ export async function POST(req: NextRequest) {
         userId,
         'hair',
         'hair-images',
-        { hair: imageBase64 }
+        { hair: imageBase64 },
+        { imageStorageAllowed }
       );
       const imageUrl = uploadedImages.hair ?? null;
 

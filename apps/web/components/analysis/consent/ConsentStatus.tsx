@@ -6,6 +6,7 @@ import { Camera, CameraOff, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { type ConsentStatusProps } from './types';
+import { isImageConsentActive } from '@/lib/consent/version-check';
 
 /**
  * 동의 상태 표시 컴포넌트
@@ -27,7 +28,8 @@ export function ConsentStatus({
   onManage,
   className,
 }: ConsentStatusProps) {
-  const isConsented = consent?.consent_given ?? false;
+  const isConsented = isImageConsentActive(consent);
+  const needsReconsent = consent?.consent_given === true && !isConsented;
 
   // 만료일 포맷
   const expiryDate = consent?.retention_until
@@ -52,7 +54,9 @@ export function ConsentStatus({
           ) : (
             <CameraOff className="w-4 h-4 text-gray-500" />
           )}
-          <span className="text-sm font-medium">{isConsented ? '사진 저장됨' : '사진 미저장'}</span>
+          <span className="text-sm font-medium">
+            {isConsented ? '사진 저장됨' : needsReconsent ? '재동의 필요' : '사진 미저장'}
+          </span>
         </div>
 
         {onManage && (
@@ -65,7 +69,11 @@ export function ConsentStatus({
 
       {showDetails && (
         <p className="text-xs text-muted-foreground mt-1 pl-6">
-          {isConsented && expiryDate ? `만료: ${expiryDate}` : '변화 추적 기능이 꺼져 있어요'}
+          {isConsented && expiryDate
+            ? `만료: ${expiryDate}`
+            : needsReconsent
+              ? '기존 동의가 만료됐거나 최신 버전이 아니에요'
+              : '원본 사진을 저장하지 않아요'}
         </p>
       )}
     </div>

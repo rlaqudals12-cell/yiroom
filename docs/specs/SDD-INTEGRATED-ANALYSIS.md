@@ -1,6 +1,6 @@
 # SDD-INTEGRATED-ANALYSIS — 통합 분석 플로우 스펙
 
-> **Version**: 1.1 | **Created**: 2026-04-23 | **Status**: implemented (Phase A)
+> **Version**: 1.2 | **Created**: 2026-04-23 | **Updated**: 2026-08-23 | **Status**: implemented (Phase A)
 > **상위 ADR**: [ADR-099](../adr/ADR-099-integrated-analysis-flow.md) (accepted)
 > **근거 원리**: [image-processing.md](../principles/image-processing.md), [ai-inference.md](../principles/ai-inference.md)
 >
@@ -65,6 +65,9 @@ export const integratedAnalysisInputSchema = z.object({
 
   // 축별 자가입력 (필수 문항 최소화, 2분 내 완료 목표)
   questionnaire: z.object({
+    // 이번 회차 원본 사진 선택 저장 — 누락/false는 비저장
+    imageStorageConsent: z.boolean().default(false),
+
     // S-1 피부 — 1문항
     skin: z
       .object({
@@ -109,14 +112,15 @@ export type IntegratedAnalysisInput = z.infer<typeof integratedAnalysisInputSche
 
 ### 2.2 입력 검증 체크포인트
 
-| 검증 단계     | 위치                                | 실패 응답                |
-| ------------- | ----------------------------------- | ------------------------ |
-| 인증          | API 라우트 진입                     | 401 `AUTH_ERROR`         |
-| Rate Limit    | 인증 후                             | 429 `RATE_LIMIT_ERROR`   |
-| Zod 스키마    | Body 파싱 후                        | 400 `VALIDATION_ERROR`   |
-| CIE-1 품질    | 얼굴 이미지 (필수)                  | 400 `IMAGE_QUALITY`      |
-| CIE-1 품질    | 전신 이미지 (있을 때)               | 400 `IMAGE_QUALITY`      |
-| C-1 입력 조합 | bodyImage/자가입력 중 최소 1개 필요 | 400 `BODY_INPUT_MISSING` |
+| 검증 단계      | 위치                                | 실패 응답                |
+| -------------- | ----------------------------------- | ------------------------ |
+| 인증           | API 라우트 진입                     | 401 `AUTH_ERROR`         |
+| Rate Limit     | 인증 후                             | 429 `RATE_LIMIT_ERROR`   |
+| Zod 스키마     | Body 파싱 후                        | 400 `VALIDATION_ERROR`   |
+| CIE-1 품질     | 얼굴 이미지 (필수)                  | 400 `IMAGE_QUALITY`      |
+| CIE-1 품질     | 전신 이미지 (있을 때)               | 400 `IMAGE_QUALITY`      |
+| C-1 입력 조합  | bodyImage/자가입력 중 최소 1개 필요 | 400 `BODY_INPUT_MISSING` |
+| 원본 저장 동의 | boolean만 허용, 누락은 false 정규화 | 400 `VALIDATION_ERROR`   |
 
 ### 2.3 페이로드 제약
 
@@ -124,6 +128,36 @@ export type IntegratedAnalysisInput = z.infer<typeof integratedAnalysisInputSche
 - 얼굴 이미지 권장: 1024px, JPEG, quality 80%
 - 전신 이미지 권장: 1280px, JPEG, quality 80%
 - 프론트에서 `lib/image/preprocess.ts` 재사용으로 압축
+
+### 2.4 원본 이미지 선택 저장·파기
+
+- 웹·모바일 문진에서 회차별 선택 항목으로 노출하며 기본값은 OFF다. 미동의해도 5축 분석은
+  동일하게 진행한다.
+- 서버가 Zod로 검증한 `questionnaire.imageStorageConsent === true`일 때만 얼굴·전신 원본을
+  비공개 `integrated-sessions` 버킷의
+  `{clerkUserId}/{sessionId}/{face|body}.{ext}` 경로에 저장한다. 누락·false는 서비스 역할
+  클라이언트 및 Storage 호출 없이 두 경로를 `null`로 유지한다.
+- 동의 boolean은 세션 `questionnaire` JSONB에 보존하고, 같은 행의 서버 생성
+  `created_at`를 동의 시각 근거로 사용한다.
+- `cleanup-consents` 일일 병합 크론은 `created_at` 기준 1년이 지난 동의 저장 세션을
+  `(created_at,id)` 안정 keyset, 100건 페이지로 실행 예산 안에서 반복 조회한다(100건은
+  총량 상한이 아니며 앞 페이지 실패가 뒤 행을 막지 않는다).
+  실패 행은 다음 일일 실행에서 재시도하며 `remaining`·사유를 응답/감사 로그에 남긴다.
+  세션에 기록된 명시 경로의 Storage 삭제가 성공한 뒤에만 두 이미지 포인터를 `null`로
+  갱신하고 `_imageStoragePurgedAt`을 기록한다. 과거 명시 동의 boolean은 감사 근거로 보존한다.
+- 생체정보 동의 철회·계정 삭제 시에는 공용 `storage-purge` 경로가
+  `integrated-sessions` 원본을 1년 이전에도 파기한다.
+- null 포인터 `pending` 세션을 먼저 생성해 `clientRequestId` 재요청 잠금을 확보한 뒤,
+  업로더가 deadline과 rollback 원자 경계를 소유하고 성공 시에만 포인터를 부착한다.
+- 업로드 완료 뒤 포인터 부착 직전에 글로벌 생체 동의를 다시 확인한다. 철회·조회 실패는
+  fail-closed rollback하고, rollback 확인 실패는 아래 영속 재시도 경계로 넘긴다.
+- 선택 저장 실패 후 rollback이 확인되면 `_imageStorageFailure`와 시각만 기록하고 5축 분석은
+  계속한다. rollback 또는 attach 후 포인터 clear가 실패하면 후보 경로를 failed session의
+  `_imageStorageCleanupPending` 큐로 소유시키고 분석을 중단한다. 일일 cleanup은 이 표식을
+  1년 이전에도 즉시 재시도한다.
+- 큐 기록 전에 요청이 강제 종료된 최악 경로는 24시간 지난 `failed/pending` 동의 세션을
+  canonical `{clerkUserId}/{sessionId}` prefix로 재귀 list/remove해 회수한다. 포인터가 null이어도
+  처리하며 `_imageStoragePurgedAt` 성공 마커로 다음 실행 재매칭을 막는다.
 
 ---
 
@@ -608,11 +642,13 @@ logger.info('[Integrated]', 'session finalized', { sessionId, status, axesComple
 - `axis-adapters.test.ts` — 각 축 adapter 성공/실패
 - `makeup-composer.test.ts` — PC+S 조합, 부분 입력 실패
 - `error-normalizer.test.ts` — 에러 유형별 정규화
+- `storage-uploader.test.ts` — 미동의 무호출, 동의 업로드, 부분 실패·deadline·세션 실패 rollback
 
 ### 9.2 통합 테스트 (필수)
 
 - `orchestrator.test.ts` — Promise.allSettled 병렬 + Partial Success
 - `integrated.test.ts` (API) — 인증/Zod/Rate Limit/정상 흐름
+- `cleanup-consents.test.ts` — 통합 원본 1년 만료 조회·삭제 성공 후 포인터 정리·실패 시 유지
 
 ### 9.3 E2E (선택, Phase B에서)
 

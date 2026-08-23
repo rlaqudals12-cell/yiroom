@@ -1,7 +1,7 @@
-# 🗄️ Database 스키마 v7.7 (선택 동의 계측 게이트)
+# 🗄️ Database 스키마 v7.8 (이미지 저장 동의 5축 확장)
 
-**버전**: v7.7 (user_agreements 이용기록 분석 동의 3컬럼 — 상세는 문서 말미)
-**업데이트**: 2026년 8월 21일
+**버전**: v7.8 (image_consents 헤어·메이크업 분석 축 추가 — 상세는 문서 말미)
+**업데이트**: 2026년 8월 23일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템 + 운동/영양 + 헤어/정신건강
@@ -2710,6 +2710,63 @@ ALTER TABLE user_agreements
 > 마이그레이션: `supabase/migrations/202608210200_analytics_consent.sql` —
 > **prod SQL Editor 수동 gap-apply 대기** (`supabase db push` 금지).
 
+## image_consents 분석 축 확장 (2026-08-23 — prod 미적용)
+
+분석 이미지 **수집·처리 필수 동의**와 분리된 원본 사진 **저장 선택 동의**를 헤어·메이크업
+진입에도 제공한다. 기존 사용자와 건너뛴 사용자는 기본적으로 동의 행이 없으므로 저장하지
+않으며, 분석 결과 자체는 계속 확인할 수 있다.
+
+```sql
+ALTER TABLE image_consents
+  DROP CONSTRAINT IF EXISTS image_consents_analysis_type_check;
+
+ALTER TABLE image_consents
+  ADD CONSTRAINT image_consents_analysis_type_check
+  CHECK (analysis_type IN ('skin', 'body', 'personal-color', 'hair', 'makeup'));
+```
+
+- 기존 행과 `UNIQUE(clerk_user_id, analysis_type)`는 유지한다. 클라이언트는 own SELECT만
+  허용하고 INSERT·UPDATE·DELETE grant/policy는 제거해 동의 POST/DELETE API의
+  `PURGE_PENDING`·CAS를 우회하지 못하게 한다.
+- API 및 저장 버킷 매핑: `hair` → `hair-images`, `makeup` → `makeup-images`.
+- 두 버킷은 `public=false`, 파일당 10MB, JPEG·PNG·WebP·HEIC·HEIF만 허용한다.
+- 5축 Storage 객체의 업로드·서명·파기는 service-role API만 수행한다. 과거
+  authenticated INSERT·SELECT·DELETE 정책 15개는 제거하며, 결과/이력 화면은 축별 활성
+  저장 동의와 글로벌 생체정보 동의를 다시 확인한 최대 1시간 signed URL만 쓴다.
+- 동의 조회 실패·미동의 시 분석 API의 공용 업로더가 원본 저장을 건너뛴다(fail-closed).
+- 업로드 직후 동의를 다시 확인해 도중 철회 시 객체를 rollback한다. rollback 실패는
+  `consent_given=false`, `withdrawal_at/retention_until` 비-null인 파기 대기로 CAS 표시하고,
+  `(retention_until, id)` partial index를 사용하는 cleanup cron이 재시도한다.
+- 보관 만료 cron도 Storage 파기 전에 `updated_at` CAS로 같은 파기 대기 상태를 선점한다.
+  선점 0행은 재동의 경합이므로 Storage를 호출하지 않고, 선점 중 POST 재동의는 409로 닫는다.
+- 동의는 최신 버전이며 보관 기한이 남아 있을 때만 유효하고, 연령 조회 오류·생년월일 없음은
+  모두 저장 동의를 받지 않는 fail-closed 계약이다.
+
+> 마이그레이션: `supabase/migrations/202608230300_image_consents_hair_makeup.sql` —
+> **prod SQL Editor 수동 gap-apply 대기** (`supabase db push` 금지).
+
+## integrated-sessions 선택 원본 버킷 정본화 (2026-08-23 — prod 미적용)
+
+- `integrated-sessions`는 `public=false`, 파일당 10MB, JPEG·PNG·WebP·HEIC·HEIF만 허용한다.
+- Storage 객체는 service_role만 접근한다. 인증 클라이언트의 직접 SELECT도 닫고, 결과 서버가
+  회차 저장 동의·글로벌 생체 동의·파기 상태를 확인한 뒤에만 짧은 signed URL을 발급한다.
+- 세션 테이블은 owner SELECT만 유지한다. 기존 authenticated/anon INSERT·UPDATE·DELETE
+  정책과 grant는 제거해 `questionnaire`·포인터·`image_cleanup_pending` 변조를 막는다.
+- 통합 분석은 null 포인터 pending 세션을 먼저 만들고 저장 성공 뒤 포인터를 부착한다.
+  업로드 직후 글로벌 생체 동의를 다시 확인하고, 도중 철회됐으면 attach 전에 rollback한다.
+  rollback 실패 후보는 같은 failed session의 `_imageStorageCleanupPending` 표식과 경로가
+  소유하며, `cleanup-consents`가 1년을 기다리지 않고 재시도한다.
+- 재시도 큐 기록 전 요청이 종료된 경우도 24시간 지난 `failed/pending` 동의 세션을
+  `{clerk_user_id}/{sessionId}` canonical prefix로 재귀 탐색해 회수한다. DB 포인터는 삭제
+  입력으로 신뢰하지 않으며 성공 시 `_imageStoragePurgedAt`으로 재매칭을 막는다.
+- 일일 파기는 `(created_at,id)` 안정 keyset으로 100건 페이지를 실행 예산 안에서 반복해
+  앞 100건이 실패해도 뒤 행을 진행한다. backlog가 남으면 응답의
+  `remaining`·`remainingReason`과 감사 오류 로그로 운영자에게 드러낸다.
+- 같은 마이그레이션은 구형 `cleanup-expired-consents` pg_cron과 SQL helper를 폐기한다.
+
+> 마이그레이션: `supabase/migrations/202608230400_integrated_sessions_storage_bucket.sql` —
+> **prod SQL Editor 수동 gap-apply 대기** (`supabase db push` 금지).
+
 ### 감사로그 보존 정합 (2026-07-12)
 
 - `audit_logs`·`image_access_logs` 보존 = **730일**(안전성 확보조치 기준 §8, 민감정보 취급 시스템 2년). 앱 계층 정리는 `cron/cleanup-audit-logs`(hard-delete-users 크론에 병합 호출)로 실효.
@@ -2717,6 +2774,6 @@ ALTER TABLE user_agreements
 
 ---
 
-**버전**: v7.7 (user_agreements 선택 동의 계측 게이트 + 생체동의·감사로그 정합)
-**최종 업데이트**: 2026년 8월 21일
+**버전**: v7.8 (이미지 저장 동의 5축 + 선택 동의 계측 게이트 + 생체동의·감사로그 정합)
+**최종 업데이트**: 2026년 8월 23일
 **상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness + 쇼핑 고도화 + 인벤토리/옷장 동기화 + 법적 컴플라이언스 게이트 완료 ✅

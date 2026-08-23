@@ -43,6 +43,8 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AnalysisEvidence, ImageQuality } from '@/components/analysis/AnalysisEvidenceReport';
 import { DrapingSectionDynamic } from '@/components/analysis/personal-color';
+import { ImageStorageUnavailableNotice } from '@/components/analysis/consent/ImageStorageUnavailableNotice';
+import { useImageStorageUnavailableReason } from '@/components/analysis/consent/ConsentAwareImageStorageNotice';
 import { ConsultantCTA } from '@/components/coach/ConsultantCTA';
 import { GenderAdaptiveAccessories } from '@/components/analysis/GenderAdaptiveAccessories';
 import { ResultPageInsights } from '@/components/insights';
@@ -502,6 +504,11 @@ export default function PersonalColorResultPage() {
     }
   }, [isLoaded, isSignedIn, fetchAnalysis]);
 
+  const imageStorageUnavailableReason = useImageStorageUnavailableReason({
+    analysisType: 'personal-color',
+    enabled: Boolean(isSignedIn && result && !imageUrl),
+  });
+
   // 다시 시도 (일시적 에러 시 재조회)
   const handleRetry = useCallback(() => {
     fetchedRef.current = false;
@@ -701,6 +708,17 @@ export default function PersonalColorResultPage() {
               </TabsTrigger>
             </TabsList>
 
+            {!imageUrl && (
+              <div className="mb-4">
+                <ImageStorageUnavailableNotice
+                  analysisHref="/analysis/personal-color"
+                  featureLabel="드레이핑 비교"
+                  reason={imageStorageUnavailableReason}
+                  testId="personal-color-image-storage-notice"
+                />
+              </div>
+            )}
+
             {/* 기본 분석 탭 — forceMount: 인쇄물은 탭 상태와 무관하게 '진단지'여야 한다.
                 Radix는 비활성 탭의 자식을 언마운트하므로, 강제 마운트해두지 않으면 드레이핑 탭에서
                 인쇄할 때 진단지가 통째로 빠진다(화면 숨김은 data-[state=inactive]:hidden이 담당,
@@ -806,29 +824,24 @@ export default function PersonalColorResultPage() {
               </button>
 
               {/* P7: 드레이핑 시뮬레이션 연결 배너 */}
-              <div className="mt-6 mb-4">
-                <button
-                  type="button"
-                  className="w-full p-4 bg-card rounded-xl border border-border hover:border-primary/50 transition-colors text-left flex items-center gap-3 cursor-pointer"
-                  onClick={() => {
-                    if (imageUrl) {
-                      setActiveTab('draping');
-                    }
-                  }}
-                  disabled={!imageUrl}
-                >
-                  <Shirt className="w-8 h-8 text-primary flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground text-sm">{t('tryColorOnPhoto')}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {imageUrl
-                        ? '드레이핑 탭에서 색을 얼굴 아래 대보고 비교할 수 있어요'
-                        : '분석 이미지가 없어 이용할 수 없어요. 다시 분석해보세요'}
-                    </p>
-                  </div>
-                  {imageUrl && <span className="text-primary text-sm">→</span>}
-                </button>
-              </div>
+              {imageUrl && (
+                <div className="mt-6 mb-4">
+                  <button
+                    type="button"
+                    className="w-full p-4 bg-card rounded-xl border border-border hover:border-primary/50 transition-colors text-left flex items-center gap-3 cursor-pointer"
+                    onClick={() => setActiveTab('draping')}
+                  >
+                    <Shirt className="w-8 h-8 text-primary flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground text-sm">{t('tryColorOnPhoto')}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        드레이핑 탭에서 색을 얼굴 아래 대보고 비교할 수 있어요
+                      </p>
+                    </div>
+                    <span className="text-primary text-sm">→</span>
+                  </button>
+                </div>
+              )}
 
               {/* Mock 전문 고지(재시도 안내 포함) — 상단 칩과 짝, 본문 말미 1회만 노출 */}
               {usedMock && <MockDataNotice className="mt-6" />}
@@ -852,18 +865,7 @@ export default function PersonalColorResultPage() {
                   onRetry={handleRetry}
                 />
               )}
-              {activeTab === 'draping' && !imageUrl && (
-                <div className="p-6 bg-card rounded-xl border text-center">
-                  <Shirt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-semibold text-foreground mb-2">{t('colorDraping')}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{t('noDrapingImage')}</p>
-                  <p className="text-xs text-muted-foreground mb-4">{t('reanalyzeForDraping')}</p>
-                  <Button onClick={handleNewAnalysis} variant="outline" size="sm">
-                    <Camera className="w-4 h-4 mr-1.5" />
-                    {t('reanalyze')}
-                  </Button>
-                </div>
-              )}
+              {/* 사진 비활성 사유와 설정 동선은 탭 위의 동의 인지 안내 한 곳에서만 제공한다. */}
               {/* 가상 메이크업 진입 — 구 sticky 보조 버튼을 드레이핑 경유 텍스트 링크로 격하 (primary 1개 원칙).
                   "입혀보기"는 이 사진에 바로 발린다는 기대를 주지만 실제로는 사진을 다시 고르는 별도 화면이다 →
                   기대를 문구에 맞췄고, 사진이 없으면(=드레이핑 불가) 링크도 감춘다 */}

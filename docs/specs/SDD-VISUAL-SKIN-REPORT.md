@@ -17,45 +17,45 @@
 
 ### 물리적 한계
 
-| 한계 | 이유 | 완화 전략 |
-|------|------|----------|
-| 카메라/조명 품질 | 사용자 환경 의존 | LightingGuide 제공 |
-| 피부 나이 정확도 | MAE 5-8년 한계 | "피부 활력도"로 대체 |
-| 이미지 저장 규제 | GDPR/PIPA | Opt-in 동의 모델 |
+| 한계             | 이유             | 완화 전략            |
+| ---------------- | ---------------- | -------------------- |
+| 카메라/조명 품질 | 사용자 환경 의존 | LightingGuide 제공   |
+| 피부 나이 정확도 | MAE 5-8년 한계   | "피부 활력도"로 대체 |
+| 이미지 저장 규제 | GDPR/PIPA        | Opt-in 동의 모델     |
 
 ### 100점 기준
 
-| 지표 | 100점 기준 | 현재 목표 |
-|------|-----------|----------|
-| 컴플라이언스 | GDPR+PIPA 100% 준수 | 100% |
-| 6존 시각화 | SVG 기반 인터랙티브 맵 | 100% |
-| 사진 오버레이 | 동의 시 실사진 기반 | 60% (Phase 2) |
-| 피부 활력도 | Gemini 기반 0-100 점수 | 90% |
-| 진행 추적 | Before/After + 월별 트렌드 | 40% (Phase 2) |
-| 테스트 커버리지 | 16개 원자 테스트 | 80% |
+| 지표            | 100점 기준                 | 현재 목표     |
+| --------------- | -------------------------- | ------------- |
+| 컴플라이언스    | GDPR+PIPA 100% 준수        | 100%          |
+| 6존 시각화      | SVG 기반 인터랙티브 맵     | 100%          |
+| 사진 오버레이   | 동의 시 실사진 기반        | 60% (Phase 2) |
+| 피부 활력도     | Gemini 기반 0-100 점수     | 90%           |
+| 진행 추적       | Before/After + 월별 트렌드 | 40% (Phase 2) |
+| 테스트 커버리지 | 16개 원자 테스트           | 80%           |
 
 ### 현재 목표: 75%
 
 **종합 달성률**: **75%** (Phase 1 완성)
 
-| 기능 | 달성률 | 상태 |
-|------|--------|------|
-| DB 스키마 (동의/로그) | 100% | ✅ |
-| ImageConsentModal | 100% | ✅ |
-| FaceZoneMap (일러스트) | 100% | ✅ |
-| SkinVitalityScore | 90% | ✅ |
-| ZoneDetailCard | 90% | ✅ |
-| PhotoOverlayMap | 0% | ⏳ Phase 2 |
-| BeforeAfterSlider | 0% | ⏳ Phase 2 |
-| TrendChart | 0% | ⏳ Phase 2 |
+| 기능                   | 달성률 | 상태       |
+| ---------------------- | ------ | ---------- |
+| DB 스키마 (동의/로그)  | 100%   | ✅         |
+| ImageConsentModal      | 100%   | ✅         |
+| FaceZoneMap (일러스트) | 100%   | ✅         |
+| SkinVitalityScore      | 90%    | ✅         |
+| ZoneDetailCard         | 90%    | ✅         |
+| PhotoOverlayMap        | 0%     | ⏳ Phase 2 |
+| BeforeAfterSlider      | 0%     | ⏳ Phase 2 |
+| TrendChart             | 0%     | ⏳ Phase 2 |
 
 ### 의도적 제외
 
-| 제외 항목 | 이유 | 재검토 시점 |
-|----------|------|------------|
-| 실시간 AR 오버레이 | 기술적 복잡도 | Phase 3 |
-| 384개 세부 존 | Gemini 한계 | Phase 3 |
-| 법정대리인 동의 시스템 | 복잡도 | 14세 미만 제한으로 대체 |
+| 제외 항목              | 이유          | 재검토 시점             |
+| ---------------------- | ------------- | ----------------------- |
+| 실시간 AR 오버레이     | 기술적 복잡도 | Phase 3                 |
+| 384개 세부 존          | Gemini 한계   | Phase 3                 |
+| 법정대리인 동의 시스템 | 복잡도        | 14세 미만 제한으로 대체 |
 
 ---
 
@@ -134,13 +134,13 @@
 
 **기본 원칙**: 가장 엄격한 기준 (GDPR + PIPA) 적용
 
-| 원칙              | 구현 방식                     |
-| ----------------- | ----------------------------- |
-| **Opt-in 동의**   | 분석 시작 시 명시적 동의 요청 |
-| **데이터 최소화** | 분석 후 원본 삭제 옵션 제공   |
-| **투명성**        | 저장 목적/기간/삭제 방법 명시 |
-| **보안**          | Supabase Storage 암호화 + RLS |
-| **철회권**        | 설정 > 개인정보에서 즉시 삭제 |
+| 원칙              | 구현 방식                                                     |
+| ----------------- | ------------------------------------------------------------- |
+| **Opt-in 동의**   | 분석 시작 시 명시적 동의 요청                                 |
+| **데이터 최소화** | 분석 후 원본 삭제 옵션 제공                                   |
+| **투명성**        | 저장 목적/기간/삭제 방법 명시                                 |
+| **보안**          | Supabase Storage 암호화 + RLS                                 |
+| **철회권**        | 동의 철회·삭제 요청 시 저장 원본 삭제 (`DELETE /api/consent`) |
 
 ### 2.3 동의 버전 관리
 
@@ -232,17 +232,17 @@ components/analysis/
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  📸 피부 변화를 추적할까요?                       │
+│  분석 사진을 저장할까요?                          │
 ├─────────────────────────────────────────────────┤
 │  사진을 저장하면:                                │
-│  ✓ 피부 상태 변화 추적 (Before/After)            │
-│  ✓ 월별 개선 그래프 확인                         │
-│  ✓ 맞춤 스킨케어 조언                            │
+│  • 분석 기록과 함께 원본 사진 저장               │
+│  • 해당 분석 결과에서 저장 사진 확인             │
+│  • 저장하지 않아도 이번 분석은 그대로 진행       │
 │                                                 │
 │  📋 저장 정보                                   │
-│  • 저장 기간: 분석일로부터 1년                    │
-│  • 저장 위치: 암호화된 클라우드 (한국 리전)        │
-│  • 삭제: 설정 > 개인정보에서 언제든 가능           │
+│  • 저장 기간: 동의일로부터 최대 1년                │
+│  • 저장 위치: 암호화된 비공개 클라우드 저장소      │
+│  • 삭제: 동의 철회·삭제 요청 시 파기               │
 │                                                 │
 │  [자세한 개인정보처리방침 보기 ▼]                 │
 │                                                 │
@@ -250,7 +250,7 @@ components/analysis/
 │  │ 저장하기 │  │ 건너뛰기 │  (동일 크기/스타일)    │
 │  └─────────┘  └─────────┘                       │
 │                                                 │
-│  💡 건너뛰어도 이번 분석 결과는 볼 수 있어요       │
+│  건너뛰어도 이번 분석 결과는 볼 수 있어요          │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -261,19 +261,19 @@ interface ImageConsentModalProps {
   isOpen: boolean;
   onConsent: () => void;
   onSkip: () => void;
-  analysisType: 'skin' | 'body' | 'personal-color';
+  analysisType: 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup';
   consentVersion?: string;
 }
 ```
 
 #### 4.2.3 UX 베스트 프랙티스 적용
 
-| 원칙          | 구현                                 |
-| ------------- | ------------------------------------ |
-| 맥락적 요청   | 분석 완료 직후 표시 (앱 설치 시점 X) |
-| 간결한 언어   | 법적 용어 배제, 혜택 중심 설명       |
-| 동등한 선택지 | 버튼 크기/스타일 동일                |
-| 즉시 철회     | 설정 페이지에서 삭제 버튼 제공       |
+| 원칙          | 구현                               |
+| ------------- | ---------------------------------- |
+| 맥락적 요청   | 사진 선택 후 분석 시작 직전에 표시 |
+| 간결한 언어   | 법적 용어 배제, 혜택 중심 설명     |
+| 동등한 선택지 | 버튼 크기/스타일 동일              |
+| 즉시 철회     | 동의 철회 API에서 저장 사진 삭제   |
 
 **참고**: [Privacy-First UX 가이드](https://medium.com/@harsh.mudgal_27075/privacy-first-ux-design-systems-for-trust-9f727f69a050)
 
@@ -416,7 +416,9 @@ SELECT cron.schedule(
 CREATE TABLE image_consents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id),
-  analysis_type TEXT NOT NULL CHECK (analysis_type IN ('skin', 'body', 'personal-color')),
+  analysis_type TEXT NOT NULL CHECK (
+    analysis_type IN ('skin', 'body', 'personal-color', 'hair', 'makeup')
+  ),
   consent_given BOOLEAN NOT NULL DEFAULT false,
   consent_version TEXT NOT NULL DEFAULT 'v1.0',
   consent_at TIMESTAMPTZ,
@@ -430,26 +432,23 @@ CREATE TABLE image_consents (
 CREATE INDEX idx_image_consents_clerk_user_id ON image_consents(clerk_user_id);
 CREATE INDEX idx_image_consents_retention ON image_consents(retention_until) WHERE consent_given = true;
 
--- RLS 정책 (CRUD 완전 지원)
+-- RLS 정책: 클라이언트는 상태 조회만, 쓰기는 auth+검증+CAS를 수행하는 API 전용
 ALTER TABLE image_consents ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view own consents"
   ON image_consents FOR SELECT
   USING (auth.jwt() ->> 'sub' = clerk_user_id);
 
-CREATE POLICY "Users can insert own consents"
-  ON image_consents FOR INSERT
-  WITH CHECK (auth.jwt() ->> 'sub' = clerk_user_id);
-
-CREATE POLICY "Users can update own consents"
-  ON image_consents FOR UPDATE
-  USING (auth.jwt() ->> 'sub' = clerk_user_id);
-
--- GDPR 철회권: 본인 동의 삭제 가능
-CREATE POLICY "Users can delete own consents"
-  ON image_consents FOR DELETE
-  USING (auth.jwt() ->> 'sub' = clerk_user_id);
+DROP POLICY IF EXISTS "image_consents_insert_own" ON image_consents;
+DROP POLICY IF EXISTS "image_consents_update_own" ON image_consents;
+DROP POLICY IF EXISTS "image_consents_delete_own" ON image_consents;
+REVOKE INSERT, UPDATE, DELETE ON image_consents FROM anon, authenticated;
 ```
+
+동의 생성·철회는 `/api/consent`만 수행한다. 5축 비공개 Storage도 authenticated 객체 정책을
+두지 않으며 service-role API가 활성 축별 저장 동의와 글로벌 생체정보 동의를 확인한 뒤에만
+업로드·서명·파기한다. 업로드 직후 재검증 실패 시 객체를 rollback하고, rollback 실패는
+CAS로 파기 대기에 표시해 cleanup cron이 재시도한다.
 
 #### 4.3.2 skin_analyses 테이블 확장
 
@@ -533,7 +532,7 @@ ALTER TABLE cleanup_logs ENABLE ROW LEVEL SECURITY;
 **새로운 정책 (동의 시)**:
 
 - **명시적 Opt-in 동의** 획득 후에만 이미지 저장
-- 저장 기간: 동의일로부터 **1년**
+- 저장 기간: 동의일로부터 **최대 1년**
 - 저장 목적: 진행 추적 (Before/After), 맞춤 조언
 - 철회 시: 즉시 삭제 (30일 이내 완전 삭제)
 
@@ -700,7 +699,7 @@ interface ZoneDetailCardProps {
 ```typescript
 interface ConsentStatusProps {
   consent: ImageConsent | null;
-  analysisType: 'skin' | 'body' | 'personal-color';
+  analysisType: 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup';
   showDetails?: boolean;
   onManage?: () => void; // 설정 페이지로 이동
 }
@@ -1229,23 +1228,27 @@ graph TD
 #### ATOM-1: DB 마이그레이션
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1.5시간
 - **의존성**: 없음
 - **병렬 가능**: No (DB 스키마 변경은 순차적)
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| migration_sql | SQL | Y | 마이그레이션 스크립트 |
+
+| 항목          | 타입 | 필수 | 설명                  |
+| ------------- | ---- | ---- | --------------------- |
+| migration_sql | SQL  | Y    | 마이그레이션 스크립트 |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
-| image_consents | Table | 이미지 동의 테이블 |
-| cleanup_logs | Table | 삭제 배치 로그 테이블 |
+
+| 항목               | 타입  | 설명                                                  |
+| ------------------ | ----- | ----------------------------------------------------- |
+| image_consents     | Table | 이미지 동의 테이블                                    |
+| cleanup_logs       | Table | 삭제 배치 로그 테이블                                 |
 | skin_analyses 확장 | ALTER | image_url, image_consent_id, skin_vitality_score 컬럼 |
 
 ##### 성공 기준
+
 - [ ] `image_consents` 테이블 생성 완료
 - [ ] `cleanup_logs` 테이블 생성 완료
 - [ ] `skin_analyses` ALTER 완료
@@ -1255,33 +1258,38 @@ graph TD
 - [ ] `npx supabase db push` 성공
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `supabase/migrations/YYYYMMDD_visual_skin_report.sql` | 신규 | 마이그레이션 스크립트 |
+
+| 파일 경로                                             | 변경 유형 | 설명                  |
+| ----------------------------------------------------- | --------- | --------------------- |
+| `supabase/migrations/YYYYMMDD_visual_skin_report.sql` | 신규      | 마이그레이션 스크립트 |
 
 ---
 
 #### ATOM-2: 타입 정의
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: ATOM-1
 - **병렬 가능**: No
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| db_schema | SQL | Y | DB 스키마 정보 |
+
+| 항목      | 타입 | 필수 | 설명           |
+| --------- | ---- | ---- | -------------- |
+| db_schema | SQL  | Y    | DB 스키마 정보 |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
-| ImageConsent | interface | 동의 데이터 타입 |
-| ZoneStatus | interface | 존 상태 타입 |
+
+| 항목                | 타입      | 설명             |
+| ------------------- | --------- | ---------------- |
+| ImageConsent        | interface | 동의 데이터 타입 |
+| ZoneStatus          | interface | 존 상태 타입     |
 | SkinVitalityFactors | interface | 활력도 요인 타입 |
-| FaceZone | type | 얼굴 존 ID 타입 |
+| FaceZone            | type      | 얼굴 존 ID 타입  |
 
 ##### 성공 기준
+
 - [ ] 모든 인터페이스 정의 완료
 - [ ] DB 스키마와 타입 일치
 - [ ] Zod 스키마 생성 (런타임 검증용)
@@ -1289,35 +1297,40 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/types/visual-report.ts` | 신규 | 시각 리포트 타입 |
-| `apps/web/types/consent.ts` | 신규 | 동의 관련 타입 |
+
+| 파일 경로                         | 변경 유형 | 설명             |
+| --------------------------------- | --------- | ---------------- |
+| `apps/web/types/visual-report.ts` | 신규      | 시각 리포트 타입 |
+| `apps/web/types/consent.ts`       | 신규      | 동의 관련 타입   |
 
 ---
 
 #### ATOM-3: ImageConsentModal 컴포넌트
 
 ##### 메타데이터
+
 - **예상 소요시간**: 2시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes (ATOM-4~13과 병렬)
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| isOpen | boolean | Y | 모달 표시 여부 |
-| onConsent | () => void | Y | 동의 콜백 |
-| onSkip | () => void | Y | 건너뛰기 콜백 |
-| analysisType | 'skin' \| 'body' \| 'personal-color' | Y | 분석 유형 |
-| consentVersion | string | N | 동의 버전 |
+
+| 항목           | 타입                                                       | 필수 | 설명           |
+| -------------- | ---------------------------------------------------------- | ---- | -------------- |
+| isOpen         | boolean                                                    | Y    | 모달 표시 여부 |
+| onConsent      | () => void                                                 | Y    | 동의 콜백      |
+| onSkip         | () => void                                                 | Y    | 건너뛰기 콜백  |
+| analysisType   | 'skin' \| 'body' \| 'personal-color' \| 'hair' \| 'makeup' | Y    | 분석 유형      |
+| consentVersion | string                                                     | N    | 동의 버전      |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목        | 타입            | 설명         |
+| ----------- | --------------- | ------------ |
 | JSX.Element | React Component | 동의 모달 UI |
 
 ##### 성공 기준
+
 - [ ] 디자인 시안대로 UI 구현
 - [ ] 버튼 동등 크기/스타일 (UX 베스트 프랙티스)
 - [ ] 개인정보처리방침 링크 동작
@@ -1326,34 +1339,39 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/components/analysis/consent/ImageConsentModal.tsx` | 신규 | 동의 모달 컴포넌트 |
-| `apps/web/components/analysis/consent/index.ts` | 신규 | export barrel |
+
+| 파일 경로                                                    | 변경 유형 | 설명               |
+| ------------------------------------------------------------ | --------- | ------------------ |
+| `apps/web/components/analysis/consent/ImageConsentModal.tsx` | 신규      | 동의 모달 컴포넌트 |
+| `apps/web/components/analysis/consent/index.ts`              | 신규      | export barrel      |
 
 ---
 
 #### ATOM-4: ConsentStatus 컴포넌트
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| consent | ImageConsent \| null | Y | 동의 데이터 |
-| analysisType | string | Y | 분석 유형 |
-| showDetails | boolean | N | 상세 표시 여부 |
-| onManage | () => void | N | 관리 버튼 콜백 |
+
+| 항목         | 타입                 | 필수 | 설명           |
+| ------------ | -------------------- | ---- | -------------- |
+| consent      | ImageConsent \| null | Y    | 동의 데이터    |
+| analysisType | string               | Y    | 분석 유형      |
+| showDetails  | boolean              | N    | 상세 표시 여부 |
+| onManage     | () => void           | N    | 관리 버튼 콜백 |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목        | 타입            | 설명                |
+| ----------- | --------------- | ------------------- |
 | JSX.Element | React Component | 동의 상태 배지/카드 |
 
 ##### 성공 기준
+
 - [ ] 동의/미동의 상태별 UI 표시
 - [ ] 만료일 표시
 - [ ] 관리 버튼 동작
@@ -1361,32 +1379,37 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/components/analysis/consent/ConsentStatus.tsx` | 신규 | 상태 표시 컴포넌트 |
+
+| 파일 경로                                                | 변경 유형 | 설명               |
+| -------------------------------------------------------- | --------- | ------------------ |
+| `apps/web/components/analysis/consent/ConsentStatus.tsx` | 신규      | 상태 표시 컴포넌트 |
 
 ---
 
 #### ATOM-5: 동의 버전 체크 유틸리티
 
 ##### 메타데이터
+
 - **예상 소요시간**: 0.5시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| currentConsent | ImageConsent \| null | Y | 현재 동의 |
-| latestVersion | string | Y | 최신 버전 |
+
+| 항목           | 타입                 | 필수 | 설명      |
+| -------------- | -------------------- | ---- | --------- |
+| currentConsent | ImageConsent \| null | Y    | 현재 동의 |
+| latestVersion  | string               | Y    | 최신 버전 |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
-| shouldReconsent | boolean | 재동의 필요 여부 |
-| checkConsentEligibility | ConsentEligibility | 동의 자격 확인 |
+
+| 항목                    | 타입               | 설명             |
+| ----------------------- | ------------------ | ---------------- |
+| shouldReconsent         | boolean            | 재동의 필요 여부 |
+| checkConsentEligibility | ConsentEligibility | 동의 자격 확인   |
 
 ##### 성공 기준
+
 - [ ] 버전 비교 로직 정확
 - [ ] 14세 미만 자격 확인
 - [ ] 생년월일 미입력 처리
@@ -1394,36 +1417,41 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/lib/consent/version-check.ts` | 신규 | 버전 체크 유틸리티 |
-| `apps/web/lib/consent/eligibility.ts` | 신규 | 자격 확인 유틸리티 |
+
+| 파일 경로                               | 변경 유형 | 설명               |
+| --------------------------------------- | --------- | ------------------ |
+| `apps/web/lib/consent/version-check.ts` | 신규      | 버전 체크 유틸리티 |
+| `apps/web/lib/consent/eligibility.ts`   | 신규      | 자격 확인 유틸리티 |
 
 ---
 
 #### ATOM-6: FaceZoneMap 컴포넌트
 
 ##### 메타데이터
+
 - **예상 소요시간**: 2시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| zones | Record<FaceZone, ZoneStatus> | Y | 존별 상태 |
-| highlightWorst | boolean | N | 최저 존 강조 |
-| showLabels | boolean | N | 라벨 표시 |
-| showScores | boolean | N | 점수 표시 |
-| size | 'sm' \| 'md' \| 'lg' | N | 컴포넌트 크기 |
-| onZoneClick | (zoneId: string) => void | N | 존 클릭 콜백 |
+
+| 항목           | 타입                         | 필수 | 설명          |
+| -------------- | ---------------------------- | ---- | ------------- |
+| zones          | Record<FaceZone, ZoneStatus> | Y    | 존별 상태     |
+| highlightWorst | boolean                      | N    | 최저 존 강조  |
+| showLabels     | boolean                      | N    | 라벨 표시     |
+| showScores     | boolean                      | N    | 점수 표시     |
+| size           | 'sm' \| 'md' \| 'lg'         | N    | 컴포넌트 크기 |
+| onZoneClick    | (zoneId: string) => void     | N    | 존 클릭 콜백  |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목        | 타입          | 설명           |
+| ----------- | ------------- | -------------- |
 | JSX.Element | SVG Component | 얼굴 존 맵 SVG |
 
 ##### 성공 기준
+
 - [ ] SVG viewBox="0 0 200 280" 비율 준수
 - [ ] 6개 존 영역 표시 (forehead, tZone, eyes, cheeks, uZone, chin)
 - [ ] 상태별 색상 적용 (good/normal/warning)
@@ -1433,37 +1461,42 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/components/analysis/visual-report/FaceZoneMap.tsx` | 신규 | 얼굴 존 맵 |
-| `apps/web/components/analysis/visual-report/index.ts` | 신규 | export barrel |
+
+| 파일 경로                                                    | 변경 유형 | 설명          |
+| ------------------------------------------------------------ | --------- | ------------- |
+| `apps/web/components/analysis/visual-report/FaceZoneMap.tsx` | 신규      | 얼굴 존 맵    |
+| `apps/web/components/analysis/visual-report/index.ts`        | 신규      | export barrel |
 
 ---
 
 #### ATOM-7: ZoneDetailCard 컴포넌트
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1.5시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| zoneId | string | Y | 존 ID |
-| zoneName | string | Y | 존 이름 |
-| score | number | Y | 점수 (0-100) |
-| status | 'good' \| 'normal' \| 'warning' | Y | 상태 |
-| concerns | string[] | Y | 발견된 문제 |
-| recommendations | string[] | Y | 추천 관리 |
-| onClose | () => void | N | 닫기 콜백 |
+
+| 항목            | 타입                            | 필수 | 설명         |
+| --------------- | ------------------------------- | ---- | ------------ |
+| zoneId          | string                          | Y    | 존 ID        |
+| zoneName        | string                          | Y    | 존 이름      |
+| score           | number                          | Y    | 점수 (0-100) |
+| status          | 'good' \| 'normal' \| 'warning' | Y    | 상태         |
+| concerns        | string[]                        | Y    | 발견된 문제  |
+| recommendations | string[]                        | Y    | 추천 관리    |
+| onClose         | () => void                      | N    | 닫기 콜백    |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목        | 타입            | 설명         |
+| ----------- | --------------- | ------------ |
 | JSX.Element | React Component | 존 상세 카드 |
 
 ##### 성공 기준
+
 - [ ] 디자인 시안대로 UI 구현
 - [ ] 문제/추천 리스트 렌더링
 - [ ] 닫기 버튼 동작
@@ -1471,32 +1504,37 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/components/analysis/visual-report/ZoneDetailCard.tsx` | 신규 | 존 상세 카드 |
+
+| 파일 경로                                                       | 변경 유형 | 설명         |
+| --------------------------------------------------------------- | --------- | ------------ |
+| `apps/web/components/analysis/visual-report/ZoneDetailCard.tsx` | 신규      | 존 상세 카드 |
 
 ---
 
 #### ATOM-8: SkinVitalityScore 컴포넌트
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1.5시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| score | number | Y | 활력도 점수 (0-100) |
-| factors | SkinVitalityFactors | Y | 긍정/부정 요인 |
-| showDetails | boolean | N | 상세 표시 |
+
+| 항목        | 타입                | 필수 | 설명                |
+| ----------- | ------------------- | ---- | ------------------- |
+| score       | number              | Y    | 활력도 점수 (0-100) |
+| factors     | SkinVitalityFactors | Y    | 긍정/부정 요인      |
+| showDetails | boolean             | N    | 상세 표시           |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목        | 타입            | 설명             |
+| ----------- | --------------- | ---------------- |
 | JSX.Element | React Component | 피부 활력도 카드 |
 
 ##### 성공 기준
+
 - [ ] 점수 시각화 (원형/게이지)
 - [ ] 강점/개선점 리스트
 - [ ] 점수 범위별 색상 (80+: 녹색, 60-79: 노랑, 40-59: 주황, 0-39: 빨강)
@@ -1504,31 +1542,36 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/components/analysis/visual-report/SkinVitalityScore.tsx` | 신규 | 피부 활력도 컴포넌트 |
+
+| 파일 경로                                                          | 변경 유형 | 설명                 |
+| ------------------------------------------------------------------ | --------- | -------------------- |
+| `apps/web/components/analysis/visual-report/SkinVitalityScore.tsx` | 신규      | 피부 활력도 컴포넌트 |
 
 ---
 
 #### ATOM-9: ScoreSummaryBar 컴포넌트
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| scores | Record<string, number> | Y | 지표별 점수 |
-| labels | Record<string, string> | N | 지표 라벨 |
+
+| 항목   | 타입                   | 필수 | 설명        |
+| ------ | ---------------------- | ---- | ----------- |
+| scores | Record<string, number> | Y    | 지표별 점수 |
+| labels | Record<string, string> | N    | 지표 라벨   |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목        | 타입            | 설명         |
+| ----------- | --------------- | ------------ |
 | JSX.Element | React Component | 점수 요약 바 |
 
 ##### 성공 기준
+
 - [ ] 수평 바 차트 렌더링
 - [ ] 점수별 색상 그라디언트
 - [ ] 라벨 표시
@@ -1536,61 +1579,71 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/components/analysis/visual-report/ScoreSummaryBar.tsx` | 신규 | 점수 요약 바 |
+
+| 파일 경로                                                        | 변경 유형 | 설명         |
+| ---------------------------------------------------------------- | --------- | ------------ |
+| `apps/web/components/analysis/visual-report/ScoreSummaryBar.tsx` | 신규      | 점수 요약 바 |
 
 ---
 
 #### ATOM-10: LightingGuide 컴포넌트
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| onQualityCheck | (result: QualityCheckResult) => void | N | 품질 체크 콜백 |
+
+| 항목           | 타입                                 | 필수 | 설명           |
+| -------------- | ------------------------------------ | ---- | -------------- |
+| onQualityCheck | (result: QualityCheckResult) => void | N    | 품질 체크 콜백 |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
-| JSX.Element | React Component | 조명 가이드 UI |
-| QualityCheckResult | object | 밝기, 균일성, 권장사항 |
+
+| 항목               | 타입            | 설명                   |
+| ------------------ | --------------- | ---------------------- |
+| JSX.Element        | React Component | 조명 가이드 UI         |
+| QualityCheckResult | object          | 밝기, 균일성, 권장사항 |
 
 ##### 성공 기준
+
 - [ ] 체크리스트 UI 구현
 - [ ] 권장사항 표시
 - [ ] typecheck 통과
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/components/analysis/visual-report/LightingGuide.tsx` | 신규 | 조명 가이드 |
+
+| 파일 경로                                                      | 변경 유형 | 설명        |
+| -------------------------------------------------------------- | --------- | ----------- |
+| `apps/web/components/analysis/visual-report/LightingGuide.tsx` | 신규      | 조명 가이드 |
 
 ---
 
 #### ATOM-11: 존 매핑 유틸리티
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| analysisData | SkinAnalysisResult | Y | 분석 결과 데이터 |
+
+| 항목         | 타입               | 필수 | 설명             |
+| ------------ | ------------------ | ---- | ---------------- |
+| analysisData | SkinAnalysisResult | Y    | 분석 결과 데이터 |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목  | 타입                         | 설명           |
+| ----- | ---------------------------- | -------------- |
 | zones | Record<FaceZone, ZoneStatus> | 존별 상태 매핑 |
 
 ##### 성공 기준
+
 - [ ] Gemini 응답 → ZoneStatus 변환
 - [ ] 점수 → status 변환 로직
 - [ ] 기본값 처리
@@ -1598,30 +1651,35 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/lib/analysis/zone-mapping.ts` | 신규 | 존 매핑 유틸리티 |
+
+| 파일 경로                               | 변경 유형 | 설명             |
+| --------------------------------------- | --------- | ---------------- |
+| `apps/web/lib/analysis/zone-mapping.ts` | 신규      | 존 매핑 유틸리티 |
 
 ---
 
 #### ATOM-12: Gemini 프롬프트 확장
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| existingPrompt | string | Y | 기존 프롬프트 |
+
+| 항목           | 타입   | 필수 | 설명          |
+| -------------- | ------ | ---- | ------------- |
+| existingPrompt | string | Y    | 기존 프롬프트 |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목           | 타입   | 설명                                    |
+| -------------- | ------ | --------------------------------------- |
 | extendedPrompt | string | skinVitalityScore, vitalityFactors 추가 |
 
 ##### 성공 기준
+
 - [ ] skinVitalityScore (0-100) 필드 추가
 - [ ] vitalityFactors (positive/negative) 필드 추가
 - [ ] 기존 응답 호환성 유지
@@ -1629,60 +1687,70 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/lib/gemini.ts` | 수정 | 프롬프트 확장 |
+
+| 파일 경로                | 변경 유형 | 설명          |
+| ------------------------ | --------- | ------------- |
+| `apps/web/lib/gemini.ts` | 수정      | 프롬프트 확장 |
 
 ---
 
 #### ATOM-13: Mock 데이터 확장
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: ATOM-2
 - **병렬 가능**: Yes
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| skinTypes | SkinTypeId[] | Y | 5개 피부 타입 |
+
+| 항목      | 타입         | 필수 | 설명          |
+| --------- | ------------ | ---- | ------------- |
+| skinTypes | SkinTypeId[] | Y    | 5개 피부 타입 |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목           | 타입                            | 설명          |
+| -------------- | ------------------------------- | ------------- |
 | EASY_SKIN_TIPS | Record<SkinTypeId, EasySkinTip> | Hybrid용 Mock |
 
 ##### 성공 기준
+
 - [ ] 5개 피부 타입별 데이터 완성
 - [ ] summary, easyExplanation, morningRoutine, eveningRoutine, productTip 포함
 - [ ] typecheck 통과
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/lib/mock/skin-analysis.ts` | 수정 | Mock 데이터 확장 |
+
+| 파일 경로                            | 변경 유형 | 설명             |
+| ------------------------------------ | --------- | ---------------- |
+| `apps/web/lib/mock/skin-analysis.ts` | 수정      | Mock 데이터 확장 |
 
 ---
 
 #### ATOM-14: S-1 결과 페이지 통합
 
 ##### 메타데이터
+
 - **예상 소요시간**: 2시간
 - **의존성**: ATOM-3, ATOM-4, ATOM-5, ATOM-6, ATOM-7, ATOM-8, ATOM-9, ATOM-10, ATOM-11, ATOM-12, ATOM-13
 - **병렬 가능**: No (모든 컴포넌트 의존)
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| analysisId | string | Y | 분석 ID |
+
+| 항목       | 타입   | 필수 | 설명    |
+| ---------- | ------ | ---- | ------- |
+| analysisId | string | Y    | 분석 ID |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목       | 타입            | 설명               |
+| ---------- | --------------- | ------------------ |
 | ResultPage | React Component | 통합된 결과 페이지 |
 
 ##### 성공 기준
+
 - [ ] FaceZoneMap 렌더링
 - [ ] SkinVitalityScore 표시
 - [ ] 동의 상태별 조건부 렌더링
@@ -1692,30 +1760,35 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/app/(main)/analysis/skin/result/[id]/page.tsx` | 수정 | 결과 페이지 통합 |
+
+| 파일 경로                                                | 변경 유형 | 설명             |
+| -------------------------------------------------------- | --------- | ---------------- |
+| `apps/web/app/(main)/analysis/skin/result/[id]/page.tsx` | 수정      | 결과 페이지 통합 |
 
 ---
 
 #### ATOM-15: 설정 개인정보 페이지
 
 ##### 메타데이터
+
 - **예상 소요시간**: 1.5시간
 - **의존성**: ATOM-3, ATOM-4
 - **병렬 가능**: Yes (ATOM-14와 병렬)
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| userId | string | Y | Clerk User ID |
+
+| 항목   | 타입   | 필수 | 설명          |
+| ------ | ------ | ---- | ------------- |
+| userId | string | Y    | Clerk User ID |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목        | 타입            | 설명                 |
+| ----------- | --------------- | -------------------- |
 | PrivacyPage | React Component | 개인정보 관리 페이지 |
 
 ##### 성공 기준
+
 - [ ] 저장된 이미지 목록 표시
 - [ ] 개별 삭제 기능
 - [ ] 데이터 내보내기 기능
@@ -1724,31 +1797,36 @@ graph TD
 - [ ] lint 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/app/(main)/settings/privacy/page.tsx` | 신규 | 개인정보 관리 페이지 |
+
+| 파일 경로                                       | 변경 유형 | 설명                 |
+| ----------------------------------------------- | --------- | -------------------- |
+| `apps/web/app/(main)/settings/privacy/page.tsx` | 신규      | 개인정보 관리 페이지 |
 
 ---
 
 #### ATOM-16: 테스트 작성
 
 ##### 메타데이터
+
 - **예상 소요시간**: 2시간
 - **의존성**: ATOM-14, ATOM-15
 - **병렬 가능**: No (구현 완료 후)
 
 ##### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| components | React Component[] | Y | 테스트 대상 컴포넌트 |
-| utils | Function[] | Y | 테스트 대상 유틸리티 |
+
+| 항목       | 타입              | 필수 | 설명                 |
+| ---------- | ----------------- | ---- | -------------------- |
+| components | React Component[] | Y    | 테스트 대상 컴포넌트 |
+| utils      | Function[]        | Y    | 테스트 대상 유틸리티 |
 
 ##### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목      | 타입        | 설명          |
+| --------- | ----------- | ------------- |
 | testFiles | .test.tsx[] | 테스트 파일들 |
 
 ##### 성공 기준
+
 - [ ] ImageConsentModal 테스트 (동의/건너뛰기)
 - [ ] FaceZoneMap 테스트 (렌더링/클릭)
 - [ ] SkinVitalityScore 테스트 (점수 표시)
@@ -1759,39 +1837,40 @@ graph TD
 - [ ] `npm run test` 통과
 
 ##### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/tests/components/analysis/consent/ImageConsentModal.test.tsx` | 신규 | 동의 모달 테스트 |
-| `apps/web/tests/components/analysis/visual-report/FaceZoneMap.test.tsx` | 신규 | 존 맵 테스트 |
-| `apps/web/tests/components/analysis/visual-report/SkinVitalityScore.test.tsx` | 신규 | 활력도 테스트 |
-| `apps/web/tests/lib/consent/version-check.test.ts` | 신규 | 버전 체크 테스트 |
-| `apps/web/tests/lib/analysis/zone-mapping.test.ts` | 신규 | 존 매핑 테스트 |
+
+| 파일 경로                                                                     | 변경 유형 | 설명             |
+| ----------------------------------------------------------------------------- | --------- | ---------------- |
+| `apps/web/tests/components/analysis/consent/ImageConsentModal.test.tsx`       | 신규      | 동의 모달 테스트 |
+| `apps/web/tests/components/analysis/visual-report/FaceZoneMap.test.tsx`       | 신규      | 존 맵 테스트     |
+| `apps/web/tests/components/analysis/visual-report/SkinVitalityScore.test.tsx` | 신규      | 활력도 테스트    |
+| `apps/web/tests/lib/consent/version-check.test.ts`                            | 신규      | 버전 체크 테스트 |
+| `apps/web/tests/lib/analysis/zone-mapping.test.ts`                            | 신규      | 존 매핑 테스트   |
 
 ---
 
 ### 13.3 총 소요시간 요약
 
-| Phase | 원자 | 소요시간 | 병렬 가능 |
-|-------|------|----------|----------|
-| Phase 1 | ATOM-1, ATOM-2 | 2.5h | 순차 |
-| Phase 2 | ATOM-3, ATOM-4, ATOM-5 | 3.5h | 병렬 (2h 실제) |
-| Phase 3 | ATOM-6~10 | 7h | 병렬 (2h 실제) |
-| Phase 4 | ATOM-11~13 | 3h | 병렬 (1h 실제) |
-| Phase 5 | ATOM-14, ATOM-15 | 3.5h | 부분 병렬 (2.5h 실제) |
-| Phase 6 | ATOM-16 | 2h | 순차 |
-| **총합** | **16개** | **21.5h** | **병렬 시 ~12h** |
+| Phase    | 원자                   | 소요시간  | 병렬 가능             |
+| -------- | ---------------------- | --------- | --------------------- |
+| Phase 1  | ATOM-1, ATOM-2         | 2.5h      | 순차                  |
+| Phase 2  | ATOM-3, ATOM-4, ATOM-5 | 3.5h      | 병렬 (2h 실제)        |
+| Phase 3  | ATOM-6~10              | 7h        | 병렬 (2h 실제)        |
+| Phase 4  | ATOM-11~13             | 3h        | 병렬 (1h 실제)        |
+| Phase 5  | ATOM-14, ATOM-15       | 3.5h      | 부분 병렬 (2.5h 실제) |
+| Phase 6  | ATOM-16                | 2h        | 순차                  |
+| **총합** | **16개**               | **21.5h** | **병렬 시 ~12h**      |
 
 ### 13.4 P3 점수 검증
 
-| 항목 | 배점 | 달성 | 비고 |
-|------|------|------|------|
-| 소요시간 명시 | 20점 | 20점 | 모든 원자 명시됨 |
-| 입출력 스펙 | 20점 | 20점 | Props/Return 정의 |
-| 성공 기준 | 20점 | 20점 | 체크리스트 포함 |
-| 의존성 그래프 | 20점 | 20점 | Mermaid 시각화 |
-| 파일 배치 | 10점 | 10점 | 경로 명시 |
-| 테스트 케이스 | 10점 | 10점 | ATOM-16에 정의 |
-| **총점** | **100점** | **100점** | P3 달성 |
+| 항목          | 배점      | 달성      | 비고              |
+| ------------- | --------- | --------- | ----------------- |
+| 소요시간 명시 | 20점      | 20점      | 모든 원자 명시됨  |
+| 입출력 스펙   | 20점      | 20점      | Props/Return 정의 |
+| 성공 기준     | 20점      | 20점      | 체크리스트 포함   |
+| 의존성 그래프 | 20점      | 20점      | Mermaid 시각화    |
+| 파일 배치     | 10점      | 10점      | 경로 명시         |
+| 테스트 케이스 | 10점      | 10점      | ATOM-16에 정의    |
+| **총점**      | **100점** | **100점** | P3 달성           |
 
 ---
 

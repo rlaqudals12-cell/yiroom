@@ -1,4 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const consentMocks = vi.hoisted(() => ({
+  signConsentedAnalysisImageUrls: vi.fn(),
+}));
+
+vi.mock('@/lib/consent/image-access', () => ({
+  signConsentedAnalysisImageUrls: consentMocks.signConsentedAnalysisImageUrls,
+}));
 import {
   calculateTrend,
   calculatePeriod,
@@ -10,13 +18,20 @@ import {
 import type { AnalysisHistoryItem } from '@/types/analysis-history';
 
 // Supabase 클라이언트 모킹
+const mockCreateSignedUrls = vi.fn();
+const mockStorageFrom = vi.fn(() => ({ createSignedUrls: mockCreateSignedUrls }));
 const mockSupabase = {
   from: vi.fn(),
+  storage: { from: mockStorageFrom },
 };
 
 describe('historyService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    consentMocks.signConsentedAnalysisImageUrls.mockImplementation(
+      async (_supabase, _userId, _type, values: Array<string | null | undefined>) =>
+        values.map((value) => value || null)
+    );
   });
 
   describe('calculateTrend', () => {
@@ -350,6 +365,75 @@ describe('historyService', () => {
         overallScore: 80,
         imageUrl: 'https://example.com/img.jpg',
       });
+    });
+
+    it('헤어 비공개 경로는 서명 URL로 바꾸고 raw 경로를 반환하지 않는다', async () => {
+      const mockQuery = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: [
+            {
+              id: 'hair-raw',
+              created_at: '2026-08-23T00:00:00Z',
+              overall_score: 80,
+              image_url: 'user-123/hair-private.jpg',
+            },
+          ],
+          error: null,
+        }),
+      };
+      mockSupabase.from.mockReturnValue(mockQuery);
+      consentMocks.signConsentedAnalysisImageUrls.mockResolvedValueOnce([
+        'https://signed.example/hair-private.jpg?token=redacted',
+      ]);
+
+      const result = await getAnalysisHistory(mockSupabase as never, {
+        type: 'hair',
+        userId: 'user-123',
+      });
+
+      expect(consentMocks.signConsentedAnalysisImageUrls).toHaveBeenCalledWith(
+        mockSupabase,
+        'user-123',
+        'hair',
+        ['user-123/hair-private.jpg']
+      );
+      expect(result.analyses[0].imageUrl).toBe(
+        'https://signed.example/hair-private.jpg?token=redacted'
+      );
+      expect(JSON.stringify(result)).not.toContain('user-123/hair-private.jpg');
+    });
+
+    it('메이크업 이미지 서명 실패 시 raw 경로를 숨긴다', async () => {
+      const mockQuery = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue({
+          data: [
+            {
+              id: 'makeup-raw',
+              created_at: '2026-08-23T00:00:00Z',
+              image_url: 'user-123/makeup-private.jpg',
+            },
+          ],
+          error: null,
+        }),
+      };
+      mockSupabase.from.mockReturnValue(mockQuery);
+      consentMocks.signConsentedAnalysisImageUrls.mockResolvedValueOnce([null]);
+
+      const result = await getAnalysisHistory(mockSupabase as never, {
+        type: 'makeup',
+        userId: 'user-123',
+      });
+
+      expect(result.analyses[0].imageUrl).toBeUndefined();
+      expect(JSON.stringify(result)).not.toContain('user-123/makeup-private.jpg');
     });
 
     it('applies period filter correctly', async () => {

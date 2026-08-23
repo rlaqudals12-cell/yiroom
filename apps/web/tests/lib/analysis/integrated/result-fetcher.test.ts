@@ -18,6 +18,10 @@ interface QueryResult {
 /** 테이블별 응답 시나리오 — 세션 조회 / session_id 조회 / 최신 1건 조회 */
 const scenario = vi.hoisted(() => ({
   session: { data: null as unknown, error: null as { message: string } | null },
+  agreement: {
+    data: { biometric_agreed: true } as unknown,
+    error: null as { message: string } | null,
+  },
   bySession: {} as Record<string, QueryResult>,
   latest: {} as Record<string, QueryResult>,
   lteCalls: [] as Array<{ table: string; column: string; value: unknown }>,
@@ -46,6 +50,7 @@ vi.mock('@/lib/supabase/server', () => ({
         limit: () => chain,
         maybeSingle: async (): Promise<QueryResult> => {
           if (table === 'integrated_analysis_sessions') return scenario.session as QueryResult;
+          if (table === 'user_agreements') return scenario.agreement as QueryResult;
           if (state.isLatest) return scenario.latest[table] ?? { data: null, error: null };
           return scenario.bySession[table] ?? { data: null, error: null };
         },
@@ -64,15 +69,65 @@ const SESSION = {
   axes_completed: ['skin'],
   axes_failed: [],
   used_fallback: [],
-  questionnaire: {},
+  face_image_url: 'user_1/sess-1/face.jpg',
+  body_image_url: null,
+  image_cleanup_pending: false,
+  questionnaire: { imageStorageConsent: true },
   created_at: '2026-08-17T00:00:00.000Z',
 };
 
 beforeEach(() => {
   scenario.session = { data: SESSION, error: null };
+  scenario.agreement = { data: { biometric_agreed: true }, error: null };
   scenario.bySession = {};
   scenario.latest = {};
   scenario.lteCalls = [];
+});
+
+describe('fetchIntegratedResult — 저장 원본 서명 게이트', () => {
+  it('기존 경로가 있어도 cleanup pending이면 서버 서명을 금지한다', async () => {
+    scenario.session = {
+      data: { ...SESSION, image_cleanup_pending: true },
+      error: null,
+    };
+
+    const result = await fetchIntegratedResult('sess-1');
+    expect(result?.storedImageAccessState).toBe('purge_pending');
+    expect(result?.accessibleFaceImagePath).toBeNull();
+  });
+
+  it('글로벌 생체 동의가 철회됐으면 기존 경로를 서명하지 않는다', async () => {
+    scenario.agreement = { data: { biometric_agreed: false }, error: null };
+
+    const result = await fetchIntegratedResult('sess-1');
+    expect(result?.storedImageAccessState).toBe('biometric_revoked');
+    expect(result?.accessibleFaceImagePath).toBeNull();
+  });
+
+  it('회차 동의·글로벌 동의·소유 경로·pending 해제를 모두 만족해야 접근 가능하다', async () => {
+    const result = await fetchIntegratedResult('sess-1');
+    expect(result?.storedImageAccessState).toBe('allowed');
+    expect(result?.accessibleFaceImagePath).toBe(SESSION.face_image_url);
+  });
+
+  it('이번 회차 저장 미동의는 전역 철회로 오표시하지 않고 원본 경로만 제거한다', async () => {
+    scenario.session = {
+      data: { ...SESSION, questionnaire: { imageStorageConsent: false } },
+      error: null,
+    };
+
+    const result = await fetchIntegratedResult('sess-1');
+    expect(result?.storedImageAccessState).toBe('no_session_consent');
+    expect(result?.accessibleFaceImagePath).toBeNull();
+  });
+
+  it('글로벌 동의 조회 실패는 허용으로 추정하지 않는다', async () => {
+    scenario.agreement = { data: null, error: { message: 'agreement unavailable' } };
+
+    const result = await fetchIntegratedResult('sess-1');
+    expect(result?.storedImageAccessState).toBe('agreement_unavailable');
+    expect(result?.accessibleFaceImagePath).toBeNull();
+  });
 });
 
 describe('fetchIntegratedResult — 유지 축 프로필 폴백 (외부 리뷰 #1)', () => {

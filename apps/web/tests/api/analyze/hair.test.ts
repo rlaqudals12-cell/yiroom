@@ -348,9 +348,29 @@ describe('POST /api/analyze/hair', () => {
         'user_test123',
         'hair',
         'hair-images',
-        { hair: 'data:image/jpeg;base64,/9j/test' }
+        { hair: 'data:image/jpeg;base64,/9j/test' },
+        { imageStorageAllowed: undefined }
       );
       expect(mockSupabase.storage.from).not.toHaveBeenCalled();
+    });
+
+    it('요청에서 저장을 명시적으로 거부하면 stale DB 동의보다 우선하도록 전달한다', async () => {
+      await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+          imageStorageAllowed: false,
+        })
+      );
+
+      expect(checkConsentAndUploadImages).toHaveBeenCalledWith(
+        mockSupabase,
+        'user_test123',
+        'hair',
+        'hair-images',
+        { hair: 'data:image/jpeg;base64,/9j/test' },
+        { imageStorageAllowed: false }
+      );
     });
   });
 

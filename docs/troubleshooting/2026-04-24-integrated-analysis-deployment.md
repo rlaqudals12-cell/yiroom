@@ -29,11 +29,13 @@ Phase A~E(ADR-099~103)로 **통합 분석 플로우 전체**가 완성됐지만,
 
 ### 왜 필요한가
 
-통합 분석 시 얼굴/전신 이미지를 Storage에 업로드 → 서명된 URL로 결과 페이지에서 표시. 버킷 없으면 **첫 분석 요청에서 즉시 실패**.
+통합 분석 시 사용자가 원본 저장에 선택 동의한 회차만 얼굴/전신 이미지를 Storage에 저장한다.
+버킷이 없거나 선택 저장이 실패해도 정리가 확인되면 5축 분석은 계속되고, 결과에 저장 실패를 고지한다.
 
 ### 수행 방법
 
-Supabase Dashboard에서 수동 생성 (SQL 마이그레이션으로는 버킷 생성 불가):
+prod는 `202608230400_integrated_sessions_storage_bucket.sql`을 Dashboard SQL Editor에서
+수동 gap-apply한다. `supabase db push`는 금지한다.
 
 1. **Dashboard 진입**: https://supabase.com/dashboard/project/{PROJECT_ID}/storage/buckets
 2. **New bucket** 클릭
@@ -42,33 +44,26 @@ Supabase Dashboard에서 수동 생성 (SQL 마이그레이션으로는 버킷 �
    | --- | --- |
    | Bucket name | `integrated-sessions` |
    | Public bucket | ❌ **OFF** (private) |
-   | File size limit | `5 MB` |
-   | Allowed MIME types | `image/jpeg, image/png, image/webp` |
+   | File size limit | `10 MB` |
+   | Allowed MIME types | `image/jpeg, image/png, image/webp, image/heic, image/heif` |
 
 ### 버킷 RLS 정책 (Dashboard Policies 탭)
 
-버킷 생성 후 Storage → Policies에서 다음 정책 추가:
+버킷 생성 후 Storage → Policies는 서버 전용으로 둔다:
 
 ```sql
 -- service_role 전체 접근 (API 라우트에서 업로드)
-CREATE POLICY "service_role_all_integrated_sessions"
-  ON storage.objects FOR ALL
-  USING (
-    bucket_id = 'integrated-sessions'
-    AND current_setting('role', true) = 'service_role'
-  );
+CREATE POLICY "Service role manages integrated session images"
+  ON storage.objects FOR ALL TO service_role
+  USING (bucket_id = 'integrated-sessions')
+  WITH CHECK (bucket_id = 'integrated-sessions');
 
--- 본인 객체만 조회 (서명된 URL 발급을 위해)
-CREATE POLICY "user_select_own_integrated_sessions"
-  ON storage.objects FOR SELECT
-  USING (
-    bucket_id = 'integrated-sessions'
-    AND (storage.foldername(name))[1] = (SELECT auth.get_user_id())
-  );
+-- 과거 초안의 authenticated SELECT가 있으면 제거한다.
+DROP POLICY IF EXISTS "Users can view own integrated session images" ON storage.objects;
 ```
 
 > 경로 패턴: `{clerkUserId}/{sessionId}/face.jpg`, `body.jpg`
-> `(storage.foldername(name))[1]`로 첫 번째 폴더(clerkUserId) 기준 접근 제어.
+> 결과 서버가 세션 소유권·회차 저장 동의·글로벌 생체 동의·파기 상태를 확인한 뒤 서명한다.
 
 ### 검증
 
@@ -102,15 +97,7 @@ apps/web/supabase/migrations/rollback/20260423_integrated_analysis_sessions_roll
 
 ### 수행 방법
 
-**선택 A: Supabase CLI (권장)**
-
-```bash
-cd apps/web
-npx supabase link --project-ref {PROJECT_ID}  # 최초 1회
-npx supabase db push
-```
-
-**선택 B: 대시보드 SQL Editor**
+**Supabase Dashboard SQL Editor 수동 gap-apply (정본)**
 
 1. Supabase Dashboard → SQL Editor
 2. `apps/web/supabase/migrations/20260423_integrated_analysis_sessions.sql` 내용 복사 → 실행
@@ -419,10 +406,10 @@ curl -s "https://yiroom.app/analysis/integrated/result/{SESSION_ID}" \
 ### 인프라 (Phase A~E)
 
 ```
-[ ] 1. Supabase Storage 버킷 `integrated-sessions` 생성 (private, 5MB, image/*)
+[ ] 1. `202608230400_integrated_sessions_storage_bucket.sql` 수동 gap-apply (private, 10MB, 5개 MIME)
 [ ] 2. Storage RLS 정책 2개 추가 (service_role_all, user_select_own)
 [ ] 3. `curl` 업로드 테스트 성공
-[ ] 4. DB 마이그레이션 20260423 적용 (CLI 또는 SQL Editor)
+[ ] 4. DB 마이그레이션 20260423 적용 (SQL Editor 수동 gap-apply, db push 금지)
 [ ] 5. `integrated_analysis_sessions` 테이블 + 5개 테이블 `session_id` 컬럼 확인
 [ ] 6. DB 마이그레이션 20260424 적용 (persona 컬럼 — Phase F.1에서 추가)
 [ ] 7. `eas env:create`로 EXPO_PUBLIC_YIROOM_API_URL 등록 (production + preview)

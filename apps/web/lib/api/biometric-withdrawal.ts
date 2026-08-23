@@ -20,6 +20,24 @@ const IMAGE_CONSENT_TYPES = [
   'posture',
 ] as const;
 
+type ImageConsentType = (typeof IMAGE_CONSENT_TYPES)[number];
+
+/**
+ * 축별 원본 버킷과 결과 포인터. 공용 analysis_images 정리가 실패하면 어떤 축도
+ * 완료로 확정하지 않는다. 축과 무관한 통합 세션·AI 트윈은 각자의 재시도 큐로 관리한다.
+ */
+const AXIS_PURGE_TARGETS: Record<ImageConsentType, { storage: string; metadata: string }> = {
+  skin: { storage: 'storage:skin-images', metadata: 'db:skin_analyses' },
+  body: { storage: 'storage:body-images', metadata: 'db:body_analyses' },
+  'personal-color': {
+    storage: 'storage:personal-color-images',
+    metadata: 'db:personal_color_assessments',
+  },
+  hair: { storage: 'storage:hair-images', metadata: 'db:hair_analyses' },
+  makeup: { storage: 'storage:makeup-images', metadata: 'db:makeup_analyses' },
+  posture: { storage: 'storage:posture-images', metadata: 'db:posture_analyses' },
+};
+
 /**
  * 실제 분석 테이블에 저장되는 이미지 경로 필드.
  * 이미지 자체는 Storage에서 지우고, 아래 단계는 삭제된 파일을 가리키는 경로도 남기지 않는다.
@@ -42,10 +60,6 @@ const IMAGE_POINTER_CLEAR_STEPS = [
   { table: 'hair_analyses', values: { image_url: '' } },
   { table: 'makeup_analyses', values: { image_url: '' } },
   { table: 'posture_analyses', values: { front_image_url: '', side_image_url: null } },
-  {
-    table: 'integrated_analysis_sessions',
-    values: { face_image_url: null, body_image_url: null },
-  },
 ] as const;
 
 export interface BiometricWithdrawalResult {
@@ -92,6 +106,9 @@ async function revokeConsentFlags(
       .update({
         consent_given: false,
         withdrawal_at: withdrawalAt,
+        // 완료 확정 전에는 cron이 재시도할 수 있는 영속 표식을 유지한다.
+        retention_until: withdrawalAt,
+        cleanup_reconciled_at: null,
       })
       .eq('clerk_user_id', userId)
       .in('analysis_type', IMAGE_CONSENT_TYPES);
@@ -160,6 +177,96 @@ async function clearImageMetadata(
   return { completed, failedTargets };
 }
 
+function getPurgedConsentTypes(
+  storageFailures: readonly string[],
+  metadataFailures: readonly string[],
+  consentFlagsFailed: boolean
+): ImageConsentType[] {
+  if (consentFlagsFailed || metadataFailures.includes('db:analysis_images')) return [];
+
+  const failures = new Set([...storageFailures, ...metadataFailures]);
+  return IMAGE_CONSENT_TYPES.filter((analysisType) => {
+    const targets = AXIS_PURGE_TARGETS[analysisType];
+    return !failures.has(targets.storage) && !failures.has(targets.metadata);
+  });
+}
+
+/** 성공한 축만 withdrawal_at CAS로 완료 상태에 진입시킨다. 실패 축의 retention은 유지된다. */
+async function finalizePurgedConsentTypes(
+  supabase: ServiceClient,
+  userId: string,
+  withdrawalAt: string,
+  analysisTypes: readonly ImageConsentType[]
+): Promise<string[]> {
+  if (analysisTypes.length === 0) return [];
+
+  try {
+    const { error } = await supabase
+      .from('image_consents')
+      .update({ retention_until: null, cleanup_reconciled_at: null })
+      .eq('clerk_user_id', userId)
+      .eq('consent_given', false)
+      .eq('withdrawal_at', withdrawalAt)
+      .in('analysis_type', analysisTypes);
+    return error ? ['db:image_consents_finalize'] : [];
+  } catch {
+    return ['db:image_consents_finalize'];
+  }
+}
+
+async function markIntegratedCleanupPending(
+  supabase: ServiceClient,
+  userId: string
+): Promise<{ completed: number; failedTargets: string[] }> {
+  try {
+    const { error } = await supabase
+      .from('integrated_analysis_sessions')
+      .update({ image_cleanup_pending: true })
+      .eq('clerk_user_id', userId)
+      .or('face_image_url.not.is.null,body_image_url.not.is.null');
+    if (error) {
+      return { completed: 0, failedTargets: ['db:integrated_analysis_sessions_cleanup_queue'] };
+    }
+    return { completed: 1, failedTargets: [] };
+  } catch {
+    return { completed: 0, failedTargets: ['db:integrated_analysis_sessions_cleanup_queue'] };
+  }
+}
+
+/**
+ * integrated-sessions는 Storage 실패 때 포인터를 지우면 재시도 경로를 잃는다.
+ * 성공 시에만 포인터를 비우고, Storage/DB 어느 쪽이 불확실해도 영속 pending 큐를 남긴다.
+ */
+async function reconcileIntegratedImages(
+  supabase: ServiceClient,
+  userId: string,
+  storagePurgeFailed: boolean
+): Promise<{ completed: number; failedTargets: string[] }> {
+  if (storagePurgeFailed) {
+    return markIntegratedCleanupPending(supabase, userId);
+  }
+
+  try {
+    const { error } = await supabase
+      .from('integrated_analysis_sessions')
+      .update({
+        face_image_url: null,
+        body_image_url: null,
+        image_cleanup_pending: false,
+      })
+      .eq('clerk_user_id', userId);
+    if (!error) return { completed: 1, failedTargets: [] };
+  } catch {
+    // 아래 영속 재시도 표식으로 수렴한다.
+  }
+
+  const queued = await markIntegratedCleanupPending(supabase, userId);
+  return {
+    completed: 0,
+    failedTargets: ['db:integrated_analysis_sessions', ...queued.failedTargets],
+  };
+}
+
 /**
  * 현재 사용자의 생체 동의를 철회하고 저장된 생체 분석 이미지를 파기한다.
  * 실패한 단계가 있어도 나머지 파기는 계속 시도하며 결과에 정확히 드러낸다.
@@ -175,16 +282,34 @@ export async function revokeBiometricConsentAndPurge(
 
   const purge = await purgeUserStorageBuckets(supabase, userId, BIOMETRIC_STORAGE_BUCKETS);
   const metadata = await clearImageMetadata(supabase, userId);
+  const integrated = await reconcileIntegratedImages(
+    supabase,
+    userId,
+    purge.failedBuckets.includes('storage:integrated-sessions')
+  );
+  const purgedConsentTypes = getPurgedConsentTypes(
+    purge.failedBuckets,
+    metadata.failedTargets,
+    consent.failedTargets.includes('db:image_consents')
+  );
+  const consentFinalizationFailures = await finalizePurgedConsentTypes(
+    supabase,
+    userId,
+    withdrawalAt,
+    purgedConsentTypes
+  );
   const failedTargets = [
     ...consent.failedTargets,
     ...purge.failedBuckets,
     ...metadata.failedTargets,
+    ...integrated.failedTargets,
+    ...consentFinalizationFailures,
   ];
 
   return {
     consentRevoked: consent.consentRevoked,
     imagesDeleted: purge.deleted,
-    databaseTargetsCleared: consent.completed + metadata.completed,
+    databaseTargetsCleared: consent.completed + metadata.completed + integrated.completed,
     fullyPurged: failedTargets.length === 0,
     failedTargets,
   };

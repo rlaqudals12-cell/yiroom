@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { ArrowLeft, Share2, TrendingUp, TrendingDown, Minus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AnalysisCompareImageNotice } from '@/components/analysis/consent/AnalysisCompareImageNotice';
 import { cn } from '@/lib/utils';
 import { selectByKey, selectByCondition, getTrendDirection } from '@/lib/utils/conditional-helpers';
 import type { AnalysisCompareResponse, BodyAnalysisHistoryItem } from '@/types/analysis-history';
@@ -190,6 +191,12 @@ function BodyCompareContent() {
             altPrefix="체형"
           />
         )}
+        <AnalysisCompareImageNotice
+          afterImageUrl={after.imageUrl}
+          analysisType="body"
+          beforeImageUrl={before.imageUrl}
+          testId="body-compare-image-storage-notice"
+        />
 
         {/* 전체 점수 변화 */}
         <Card>

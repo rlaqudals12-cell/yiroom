@@ -30,19 +30,30 @@ const mocks = vi.hoisted(() => ({
   runMakeupComposer: vi.fn(),
   fetchProfileSnapshot: vi.fn(),
   composePersona: vi.fn(),
+  uploadSessionImages: vi.fn(),
+  rollbackUploadedSessionImages: vi.fn(),
+  attachSessionImagePointers: vi.fn(),
+  assertBiometricConsentForImageAttach: vi.fn(),
+  clearSessionImagePointers: vi.fn(),
+  recordSessionImageStorageFailure: vi.fn(),
+  recordSessionImageCleanupPending: vi.fn(),
 }));
 
-vi.mock('@/lib/analysis/integrated/internal/storage-uploader', () => ({
-  uploadSessionImages: vi.fn(async () => ({
-    faceImageUrl: 'face/path.jpg',
-    bodyImageUrl: null,
-  })),
+vi.mock('@/lib/analysis/integrated/internal/storage-uploader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analysis/integrated/internal/storage-uploader')>()),
+  uploadSessionImages: mocks.uploadSessionImages,
+  rollbackUploadedSessionImages: mocks.rollbackUploadedSessionImages,
 }));
 
 vi.mock('@/lib/analysis/integrated/internal/session-store', () => ({
   createSession: mocks.createSession,
   finalizeSession: mocks.finalizeSession,
   markSessionFailed: mocks.markSessionFailed,
+  attachSessionImagePointers: mocks.attachSessionImagePointers,
+  assertBiometricConsentForImageAttach: mocks.assertBiometricConsentForImageAttach,
+  clearSessionImagePointers: mocks.clearSessionImagePointers,
+  recordSessionImageStorageFailure: mocks.recordSessionImageStorageFailure,
+  recordSessionImageCleanupPending: mocks.recordSessionImageCleanupPending,
 }));
 
 vi.mock('@/lib/analysis/integrated/internal/axis-adapters', () => ({
@@ -79,6 +90,10 @@ vi.mock('@/lib/gamification', () => ({
 import { runIntegratedAnalysis } from '@/lib/analysis/integrated/orchestrator';
 import { SessionFinalizeError } from '@/lib/analysis/integrated/orchestrator';
 import { createExecutionDeadline } from '@/lib/utils/timeout';
+import {
+  ImageStorageOperationError,
+  ImageStorageRollbackError,
+} from '@/lib/analysis/integrated/internal/storage-uploader';
 
 const USER = 'user_test_1';
 
@@ -89,6 +104,7 @@ function baseInput(overrides: Partial<IntegratedAnalysisInput> = {}): Integrated
       skin: { selfReportedType: 'unknown', concerns: [] },
       hair: {},
       body: {},
+      imageStorageConsent: false,
     },
     mode: 'full',
     options: { locale: 'ko', skipMakeup: false },
@@ -166,10 +182,14 @@ function snapshotWith(
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.createSession.mockResolvedValue({
-    created_at: '2026-08-17T00:00:00.000Z',
-    used_fallback: [],
-  });
+  mocks.createSession.mockImplementation(
+    async (input: { questionnaire: Record<string, unknown> }) => ({
+      id: 'session-created',
+      created_at: '2026-08-17T00:00:00.000Z',
+      used_fallback: [],
+      questionnaire: input.questionnaire,
+    })
+  );
   mocks.finalizeSession.mockResolvedValue({});
   mocks.runPersonalColorAxis.mockResolvedValue(pcOk);
   mocks.runSkinAxis.mockResolvedValue(skinOk);
@@ -178,6 +198,12 @@ beforeEach(() => {
   mocks.runMakeupComposer.mockResolvedValue(makeupOk);
   mocks.fetchProfileSnapshot.mockResolvedValue(snapshotWith());
   mocks.composePersona.mockResolvedValue(null);
+  mocks.uploadSessionImages.mockResolvedValue({ faceImageUrl: null, bodyImageUrl: null });
+  mocks.attachSessionImagePointers.mockResolvedValue({});
+  mocks.assertBiometricConsentForImageAttach.mockResolvedValue(undefined);
+  mocks.clearSessionImagePointers.mockResolvedValue(undefined);
+  mocks.recordSessionImageStorageFailure.mockResolvedValue(undefined);
+  mocks.recordSessionImageCleanupPending.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -471,6 +497,255 @@ describe('runIntegratedAnalysis — 이탈 복구 상관 ID (외부 리뷰 #3)',
 
     const arg = mocks.createSession.mock.calls[0][0];
     expect(arg).not.toHaveProperty('clientRequestId');
+  });
+});
+
+describe('runIntegratedAnalysis — 회차별 원본 저장 동의', () => {
+  it('null-pointer pending 세션을 먼저 만들고 미동의 boolean을 업로더에 전달한다', async () => {
+    await runIntegratedAnalysis(baseInput(), USER);
+
+    expect(mocks.createSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        faceImageUrl: null,
+        bodyImageUrl: null,
+        questionnaire: expect.objectContaining({ imageStorageConsent: false }),
+      })
+    );
+    expect(mocks.uploadSessionImages).toHaveBeenCalledWith(
+      expect.any(String),
+      USER,
+      'data:image/jpeg;base64,face',
+      null,
+      false,
+      undefined
+    );
+    expect(mocks.createSession.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.uploadSessionImages.mock.invocationCallOrder[0]
+    );
+  });
+
+  it('명시 저장이 성공하면 업로드 뒤에만 포인터를 부착한다', async () => {
+    const uploaded = {
+      faceImageUrl: 'user/session/face.jpg',
+      bodyImageUrl: null,
+    };
+    mocks.uploadSessionImages.mockResolvedValue(uploaded);
+
+    await runIntegratedAnalysis(
+      baseInput({
+        questionnaire: {
+          ...baseInput().questionnaire,
+          imageStorageConsent: true,
+        },
+      }),
+      USER
+    );
+
+    expect(mocks.uploadSessionImages).toHaveBeenCalledWith(
+      expect.any(String),
+      USER,
+      'data:image/jpeg;base64,face',
+      null,
+      true,
+      undefined
+    );
+    expect(mocks.createSession).toHaveBeenCalledWith(
+      expect.objectContaining({ faceImageUrl: null, bodyImageUrl: null })
+    );
+    expect(mocks.attachSessionImagePointers).toHaveBeenCalledWith({
+      sessionId: expect.any(String),
+      ...uploaded,
+    });
+    expect(mocks.uploadSessionImages.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.assertBiometricConsentForImageAttach.mock.invocationCallOrder[0]
+    );
+    expect(mocks.assertBiometricConsentForImageAttach.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.attachSessionImagePointers.mock.invocationCallOrder[0]
+    );
+  });
+
+  it('업로드 중 글로벌 생체 동의가 철회되면 attach 전에 rollback하고 분석만 계속한다', async () => {
+    const uploaded = { faceImageUrl: 'user/session/face.jpg', bodyImageUrl: null };
+    const revoked = new Error('biometric consent revoked');
+    mocks.uploadSessionImages.mockResolvedValueOnce(uploaded);
+    mocks.assertBiometricConsentForImageAttach.mockRejectedValueOnce(revoked);
+    mocks.rollbackUploadedSessionImages.mockRejectedValueOnce(
+      new ImageStorageOperationError('consent_recheck', revoked)
+    );
+
+    const result = await runIntegratedAnalysis(
+      baseInput({
+        questionnaire: { ...baseInput().questionnaire, imageStorageConsent: true },
+      }),
+      USER
+    );
+
+    expect(result.status).toBe('completed');
+    expect(mocks.rollbackUploadedSessionImages).toHaveBeenCalledWith(
+      uploaded,
+      revoked,
+      'consent_recheck'
+    );
+    expect(mocks.attachSessionImagePointers).not.toHaveBeenCalled();
+    expect(mocks.recordSessionImageStorageFailure).toHaveBeenCalledWith(
+      expect.objectContaining({ failure: 'consent_revoked' })
+    );
+  });
+
+  it('동의 철회 뒤 rollback도 실패하면 후보 경로를 영속 큐에 남기고 중단한다', async () => {
+    const uploaded = { faceImageUrl: 'user/session/face.jpg', bodyImageUrl: null };
+    const revoked = new Error('biometric consent revoked');
+    const rollbackFailure = new ImageStorageRollbackError(
+      'consent_recheck',
+      revoked,
+      new Error('remove denied'),
+      [uploaded.faceImageUrl]
+    );
+    mocks.uploadSessionImages.mockResolvedValueOnce(uploaded);
+    mocks.assertBiometricConsentForImageAttach.mockRejectedValueOnce(revoked);
+    mocks.rollbackUploadedSessionImages.mockRejectedValueOnce(rollbackFailure);
+
+    await expect(
+      runIntegratedAnalysis(
+        baseInput({
+          questionnaire: { ...baseInput().questionnaire, imageStorageConsent: true },
+        }),
+        USER
+      )
+    ).rejects.toBe(rollbackFailure);
+
+    expect(mocks.attachSessionImagePointers).not.toHaveBeenCalled();
+    expect(mocks.recordSessionImageCleanupPending).toHaveBeenCalledWith(
+      expect.objectContaining({
+        failure: 'cleanup_failed',
+        faceImageUrl: uploaded.faceImageUrl,
+      })
+    );
+    expect(mocks.markSessionFailed).toHaveBeenCalled();
+  });
+
+  it('deferred 업로드 중에도 clientRequestId를 가진 pending 세션이 먼저 존재한다', async () => {
+    let resolveUpload!: (value: { faceImageUrl: null; bodyImageUrl: null }) => void;
+    mocks.uploadSessionImages.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveUpload = resolve;
+      })
+    );
+    const requestId = '11111111-2222-4333-8444-555555555555';
+
+    const result = runIntegratedAnalysis(baseInput({ clientRequestId: requestId }), USER);
+    await vi.waitFor(() => expect(mocks.uploadSessionImages).toHaveBeenCalledTimes(1));
+
+    expect(mocks.createSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clientRequestId: requestId,
+        faceImageUrl: null,
+        bodyImageUrl: null,
+      })
+    );
+    expect(mocks.runPersonalColorAxis).not.toHaveBeenCalled();
+
+    resolveUpload({ faceImageUrl: null, bodyImageUrl: null });
+    await result;
+  });
+
+  it('정리가 확인된 선택 저장 실패는 마커를 남기고 5축 분석을 계속한다', async () => {
+    mocks.uploadSessionImages.mockRejectedValueOnce(
+      new ImageStorageOperationError('face_upload', new Error('upload failed'))
+    );
+
+    const result = await runIntegratedAnalysis(
+      baseInput({
+        questionnaire: { ...baseInput().questionnaire, imageStorageConsent: true },
+      }),
+      USER
+    );
+
+    expect(result.status).toBe('completed');
+    expect(mocks.recordSessionImageStorageFailure).toHaveBeenCalledWith(
+      expect.objectContaining({ failure: 'upload_failed' })
+    );
+    expect(mocks.runPersonalColorAxis).toHaveBeenCalledTimes(1);
+  });
+
+  it('rollback 실패는 후보 경로를 재시도 큐에 소유시키고 분석을 중단한다', async () => {
+    mocks.uploadSessionImages.mockRejectedValueOnce(
+      new ImageStorageRollbackError(
+        'face_upload',
+        new Error('upload failed'),
+        new Error('remove denied'),
+        ['user/session/face.jpg']
+      )
+    );
+
+    await expect(
+      runIntegratedAnalysis(
+        baseInput({
+          questionnaire: { ...baseInput().questionnaire, imageStorageConsent: true },
+        }),
+        USER
+      )
+    ).rejects.toBeInstanceOf(ImageStorageRollbackError);
+
+    expect(mocks.recordSessionImageCleanupPending).toHaveBeenCalledWith(
+      expect.objectContaining({
+        failure: 'cleanup_failed',
+        faceImageUrl: 'user/session/face.jpg',
+      })
+    );
+    expect(mocks.markSessionFailed).toHaveBeenCalled();
+    expect(mocks.runPersonalColorAxis).not.toHaveBeenCalled();
+  });
+
+  it('attach 응답 실패는 Storage rollback 뒤 DB 포인터도 멱등하게 비운다', async () => {
+    const uploaded = { faceImageUrl: 'user/session/face.jpg', bodyImageUrl: null };
+    const attachError = new Error('attach response lost');
+    mocks.uploadSessionImages.mockResolvedValueOnce(uploaded);
+    mocks.attachSessionImagePointers.mockRejectedValueOnce(attachError);
+    mocks.rollbackUploadedSessionImages.mockRejectedValueOnce(
+      new ImageStorageOperationError('pointer_attach', attachError)
+    );
+
+    await runIntegratedAnalysis(
+      baseInput({
+        questionnaire: { ...baseInput().questionnaire, imageStorageConsent: true },
+      }),
+      USER
+    );
+
+    expect(mocks.rollbackUploadedSessionImages).toHaveBeenCalledWith(
+      uploaded,
+      attachError,
+      'pointer_attach'
+    );
+    expect(mocks.clearSessionImagePointers).toHaveBeenCalledWith(expect.any(String));
+    expect(mocks.recordSessionImageStorageFailure).toHaveBeenCalledWith(
+      expect.objectContaining({ failure: 'pointer_attach_failed' })
+    );
+  });
+
+  it('attach 보상 뒤 DB 포인터 clear 실패도 cleanup-unconfirmed fatal이다', async () => {
+    const uploaded = { faceImageUrl: 'user/session/face.jpg', bodyImageUrl: null };
+    const attachError = new Error('attach response lost');
+    mocks.uploadSessionImages.mockResolvedValueOnce(uploaded);
+    mocks.attachSessionImagePointers.mockRejectedValueOnce(attachError);
+    mocks.rollbackUploadedSessionImages.mockRejectedValueOnce(
+      new ImageStorageOperationError('pointer_attach', attachError)
+    );
+    mocks.clearSessionImagePointers.mockRejectedValueOnce(new Error('pointer clear denied'));
+
+    await expect(
+      runIntegratedAnalysis(
+        baseInput({
+          questionnaire: { ...baseInput().questionnaire, imageStorageConsent: true },
+        }),
+        USER
+      )
+    ).rejects.toBeInstanceOf(ImageStorageRollbackError);
+
+    expect(mocks.recordSessionImageCleanupPending).toHaveBeenCalledWith(
+      expect.objectContaining({ faceImageUrl: 'user/session/face.jpg' })
+    );
   });
 });
 

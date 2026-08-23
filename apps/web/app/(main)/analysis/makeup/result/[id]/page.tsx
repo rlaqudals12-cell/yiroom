@@ -29,6 +29,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AIBadge, AITransparencyNotice } from '@/components/common/AIBadge';
 import dynamic from 'next/dynamic';
+import { resolveConsentedAnalysisImageUrl } from '@/lib/consent/image-access';
 
 const ProgressiveProfilePrompt = dynamic(
   () =>
@@ -49,6 +50,7 @@ import { useExpertMode } from '@/hooks/useExpertMode';
 import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
+import { ImageStorageUnavailableNotice } from '@/components/analysis/consent/ImageStorageUnavailableNotice';
 import { ResultPageInsights } from '@/components/insights';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -217,7 +219,7 @@ export default function MakeupAnalysisResultPage() {
       const dbData = data as DbMakeupAnalysis;
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
-      setImageUrl(dbData.image_url);
+      setImageUrl(await resolveConsentedAnalysisImageUrl(supabase, 'makeup', dbData.image_url));
       if (dbData.recommendations?.usedMock) {
         setUsedMock(true);
       }
@@ -233,7 +235,9 @@ export default function MakeupAnalysisResultPage() {
           if (dbData) {
             const transformedResult = transformDbToResult(dbData as DbMakeupAnalysis);
             setResult(transformedResult);
-            setImageUrl(dbData.image_url);
+            setImageUrl(
+              await resolveConsentedAnalysisImageUrl(supabase, 'makeup', dbData.image_url)
+            );
             // 캐시 유지 — 다음 방문 시에도 fallback으로 사용 가능하도록
             setIsLoading(false);
             return;
@@ -645,13 +649,21 @@ export default function MakeupAnalysisResultPage() {
                 </div>
               )}
 
-              {/* 분석 이미지 */}
+              {/* 분석 이미지 — 저장 사진이 없으면 조용히 숨기지 않고 동의 경로를 안내 */}
+              {!imageUrl && (
+                <ImageStorageUnavailableNotice
+                  featureLabel="분석 사진 카드"
+                  reason="no_consent"
+                  analysisHref="/analysis/makeup"
+                  testId="makeup-image-storage-notice"
+                />
+              )}
               {imageUrl && (
                 <div className="bg-card rounded-xl p-6 shadow-sm">
                   <h3 className="font-semibold mb-3">{t('analysisImage')}</h3>
                   <div className="aspect-square rounded-lg overflow-hidden bg-muted relative">
                     <Image
-                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/makeup-images/${imageUrl}`}
+                      src={imageUrl}
                       alt="분석된 메이크업 이미지"
                       fill
                       className="object-cover"

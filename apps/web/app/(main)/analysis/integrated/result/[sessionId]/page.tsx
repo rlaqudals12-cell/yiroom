@@ -56,6 +56,7 @@ import { PersonaNarrativeCard } from './_components/PersonaNarrativeCard';
 import { PersonaShareSection, type PersonaReportData } from './_components/PersonaShareSection';
 import { DrapingSectionDynamic } from '@/components/analysis/personal-color';
 import { DrapingShareSection } from './_components/DrapingShareSection';
+import { IntegratedImageStorageNotice } from './_components/IntegratedImageStorageNotice';
 import { ActionPlanCard } from './_components/ActionPlanCard';
 import { CrossInsightsCard } from './_components/CrossInsightsCard';
 import { CurationCard } from './_components/CurationCard';
@@ -485,6 +486,8 @@ export default async function IntegratedResultPage({
 
   const {
     session,
+    storedImageAccessState,
+    accessibleFaceImagePath,
     axes,
     axesFromProfile,
     axesFetchFailed,
@@ -520,6 +523,15 @@ export default async function IntegratedResultPage({
   const questionnaire = (session.questionnaire ?? {}) as Record<string, unknown>;
   const gender = questionnaire.gender as RecommendationGender | undefined;
   const situation = questionnaire.situation as RecommendationSituation | undefined;
+  const imageStorageConsent =
+    typeof questionnaire.imageStorageConsent === 'boolean'
+      ? questionnaire.imageStorageConsent
+      : null;
+  const imageStorageWasPurged = typeof questionnaire._imageStoragePurgedAt === 'string';
+  const imageStorageFailure =
+    typeof questionnaire._imageStorageFailure === 'string'
+      ? questionnaire._imageStorageFailure
+      : null;
 
   // 왜: action-plan + cross-insights가 같은 AxisResult 입력을 받음 → 변환 1회로 공유
   const axisResults = {
@@ -612,7 +624,7 @@ export default async function IntegratedResultPage({
       gender: gender ?? 'neutral',
     }),
     fetchIssueNo(session.created_at),
-    fetchFaceUrl(session.face_image_url),
+    fetchFaceUrl(accessibleFaceImagePath),
   ]);
   const curation = composeCuration({
     ...axisResults,
@@ -774,6 +786,15 @@ export default async function IntegratedResultPage({
             toneName={pcToneName}
             bestColors={personaPalette}
             serialNo={issueNo}
+          />
+        )}
+
+        {!faceImageUrl && personaPalette.length > 0 && (
+          <IntegratedImageStorageNotice
+            consentGiven={imageStorageConsent}
+            wasPurged={imageStorageWasPurged}
+            storageFailure={imageStorageFailure}
+            accessState={storedImageAccessState}
           />
         )}
 

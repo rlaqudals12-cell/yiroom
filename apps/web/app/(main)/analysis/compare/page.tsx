@@ -20,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AnalysisCompareImageNotice } from '@/components/analysis/consent/AnalysisCompareImageNotice';
 import { cn } from '@/lib/utils';
 import {
   selectByKey,
@@ -505,6 +506,11 @@ function CompareContent() {
             altPrefix={TYPE_LABELS[activeType]}
           />
         )}
+        <AnalysisCompareImageNotice
+          afterImageUrl={after.imageUrl}
+          analysisType={activeType}
+          beforeImageUrl={before.imageUrl}
+        />
 
         {/* 전체 점수 변화 */}
         <Card className={cn('bg-gradient-to-r', TYPE_COLORS[activeType])}>

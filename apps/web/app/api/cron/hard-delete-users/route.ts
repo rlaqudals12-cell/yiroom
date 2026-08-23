@@ -242,13 +242,16 @@ async function safeCleanup(
  *
  * cleanup-audit-logs(접속기록 730일)·cleanup-images(30일 미접속 익명화 + 탈퇴 완전삭제)
  * ·cleanup-consents(생체 동의 만료)는 vercel.json 슬롯 부족으로 스케줄되지 않는다.
- * 매일 도는 이 하드삭제 크론 말미에 병합 호출해 실효화한다.
+ * 보유기간 파기는 인증 직후 먼저 실행하고, audit/images는 하드삭제 말미에 유지한다.
  */
-async function runMergedDailyCleanups(request: NextRequest): Promise<Record<string, unknown>> {
+async function runMergedDailyCleanups(
+  request: NextRequest,
+  consents: Record<string, unknown>
+): Promise<Record<string, unknown>> {
   return {
+    consents,
     auditLogs: await safeCleanup('audit-logs', () => runCleanupAuditLogs(request)),
     images: await safeCleanup('images', () => runCleanupImages(request)),
-    consents: await safeCleanup('consents', () => runCleanupConsents(request)),
   };
 }
 
@@ -258,6 +261,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // 왜: 하드삭제 대상이나 후속 정리가 지연돼도 1년 보유 상한 파기 작업은 매일 먼저 시작해야 한다.
+  const consentCleanup = await safeCleanup('consents', () => runCleanupConsents(request));
   console.info('[GDPR-HARD-DELETE] Starting hard delete cron job...');
 
   try {
@@ -292,7 +297,7 @@ export async function GET(request: NextRequest) {
     if (!users || users.length === 0) {
       console.info('[GDPR-HARD-DELETE] No users pending hard delete');
       // 하드삭제 대상이 없어도 병합 정리 크론은 매일 실행되어야 한다.
-      const cleanup = await runMergedDailyCleanups(request);
+      const cleanup = await runMergedDailyCleanups(request, consentCleanup);
       return NextResponse.json({
         success: true,
         message: 'No users to process',
@@ -338,7 +343,7 @@ export async function GET(request: NextRequest) {
     console.info('[GDPR-HARD-DELETE] Completed:', result);
 
     // 슬롯 0 정리 크론 병합 실행 (하드삭제 성공 여부와 무관하게 항상 시도)
-    const cleanup = await runMergedDailyCleanups(request);
+    const cleanup = await runMergedDailyCleanups(request, consentCleanup);
 
     return NextResponse.json({
       success: true,

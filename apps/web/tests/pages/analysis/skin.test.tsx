@@ -9,6 +9,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+const { mockCheckPhotoReuseEligibility } = vi.hoisted(() => ({
+  mockCheckPhotoReuseEligibility: vi.fn(),
+}));
+
 // Mock lucide-react icons
 vi.mock('lucide-react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('lucide-react')>();
@@ -53,7 +57,7 @@ vi.mock('@clerk/nextjs', () => ({
 
 // Mock photo-reuse (Phase 2 기능)
 vi.mock('@/lib/analysis/photo-reuse', () => ({
-  checkPhotoReuseEligibility: vi.fn().mockResolvedValue({ eligible: false, reason: 'no_image' }),
+  checkPhotoReuseEligibility: mockCheckPhotoReuseEligibility,
 }));
 
 // Mock 이미지 압축 유틸리티
@@ -277,12 +281,20 @@ global.fetch = mockFetch;
 
 import SkinAnalysisPage from '@/app/(main)/analysis/skin/page';
 
+const ACTIVE_IMAGE_CONSENT = {
+  consent_given: true,
+  consent_version: 'v1.0',
+  retention_until: '2999-01-01T00:00:00.000Z',
+};
+
 describe('SkinAnalysisPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetch.mockReset();
     mockMaybeSingle.mockReset();
     mockSingle.mockReset();
+    mockCheckPhotoReuseEligibility.mockReset();
+    mockCheckPhotoReuseEligibility.mockResolvedValue({ eligible: false, reason: 'no_image' });
     mockConsentModalProps = null;
 
     // 기본값 설정
@@ -348,13 +360,84 @@ describe('SkinAnalysisPage', () => {
       expect(screen.getAllByText('skin.modeCamera').length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText('skin.modeGallery').length).toBeGreaterThanOrEqual(1);
     });
+
+    it('퍼스널컬러 사진 저장 미동의면 재사용이 사라진 이유와 복구 동선을 표시한다', async () => {
+      mockCheckPhotoReuseEligibility.mockResolvedValue({
+        eligible: false,
+        reason: 'no_consent',
+      });
+      const user = userEvent.setup();
+      render(<SkinAnalysisPage />);
+
+      await user.click(await screen.findByTestId('guide-continue'));
+
+      const notice = await screen.findByTestId('skin-photo-reuse-storage-notice');
+      expect(notice).toHaveTextContent(
+        '퍼스널컬러 사진 저장에 동의한 뒤 다시 분석하면 피부 분석에서 사진을 재사용할 수 있어요.'
+      );
+      expect(screen.getByRole('link', { name: '사진 저장 동의하고 다시 분석' })).toHaveAttribute(
+        'href',
+        '/analysis/personal-color'
+      );
+      expect(screen.getByRole('link', { name: '개인정보 설정' })).toHaveAttribute(
+        'href',
+        '/settings/privacy'
+      );
+    });
+
+    it('퍼스널컬러 동의는 유효하지만 사진이 없으면 동의를 요구하지 않는다', async () => {
+      mockCheckPhotoReuseEligibility.mockResolvedValue({ eligible: false, reason: 'no_image' });
+      const user = userEvent.setup();
+      render(<SkinAnalysisPage />);
+
+      await user.click(await screen.findByTestId('guide-continue'));
+
+      const notice = await screen.findByTestId('skin-photo-reuse-storage-notice');
+      expect(notice).toHaveTextContent('재사용할 퍼스널컬러 저장 사진이 없어요.');
+      expect(
+        screen.queryByRole('link', { name: '사진 저장 동의하고 다시 분석' })
+      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: '개인정보 설정' })).not.toBeInTheDocument();
+    });
+
+    it('사진 재사용 상태 조회 실패는 미동의로 단정하지 않는다', async () => {
+      mockCheckPhotoReuseEligibility.mockResolvedValue({ eligible: false, reason: 'unknown' });
+      const user = userEvent.setup();
+      render(<SkinAnalysisPage />);
+
+      await user.click(await screen.findByTestId('guide-continue'));
+
+      const notice = await screen.findByTestId('skin-photo-reuse-storage-notice');
+      expect(notice).toHaveTextContent(
+        '퍼스널컬러 저장 사진을 확인할 수 없어 재사용 옵션을 표시하지 않았어요.'
+      );
+      expect(screen.queryByRole('link', { name: '개인정보 설정' })).not.toBeInTheDocument();
+    });
+
+    it('퍼스널컬러 저장 사진이 만료되면 파기 이유와 복구 동선을 표시한다', async () => {
+      mockCheckPhotoReuseEligibility.mockResolvedValue({ eligible: false, reason: 'expired' });
+      const user = userEvent.setup();
+      render(<SkinAnalysisPage />);
+
+      await user.click(await screen.findByTestId('guide-continue'));
+
+      const notice = await screen.findByTestId('skin-photo-reuse-storage-notice');
+      expect(notice).toHaveTextContent(
+        '퍼스널컬러 사진의 보관 기한이 지나 저장 사진이 파기되어 재사용할 수 없어요.'
+      );
+      expect(screen.getByRole('link', { name: '사진 저장 동의하고 다시 분석' })).toHaveAttribute(
+        'href',
+        '/analysis/personal-color'
+      );
+      expect(screen.getByRole('link', { name: '개인정보 설정' })).toBeInTheDocument();
+    });
   });
 
   describe('카메라 모드 (다각도 촬영)', () => {
     // 카메라 기능 테스트에서는 동의가 이미 있다고 가정
     beforeEach(() => {
       mockMaybeSingle.mockResolvedValue({
-        data: { consent_given: true },
+        data: ACTIVE_IMAGE_CONSENT,
         error: null,
       });
     });
@@ -470,7 +553,7 @@ describe('SkinAnalysisPage', () => {
     // 갤러리 기능 테스트에서는 동의가 이미 있다고 가정
     beforeEach(() => {
       mockMaybeSingle.mockResolvedValue({
-        data: { consent_given: true },
+        data: ACTIVE_IMAGE_CONSENT,
         error: null,
       });
     });
@@ -526,7 +609,7 @@ describe('SkinAnalysisPage', () => {
     // 분석 결과 테스트에서는 동의가 이미 있다고 가정
     beforeEach(() => {
       mockMaybeSingle.mockResolvedValue({
-        data: { consent_given: true },
+        data: ACTIVE_IMAGE_CONSENT,
         error: null,
       });
     });
@@ -600,7 +683,7 @@ describe('SkinAnalysisPage', () => {
     // 에러 처리 테스트에서는 동의가 이미 있다고 가정
     beforeEach(() => {
       mockMaybeSingle.mockResolvedValue({
-        data: { consent_given: true },
+        data: ACTIVE_IMAGE_CONSENT,
         error: null,
       });
     });
@@ -679,7 +762,7 @@ describe('SkinAnalysisPage', () => {
 
       // 기존 동의 있음
       mockMaybeSingle.mockResolvedValue({
-        data: { consent_given: true },
+        data: ACTIVE_IMAGE_CONSENT,
         error: null,
       });
 
@@ -723,7 +806,7 @@ describe('SkinAnalysisPage', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          consent: { consent_given: true },
+          consent: ACTIVE_IMAGE_CONSENT,
         }),
       });
 
@@ -807,6 +890,8 @@ describe('SkinAnalysisPage', () => {
       // 동의 API는 호출 안됨
       const consentCalls = mockFetch.mock.calls.filter((call) => call[0] === '/api/consent');
       expect(consentCalls).toHaveLength(0);
+      const analysisCall = mockFetch.mock.calls.find((call) => call[0] === '/api/analyze/skin');
+      expect(JSON.parse(analysisCall?.[1]?.body as string).imageStorageAllowed).toBe(false);
     });
 
     it('갤러리 모드에서도 동의 모달이 표시된다', async () => {

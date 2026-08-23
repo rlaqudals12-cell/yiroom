@@ -59,7 +59,68 @@ export interface PurgeResult {
   failedBuckets: string[];
 }
 
-type UserStorageBucket = (typeof USER_STORAGE_BUCKETS)[number];
+export type UserStorageBucket = (typeof USER_STORAGE_BUCKETS)[number];
+
+export const IMAGE_CONSENT_STORAGE_BUCKETS = {
+  skin: 'skin-images',
+  body: 'body-images',
+  'personal-color': 'personal-color-images',
+  hair: 'hair-images',
+  makeup: 'makeup-images',
+} as const satisfies Record<string, UserStorageBucket>;
+
+export type ImageStorageAnalysisType = keyof typeof IMAGE_CONSENT_STORAGE_BUCKETS;
+
+const ANALYSIS_IMAGE_POINTERS: Record<
+  ImageStorageAnalysisType,
+  { table: string; values: Record<string, string | null> }
+> = {
+  skin: { table: 'skin_analyses', values: { image_url: '' } },
+  body: {
+    table: 'body_analyses',
+    values: {
+      image_url: '',
+      left_side_image_url: null,
+      right_side_image_url: null,
+      back_image_url: null,
+    },
+  },
+  'personal-color': {
+    table: 'personal_color_assessments',
+    values: { face_image_url: null, left_image_url: null, right_image_url: null },
+  },
+  hair: { table: 'hair_analyses', values: { image_url: '' } },
+  makeup: { table: 'makeup_analyses', values: { image_url: '' } },
+};
+
+export interface PointerCleanupResult {
+  cleared: boolean;
+  failedTarget: string | null;
+}
+
+/** 삭제된 원본 사진을 분석 결과가 계속 가리키지 않도록 축별 경로 필드를 비운다. */
+export async function clearAnalysisImagePointers(
+  supabase: ServiceClient,
+  userId: string,
+  analysisType: ImageStorageAnalysisType
+): Promise<PointerCleanupResult> {
+  const pointer = ANALYSIS_IMAGE_POINTERS[analysisType];
+
+  try {
+    const { error } = await supabase
+      .from(pointer.table)
+      .update(pointer.values)
+      .eq('clerk_user_id', userId);
+
+    if (error) {
+      return { cleared: false, failedTarget: `db:${pointer.table}` };
+    }
+  } catch {
+    return { cleared: false, failedTarget: `db:${pointer.table}` };
+  }
+
+  return { cleared: true, failedTarget: null };
+}
 
 /**
  * `{prefix}/` 하위의 모든 파일 경로를 재귀 수집한다.
@@ -100,6 +161,28 @@ async function collectUserFiles(
   }
 
   return paths;
+}
+
+/**
+ * 특정 소유 prefix 아래 파일만 재귀 파기한다.
+ * 통합 분석의 세션 행이 포인터를 잃었어도 `{userId}/{sessionId}`가 내구성 있는 회수 키가 된다.
+ */
+export async function purgeStoragePrefix(
+  supabase: ServiceClient,
+  bucket: UserStorageBucket,
+  prefix: string
+): Promise<number> {
+  if (!prefix || prefix.startsWith('/') || prefix.endsWith('/') || prefix.includes('..')) {
+    throw new Error('Unsafe storage prefix');
+  }
+
+  const filePaths = await collectUserFiles(supabase, bucket, prefix);
+  for (let offset = 0; offset < filePaths.length; offset += STORAGE_PAGE_SIZE) {
+    const chunk = filePaths.slice(offset, offset + STORAGE_PAGE_SIZE);
+    const { error } = await supabase.storage.from(bucket).remove(chunk);
+    if (error) throw error;
+  }
+  return filePaths.length;
 }
 
 /**

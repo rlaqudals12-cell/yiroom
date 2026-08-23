@@ -5,7 +5,7 @@
  * @description checkPhotoReuseEligibility, REUSE_CONDITIONS 테스트
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   REUSE_CONDITIONS,
   checkPhotoReuseEligibility,
@@ -19,6 +19,7 @@ import {
 // =============================================================================
 
 function createMockSupabase(options: {
+  consentResult?: { data: unknown; error: unknown };
   selectResult?: { data: unknown; error: unknown };
   insertResult?: { data: unknown; error: unknown };
   deleteResult?: { error: unknown };
@@ -26,6 +27,14 @@ function createMockSupabase(options: {
   removeResult?: { error: unknown };
 }) {
   const {
+    consentResult = {
+      data: {
+        consent_given: true,
+        consent_version: 'v1.0',
+        retention_until: '2999-01-01T00:00:00.000Z',
+      },
+      error: null,
+    },
     selectResult = { data: null, error: null },
     insertResult = { data: { id: 'new_id' }, error: null },
     deleteResult = { error: null },
@@ -33,34 +42,43 @@ function createMockSupabase(options: {
     removeResult = { error: null },
   } = options;
 
-  return {
-    from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnValue({
+  const defaultQuery = {
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
+            gte: vi.fn().mockReturnValue({
               gte: vi.fn().mockReturnValue({
-                gte: vi.fn().mockReturnValue({
-                  order: vi.fn().mockReturnValue({
-                    limit: vi.fn().mockResolvedValue(selectResult),
-                  }),
+                order: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue(selectResult),
                 }),
               }),
             }),
           }),
-          single: vi.fn().mockResolvedValue(selectResult),
         }),
         single: vi.fn().mockResolvedValue(selectResult),
       }),
-      insert: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue(insertResult),
-        }),
-      }),
-      delete: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue(deleteResult),
+      single: vi.fn().mockResolvedValue(selectResult),
+    }),
+    insert: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue(insertResult),
       }),
     }),
+    delete: vi.fn().mockReturnValue({
+      eq: vi.fn().mockResolvedValue(deleteResult),
+    }),
+  };
+  const consentQuery = {
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        maybeSingle: vi.fn().mockResolvedValue(consentResult),
+      }),
+    }),
+  };
+
+  return {
+    from: vi.fn((table: string) => (table === 'image_consents' ? consentQuery : defaultQuery)),
     storage: {
       from: vi.fn().mockReturnValue({
         createSignedUrl: vi.fn().mockResolvedValue(signedUrlResult),
@@ -77,9 +95,21 @@ function createMockSupabase(options: {
 describe('lib/analysis/photo-reuse', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ signedUrl: 'https://example.com/protected-signed' }),
+      })
+    );
     // console.error 무시
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   // ---------------------------------------------------------------------------
@@ -122,6 +152,82 @@ describe('lib/analysis/photo-reuse', () => {
   // ---------------------------------------------------------------------------
 
   describe('checkPhotoReuseEligibility', () => {
+    it('퍼스널컬러 사진 저장 동의가 없으면 no_consent로 구분한다', async () => {
+      const supabase = createMockSupabase({
+        consentResult: { data: null, error: null },
+      });
+
+      const result = await checkPhotoReuseEligibility(supabase as any, 'skin');
+
+      expect(result).toEqual({ eligible: false, reason: 'no_consent' });
+      expect(supabase.from).toHaveBeenCalledTimes(1);
+    });
+
+    it('거부 기록의 과거 보관일을 사진 파기로 오인하지 않는다', async () => {
+      const supabase = createMockSupabase({
+        consentResult: {
+          data: {
+            consent_given: false,
+            consent_version: 'v1.0',
+            retention_until: '2020-01-01T00:00:00.000Z',
+          },
+          error: null,
+        },
+      });
+
+      await expect(checkPhotoReuseEligibility(supabase as any, 'skin')).resolves.toEqual({
+        eligible: false,
+        reason: 'no_consent',
+      });
+    });
+
+    it('퍼스널컬러 사진 저장 동의가 만료되면 expired로 구분한다', async () => {
+      const supabase = createMockSupabase({
+        consentResult: {
+          data: {
+            consent_given: true,
+            consent_version: 'v1.0',
+            retention_until: '2020-01-01T00:00:00.000Z',
+          },
+          error: null,
+        },
+      });
+
+      await expect(checkPhotoReuseEligibility(supabase as any, 'skin')).resolves.toEqual({
+        eligible: false,
+        reason: 'expired',
+      });
+    });
+
+    it('동의 조회 실패를 미동의로 단정하지 않는다', async () => {
+      const supabase = createMockSupabase({
+        consentResult: { data: null, error: { code: '500', message: 'failed' } },
+      });
+
+      await expect(checkPhotoReuseEligibility(supabase as any, 'skin')).resolves.toEqual({
+        eligible: false,
+        reason: 'unknown',
+      });
+    });
+
+    it('구버전 동의는 재동의가 필요하므로 no_consent로 취급한다', async () => {
+      const supabase = createMockSupabase({
+        consentResult: {
+          data: {
+            consent_given: true,
+            consent_version: 'v0.9',
+            retention_until: '2999-01-01T00:00:00.000Z',
+          },
+          error: null,
+        },
+      });
+
+      await expect(checkPhotoReuseEligibility(supabase as any, 'skin')).resolves.toEqual({
+        eligible: false,
+        reason: 'no_consent',
+      });
+    });
+
     it('should return not eligible when no images found', async () => {
       const supabase = createMockSupabase({
         selectResult: { data: [], error: null },
@@ -141,7 +247,7 @@ describe('lib/analysis/photo-reuse', () => {
       const result = await checkPhotoReuseEligibility(supabase as any, 'skin');
 
       expect(result.eligible).toBe(false);
-      expect(result.reason).toBe('no_image');
+      expect(result.reason).toBe('unknown');
     });
 
     it('should handle table not found error (42P01) gracefully', async () => {
@@ -285,6 +391,67 @@ describe('lib/analysis/photo-reuse', () => {
 
       expect(result.eligible).toBe(true);
       expect(result.sourceImage?.qualityScore).toBe(75); // 기본값
+    });
+
+    it.each([401, 403])(
+      '보호 API %s는 동의 없음으로 매핑해 설정 복구 동선을 유지한다',
+      async (status) => {
+        vi.mocked(fetch).mockResolvedValueOnce({
+          ok: false,
+          status,
+          json: vi.fn().mockResolvedValue({ error: 'Image storage consent required' }),
+        } as unknown as Response);
+        const supabase = createMockSupabase({
+          selectResult: {
+            data: [
+              {
+                id: 'img_protected',
+                storage_path: 'personal-color-images/user_1/image.jpg',
+                quality_score: 90,
+                lighting_score: 80,
+                retention_until: '2999-01-01T00:00:00.000Z',
+                created_at: new Date().toISOString(),
+              },
+            ],
+            error: null,
+          },
+        });
+
+        await expect(checkPhotoReuseEligibility(supabase as any, 'skin')).resolves.toEqual({
+          eligible: false,
+          reason: 'no_consent',
+        });
+        expect(supabase.storage.from).not.toHaveBeenCalled();
+      }
+    );
+
+    it('보호 API 5xx는 동의 철회로 오인하지 않고 unknown으로 닫는다', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: vi.fn().mockResolvedValue({ error: 'Internal server error' }),
+      } as unknown as Response);
+      const supabase = createMockSupabase({
+        selectResult: {
+          data: [
+            {
+              id: 'img_failed',
+              storage_path: 'personal-color-images/user_1/image.jpg',
+              quality_score: 90,
+              lighting_score: 80,
+              retention_until: '2999-01-01T00:00:00.000Z',
+              created_at: new Date().toISOString(),
+            },
+          ],
+          error: null,
+        },
+      });
+
+      await expect(checkPhotoReuseEligibility(supabase as any, 'skin')).resolves.toEqual({
+        eligible: false,
+        reason: 'unknown',
+      });
+      expect(supabase.storage.from).not.toHaveBeenCalled();
     });
   });
 

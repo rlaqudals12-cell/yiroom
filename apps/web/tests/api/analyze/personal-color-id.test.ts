@@ -7,6 +7,10 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+const consentMocks = vi.hoisted(() => ({
+  signConsentedAnalysisImageUrls: vi.fn(),
+}));
+
 // Mock 모듈 설정 (import 전에 선언)
 vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn(),
@@ -14,6 +18,10 @@ vi.mock('@clerk/nextjs/server', () => ({
 
 vi.mock('@/lib/supabase/service-role', () => ({
   createServiceRoleClient: vi.fn(),
+}));
+
+vi.mock('@/lib/consent/image-access', () => ({
+  signConsentedAnalysisImageUrls: consentMocks.signConsentedAnalysisImageUrls,
 }));
 
 import { GET } from '@/app/api/analyze/personal-color/[id]/route';
@@ -81,6 +89,10 @@ describe('GET /api/analyze/personal-color/[id]', () => {
     // 기본: Supabase 클라이언트
     vi.mocked(createServiceRoleClient).mockReturnValue(
       mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
+    );
+    consentMocks.signConsentedAnalysisImageUrls.mockImplementation(
+      async (_supabase, _userId, _type, values: Array<string | null | undefined>) =>
+        values.map((value) => value || null)
     );
 
     // console.error, console.warn, console.log 억제
@@ -213,6 +225,9 @@ describe('GET /api/analyze/personal-color/[id]', () => {
         },
         error: null,
       });
+      consentMocks.signConsentedAnalysisImageUrls.mockResolvedValueOnce([
+        'https://supabase.co/storage/v1/signed/personal-color-images/user_test123/1706000000.jpg?token=abc',
+      ]);
 
       // Act
       const response = await callGET('pc-uuid-123');
@@ -223,8 +238,12 @@ describe('GET /api/analyze/personal-color/[id]', () => {
       expect(json.success).toBe(true);
       expect(json.data.face_image_url).toContain('https://supabase.co/storage');
       expect(json.data.face_image_url).toContain('token=abc');
-      expect(mockSupabase.storage.from).toHaveBeenCalledWith('personal-color-images');
-      expect(mockCreateSignedUrl).toHaveBeenCalledWith('user_test123/1706000000.jpg', 3600);
+      expect(consentMocks.signConsentedAnalysisImageUrls).toHaveBeenCalledWith(
+        mockSupabase,
+        'user_test123',
+        'personal-color',
+        ['user_test123/1706000000.jpg']
+      );
     });
 
     it('face_image_url이 http로 시작하면 변환하지 않는다', async () => {
@@ -242,7 +261,7 @@ describe('GET /api/analyze/personal-color/[id]', () => {
       // Assert: URL이 그대로 유지, createSignedUrl 호출 없음
       expect(response.status).toBe(200);
       expect(json.data.face_image_url).toBe('https://example.com/image.jpg');
-      expect(mockCreateSignedUrl).not.toHaveBeenCalled();
+      expect(consentMocks.signConsentedAnalysisImageUrls).toHaveBeenCalled();
     });
 
     it('face_image_url이 null이면 변환을 시도하지 않는다', async () => {
@@ -260,7 +279,7 @@ describe('GET /api/analyze/personal-color/[id]', () => {
       expect(mockCreateSignedUrl).not.toHaveBeenCalled();
     });
 
-    it('createSignedUrl 실패 시에도 원본 경로를 유지한다', async () => {
+    it('createSignedUrl 실패 시 비공개 원본 경로를 숨기고 사진 없음으로 정규화한다', async () => {
       // Arrange
       const dataWithPath = {
         ...mockAssessment,
@@ -271,19 +290,16 @@ describe('GET /api/analyze/personal-color/[id]', () => {
         data: null,
         error: { message: 'Storage bucket not found' },
       });
+      consentMocks.signConsentedAnalysisImageUrls.mockResolvedValueOnce([null]);
 
       // Act
       const response = await callGET('pc-uuid-123');
       const json = await response.json();
 
-      // Assert: 원본 경로 유지, 에러 시 경고 로깅
+      // Assert: 비공개 경로는 노출하지 않는다. 서명 경계의 운영 로그는 helper가 담당한다.
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
-      expect(json.data.face_image_url).toBe('user_test123/1706000000.jpg');
-      expect(console.warn).toHaveBeenCalledWith(
-        '[PC-1] Failed to generate signed URL:',
-        'Storage bucket not found'
-      );
+      expect(json.data.face_image_url).toBeNull();
     });
 
     it('face_image_url이 빈 문자열이면 변환을 시도하지 않는다', async () => {
@@ -297,8 +313,7 @@ describe('GET /api/analyze/personal-color/[id]', () => {
 
       // Assert
       expect(response.status).toBe(200);
-      expect(json.data.face_image_url).toBe('');
-      expect(mockCreateSignedUrl).not.toHaveBeenCalled();
+      expect(json.data.face_image_url).toBeNull();
     });
   });
 

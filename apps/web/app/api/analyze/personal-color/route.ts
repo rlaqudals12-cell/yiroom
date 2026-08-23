@@ -11,6 +11,7 @@ import {
 } from '@/lib/api/error-response';
 import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import { requireBiometricConsent } from '@/lib/api/biometric-consent';
+import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
 import {
   analyzePersonalColor,
   type GeminiPersonalColorResult,
@@ -400,49 +401,20 @@ export async function POST(req: NextRequest) {
       const primaryImage = frontImageBase64 || imageBase64;
       let faceImageUrl: string | null = null;
 
-      if (primaryImage && saveImage) {
-        const timestamp = Date.now();
-        const fileName = `${userId}/${timestamp}.jpg`;
-
-        const base64Data = primaryImage.replace(/^data:image\/\w+;base64,/, '');
-        const buffer = Buffer.from(base64Data, 'base64');
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('personal-color-images')
-          .upload(fileName, buffer, {
-            contentType: 'image/jpeg',
-            upsert: false,
-          });
-
-        if (uploadError) {
-          console.error('Image upload error:', uploadError);
-        } else {
-          faceImageUrl = uploadData.path;
-        }
-
-        // 좌측 이미지 업로드 (다각도 분석 시)
-        if (leftImageBase64) {
-          const leftBase64 = leftImageBase64.replace(/^data:image\/\w+;base64,/, '');
-          const leftBuffer = Buffer.from(leftBase64, 'base64');
-          await supabase.storage
-            .from('personal-color-images')
-            .upload(`${userId}/${timestamp}_left.jpg`, leftBuffer, {
-              contentType: 'image/jpeg',
-              upsert: false,
-            });
-        }
-
-        // 우측 이미지 업로드 (다각도 분석 시)
-        if (rightImageBase64) {
-          const rightBase64 = rightImageBase64.replace(/^data:image\/\w+;base64,/, '');
-          const rightBuffer = Buffer.from(rightBase64, 'base64');
-          await supabase.storage
-            .from('personal-color-images')
-            .upload(`${userId}/${timestamp}_right.jpg`, rightBuffer, {
-              contentType: 'image/jpeg',
-              upsert: false,
-            });
-        }
+      if (primaryImage) {
+        const { uploadedImages } = await checkConsentAndUploadImages(
+          supabase,
+          userId,
+          'personal-color',
+          'personal-color-images',
+          {
+            front: primaryImage,
+            left: leftImageBase64,
+            right: rightImageBase64,
+          },
+          { imageStorageAllowed: saveImage }
+        );
+        faceImageUrl = uploadedImages.front ?? null;
       }
 
       // DB에 저장

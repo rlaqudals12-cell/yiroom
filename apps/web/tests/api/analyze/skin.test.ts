@@ -55,6 +55,14 @@ vi.mock('@/lib/gamification', () => ({
   addXp: vi.fn(),
 }));
 
+vi.mock('@/lib/api/image-consent', () => ({
+  checkConsentAndUploadImages: vi.fn().mockResolvedValue({
+    hasConsent: false,
+    consentId: null,
+    uploadedImages: { front: null, left: null, right: null },
+  }),
+}));
+
 // Rate Limit 모킹 - 항상 통과
 vi.mock('@/lib/security/rate-limit', () => ({
   applyRateLimit: vi.fn().mockReturnValue({ success: true }),

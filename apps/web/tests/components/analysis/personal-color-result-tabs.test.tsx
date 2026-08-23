@@ -15,6 +15,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import React from 'react';
 
+const navigationState = vi.hoisted(() => ({ search: '' }));
+
 // 페이지 소스에서 추출한 순수 함수 재구현 (export되지 않은 함수 테스트)
 // 원본: apps/web/app/(main)/analysis/personal-color/result/[id]/page.tsx
 
@@ -387,7 +389,7 @@ vi.mock('next/navigation', async () => {
     }),
     useParams: () => ({ id: 'test-analysis-123' }),
     usePathname: () => '/analysis/personal-color/result/test-analysis-123',
-    useSearchParams: () => new URLSearchParams(),
+    useSearchParams: () => new URLSearchParams(navigationState.search),
   };
 });
 
@@ -446,6 +448,7 @@ describe('PC-1 결과 페이지 렌더링', () => {
   let mockFetch: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    navigationState.search = '';
     mockFetch = vi.fn();
     vi.stubGlobal('fetch', mockFetch);
 
@@ -781,6 +784,11 @@ describe('PC-1 결과 페이지 렌더링', () => {
     it('사진이 없으면 드레이핑 탭 트리거가 비활성화된다 (빈 탭 진입 차단)', async () => {
       setupSignedInState();
       setupSuccessfulFetch(createMockDbData({ face_image_url: undefined }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ consent: null }),
+      });
 
       const PersonalColorResultPage = (
         await import('@/app/(main)/analysis/personal-color/result/[id]/page')
@@ -793,6 +801,155 @@ describe('PC-1 결과 페이지 렌더링', () => {
       });
 
       expect(screen.getByRole('tab', { name: /colorDraping/ })).toBeDisabled();
+    });
+
+    it('사진 저장 미동의로 드레이핑이 잠기면 이유와 복구 동선을 표시한다', async () => {
+      setupSignedInState();
+      setupSuccessfulFetch(createMockDbData({ face_image_url: undefined }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ consent: null }),
+      });
+
+      const PersonalColorResultPage = (
+        await import('@/app/(main)/analysis/personal-color/result/[id]/page')
+      ).default;
+
+      render(<PersonalColorResultPage />);
+
+      expect(
+        await screen.findByText('사진 저장에 동의한 뒤 다시 분석하면 드레이핑 비교를 볼 수 있어요.')
+      ).toBeInTheDocument();
+      const notice = screen.getByTestId('personal-color-image-storage-notice');
+      expect(notice.parentElement?.previousElementSibling).toBe(screen.getByRole('tablist'));
+      expect(screen.getByRole('link', { name: '사진 저장 동의하고 다시 분석' })).toHaveAttribute(
+        'href',
+        '/analysis/personal-color'
+      );
+      expect(screen.getByRole('link', { name: '개인정보 설정' })).toHaveAttribute(
+        'href',
+        '/settings/privacy'
+      );
+    });
+
+    it('?tab=draping 직접 진입에도 동의 인지 안내만 한 번 표시한다', async () => {
+      navigationState.search = 'tab=draping';
+      setupSignedInState();
+      setupSuccessfulFetch(createMockDbData({ face_image_url: undefined }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ consent: null }),
+      });
+
+      const PersonalColorResultPage = (
+        await import('@/app/(main)/analysis/personal-color/result/[id]/page')
+      ).default;
+      render(<PersonalColorResultPage />);
+
+      expect(
+        await screen.findByText('사진 저장에 동의한 뒤 다시 분석하면 드레이핑 비교를 볼 수 있어요.')
+      ).toBeInTheDocument();
+      expect(screen.getAllByTestId('personal-color-image-storage-notice')).toHaveLength(1);
+      expect(screen.queryByText('noDrapingImage')).not.toBeInTheDocument();
+      expect(screen.queryByText('reanalyzeForDraping')).not.toBeInTheDocument();
+    });
+
+    it('동의 조회 중에는 미동의나 오류로 단정하지 않고 확인 중임을 표시한다', async () => {
+      setupSignedInState();
+      setupSuccessfulFetch(createMockDbData({ face_image_url: undefined }));
+      mockFetch.mockReturnValueOnce(new Promise<Response>(() => {}));
+
+      const PersonalColorResultPage = (
+        await import('@/app/(main)/analysis/personal-color/result/[id]/page')
+      ).default;
+      render(<PersonalColorResultPage />);
+
+      expect(await screen.findByText('사진 저장 상태를 확인하고 있어요.')).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: '개인정보 설정' })).not.toBeInTheDocument();
+    });
+
+    it('동의 상태인데 사진이 없으면 원인을 단정하지 않는 안내를 표시한다', async () => {
+      setupSignedInState();
+      setupSuccessfulFetch(createMockDbData({ face_image_url: undefined }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            consent: {
+              consent_given: true,
+              consent_version: 'v1.0',
+              retention_until: '2099-01-01T00:00:00.000Z',
+            },
+          }),
+      });
+
+      const PersonalColorResultPage = (
+        await import('@/app/(main)/analysis/personal-color/result/[id]/page')
+      ).default;
+      render(<PersonalColorResultPage />);
+
+      expect(
+        await screen.findByText('저장 사진이 없어 드레이핑 비교를 표시하지 않았어요.')
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText('사진 저장에 동의한 뒤 다시 분석하면 드레이핑 비교를 볼 수 있어요.')
+      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: '개인정보 설정' })).not.toBeInTheDocument();
+    });
+
+    it('사진 보관 기한이 지나면 파기 안내와 복구 동선을 표시한다', async () => {
+      setupSignedInState();
+      setupSuccessfulFetch(createMockDbData({ face_image_url: undefined }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            consent: {
+              consent_given: true,
+              consent_version: 'v1.0',
+              retention_until: '2025-01-01T00:00:00.000Z',
+            },
+          }),
+      });
+
+      const PersonalColorResultPage = (
+        await import('@/app/(main)/analysis/personal-color/result/[id]/page')
+      ).default;
+      render(<PersonalColorResultPage />);
+
+      expect(
+        await screen.findByText(
+          '보관 기한이 지나 저장 사진이 파기되어 드레이핑 비교를 표시하지 않았어요.'
+        )
+      ).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: '개인정보 설정' })).toBeInTheDocument();
+    });
+
+    it('동의 조회 실패를 미동의로 단정하거나 복구 CTA로 연결하지 않는다', async () => {
+      setupSignedInState();
+      setupSuccessfulFetch(createMockDbData({ face_image_url: undefined }));
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ error: 'temporary failure' }),
+      });
+
+      const PersonalColorResultPage = (
+        await import('@/app/(main)/analysis/personal-color/result/[id]/page')
+      ).default;
+      render(<PersonalColorResultPage />);
+
+      expect(
+        await screen.findByText('사진을 확인할 수 없어 드레이핑 비교를 표시하지 않았어요.')
+      ).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: '개인정보 설정' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('link', { name: '사진 저장 동의하고 다시 분석' })
+      ).not.toBeInTheDocument();
     });
 
     it('사진이 있으면 드레이핑 탭 트리거가 활성화된다', async () => {

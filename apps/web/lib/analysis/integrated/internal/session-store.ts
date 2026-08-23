@@ -38,6 +38,31 @@ export interface FinalizeSessionInput {
   persona?: PersonaProfile | null;
 }
 
+export type ImageStorageFailureCode =
+  | 'upload_failed'
+  | 'upload_deadline'
+  | 'consent_revoked'
+  | 'pointer_attach_failed'
+  | 'cleanup_failed';
+
+export interface AttachSessionImagePointersInput {
+  sessionId: string;
+  faceImageUrl: string | null;
+  bodyImageUrl: string | null;
+}
+
+export interface RecordSessionImageStorageFailureInput {
+  sessionId: string;
+  questionnaire: Record<string, unknown>;
+  failure: ImageStorageFailureCode;
+  failedAt?: string;
+}
+
+export interface RecordSessionImageCleanupPendingInput extends RecordSessionImageStorageFailureInput {
+  faceImageUrl: string | null;
+  bodyImageUrl: string | null;
+}
+
 /**
  * 세션 생성.
  * 초기 상태 'pending'으로 시작.
@@ -72,6 +97,112 @@ export async function createSession(input: CreateSessionInput): Promise<Integrat
   }
 
   return data as IntegratedSessionRow;
+}
+
+/** 업로드와 포인터 부착 사이 철회 경합을 닫는 마지막 전역 생체 동의 확인. */
+export async function assertBiometricConsentForImageAttach(clerkUserId: string): Promise<void> {
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase
+    .from('user_agreements')
+    .select('biometric_agreed')
+    .eq('clerk_user_id', clerkUserId)
+    .maybeSingle();
+
+  if (error || data?.biometric_agreed !== true) {
+    throw new Error('[SessionStore] biometric consent is not active before image attach');
+  }
+}
+
+/**
+ * 업로드가 모두 성공한 뒤에만 pending 세션에 원본 포인터를 부착한다.
+ * 이 단계 전까지 세션은 null 포인터라 늦은 업로드가 DB에 고아 참조를 만들 수 없다.
+ */
+export async function attachSessionImagePointers(
+  input: AttachSessionImagePointersInput
+): Promise<IntegratedSessionRow> {
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase
+    .from('integrated_analysis_sessions')
+    .update({
+      face_image_url: input.faceImageUrl,
+      body_image_url: input.bodyImageUrl,
+      image_cleanup_pending: false,
+    })
+    .eq('id', input.sessionId)
+    .select()
+    .single();
+
+  if (error || !data) {
+    throw new Error(
+      `[SessionStore] attachSessionImagePointers failed: ${error?.message ?? 'no data'}`
+    );
+  }
+  return data as IntegratedSessionRow;
+}
+
+/** attach 응답이 불확실할 때 커밋됐을 수 있는 포인터를 멱등하게 비운다. */
+export async function clearSessionImagePointers(sessionId: string): Promise<void> {
+  const supabase = createServiceRoleClient();
+  const { error } = await supabase
+    .from('integrated_analysis_sessions')
+    .update({ face_image_url: null, body_image_url: null, image_cleanup_pending: false })
+    .eq('id', sessionId);
+
+  if (error) {
+    throw new Error(`[SessionStore] clearSessionImagePointers failed: ${error.message}`);
+  }
+}
+
+/**
+ * 선택 저장 실패는 민감 데이터·오류 원문 없이 questionnaire의 감사용 예약 키에 남긴다.
+ * 원래 문진 객체를 함께 전달해 clientRequestId 등 기존 키를 보존한다.
+ */
+export async function recordSessionImageStorageFailure(
+  input: RecordSessionImageStorageFailureInput
+): Promise<void> {
+  const supabase = createServiceRoleClient();
+  const { error } = await supabase
+    .from('integrated_analysis_sessions')
+    .update({
+      questionnaire: {
+        ...input.questionnaire,
+        _imageStorageFailure: input.failure,
+        _imageStorageFailureAt: input.failedAt ?? new Date().toISOString(),
+      },
+    })
+    .eq('id', input.sessionId);
+
+  if (error) {
+    throw new Error(`[SessionStore] record image storage failure failed: ${error.message}`);
+  }
+}
+
+/**
+ * Storage rollback 실패 후보를 failed session이 소유하게 해 일일 cleanup이 즉시 재시도한다.
+ * 경로와 cleanup_pending 표식을 한 UPDATE에 기록해 로그에만 남는 고아를 만들지 않는다.
+ */
+export async function recordSessionImageCleanupPending(
+  input: RecordSessionImageCleanupPendingInput
+): Promise<void> {
+  const supabase = createServiceRoleClient();
+  const { error } = await supabase
+    .from('integrated_analysis_sessions')
+    .update({
+      face_image_url: input.faceImageUrl,
+      body_image_url: input.bodyImageUrl,
+      image_cleanup_pending: true,
+      questionnaire: {
+        ...input.questionnaire,
+        _imageStorageFailure: 'cleanup_failed',
+        _imageStorageFailureAt: input.failedAt ?? new Date().toISOString(),
+        _imageStorageCleanupPending: true,
+      },
+    })
+    .eq('id', input.sessionId);
+
+  if (error) {
+    throw new Error(`[SessionStore] record cleanup pending failed: ${error.message}`);
+  }
 }
 
 /**

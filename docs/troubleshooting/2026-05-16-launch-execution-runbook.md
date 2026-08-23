@@ -144,34 +144,38 @@ Dashboard SQL Editor에서 RLS를 **프로덕션 패턴(`auth.jwt() ->> 'sub'::t
 > `20260422_drop_oral_health.sql`은 **파괴적(DROP TABLE)** + 헤더 "출시 후 4~8주" → **적용 안 함** (출시 후 작업).
 > 롤백: `apps/web/supabase/migrations/rollback/20260423_*_rollback.sql`, `20260424_*_rollback.sql`
 
-### 4-C. Storage 버킷 `integrated-sessions` 생성 ⛔ 사용자 실행 (Dashboard)
+### 4-C. Storage 버킷 `integrated-sessions` 정본 적용 ⛔ 사용자 실행 (Dashboard)
 
 업로드 경로 패턴: `{clerkUserId}/{sessionId}/{face|body}.{ext}`, 서버(service_role)에서 업로드.
 
-Supabase Dashboard → Storage → New bucket:
+Supabase Dashboard → SQL Editor에서
+`supabase/migrations/202608230400_integrated_sessions_storage_bucket.sql`을 수동 gap-apply한다.
+`supabase db push`는 사용하지 않는다. 마이그레이션은 다음 설정을 멱등 보장한다.
 
 - Name: `integrated-sessions`
 - **Public: OFF** (private)
+- 파일당 **10MB**, JPEG·PNG·WebP·HEIC·HEIF
 
 SQL Editor에서 RLS 정책:
 
 ```sql
--- 서버(service_role) 전체 접근 (업로드/삭제) — 20260423에서 검증된 표현식 재사용
-CREATE POLICY "integrated_sessions_service_all"
-ON storage.objects FOR ALL
-USING (bucket_id = 'integrated-sessions' AND current_setting('role', true) = 'service_role')
-WITH CHECK (bucket_id = 'integrated-sessions' AND current_setting('role', true) = 'service_role');
+-- 서버(service_role) 전체 접근 (업로드/서명/삭제)
+CREATE POLICY "Service role manages integrated session images"
+ON storage.objects FOR ALL TO service_role
+USING (bucket_id = 'integrated-sessions')
+WITH CHECK (bucket_id = 'integrated-sessions');
 
--- 본인 폴더만 조회 (clerk_user_id = 경로 첫 세그먼트) — ★프로덕션 RLS 구 패턴 (§1.5)
-CREATE POLICY "integrated_sessions_owner_read"
-ON storage.objects FOR SELECT
-USING (
-  bucket_id = 'integrated-sessions'
-  AND (storage.foldername(name))[1] = (auth.jwt() ->> 'sub'::text)
-);
+-- authenticated 직접 Storage SELECT와 세션 write는 열지 않는다.
+DROP POLICY IF EXISTS "Users can view own integrated session images" ON storage.objects;
+DROP POLICY IF EXISTS "integrated_sessions_insert_own" ON integrated_analysis_sessions;
+DROP POLICY IF EXISTS "integrated_sessions_update_own" ON integrated_analysis_sessions;
+DROP POLICY IF EXISTS "integrated_sessions_delete_own" ON integrated_analysis_sessions;
+REVOKE INSERT, UPDATE, DELETE ON integrated_analysis_sessions FROM anon, authenticated;
 ```
 
-> ⚠️ `auth.get_user_id()`/`auth.role()` 사용 금지 — 프로덕션에 없음(§1.5). 위는 교정본.
+결과 이미지는 서버가 회차·글로벌 동의와 파기 상태를 재검증한 뒤에만 서명한다. 이 migration은
+구형 `cleanup-expired-consents` pg_cron과 SQL helper도 제거하므로 적용 로그의 WARNING이 있으면
+Cron Jobs에서 같은 jobname이 남았는지 수동 확인한다.
 
 ### 4-D. Vercel 환경변수 점검 ⛔ 사용자 실행
 

@@ -28,13 +28,14 @@ vi.mock('next/dynamic', () => ({
 
 import AnalysisComparePage from '@/app/(main)/analysis/compare/page';
 
-function compareResult(period: string, beforeId: string, afterId: string) {
+function compareResult(period: string, beforeId: string, afterId: string, withImages = false) {
   return {
     before: {
       id: beforeId,
       date: '2026-08-01T00:00:00Z',
       overallScore: 70,
       type: 'skin',
+      ...(withImages ? { imageUrl: 'https://example.com/before.jpg' } : {}),
       details: {
         hydration: 1,
         oilLevel: 1,
@@ -49,6 +50,7 @@ function compareResult(period: string, beforeId: string, afterId: string) {
       date: '2026-08-02T00:00:00Z',
       overallScore: 71,
       type: 'skin',
+      ...(withImages ? { imageUrl: 'https://example.com/after.jpg' } : {}),
       details: {
         hydration: 2,
         oilLevel: 2,
@@ -77,6 +79,9 @@ describe('AnalysisComparePage 데이터 경합', () => {
       'fetch',
       vi.fn((input: string | URL | Request, init?: RequestInit) => {
         const url = String(input);
+        if (url.startsWith('/api/consent?')) {
+          return Promise.resolve(new Response(JSON.stringify({ consent: null }), { status: 200 }));
+        }
         return new Promise<Response>((resolve) => {
           requests.push({ url, signal: init?.signal ?? undefined, resolve });
         });
@@ -106,6 +111,16 @@ describe('AnalysisComparePage 데이터 경합', () => {
       requests[3].resolve(new Response(JSON.stringify(historyResult), { status: 200 }));
     });
     expect(await screen.findByText('최신 기간 간의 변화')).toBeInTheDocument();
+    expect(screen.getByTestId('analysis-compare-image-storage-notice')).toHaveTextContent(
+      '사진 저장에 동의한 분석 기록이 쌓이면 사진 비교를 볼 수 있어요.'
+    );
+    expect(
+      screen.getByRole('link', { name: '사진 저장에 동의하고 새 분석 기록 만들기' })
+    ).toHaveAttribute('href', '/analysis/skin');
+    expect(screen.getByRole('link', { name: '개인정보 설정' })).toHaveAttribute(
+      'href',
+      '/settings/privacy'
+    );
 
     await act(async () => {
       requests[0].resolve(
@@ -134,6 +149,23 @@ describe('AnalysisComparePage 데이터 경합', () => {
     expect(requests[2].url).toContain('/api/analysis/compare?type=body');
     expect(requests[2].url).toContain('from=body-from&to=body-to');
     expect(requests[3].url).toContain('/api/analysis/history?type=body');
+  });
+
+  it('두 기록에 저장 사진이 있으면 잠금 안내를 표시하지 않는다', async () => {
+    render(<AnalysisComparePage />);
+    await waitFor(() => expect(requests).toHaveLength(2));
+
+    await act(async () => {
+      requests[0].resolve(
+        new Response(JSON.stringify(compareResult('사진 기간', 'old-from', 'old-to', true)), {
+          status: 200,
+        })
+      );
+      requests[1].resolve(new Response(JSON.stringify(historyResult), { status: 200 }));
+    });
+
+    expect(await screen.findByText('사진 기간 간의 변화')).toBeInTheDocument();
+    expect(screen.queryByTestId('analysis-compare-image-storage-notice')).not.toBeInTheDocument();
   });
 
   it('탭으로 다른 축을 고르면 기존 축 ID를 재사용하지 않고 해당 기록 선택 화면으로 간다', async () => {

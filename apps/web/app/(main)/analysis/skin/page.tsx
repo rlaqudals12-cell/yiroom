@@ -17,17 +17,53 @@ import MultiAngleSkinCapture from './_components/MultiAngleSkinCapture';
 import AnalysisLoading from './_components/AnalysisLoading';
 import AnalysisResult from './_components/AnalysisResult';
 import { ImageConsentModal } from '@/components/analysis/consent';
+import {
+  ImageStorageUnavailableNotice,
+  type ImageStorageUnavailableReason,
+} from '@/components/analysis/consent/ImageStorageUnavailableNotice';
 import { useShare } from '@/hooks/useShare';
 import { ShareButton } from '@/components/share';
 import { Confetti } from '@/components/animations';
 import { PhotoReuseSelector } from '@/components/analysis/skin/PhotoReuseSelector';
 import { checkPhotoReuseEligibility, type PhotoReuseEligibility } from '@/lib/analysis';
 import { invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
+import { isImageConsentActive } from '@/lib/consent/version-check';
 
 // 새 플로우: 조명가이드 → 모드선택 → 사진촬영 → AI분석 → 결과
 // 또는: 기존 피부 타입 입력 → 결과
 type CaptureMode = 'select' | 'camera' | 'gallery';
 type AnalysisStep = 'guide' | 'mode-select' | 'camera' | 'upload' | 'loading' | 'result';
+
+function getPhotoReuseStorageReason(
+  reason: PhotoReuseEligibility['reason']
+): ImageStorageUnavailableReason | null {
+  switch (reason) {
+    case 'no_consent':
+      return 'no_consent';
+    case 'expired':
+      return 'expired';
+    case 'no_image':
+      return 'missing';
+    case 'unknown':
+      return 'unknown';
+    default:
+      return null;
+  }
+}
+
+function getPhotoReuseStorageMessage(reason: ImageStorageUnavailableReason): string {
+  switch (reason) {
+    case 'no_consent':
+      return '퍼스널컬러 사진 저장에 동의한 뒤 다시 분석하면 피부 분석에서 사진을 재사용할 수 있어요.';
+    case 'expired':
+      return '퍼스널컬러 사진의 보관 기한이 지나 저장 사진이 파기되어 재사용할 수 없어요.';
+    case 'missing':
+      return '재사용할 퍼스널컬러 저장 사진이 없어요.';
+    case 'unknown':
+    default:
+      return '퍼스널컬러 저장 사진을 확인할 수 없어 재사용 옵션을 표시하지 않았어요.';
+  }
+}
 
 export default function SkinAnalysisPage() {
   const t = useTranslations('analysisEntry');
@@ -62,10 +98,12 @@ export default function SkinAnalysisPage() {
     null
   );
   const [reuseChecking, setReuseChecking] = useState(false);
+  const photoReuseStorageReason = getPhotoReuseStorageReason(photoReuseEligibility?.reason);
   const analysisStartedRef = useRef(false);
   const existingCheckedRef = useRef(false);
   const consentCheckedRef = useRef(false);
   const reuseCheckedRef = useRef(false);
+  const imageStorageAllowedRef = useRef<boolean | undefined>(undefined);
   const { ref: shareRef, share, loading: shareLoading } = useShare('이룸-피부분석-결과');
 
   // 기존 분석 결과 확인 및 자동 리디렉트
@@ -154,11 +192,13 @@ export default function SkinAnalysisPage() {
       consentCheckedRef.current = true;
 
       try {
-        const { data } = await supabase
+        const { data, error: consentError } = await supabase
           .from('image_consents')
           .select('*')
           .eq('analysis_type', 'skin')
           .maybeSingle();
+
+        if (consentError) throw consentError;
 
         if (data) {
           setExistingConsent(data as ImageConsent);
@@ -213,7 +253,8 @@ export default function SkinAnalysisPage() {
 
   // 분석 진행 (동의 후 또는 기존 동의가 있는 경우)
   const proceedToAnalysis = useCallback(
-    (file: File | null, multiImages: MultiAngleImages | null) => {
+    (file: File | null, multiImages: MultiAngleImages | null, imageStorageAllowed?: boolean) => {
+      imageStorageAllowedRef.current = imageStorageAllowed;
       if (file) {
         setImageFile(file);
       }
@@ -254,8 +295,8 @@ export default function SkinAnalysisPage() {
   const handleMultiAngleCaptureComplete = useCallback(
     (images: MultiAngleImages) => {
       // 기존 동의가 있으면 바로 분석 진행
-      if (existingConsent?.consent_given) {
-        proceedToAnalysis(null, images);
+      if (isImageConsentActive(existingConsent)) {
+        proceedToAnalysis(null, images, true);
         return;
       }
       // 동의가 없으면 모달 표시
@@ -274,6 +315,7 @@ export default function SkinAnalysisPage() {
   // 동의 저장 핸들러
   const handleConsentAgree = useCallback(async () => {
     setConsentLoading(true);
+    let imageStorageAllowed = false;
     try {
       const response = await fetch('/api/consent', {
         method: 'POST',
@@ -293,16 +335,17 @@ export default function SkinAnalysisPage() {
       } else {
         const data = await response.json();
         setExistingConsent(data.consent);
+        imageStorageAllowed = true;
       }
 
       // 분석 진행
       setShowConsentModal(false);
-      proceedToAnalysis(pendingImageFile, pendingMultiAngleImages);
+      proceedToAnalysis(pendingImageFile, pendingMultiAngleImages, imageStorageAllowed);
     } catch (err) {
       console.error('[S-1] Consent save error:', err);
       // 에러 발생해도 분석은 진행
       setShowConsentModal(false);
-      proceedToAnalysis(pendingImageFile, pendingMultiAngleImages);
+      proceedToAnalysis(pendingImageFile, pendingMultiAngleImages, false);
     } finally {
       setConsentLoading(false);
     }
@@ -311,7 +354,7 @@ export default function SkinAnalysisPage() {
   // 동의 건너뛰기 핸들러
   const handleConsentSkip = useCallback(() => {
     setShowConsentModal(false);
-    proceedToAnalysis(pendingImageFile, pendingMultiAngleImages);
+    proceedToAnalysis(pendingImageFile, pendingMultiAngleImages, false);
   }, [pendingImageFile, pendingMultiAngleImages, proceedToAnalysis]);
 
   // AI 분석 실행 (API 호출) - 다각도 모드 지원 (카메라/갤러리 모두)
@@ -329,7 +372,7 @@ export default function SkinAnalysisPage() {
     setIsAnalyzing(true);
 
     try {
-      let requestBody: Record<string, string | undefined>;
+      let requestBody: Record<string, string | boolean | undefined>;
 
       if (hasMultiAngleImages) {
         // 다각도 모드: 정면(필수) + 좌/우(선택) 이미지 전송
@@ -347,6 +390,8 @@ export default function SkinAnalysisPage() {
       } else {
         throw new Error('No image available');
       }
+
+      requestBody.imageStorageAllowed = imageStorageAllowedRef.current;
 
       const response = await fetch('/api/analyze/skin', {
         method: 'POST',
@@ -511,6 +556,20 @@ export default function SkinAnalysisPage() {
           {/* 모드 선택 UI */}
           {step === 'mode-select' && (
             <div className="space-y-6" data-testid="capture-mode-select">
+              {!reuseChecking &&
+                photoReuseEligibility &&
+                !photoReuseEligibility.eligible &&
+                photoReuseStorageReason && (
+                  <ImageStorageUnavailableNotice
+                    analysisHref="/analysis/personal-color"
+                    featureLabel="저장 사진 재사용"
+                    reason={photoReuseStorageReason}
+                    testId="skin-photo-reuse-storage-notice"
+                  >
+                    {getPhotoReuseStorageMessage(photoReuseStorageReason)}
+                  </ImageStorageUnavailableNotice>
+                )}
+
               {/* 사진 재사용 옵션 (재사용 가능한 경우에만 표시) */}
               {!reuseChecking && photoReuseEligibility?.eligible && (
                 <PhotoReuseSelector

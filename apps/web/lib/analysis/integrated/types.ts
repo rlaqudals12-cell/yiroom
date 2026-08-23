@@ -132,6 +132,12 @@ export const integratedAnalysisInputSchema = z.object({
       skin: skinQuestionnaireSchema,
       hair: hairQuestionnaireSchema,
       body: bodyQuestionnaireSchema,
+      /**
+       * 이번 통합 분석 원본 사진의 선택 저장 동의.
+       * 누락은 반드시 false로 정규화해 구형 클라이언트도 저장 없이 분석만 진행한다.
+       * 세션 questionnaire JSONB에 그대로 남아 저장 여부를 사후 확인할 수 있다.
+       */
+      imageStorageConsent: z.boolean().default(false),
       /** 성별 (추천 분기 전용, 선택) — 분석 판정엔 미주입 */
       gender: z.enum(RECOMMENDATION_GENDERS).optional(),
       /** 상황/TPO (선택) — 액션 플랜 문구 맥락화 */
@@ -400,12 +406,23 @@ export interface IntegratedAnalysisResult {
 
 export type SessionStatus = 'pending' | 'partial' | 'completed' | 'failed';
 
+/** 저장 원본을 결과 화면에서 다시 서명할 수 있는지와, 잠겼다면 확인된 이유. */
+export type IntegratedStoredImageAccessState =
+  | 'allowed'
+  | 'no_session_consent'
+  | 'biometric_revoked'
+  | 'purge_pending'
+  | 'agreement_unavailable'
+  | 'invalid_path';
+
 /** DB 레코드 매핑 (integrated_analysis_sessions) */
 export interface IntegratedSessionRow {
   id: string;
   clerk_user_id: string;
   face_image_url: string | null;
   body_image_url: string | null;
+  /** Storage/DB 분산 파기 실패를 일일 cron이 즉시 재시도하는 동안 서명을 막는 표식. */
+  image_cleanup_pending?: boolean;
   questionnaire: Record<string, unknown>;
   status: SessionStatus;
   axes_completed: AxisCode[];

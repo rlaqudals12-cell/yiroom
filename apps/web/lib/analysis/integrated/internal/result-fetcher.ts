@@ -16,7 +16,7 @@ import {
   fetchIntegratedProfileSnapshot,
   type AxisProvenance,
 } from '@/lib/analysis/integrated/profile-snapshot';
-import type { AxisCode, IntegratedSessionRow } from '../types';
+import type { AxisCode, IntegratedSessionRow, IntegratedStoredImageAccessState } from '../types';
 
 export interface AxisDbRecord {
   id: string;
@@ -36,6 +36,10 @@ export type ResultAxisKey = (typeof AXIS_KEY_BY_CODE)[AxisCode];
 
 export interface ResultPageData {
   session: IntegratedSessionRow;
+  /** 저장 원본 접근 상태. 정상 미동의와 철회·파기 대기를 섞지 않는다. */
+  storedImageAccessState: IntegratedStoredImageAccessState;
+  /** 접근 게이트를 통과한 얼굴 원본 경로만 남긴다. 서명 호출에는 이 값만 전달한다. */
+  accessibleFaceImagePath: string | null;
   axes: Record<ResultAxisKey, AxisDbRecord | null>;
   /**
    * 이번 세션엔 없어서 사용자의 최신 진단으로 채운 축.
@@ -51,6 +55,25 @@ export interface ResultPageData {
   fallbackAxes: AxisCode[];
   unknownAxes: AxisCode[];
   axisProvenance: Record<AxisCode, AxisProvenance | null>;
+}
+
+export function resolveIntegratedStoredImageAccess(
+  session: IntegratedSessionRow,
+  biometricAgreed: boolean | null
+): IntegratedStoredImageAccessState {
+  // 파기 실패 상태를 최우선으로 두어 재동의 CTA 대신 삭제 재시도만 안내한다.
+  if (session.image_cleanup_pending === true) return 'purge_pending';
+  // 이번 회차에서 저장을 선택하지 않은 정상 상태를 전역 철회로 오표시하지 않는다.
+  if (session.questionnaire?.imageStorageConsent !== true) return 'no_session_consent';
+  if (biometricAgreed === false) return 'biometric_revoked';
+  // 동의 조회 장애·레코드 부재는 허용으로 추정하지 않는다.
+  if (biometricAgreed === null) return 'agreement_unavailable';
+
+  const expectedPrefix = `${session.clerk_user_id}/${session.id}/`;
+  const ownsEveryStoredPath = [session.face_image_url, session.body_image_url]
+    .filter((path): path is string => typeof path === 'string' && path.length > 0)
+    .every((path) => path.startsWith(expectedPrefix));
+  return ownsEveryStoredPath ? 'allowed' : 'invalid_path';
 }
 
 /**
@@ -78,6 +101,24 @@ export async function fetchIntegratedResult(sessionId: string): Promise<ResultPa
     return null;
   }
 
+  // 전역 철회 직후 Storage 파기가 진행 중이어도 기존 경로를 서명하지 않는 fail-closed 게이트.
+  const { data: agreement, error: agreementError } = await supabase
+    .from('user_agreements')
+    .select('biometric_agreed')
+    .eq('clerk_user_id', String(session.clerk_user_id))
+    .maybeSingle();
+  if (agreementError) {
+    console.error('[ResultFetcher] biometric agreement lookup failed:', agreementError.message);
+  }
+  const storedImageAccessState = resolveIntegratedStoredImageAccess(
+    session as IntegratedSessionRow,
+    agreementError || !agreement ? null : agreement.biometric_agreed === true
+  );
+  const accessibleFaceImagePath =
+    storedImageAccessState === 'allowed' && typeof session.face_image_url === 'string'
+      ? session.face_image_url
+      : null;
+
   // 2. 소유자·공개 공유가 같은 cutoff/폴백 해석을 쓰는 공용 프로필 스냅샷.
   // 세션 생성 이후의 새 진단은 과거 partial 세션에 끼워 넣지 않는다.
   const snapshot = await fetchIntegratedProfileSnapshot(supabase, {
@@ -93,6 +134,8 @@ export async function fetchIntegratedResult(sessionId: string): Promise<ResultPa
 
   return {
     session: session as IntegratedSessionRow,
+    storedImageAccessState,
+    accessibleFaceImagePath,
     axes,
     axesFromProfile: snapshot.axesFromProfile,
     axesFetchFailed: snapshot.axesFetchFailed,

@@ -7,6 +7,7 @@ import {
   internalError,
   createSuccessResponse,
 } from '@/lib/api/error-response';
+import { signConsentedAnalysisImageUrls } from '@/lib/consent/image-access';
 
 /**
  * GET /api/analyze/personal-color/[id]
@@ -47,20 +48,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       return internalError('데이터 조회에 실패했습니다.', error.message);
     }
 
-    // face_image_url이 경로만 저장된 경우, 서명된 URL로 변환
-    // (1시간 유효 - 드레이핑 시뮬레이션용)
-    let responseData = { ...data };
-    if (data.face_image_url && !data.face_image_url.startsWith('http')) {
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-        .from('personal-color-images')
-        .createSignedUrl(data.face_image_url, 3600); // 1시간 유효
-
-      if (signedUrlData && !signedUrlError) {
-        responseData = { ...data, face_image_url: signedUrlData.signedUrl };
-      } else if (signedUrlError) {
-        console.warn('[PC-1] Failed to generate signed URL:', signedUrlError.message);
-      }
-    }
+    // face_image_url이 경로만 저장된 경우, 1시간 유효한 서명 URL로 변환한다.
+    const [faceImageUrl] = await signConsentedAnalysisImageUrls(
+      supabase,
+      userId,
+      'personal-color',
+      [data.face_image_url]
+    );
+    const responseData = { ...data, face_image_url: faceImageUrl };
 
     return createSuccessResponse(responseData);
   } catch (error) {

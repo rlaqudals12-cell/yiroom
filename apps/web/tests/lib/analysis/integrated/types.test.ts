@@ -26,6 +26,7 @@ describe('integratedAnalysisInputSchema', () => {
       expect(result.data.faceImageBase64).toBe(validFaceImage);
       expect(result.data.options.locale).toBe('ko');
       expect(result.data.options.skipMakeup).toBe(false);
+      expect(result.data.questionnaire.imageStorageConsent).toBe(false);
     }
   });
 
@@ -57,10 +58,21 @@ describe('integratedAnalysisInputSchema', () => {
         skin: { selfReportedType: 'combination', concerns: ['acne'] },
         hair: { length: 'medium', density: 'medium', curlType: 'straight' },
         body: { heightCm: 170, weightKg: 60, shoulderWidthCm: 40, waistCm: 70 },
+        imageStorageConsent: true,
       },
       options: { locale: 'en', skipMakeup: true },
     });
     expect(result.success).toBe(true);
+    if (result.success) expect(result.data.questionnaire.imageStorageConsent).toBe(true);
+  });
+
+  it('이미지 저장 동의는 boolean만 허용하고 문자열 truthy를 거부한다', () => {
+    const result = integratedAnalysisInputSchema.safeParse({
+      faceImageBase64: validFaceImage,
+      questionnaire: { imageStorageConsent: 'true' },
+    });
+
+    expect(result.success).toBe(false);
   });
 
   it('잘못된 로케일 실패', () => {

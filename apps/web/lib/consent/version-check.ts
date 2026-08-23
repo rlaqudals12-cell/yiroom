@@ -12,6 +12,26 @@ export const CONSENT_VERSIONS = {
 // 현재 최신 버전
 export const LATEST_CONSENT_VERSION = 'v1.0';
 
+/** 현재 버전이며 보관 기한이 남은 명시 동의만 활성 동의로 본다. */
+export function isImageConsentActive(
+  consent:
+    | Pick<ImageConsent, 'consent_given' | 'consent_version' | 'retention_until'>
+    | null
+    | undefined,
+  now: Date = new Date()
+): boolean {
+  if (
+    consent?.consent_given !== true ||
+    consent.consent_version !== LATEST_CONSENT_VERSION ||
+    !consent.retention_until
+  ) {
+    return false;
+  }
+
+  const retentionUntil = new Date(consent.retention_until).getTime();
+  return Number.isFinite(retentionUntil) && retentionUntil > now.getTime();
+}
+
 /**
  * 재동의가 필요한지 확인
  * 기존 동의가 있고, 버전이 다르면 재동의 필요
@@ -102,26 +122,30 @@ export function getDaysUntilExpiry(retentionUntil: string | null): number | null
  * @param birthdate - 생년월일 (YYYY-MM-DD)
  * @returns 동의 가능 여부 및 이유
  *
- * 참고: 생년월일이 미입력인 경우 동의 허용 (사용자가 14세 이상임을 묵시적으로 확인)
- * 14세 미만으로 확인된 경우에만 동의 불가
+ * 생년월일이 없거나 유효하지 않으면 연령을 확인할 수 없으므로 동의를 받지 않는다.
  */
 export function checkConsentEligibility(birthdate: string | null | undefined): {
   canConsent: boolean;
   reason?: 'under_age' | 'no_birthdate';
   requiredAction?: string;
-  ageUnverified?: boolean;
 } {
-  // 생년월일 미입력: 동의 허용 (묵시적 성인 확인)
-  // UX 개선: 대부분의 사용자는 성인이며, 생년월일 미입력으로 기능 차단은 과도함
+  // 민감정보 저장 동의는 연령을 확인할 수 없을 때도 fail-closed로 처리한다.
   if (!birthdate) {
-    console.warn('[Consent] No birthdate provided - allowing consent (implicit age confirmation)');
     return {
-      canConsent: true,
-      ageUnverified: true,
+      canConsent: false,
+      reason: 'no_birthdate',
+      requiredAction: '프로필에 생년월일을 입력해주세요',
     };
   }
 
   const birth = new Date(birthdate);
+  if (Number.isNaN(birth.getTime())) {
+    return {
+      canConsent: false,
+      reason: 'no_birthdate',
+      requiredAction: '프로필에서 올바른 생년월일을 입력해주세요',
+    };
+  }
   const today = new Date();
 
   // 나이 계산

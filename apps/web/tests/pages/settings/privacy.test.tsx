@@ -1,571 +1,429 @@
-/**
- * 개인정보 설정 페이지 통합 테스트
- * SDD-MARKETING-TOGGLE-UI.md §4
- */
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import PrivacySettingsPage from '@/app/(main)/settings/privacy/page';
-
-// Clerk 모킹
-vi.mock('@clerk/nextjs', () => ({
-  useAuth: vi.fn(),
-}));
-
-// Supabase 클라이언트 모킹
-vi.mock('@/lib/supabase/clerk-client', () => ({
-  useClerkSupabaseClient: vi.fn(),
-}));
-
-// next/link 모킹
+vi.mock('@clerk/nextjs', () => ({ useAuth: vi.fn() }));
+vi.mock('@/lib/supabase/clerk-client', () => ({ useClerkSupabaseClient: vi.fn() }));
 vi.mock('next/link', () => ({
-  default: vi.fn(({ children, href, ...props }: any) => (
+  default: ({ children, href, ...props }: React.ComponentProps<'a'>) => (
     <a href={href} {...props}>
       {children}
     </a>
-  )),
+  ),
 }));
-
-// sonner 토스트 모킹
 vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
-
-// lucide-react 아이콘 모킹
-vi.mock('lucide-react', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('lucide-react')>();
-  return {
-    ...actual,
-    ArrowLeft: () => <span data-testid="arrow-left-icon">ArrowLeft</span>,
-    Shield: () => <span data-testid="shield-icon">Shield</span>,
-    Image: () => <span data-testid="image-icon">Image</span>,
-    Trash2: () => <span data-testid="trash2-icon">Trash2</span>,
-    AlertCircle: () => <span data-testid="alert-circle-icon">AlertCircle</span>,
-    CheckCircle: () => <span data-testid="check-circle-icon">CheckCircle</span>,
-    Info: () => <span data-testid="info-icon">Info</span>,
-    Megaphone: () => <span data-testid="megaphone-icon">Megaphone</span>,
-  };
-});
-
-// ConsentStatus 모킹
 vi.mock('@/components/analysis/consent', () => ({
-  ConsentStatus: vi.fn(({ consent }: any) => (
-    <div data-testid="consent-status">{consent?.consent_given ? '동의함' : '동의 안 함'}</div>
-  )),
+  ConsentStatus: ({ consent }: { consent: { consent_given?: boolean } | null }) => (
+    <span data-testid="consent-status">{consent?.consent_given ? '동의함' : '미동의'}</span>
+  ),
+}));
+vi.mock('@/components/settings', () => ({
+  MarketingConsentToggle: () => <div data-testid="marketing-consent-toggle" />,
+  AgreementHistory: () => <div data-testid="agreement-history" />,
 }));
 
 import { useAuth } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import { toast } from 'sonner';
+import PrivacySettingsPage from '@/app/(main)/settings/privacy/page';
 
-// Mock Supabase 헬퍼
-function createMockSupabase(options?: {
-  imageConsentData?: any;
-  agreementData?: any;
-  imageConsentError?: any;
-  agreementError?: any;
+type ImageRow = {
+  id: string;
+  clerk_user_id: string;
+  analysis_type: 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup';
+  consent_given: boolean;
+  consent_version: string;
+  consent_at: string | null;
+  withdrawal_at: string | null;
+  retention_until: string | null;
+  cleanup_reconciled_at?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+const IMAGE_TYPES: ImageRow['analysis_type'][] = [
+  'skin',
+  'body',
+  'personal-color',
+  'hair',
+  'makeup',
+];
+
+const activeSkinConsent: ImageRow = {
+  id: 'consent-skin',
+  clerk_user_id: 'user-1',
+  analysis_type: 'skin',
+  consent_given: true,
+  consent_version: 'v1.0',
+  consent_at: '2026-08-01T00:00:00.000Z',
+  withdrawal_at: null,
+  retention_until: '2099-08-01T00:00:00.000Z',
+  created_at: '2026-08-01T00:00:00.000Z',
+  updated_at: '2026-08-01T00:00:00.000Z',
+};
+
+function makeSupabase(options?: {
+  imageRows?: ImageRow[];
+  imageError?: unknown;
+  imageResponses?: Array<{ data: ImageRow[] | null; error: unknown }>;
 }) {
-  let queryCounter = 0;
-
-  const mockMaybeSingle = vi.fn().mockImplementation(() => {
-    queryCounter++;
-    // 첫 번째 쿼리: image_consents
-    if (queryCounter === 1) {
-      return Promise.resolve({
-        data: options?.imageConsentData || null,
-        error: options?.imageConsentError || null,
-      });
-    }
-    // 두 번째 쿼리: user_agreements
-    return Promise.resolve({
-      data: options?.agreementData || null,
-      error: options?.agreementError || null,
+  const imageIn = vi.fn();
+  const responses = options?.imageResponses;
+  if (responses) {
+    for (const response of responses) imageIn.mockResolvedValueOnce(response);
+  } else {
+    imageIn.mockResolvedValue({
+      data: options?.imageRows ?? [],
+      error: options?.imageError ?? null,
     });
-  });
+  }
 
-  const mockEq = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
-  const mockSelect = vi.fn().mockReturnValue({
-    eq: mockEq,
-    maybeSingle: mockMaybeSingle,
-  });
-  const mockUpdate = vi.fn().mockReturnValue({
-    eq: vi.fn().mockReturnValue({ error: null }),
-  });
-  const mockFrom = vi.fn().mockReturnValue({
-    select: mockSelect,
-    update: mockUpdate,
-  });
-
-  return {
-    from: mockFrom,
-    _testHelpers: {
-      mockFrom,
-      mockSelect,
-      mockEq,
-      mockMaybeSingle,
-      mockUpdate,
+  const agreementMaybeSingle = vi.fn().mockResolvedValue({
+    data: {
+      marketing_agreed: false,
+      marketing_agreed_at: null,
+      marketing_withdrawn_at: null,
     },
-  };
+    error: null,
+  });
+  const from = vi.fn((table: string) => {
+    if (table === 'image_consents') {
+      return { select: vi.fn(() => ({ in: imageIn })) };
+    }
+    if (table === 'user_agreements') {
+      return { select: vi.fn(() => ({ maybeSingle: agreementMaybeSingle })) };
+    }
+    throw new Error(`unexpected table: ${table}`);
+  });
+
+  return { from, imageIn };
 }
 
-// fetch 모킹
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
+
+async function renderLoaded() {
+  render(<PrivacySettingsPage />);
+  await screen.findByTestId('privacy-settings-page');
+}
 
 describe('PrivacySettingsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // 기본 인증 상태: 로그인됨
-    vi.mocked(useAuth).mockReturnValue({
-      isSignedIn: true,
-      isLoaded: true,
-    } as unknown as ReturnType<typeof useAuth>);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  describe('렌더링', () => {
-    it('페이지가 정상적으로 렌더링된다', async () => {
-      const mockSupabase = createMockSupabase();
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('privacy-settings-page')).toBeInTheDocument();
-      });
-    });
-
-    it('헤더에 제목이 표시된다', async () => {
-      const mockSupabase = createMockSupabase();
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('개인정보 설정')).toBeInTheDocument();
-      });
-    });
-
-    it('설정으로 돌아가기 링크가 표시된다', async () => {
-      const mockSupabase = createMockSupabase();
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        const backLink = screen.getByLabelText('설정으로 돌아가기');
-        expect(backLink).toBeInTheDocument();
-        expect(backLink).toHaveAttribute('href', '/settings');
-      });
+    vi.mocked(useAuth).mockReturnValue({ isLoaded: true, isSignedIn: true } as ReturnType<
+      typeof useAuth
+    >);
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(makeSupabase() as never);
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true, data: {} }),
     });
   });
 
-  describe('이미지 동의 카드', () => {
-    it('이미지 동의 카드가 표시된다', async () => {
-      const mockSupabase = createMockSupabase();
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
+  it('이미지 동의를 5축으로 보여주고 체형에는 존재하지 않는 opt-in CTA를 만들지 않는다', async () => {
+    await renderLoaded();
 
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('image-consent-card')).toBeInTheDocument();
-      });
-    });
-
-    it('이미지 동의 카드 제목이 표시된다', async () => {
-      const mockSupabase = createMockSupabase();
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('피부 분석 이미지 저장 동의')).toBeInTheDocument();
-      });
-    });
-
-    it('동의 상태 컴포넌트가 표시된다', async () => {
-      const mockSupabase = createMockSupabase({
-        imageConsentData: {
-          id: 'ic1',
-          consent_given: true,
-          consent_at: '2024-01-01T00:00:00Z',
-          consent_version: 'v1.0',
-          retention_until: '2025-01-01T00:00:00Z',
-          analysis_type: 'skin',
-        },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('consent-status')).toBeInTheDocument();
-      });
-    });
-
-    it('동의하지 않았을 때 안내 메시지가 표시된다', async () => {
-      const mockSupabase = createMockSupabase({
-        imageConsentData: {
-          id: 'ic1',
-          consent_given: false,
-          analysis_type: 'skin',
-        },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(/이미지 저장 동의를 하지 않으면 분석 결과를 저장할 수 없어요/)
-        ).toBeInTheDocument();
-      });
-    });
+    for (const type of ['skin', 'body', 'personal-color', 'hair', 'makeup']) {
+      expect(screen.getByTestId(`consent-${type}`)).toBeInTheDocument();
+    }
+    expect(
+      screen.getByText('체형 분석의 새 사진 저장 선택은 현재 지원하지 않습니다.')
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /체형.*선택/ })).not.toBeInTheDocument();
+    expect(screen.getByTestId('consent-hair').querySelector('a')).toHaveAttribute(
+      'href',
+      '/analysis/hair'
+    );
   });
 
-  describe('마케팅 동의 카드', () => {
-    it('user_agreements 데이터가 있을 때 마케팅 동의 카드가 표시된다', async () => {
-      const mockSupabase = createMockSupabase({
-        agreementData: {
-          marketing_agreed: true,
-          marketing_agreed_at: '2024-01-01T00:00:00Z',
-          marketing_withdrawn_at: null,
-        },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
+  it('축별 저장과 통합 분석의 분석별 기본 OFF 계약을 구분해 설명한다', async () => {
+    await renderLoaded();
 
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('marketing-consent-card')).toBeInTheDocument();
-      });
-    });
-
-    it('user_agreements 데이터가 없을 때 마케팅 동의 카드가 표시되지 않는다', async () => {
-      const mockSupabase = createMockSupabase({
-        agreementData: null,
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.queryByTestId('marketing-consent-card')).not.toBeInTheDocument();
-      });
-    });
-
-    it('마케팅 동의 카드에 올바른 초기값이 전달된다', async () => {
-      const mockSupabase = createMockSupabase({
-        agreementData: {
-          marketing_agreed: true,
-          marketing_agreed_at: '2024-01-15T09:30:00Z',
-          marketing_withdrawn_at: null,
-        },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        const card = screen.getByTestId('marketing-consent-card');
-        expect(card).toBeInTheDocument();
-
-        // 토글이 켜져있는지 확인
-        const toggle = screen.getByRole('switch');
-        expect(toggle).toHaveAttribute('data-state', 'checked');
-      });
-    });
-
-    it('마케팅 동의 철회 상태가 올바르게 표시된다', async () => {
-      const mockSupabase = createMockSupabase({
-        agreementData: {
-          marketing_agreed: false,
-          marketing_agreed_at: '2024-01-01T00:00:00Z',
-          marketing_withdrawn_at: '2024-02-01T00:00:00Z',
-        },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        const toggle = screen.getByRole('switch');
-        expect(toggle).toHaveAttribute('data-state', 'unchecked');
-      });
-    });
+    expect(screen.getByText(/원본 사진을 최대 1년 보관할지 축별로 관리/)).toBeInTheDocument();
+    expect(screen.getByText(/통합 분석 원본 사진은 분석할 때마다 기본 OFF/)).toBeInTheDocument();
+    expect(screen.getByText(/Google\(Gemini\)에 전송/)).toBeInTheDocument();
   });
 
-  describe('토글 상호작용', () => {
-    it('토글 변경 시 API 호출 후 상태가 업데이트된다', async () => {
-      const mockSupabase = createMockSupabase({
-        agreementData: {
-          marketing_agreed: false,
-          marketing_agreed_at: null,
-          marketing_withdrawn_at: '2024-01-01T00:00:00Z',
-        },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
+  it('동의 상태 조회가 실패하면 모두 미동의인 것처럼 축과 CTA를 렌더링하지 않는다', async () => {
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(
+      makeSupabase({ imageError: { message: 'db unavailable' } }) as never
+    );
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ success: true }),
-      });
+    await renderLoaded();
 
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('marketing-consent-card')).toBeInTheDocument();
-      });
-
-      const toggle = screen.getByRole('switch');
-      expect(toggle).toHaveAttribute('data-state', 'unchecked');
-
-      fireEvent.click(toggle);
-
-      // API 호출 확인
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/agreement', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ marketingAgreed: true }),
-        });
-      });
-
-      // 상태 변경 확인
-      await waitFor(() => {
-        expect(toggle).toHaveAttribute('data-state', 'checked');
-      });
-    });
-
-    it('API 실패 시 이전 상태로 롤백된다', async () => {
-      const mockSupabase = createMockSupabase({
-        agreementData: {
-          marketing_agreed: false,
-          marketing_agreed_at: null,
-          marketing_withdrawn_at: '2024-01-01T00:00:00Z',
-        },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-      });
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('marketing-consent-card')).toBeInTheDocument();
-      });
-
-      const toggle = screen.getByRole('switch');
-      expect(toggle).toHaveAttribute('data-state', 'unchecked');
-
-      fireEvent.click(toggle);
-
-      // 낙관적 업데이트로 일시적으로 checked
-      expect(toggle).toHaveAttribute('data-state', 'checked');
-
-      // API 실패 후 롤백
-      await waitFor(() => {
-        expect(toggle).toHaveAttribute('data-state', 'unchecked');
-      });
-    });
+    expect(screen.getByRole('alert')).toHaveTextContent('동의 상태를 불러오지 못했습니다');
+    expect(screen.queryByTestId('consent-skin')).not.toBeInTheDocument();
   });
 
-  describe('로딩 상태', () => {
-    it('로딩 중에는 로딩 메시지가 표시된다', () => {
-      vi.mocked(useAuth).mockReturnValue({
-        isSignedIn: true,
-        isLoaded: false,
-      } as unknown as ReturnType<typeof useAuth>);
-
-      const mockSupabase = createMockSupabase();
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      expect(screen.getByText('불러오는 중...')).toBeInTheDocument();
+  it('동의 상태 조회 실패 후 다시 시도해 서버 상태를 복구한다', async () => {
+    const supabase = makeSupabase({
+      imageResponses: [
+        { data: null, error: { message: 'temporary failure' } },
+        { data: [activeSkinConsent], error: null },
+      ],
     });
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(supabase as never);
+    await renderLoaded();
 
-    it('데이터 로딩 중에는 로딩 메시지가 표시된다', async () => {
-      const mockSupabase = createMockSupabase();
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
+    fireEvent.click(screen.getByRole('button', { name: '다시 시도' }));
 
-      render(<PrivacySettingsPage />);
-
-      // 초기 로딩 상태
-      expect(screen.getByText('불러오는 중...')).toBeInTheDocument();
-
-      // 로딩 완료 대기
-      await waitFor(() => {
-        expect(screen.queryByText('불러오는 중...')).not.toBeInTheDocument();
-      });
-    });
+    await waitFor(() => expect(screen.getByTestId('consent-skin')).toBeInTheDocument());
+    expect(supabase.imageIn).toHaveBeenCalledTimes(2);
   });
 
-  describe('비로그인 상태', () => {
-    it('로그인하지 않았을 때 로딩 스피너가 계속 표시된다', () => {
-      // 현재 페이지 로직: isSignedIn=false이면 fetchConsent가 early return하여 isLoading이 true로 유지됨
-      vi.mocked(useAuth).mockReturnValue({
-        isSignedIn: false,
-        isLoaded: true,
-      } as unknown as ReturnType<typeof useAuth>);
+  it('활성 동의 철회는 DELETE 성공 뒤 저장 안 함 상태로 바꾼다', async () => {
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(
+      makeSupabase({ imageRows: [activeSkinConsent] }) as never
+    );
+    await renderLoaded();
 
-      const mockSupabase = createMockSupabase();
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
+    fireEvent.click(screen.getByRole('button', { name: '피부 분석 원본 사진 저장 동의 철회' }));
+    fireEvent.click(await screen.findByRole('button', { name: '철회하고 삭제' }));
 
-      render(<PrivacySettingsPage />);
-
-      // 비로그인 상태에서는 로딩 중 표시 (페이지 로직 개선 필요)
-      expect(screen.getByText('불러오는 중...')).toBeInTheDocument();
-    });
+    await waitFor(() =>
+      expect(mockFetch).toHaveBeenCalledWith('/api/consent?analysisType=skin', {
+        method: 'DELETE',
+      })
+    );
+    await waitFor(() => expect(screen.getByTestId('consent-skin')).toHaveTextContent('미동의'));
   });
 
-  describe('에러 처리', () => {
-    it('이미지 동의 정보 조회 실패 시 에러를 콘솔에 출력한다', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  it.each([
+    ['만료', { retention_until: '2025-01-01T00:00:00.000Z' }],
+    ['구버전', { consent_version: 'v0.9' }],
+  ])('%s 동의는 활성 철회 UI로 표시하지 않는다', async (_label, override) => {
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(
+      makeSupabase({ imageRows: [{ ...activeSkinConsent, ...override }] }) as never
+    );
 
-      const mockSupabase = createMockSupabase({
-        imageConsentError: { message: 'Database error' },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
+    await renderLoaded();
 
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(consoleErrorSpy).toHaveBeenCalledWith('[Privacy] Failed to fetch image consent:', {
-          message: 'Database error',
-        });
-      });
-
-      consoleErrorSpy.mockRestore();
-    });
-
-    it('마케팅 동의 정보 조회 실패 시 에러를 콘솔에 출력한다', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-      const mockSupabase = createMockSupabase({
-        agreementError: { message: 'Database error' },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          '[Privacy] Failed to fetch marketing consent:',
-          { message: 'Database error' }
-        );
-      });
-
-      consoleErrorSpy.mockRestore();
-    });
+    expect(
+      screen.queryByRole('button', { name: '피부 분석 원본 사진 저장 동의 철회' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('consent-skin').querySelector('a')).toHaveAttribute(
+      'href',
+      '/analysis/skin?forceNew=true'
+    );
   });
 
-  describe('개인정보 처리방침', () => {
-    it('개인정보 처리방침 카드가 표시된다', async () => {
-      const mockSupabase = createMockSupabase();
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('개인정보 처리방침')).toBeInTheDocument();
-      });
+  it('동의 철회 뒤 일부 사진 파기가 실패하면 성공으로 숨기지 않고 재시도 동선을 연다', async () => {
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(
+      makeSupabase({ imageRows: [activeSkinConsent] }) as never
+    );
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({
+        success: false,
+        error: {
+          userMessage: '동의는 철회됐지만 일부 사진을 삭제하지 못했습니다.',
+          details: { consentRevoked: true, retryable: true },
+        },
+      }),
     });
+    await renderLoaded();
 
-    it('개인정보 처리방침 링크가 표시된다', async () => {
-      const mockSupabase = createMockSupabase();
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
+    fireEvent.click(screen.getByRole('button', { name: '피부 분석 원본 사진 저장 동의 철회' }));
+    fireEvent.click(await screen.findByRole('button', { name: '철회하고 삭제' }));
 
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        const link = screen.getByText('전체 개인정보 처리방침 보기');
-        expect(link).toBeInTheDocument();
-        expect(link.closest('a')).toHaveAttribute('href', '/privacy-policy');
-      });
-    });
+    expect(await screen.findByRole('button', { name: '사진 삭제 다시 시도' })).toBeInTheDocument();
+    expect(screen.getByText(/사진 일부를 삭제하지 못했습니다/)).toBeInTheDocument();
   });
 
-  describe('엣지 케이스', () => {
-    it('이미지 동의와 마케팅 동의가 모두 있을 때 정상적으로 표시된다', async () => {
-      const mockSupabase = createMockSupabase({
-        imageConsentData: {
-          id: 'ic1',
-          consent_given: true,
-          consent_at: '2024-01-01T00:00:00Z',
-          consent_version: 'v1.0',
-          retention_until: '2025-01-01T00:00:00Z',
-          analysis_type: 'skin',
-        },
-        agreementData: {
-          marketing_agreed: true,
-          marketing_agreed_at: '2024-01-01T00:00:00Z',
-          marketing_withdrawn_at: null,
-        },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
+  it('서버에 남은 파기 대기 표식을 새로고침 뒤에도 재시도 동선으로 복원한다', async () => {
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(
+      makeSupabase({
+        imageRows: [
+          {
+            ...activeSkinConsent,
+            consent_given: false,
+            withdrawal_at: '2026-08-23T00:00:00.000Z',
+          },
+        ],
+      }) as never
+    );
 
-      render(<PrivacySettingsPage />);
+    await renderLoaded();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('image-consent-card')).toBeInTheDocument();
-        expect(screen.getByTestId('marketing-consent-card')).toBeInTheDocument();
-      });
+    expect(screen.getByRole('button', { name: '사진 삭제 다시 시도' })).toBeInTheDocument();
+  });
+
+  it('파기 완료 뒤 cron 확인 전에는 재시도나 새 분석 CTA 없이 확인 중으로 구분한다', async () => {
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(
+      makeSupabase({
+        imageRows: [
+          {
+            ...activeSkinConsent,
+            consent_given: false,
+            withdrawal_at: '2026-08-23T00:00:00.000Z',
+            retention_until: null,
+            cleanup_reconciled_at: null,
+          },
+        ],
+      }) as never
+    );
+
+    await renderLoaded();
+
+    const skinSection = screen.getByTestId('consent-skin');
+    expect(skinSection).toHaveTextContent('사진 삭제 확인 중');
+    expect(skinSection).toHaveTextContent('삭제 확인을 마무리하고 있습니다');
+    expect(screen.queryByRole('button', { name: '사진 삭제 다시 시도' })).not.toBeInTheDocument();
+    expect(skinSection.querySelector('a')).not.toBeInTheDocument();
+  });
+
+  it('파기 재시도를 다시 DELETE에 연결하고 성공하면 재시도 표식을 없앤다', async () => {
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(
+      makeSupabase({
+        imageRows: [
+          {
+            ...activeSkinConsent,
+            consent_given: false,
+            withdrawal_at: '2026-08-23T00:00:00.000Z',
+          },
+        ],
+      }) as never
+    );
+    await renderLoaded();
+
+    fireEvent.click(screen.getByRole('button', { name: '사진 삭제 다시 시도' }));
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: '사진 삭제 다시 시도' })).not.toBeInTheDocument()
+    );
+  });
+
+  it('통합 사진을 포함하는 생체정보 전체 철회 API를 명시 확인 뒤 호출한다', async () => {
+    await renderLoaded();
+
+    fireEvent.click(screen.getByRole('button', { name: '생체정보 전체 철회 및 사진 파기' }));
+    fireEvent.click(await screen.findByRole('button', { name: '전체 철회 및 파기' }));
+
+    await waitFor(() =>
+      expect(mockFetch).toHaveBeenCalledWith('/api/agreement/biometric', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: true }),
+      })
+    );
+  });
+
+  it('전체 철회 성공 뒤 서버 상태를 재조회해 삭제 실패가 아닌 24시간 확인 중으로 표시한다', async () => {
+    const finalizedSkinConsent: ImageRow = {
+      ...activeSkinConsent,
+      consent_given: false,
+      withdrawal_at: '2026-08-23T00:00:00.000Z',
+      retention_until: null,
+      cleanup_reconciled_at: null,
+    };
+    const supabase = makeSupabase({
+      imageResponses: [
+        { data: [activeSkinConsent], error: null },
+        { data: [finalizedSkinConsent], error: null },
+      ],
     });
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(supabase as never);
+    await renderLoaded();
 
-    it('이미지 동의는 있지만 마케팅 동의 데이터가 없을 때', async () => {
-      const mockSupabase = createMockSupabase({
-        imageConsentData: {
-          id: 'ic1',
-          consent_given: true,
-          consent_at: '2024-01-01T00:00:00Z',
-          consent_version: 'v1.0',
-          retention_until: '2025-01-01T00:00:00Z',
-          analysis_type: 'skin',
-        },
-        agreementData: null,
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
+    fireEvent.click(screen.getByRole('button', { name: '생체정보 전체 철회 및 사진 파기' }));
+    fireEvent.click(await screen.findByRole('button', { name: '전체 철회 및 파기' }));
 
-      render(<PrivacySettingsPage />);
+    await waitFor(() => expect(supabase.imageIn).toHaveBeenCalledTimes(2));
+    const skinSection = screen.getByTestId('consent-skin');
+    expect(skinSection).toHaveTextContent('사진 삭제 확인 중');
+    expect(screen.queryByRole('button', { name: '사진 삭제 다시 시도' })).not.toBeInTheDocument();
+    expect(skinSection.querySelector('a')).not.toBeInTheDocument();
+  });
 
-      await waitFor(() => {
-        expect(screen.getByTestId('image-consent-card')).toBeInTheDocument();
-        expect(screen.queryByTestId('marketing-consent-card')).not.toBeInTheDocument();
-      });
+  it('전체 철회 부분 실패도 서버를 재조회해 성공 축과 재시도 축을 나눠 표시한다', async () => {
+    const activeConsents = IMAGE_TYPES.map((analysisType, index) => ({
+      ...activeSkinConsent,
+      id: `consent-${analysisType}`,
+      analysis_type: analysisType,
+      updated_at: `2026-08-01T00:00:0${index}.000Z`,
+    }));
+    const refreshedConsents = activeConsents.map((consent) => ({
+      ...consent,
+      consent_given: false,
+      withdrawal_at: '2026-08-23T00:00:00.000Z',
+      retention_until: consent.analysis_type === 'makeup' ? '2026-08-23T00:00:00.000Z' : null,
+      cleanup_reconciled_at: null,
+    }));
+    const supabase = makeSupabase({
+      imageResponses: [
+        { data: activeConsents, error: null },
+        { data: refreshedConsents, error: null },
+      ],
     });
-
-    it('보관 기한이 만료된 경우 안내 메시지가 표시된다', async () => {
-      // 과거 날짜
-      const expiredDate = new Date();
-      expiredDate.setDate(expiredDate.getDate() - 10);
-
-      const mockSupabase = createMockSupabase({
-        imageConsentData: {
-          id: 'ic1',
-          consent_given: true,
-          consent_at: '2023-01-01T00:00:00Z',
-          consent_version: 'v1.0',
-          retention_until: expiredDate.toISOString(),
-          analysis_type: 'skin',
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(supabase as never);
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({
+        success: false,
+        error: {
+          code: 'PARTIAL_PURGE_ERROR',
+          userMessage: '일부 이미지 파기가 끝나지 않았습니다.',
         },
-      });
-      vi.mocked(useClerkSupabaseClient).mockReturnValue(mockSupabase as any);
-
-      render(<PrivacySettingsPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('보관 기한이 만료되었습니다')).toBeInTheDocument();
-      });
+      }),
     });
+    await renderLoaded();
+
+    fireEvent.click(screen.getByRole('button', { name: '생체정보 전체 철회 및 사진 파기' }));
+    fireEvent.click(await screen.findByRole('button', { name: '전체 철회 및 파기' }));
+
+    await waitFor(() => expect(supabase.imageIn).toHaveBeenCalledTimes(2));
+    for (const type of IMAGE_TYPES.filter((type) => type !== 'makeup')) {
+      expect(screen.getByTestId(`consent-${type}`)).toHaveTextContent('사진 삭제 확인 중');
+    }
+    expect(screen.getByTestId('consent-makeup')).toHaveTextContent(
+      '사진 일부를 삭제하지 못했습니다'
+    );
+    expect(screen.getByRole('button', { name: '사진 삭제 다시 시도' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /원본 사진 저장 동의 철회/ })
+    ).not.toBeInTheDocument();
+    expect(toast.error).toHaveBeenCalledWith('일부 이미지 파기가 끝나지 않았습니다.');
+  });
+
+  it('전체 철회 뒤 상태 재조회가 실패하면 기존 active CTA를 숨기고 불확실성을 알린다', async () => {
+    const supabase = makeSupabase({
+      imageResponses: [
+        { data: [activeSkinConsent], error: null },
+        { data: null, error: { message: 'refresh failed' } },
+      ],
+    });
+    vi.mocked(useClerkSupabaseClient).mockReturnValue(supabase as never);
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({
+        success: false,
+        error: { code: 'PARTIAL_PURGE_ERROR', userMessage: '일부 파기가 실패했습니다.' },
+      }),
+    });
+    await renderLoaded();
+
+    fireEvent.click(screen.getByRole('button', { name: '생체정보 전체 철회 및 사진 파기' }));
+    fireEvent.click(await screen.findByRole('button', { name: '전체 철회 및 파기' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '원본 사진 저장 동의 상태를 불러오지 못했습니다'
+    );
+    expect(screen.queryByTestId('consent-skin')).not.toBeInTheDocument();
+    expect(toast.error).toHaveBeenCalledWith(
+      '철회 요청 후 최신 사진 삭제 상태를 확인하지 못했습니다. 개인정보 설정을 다시 불러와주세요.'
+    );
+  });
+
+  it('비로그인 상태에서는 설정 내용을 노출하지 않는다', async () => {
+    vi.mocked(useAuth).mockReturnValue({ isLoaded: true, isSignedIn: false } as ReturnType<
+      typeof useAuth
+    >);
+
+    render(<PrivacySettingsPage />);
+
+    expect(await screen.findByText('로그인이 필요합니다')).toBeInTheDocument();
+    expect(screen.queryByTestId('privacy-settings-page')).not.toBeInTheDocument();
   });
 });

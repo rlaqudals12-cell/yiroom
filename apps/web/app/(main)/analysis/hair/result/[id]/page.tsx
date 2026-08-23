@@ -40,6 +40,7 @@ import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
 import { HairReportSheet } from '../../_components/HairReportSheet';
 import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
 import { useTranslations } from 'next-intl';
+import { resolveConsentedAnalysisImageUrl } from '@/lib/consent/image-access';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +59,7 @@ import {
 // 퍼스널컬러 시즌 기반 염색 컬러 처방 (5축 고유 산출물 — AI 콜 0, 하드코딩 팔레트×시즌)
 import { recommendHairColors, type HairColorRecommendation } from '@/lib/analysis/hair';
 import { ReportEyebrow } from '@/components/analysis/report';
+import { ImageStorageUnavailableNotice } from '@/components/analysis/consent/ImageStorageUnavailableNotice';
 
 // 점수 -> 상태
 function getStatus(value: number): 'good' | 'normal' | 'warning' {
@@ -290,7 +292,7 @@ export default function HairAnalysisResultPage() {
       const dbData = data as DbHairAnalysis;
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
-      setImageUrl(dbData.image_url);
+      setImageUrl(await resolveConsentedAnalysisImageUrl(supabase, 'hair', dbData.image_url));
       if (dbData.recommendations?.usedMock) {
         setUsedMock(true);
       }
@@ -322,7 +324,7 @@ export default function HairAnalysisResultPage() {
           if (dbData) {
             const transformedResult = transformDbToResult(dbData as DbHairAnalysis);
             setResult(transformedResult);
-            setImageUrl(dbData.image_url);
+            setImageUrl(await resolveConsentedAnalysisImageUrl(supabase, 'hair', dbData.image_url));
             // 캐시 유지 — 다음 방문 시에도 fallback으로 사용 가능하도록
             setIsLoading(false);
             return;
@@ -640,13 +642,21 @@ export default function HairAnalysisResultPage() {
                   </div>
                 )}
 
-                {/* 분석 이미지 */}
+                {/* 분석 이미지 — 저장 사진이 없으면 조용히 숨기지 않고 동의 경로를 안내 */}
+                {!imageUrl && (
+                  <ImageStorageUnavailableNotice
+                    featureLabel="분석 사진 카드"
+                    reason="no_consent"
+                    analysisHref="/analysis/hair"
+                    testId="hair-image-storage-notice"
+                  />
+                )}
                 {imageUrl && (
                   <div className="bg-card rounded-xl p-6 shadow-sm">
                     <h3 className="font-semibold mb-3">{t('analysisImage')}</h3>
                     <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
                       <Image
-                        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/hair-images/${imageUrl}`}
+                        src={imageUrl}
                         alt="분석된 헤어 이미지"
                         fill
                         sizes="(max-width: 768px) 100vw, 512px"

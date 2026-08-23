@@ -19,6 +19,9 @@ import { Button } from '@/components/ui/button';
 import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
 import { HairReportSheet } from './_components/HairReportSheet';
 import { invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
+import { ImageConsentModal } from '@/components/analysis/consent';
+import type { ImageConsent } from '@/components/analysis/consent/types';
+import { isImageConsentActive } from '@/lib/consent/version-check';
 
 type AnalysisStep = 'guide' | 'upload' | 'loading' | 'result';
 
@@ -61,8 +64,16 @@ export default function HairAnalysisPage() {
   const [result, setResult] = useState<HairAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [storageNotice, setStorageNotice] = useState<string | null>(null);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [existingConsent, setExistingConsent] = useState<ImageConsent | null>(null);
+  const [consentLookupSettled, setConsentLookupSettled] = useState(false);
+  const [consentLoading, setConsentLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const existingCheckedRef = useRef(false);
+  const consentCheckedRef = useRef(false);
+  const analysisStartedRef = useRef(false);
+  const consentSubmissionRef = useRef(false);
 
   // 기존 분석 결과 확인
   useEffect(() => {
@@ -92,6 +103,36 @@ export default function HairAnalysisPage() {
     checkExistingAnalysis();
   }, [isLoaded, isSignedIn, supabase]);
 
+  // 원본 사진 저장은 분석 처리 동의와 분리된 선택 동의다.
+  useEffect(() => {
+    async function checkExistingConsent() {
+      if (!isLoaded || !isSignedIn || consentCheckedRef.current) return;
+
+      consentCheckedRef.current = true;
+
+      try {
+        const { data, error: consentError } = await supabase
+          .from('image_consents')
+          .select('*')
+          .eq('analysis_type', 'hair')
+          .maybeSingle();
+
+        if (consentError) throw consentError;
+
+        if (data) {
+          setExistingConsent(data as ImageConsent);
+        }
+      } catch (consentError) {
+        // 조회 실패 시 동의 없음으로 닫아 사진이 저장되지 않게 한다.
+        console.error('[H-1] Error checking image storage consent:', consentError);
+      } finally {
+        setConsentLookupSettled(true);
+      }
+    }
+
+    checkExistingConsent();
+  }, [isLoaded, isSignedIn, supabase]);
+
   // 파일 선택 핸들러
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,66 +148,125 @@ export default function HairAnalysisPage() {
     fileInputRef.current?.click();
   }, []);
 
-  // 분석 시작
-  const handleStartAnalysis = useCallback(async () => {
+  // 분석 실행 (기존 동의 확인 또는 선택 모달 응답 뒤에만 호출)
+  const runAnalysis = useCallback(
+    async (imageStorageAllowed?: boolean) => {
+      if (!imageFile || !isSignedIn || analysisStartedRef.current) return;
+
+      analysisStartedRef.current = true;
+      setIsAnalyzing(true);
+      setStep('loading');
+      setError(null);
+
+      try {
+        // 파일을 압축된 Base64로 변환 (Vercel 4.5MB body 제한 대응)
+        const imageBase64 = await compressFileToBase64(imageFile);
+
+        // API 호출
+        const response = await fetch('/api/analyze/hair', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64, imageStorageAllowed }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Analysis failed');
+        }
+
+        const data = await response.json();
+
+        setResult({
+          ...data.result,
+          analyzedAt: new Date(data.result.analyzedAt),
+        });
+
+        // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
+        try {
+          sessionStorage.setItem(
+            `hair-result-${data.data.id}`,
+            JSON.stringify({ dbData: data.data, cachedAt: new Date().toISOString() })
+          );
+        } catch {
+          /* sessionStorage 실패 무시 */
+        }
+
+        // 분석 완료 → 홈/[나] 탭 5분 캐시 즉시 무효화 (stale "분석 0개" 방지)
+        invalidateAnalysisCache();
+
+        // 정본 리포트 페이지로 이동(피부 축과 동일 플로우) — 인라인 요약은 얇은 중복 표면이라
+        // 공유·제품 매칭·염색 처방이 있는 result/[id]가 결과의 정본(One Canon).
+        // id가 없을 때만 인라인 결과로 폴백(우아한 실패).
+        if (data.data?.id) {
+          router.push(`/analysis/hair/result/${data.data.id}`);
+        } else {
+          setStep('result');
+        }
+      } catch (err) {
+        console.error('[H-1] Analysis error:', err);
+        setError(t('error.analysisProblem'));
+        setStep('upload');
+      } finally {
+        analysisStartedRef.current = false;
+        setIsAnalyzing(false);
+      }
+    },
+    [imageFile, isSignedIn, router, t]
+  );
+
+  const handleStartAnalysis = useCallback(() => {
     if (!imageFile || !isSignedIn) return;
 
-    setIsAnalyzing(true);
-    setStep('loading');
-    setError(null);
+    if (isImageConsentActive(existingConsent)) {
+      void runAnalysis(true);
+      return;
+    }
+
+    setShowConsentModal(true);
+  }, [existingConsent, imageFile, isSignedIn, runAnalysis]);
+
+  const handleConsentAgree = useCallback(async () => {
+    if (consentSubmissionRef.current) return;
+    consentSubmissionRef.current = true;
+    setConsentLoading(true);
+    let imageStorageAllowed = false;
 
     try {
-      // 파일을 압축된 Base64로 변환 (Vercel 4.5MB body 제한 대응)
-      const imageBase64 = await compressFileToBase64(imageFile);
-
-      // API 호출
-      const response = await fetch('/api/analyze/hair', {
+      const response = await fetch('/api/consent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64 }),
+        body: JSON.stringify({ analysisType: 'hair' }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Analysis failed');
-      }
-
-      const data = await response.json();
-
-      setResult({
-        ...data.result,
-        analyzedAt: new Date(data.result.analyzedAt),
-      });
-
-      // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
-      try {
-        sessionStorage.setItem(
-          `hair-result-${data.data.id}`,
-          JSON.stringify({ dbData: data.data, cachedAt: new Date().toISOString() })
-        );
-      } catch {
-        /* sessionStorage 실패 무시 */
-      }
-
-      // 분석 완료 → 홈/[나] 탭 5분 캐시 즉시 무효화 (stale "분석 0개" 방지)
-      invalidateAnalysisCache();
-
-      // 정본 리포트 페이지로 이동(피부 축과 동일 플로우) — 인라인 요약은 얇은 중복 표면이라
-      // 공유·제품 매칭·염색 처방이 있는 result/[id]가 결과의 정본(One Canon).
-      // id가 없을 때만 인라인 결과로 폴백(우아한 실패).
-      if (data.data?.id) {
-        router.push(`/analysis/hair/result/${data.data.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setExistingConsent(data.consent);
+        imageStorageAllowed = true;
       } else {
-        setStep('result');
+        const errorData = await response.json();
+        if (errorData.reason === 'under_age' || errorData.reason === 'no_birthdate') {
+          console.warn('[H-1] Image storage consent ineligible:', errorData.reason);
+          setStorageNotice('사진은 저장하지 않고 분석을 진행해요.');
+        } else {
+          throw new Error(errorData.error || 'Failed to save consent');
+        }
       }
-    } catch (err) {
-      console.error('[H-1] Analysis error:', err);
-      setError(t('error.analysisProblem'));
-      setStep('upload');
+    } catch (consentError) {
+      // 동의 저장 실패 시에도 분석은 가능하며, 서버는 동의가 없어 사진을 저장하지 않는다.
+      console.error('[H-1] Image storage consent save error:', consentError);
+      setStorageNotice('사진은 저장하지 않고 분석을 진행해요.');
     } finally {
-      setIsAnalyzing(false);
+      setShowConsentModal(false);
+      setConsentLoading(false);
+      await runAnalysis(imageStorageAllowed);
+      consentSubmissionRef.current = false;
     }
-  }, [imageFile, isSignedIn, router, t]);
+  }, [runAnalysis]);
+
+  const handleConsentSkip = useCallback(() => {
+    setShowConsentModal(false);
+    void runAnalysis(false);
+  }, [runAnalysis]);
 
   // 다시 분석하기
   const handleRetry = useCallback(() => {
@@ -175,6 +275,9 @@ export default function HairAnalysisPage() {
     setResult(null);
     setStep('guide');
     setError(null);
+    setStorageNotice(null);
+    analysisStartedRef.current = false;
+    consentSubmissionRef.current = false;
   }, []);
 
   // 단계별 서브타이틀
@@ -190,10 +293,18 @@ export default function HairAnalysisPage() {
       case 'result':
         return t('subtitle.analysisComplete');
     }
-  }, [step, error]);
+  }, [step, error, t]);
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-muted" data-testid="hair-analysis-page">
+      <ImageConsentModal
+        isOpen={showConsentModal}
+        onConsent={handleConsentAgree}
+        onSkip={handleConsentSkip}
+        analysisType="hair"
+        isLoading={consentLoading}
+      />
+
       <div className="max-w-lg mx-auto px-4 py-8">
         {/* 헤더 */}
         <header className="text-center mb-8">
@@ -210,6 +321,12 @@ export default function HairAnalysisPage() {
           >
             {error}
           </div>
+        )}
+
+        {storageNotice && (
+          <p className="mb-4 text-sm text-muted-foreground" role="status">
+            {storageNotice}
+          </p>
         )}
 
         {/* 기존 분석 결과 배너 */}
@@ -306,11 +423,13 @@ export default function HairAnalysisPage() {
                   </Button>
                   <Button
                     onClick={handleStartAnalysis}
-                    disabled={isAnalyzing}
+                    disabled={isAnalyzing || !consentLookupSettled}
                     className="flex-1"
                     aria-label={t('hair.startAnalysisAria')}
                   >
-                    {isAnalyzing ? (
+                    {!consentLookupSettled ? (
+                      '저장 설정 확인 중...'
+                    ) : isAnalyzing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         {t('action.analyzing')}

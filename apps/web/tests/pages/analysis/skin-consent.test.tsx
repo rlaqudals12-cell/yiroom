@@ -264,7 +264,19 @@ describe('SkinAnalysisPage - 이미지 저장 동의', () => {
 
     // 기존 동의 있음
     mockMaybeSingle.mockResolvedValue({
-      data: { consent_given: true },
+      data: {
+        id: 'consent-skin-active',
+        clerk_user_id: 'user-1',
+        analysis_type: 'skin',
+        consent_given: true,
+        consent_version: 'v1.0',
+        consent_at: '2026-08-01T00:00:00.000Z',
+        withdrawal_at: null,
+        retention_until: '2999-08-01T00:00:00.000Z',
+        cleanup_reconciled_at: null,
+        created_at: '2026-08-01T00:00:00.000Z',
+        updated_at: '2026-08-01T00:00:00.000Z',
+      },
       error: null,
     });
 

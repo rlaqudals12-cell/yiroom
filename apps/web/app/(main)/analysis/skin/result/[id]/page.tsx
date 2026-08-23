@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { useClerkSupabaseClient } from '@/lib/supabase/clerk-client';
-import { resolveSignedImageUrl } from '@/lib/storage';
+import { resolveConsentedAnalysisImageUrl } from '@/lib/consent/image-access';
 import {
   ArrowLeft,
   RefreshCw,
@@ -24,6 +24,7 @@ import {
   Info,
 } from 'lucide-react';
 import { CelebrationEffect } from '@/components/animations';
+import { ConsentAwareImageStorageNotice } from '@/components/analysis/consent/ConsentAwareImageStorageNotice';
 import { Button } from '@/components/ui/button';
 import { type SkinAnalysisResult, type SkinTypeId, EASY_SKIN_TIPS } from '@/lib/mock/skin-analysis';
 import {
@@ -640,7 +641,11 @@ export default function SkinAnalysisResultPage() {
       // 레거시 레코드는 만료형 전체 URL이 저장돼 있어 그대로 쓰면 영구 "이미지 로드 실패"
       // — 경로 추출 후 재서명한다 (lib/storage/resolve-image-url).
       if (dbData.image_url && dbData.image_url.length > 0) {
-        const resolvedUrl = await resolveSignedImageUrl(dbData.image_url, 'skin-images');
+        const resolvedUrl = await resolveConsentedAnalysisImageUrl(
+          supabase,
+          'skin',
+          dbData.image_url
+        );
         if (resolvedUrl) {
           setImageUrl(resolvedUrl);
         } else {
@@ -723,9 +728,10 @@ export default function SkinAnalysisResultPage() {
       if (pcData?.face_image_url) {
         // PC 레코드는 경로만 저장(신규) 또는 만료 전체 URL(구) — 둘 다 재서명 필요.
         // 원값을 그대로 쓰면 경로가 상대 URL로 해석돼 404 → "이미지 로드 실패"였다.
-        const resolvedPcUrl = await resolveSignedImageUrl(
-          pcData.face_image_url,
-          'personal-color-images'
+        const resolvedPcUrl = await resolveConsentedAnalysisImageUrl(
+          supabase,
+          'personal-color',
+          pcData.face_image_url
         );
         if (resolvedPcUrl) {
           setPcImageUrl(resolvedPcUrl);
@@ -1322,18 +1328,12 @@ export default function SkinAnalysisResultPage() {
                         <Camera className="w-8 h-8 text-muted-foreground/50" />
                       </div>
                       <p className="font-medium text-foreground mb-2">얼굴 이미지가 없어요</p>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        이미지 저장 동의 후 분석하면
-                        <br />
-                        AI 시각화 기능을 사용할 수 있어요
-                      </p>
-                      <button
-                        onClick={handleNewAnalysis}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                        {t('reanalyze')}
-                      </button>
+                      <ConsentAwareImageStorageNotice
+                        analysisHref="/analysis/skin"
+                        analysisType="skin"
+                        featureLabel="AI 시각화"
+                        testId="skin-visual-image-storage-notice"
+                      />
                     </div>
                   )}
 

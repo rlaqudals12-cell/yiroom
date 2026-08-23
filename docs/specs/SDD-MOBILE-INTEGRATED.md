@@ -1,6 +1,6 @@
 # SDD-MOBILE-INTEGRATED — 모바일 통합 분석 플로우 스펙
 
-> **Version**: 1.1 | **Created**: 2026-04-24 | **Status**: implemented (Phase D MVP)
+> **Version**: 1.2 | **Created**: 2026-04-24 | **Updated**: 2026-08-23 | **Status**: implemented (Phase D MVP)
 > **상위 ADR**: [ADR-102](../adr/ADR-102-mobile-integrated-porting.md) (accepted)
 > **선행 작업**: 웹 Phase A(ADR-099), B(ADR-100), C(ADR-101) 완료
 >
@@ -126,6 +126,8 @@ export interface IntegratedAnalysisInput {
     skin: { selfReportedType: string; concerns?: string[] };
     hair: { length?: string; density?: string; curlType?: string };
     body: { heightCm?: number; weightKg?: number; shoulderWidthCm?: number; waistCm?: number };
+    // 회차별 원본 저장 선택. 구형 클라이언트 누락은 웹 Zod가 false로 정규화한다.
+    imageStorageConsent?: boolean;
   };
   options: { locale: 'ko' | 'en' | 'ja' | 'zh'; skipMakeup: boolean };
 }
@@ -187,6 +189,7 @@ apps/mobile/app/(analysis)/integrated/index.tsx
 │ │   피부 타입 (칩)           │
 │ │   헤어 (길이/숱/곱슬)      │
 │ │   체형 (키/몸무게 옵션)    │
+│ ├─ 원본 사진 저장 (선택/OFF) │
 │ ├─ 에러 메시지 (있으면)      │
 │ └─ [내 정체성 알아보기] CTA  │
 └──────────────────────────────┘
@@ -202,6 +205,17 @@ const dataUrl = `data:image/jpeg;base64,${rawBase64}`;
 // 4MB 초과 시 expo-image-manipulator로 재압축
 // quality: 0.7, maxWidth: 1024
 ```
+
+#### 원본 사진 저장 선택
+
+- 필수 생체정보 처리 동의·마케팅 동의와 분리한 회차별 항목으로, 기존 사용자에게도 항상
+  노출한다. 초기값은 OFF이며 “모두 동의”에 결합하지 않는다.
+- 미동의해도 분석은 진행된다. 동의하면 드레이핑 비교 등 사진 기반 결과를 위해 비공개
+  저장한다. 보관 1년 도래 시 일일 파기를 시작하고 실패분은 완료될 때까지 재시도하며 backlog를
+  운영 지표로 드러낸다(Storage 자체 lifecycle은 현재 없어 물리 삭제 완료 시각을 거짓 보장하지
+  않는다). 생체정보 동의 철회·계정 삭제 시에도 같은 재시도 계약으로 파기한다.
+- 제출 payload의 `questionnaire.imageStorageConsent`에 boolean을 명시하고, 웹 API의 Zod와
+  Storage fail-closed 계약은 `SDD-INTEGRATED-ANALYSIS` §2.4를 따른다.
 
 ### 4.4 제출 플로우
 

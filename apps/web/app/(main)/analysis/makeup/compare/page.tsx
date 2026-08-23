@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { ArrowLeft, Share2, Loader2, Palette, Eye, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AnalysisCompareImageNotice } from '@/components/analysis/consent/AnalysisCompareImageNotice';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { AnalysisCompareResponse, MakeupAnalysisHistoryItem } from '@/types/analysis-history';
@@ -180,6 +181,12 @@ function MakeupCompareContent() {
             altPrefix="메이크업"
           />
         )}
+        <AnalysisCompareImageNotice
+          afterImageUrl={after.imageUrl}
+          analysisType="makeup"
+          beforeImageUrl={before.imageUrl}
+          testId="makeup-compare-image-storage-notice"
+        />
 
         {/* 스타일 요약 */}
         <Card className="bg-card border-border">

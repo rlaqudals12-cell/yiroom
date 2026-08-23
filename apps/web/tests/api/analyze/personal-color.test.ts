@@ -36,6 +36,10 @@ vi.mock('@/lib/gamification', () => ({
   addXp: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('@/lib/api/image-consent', () => ({
+  checkConsentAndUploadImages: vi.fn(),
+}));
+
 // Rate Limit 모킹 - 항상 통과
 vi.mock('@/lib/security/rate-limit', () => ({
   applyRateLimit: vi.fn().mockReturnValue({ success: true }),
@@ -46,6 +50,7 @@ import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzePersonalColor } from '@/lib/gemini';
 import { generateMockPersonalColorResult } from '@/lib/mock/personal-color';
+import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
 // 시드 유틸은 모킹하지 않는다 — 라우트가 실제로 만드는 시드와 동일한 값을 테스트에서 재계산해 대조
 import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import { NextRequest } from 'next/server';
@@ -151,6 +156,18 @@ describe('POST /api/analyze/personal-color', () => {
     );
     vi.mocked(generateMockPersonalColorResult).mockReturnValue(mockPersonalColorResult);
     mockStorageUpload.mockResolvedValue({ data: { path: 'user_test123/123.jpg' }, error: null });
+    vi.mocked(checkConsentAndUploadImages).mockImplementation(
+      async (_supabase, _userId, _type, _bucket, images, options) => ({
+        hasConsent: options?.imageStorageAllowed === true,
+        consentId: options?.imageStorageAllowed === true ? 'consent-1' : null,
+        uploadedImages: Object.fromEntries(
+          Object.keys(images).map((key) => [
+            key,
+            options?.imageStorageAllowed === true ? `user_test123/${key}.jpg` : null,
+          ])
+        ),
+      })
+    );
   });
 
   describe('다각도 촬영 지원', () => {
@@ -613,8 +630,14 @@ describe('POST /api/analyze/personal-color', () => {
         })
       );
 
-      expect(mockSupabase.storage.from).toHaveBeenCalledWith('personal-color-images');
-      expect(mockStorageUpload).toHaveBeenCalled();
+      expect(checkConsentAndUploadImages).toHaveBeenCalledWith(
+        mockSupabase,
+        'user_test123',
+        'personal-color',
+        'personal-color-images',
+        expect.objectContaining({ front: MOCK_BASE64 }),
+        { imageStorageAllowed: true }
+      );
     });
 
     it('saveImage=false일 때 이미지가 업로드되지 않는다', async () => {
@@ -628,11 +651,22 @@ describe('POST /api/analyze/personal-color', () => {
         })
       );
 
-      expect(mockStorageUpload).not.toHaveBeenCalled();
+      expect(checkConsentAndUploadImages).toHaveBeenCalledWith(
+        mockSupabase,
+        'user_test123',
+        'personal-color',
+        'personal-color-images',
+        expect.objectContaining({ front: MOCK_BASE64 }),
+        { imageStorageAllowed: false }
+      );
     });
 
     it('이미지 업로드 실패해도 분석은 계속된다', async () => {
-      mockStorageUpload.mockResolvedValue({ data: null, error: { message: 'Upload failed' } });
+      vi.mocked(checkConsentAndUploadImages).mockResolvedValueOnce({
+        hasConsent: true,
+        consentId: 'consent-1',
+        uploadedImages: { front: null, left: null, right: null },
+      });
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
       const response = await POST(
