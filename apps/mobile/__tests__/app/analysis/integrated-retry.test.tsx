@@ -170,11 +170,13 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
       faceImageBase64: string;
       mode?: string;
       axes?: string[];
+      questionnaire?: { imageStorageConsent?: boolean };
     };
     expect(input.mode).toBe('update');
     expect(input.axes).toEqual(['hair', 'makeup']);
     // 복원된 사진이 그대로 제출된다(재선택 불필요).
     expect(input.faceImageBase64).toBe('data:image/jpeg;base64,FACE');
+    expect(input.questionnaire?.imageStorageConsent).toBe(false);
     expect(mockTrackAnalysisStart).toHaveBeenCalledTimes(1);
     expect(mockTrackAnalysisStart).toHaveBeenCalledWith('integrated', 'update', 'mock_jwt_token');
     expect(mockTrackAnalysisComplete).toHaveBeenCalledTimes(1);
@@ -184,6 +186,28 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
       'mock_jwt_token'
     );
     expect(router.replace).toHaveBeenCalled();
+  });
+
+  it('원본 저장은 기존 사용자에게도 별도 선택으로 노출되고 명시 선택 때만 true를 보낸다', async () => {
+    rememberSubmission('data:image/jpeg;base64,FACE', null);
+    mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'skin' });
+
+    const { findByTestId, getByTestId, getByLabelText, getByText } = renderWithTheme(
+      <IntegratedAnalysisInputScreen />
+    );
+    await findByTestId('restored-photo-notice');
+
+    expect(getByTestId('image-storage-consent-section')).toBeTruthy();
+    expect(getByText(/동의하지 않아도 분석은 진행돼요/)).toBeTruthy();
+    expect(getByText(/보관 1년이 되면 일일 파기 작업으로 삭제를 시작/)).toBeTruthy();
+    fireEvent.press(getByTestId('image-storage-consent'));
+    fireEvent.press(getByLabelText('내 정체성 알아보기'));
+
+    await waitFor(() => expect(mockRequest).toHaveBeenCalledTimes(1));
+    const input = mockRequest.mock.calls[0][0] as {
+      questionnaire: { imageStorageConsent: boolean };
+    };
+    expect(input.questionnaire.imageStorageConsent).toBe(true);
   });
 
   it('재시도 컨텍스트가 아니면 캐시가 있어도 복원하지 않는다(놀람 방지)', async () => {

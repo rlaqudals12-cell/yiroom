@@ -43,6 +43,8 @@ export interface IntegratedAnalysisInput {
     skin: SkinQuestionnaire;
     hair: HairQuestionnaire;
     body: BodyQuestionnaire;
+    /** 이번 분석 원본 사진의 선택 저장 동의. 누락 시 서버에서 false로 처리한다. */
+    imageStorageConsent?: boolean;
   };
   options?: {
     locale?: 'ko' | 'en' | 'ja' | 'zh';

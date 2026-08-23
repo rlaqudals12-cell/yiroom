@@ -132,6 +132,8 @@ function IntegratedAnalysisForm(): React.JSX.Element {
   const [skinType, setSkinType] = useState<SkinQuestionnaire['selfReportedType']>('unknown');
   const [hairLength, setHairLength] = useState<HairQuestionnaire['length']>();
   const [body, setBody] = useState<BodyQuestionnaire>({});
+  // 회차별 원본 저장은 필수 생체 처리 동의와 분리한다. 기본값은 언제나 OFF다.
+  const [imageStorageConsent, setImageStorageConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // 재시도 재진입 시 직전 제출 사진을 인메모리 캐시에서 복원했는지 여부 (UI 표시용).
@@ -309,6 +311,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
           skin: { selfReportedType: skinType, concerns: [] },
           hair: { length: hairLength },
           body,
+          imageStorageConsent,
         },
         options: { locale: 'ko', skipMakeup: false },
         // 선택 재분석: 일부 축만 고르면 그 축만 재실행 (ADR-109 2A, 웹과 동일)
@@ -575,6 +578,20 @@ function IntegratedAnalysisForm(): React.JSX.Element {
             </View>
           </GlassCard>
         )}
+
+        {/* 회차별 원본 저장 선택 — 기존 사용자에게도 항상 노출하며 필수 동의/마케팅과 결합하지 않는다. */}
+        <GlassCard style={styles.section} testID="image-storage-consent-section">
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+            원본 사진 저장 (선택)
+          </Text>
+          <ConsentRow
+            checked={imageStorageConsent}
+            onToggle={() => setImageStorageConsent((value) => !value)}
+            label="이번 분석 사진을 저장할게요"
+            description="동의하지 않아도 분석은 진행돼요. 동의하면 원본 사진을 비공개 저장소에 보관해 드레이핑 비교 같은 사진 기반 결과에 사용해요. 보관 1년이 되면 일일 파기 작업으로 삭제를 시작하고, 실패하면 완료될 때까지 재시도해요. 생체정보 동의 철회나 계정 삭제 시에도 파기해요."
+            testID="image-storage-consent"
+          />
+        </GlassCard>
 
         {/* 생년월일 (연령 확인 게이트 — 서버에 저장돼 있지 않을 때만 노출) */}
         {birthdateChecked && !hasStoredBirthdate && (
