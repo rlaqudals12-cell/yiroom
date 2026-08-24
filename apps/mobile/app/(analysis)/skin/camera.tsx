@@ -145,7 +145,8 @@ export default function SkinCameraScreen() {
         {/* 개인정보 안내 */}
         <View style={styles.privacyNotice}>
           <Text style={styles.privacyText}>
-            촬영한 사진은 분석 후 기기에서만 처리되며, 서버에 저장되지 않아요
+            촬영한 사진은 분석을 위해 이룸 서버를 거쳐 Google AI로 전송돼요. 사진 저장에 동의하지
+            않으면 분석 후 원본을 보관하지 않아요.
           </Text>
         </View>
       </CameraView>

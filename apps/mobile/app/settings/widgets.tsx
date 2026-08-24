@@ -3,6 +3,8 @@
  * iOS/Android 홈 화면 위젯 안내
  */
 
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Platform, Linking, Pressable } from 'react-native';
@@ -15,7 +17,15 @@ import { TodaySummaryWidget } from '../../components/widgets/TodaySummaryWidget'
 import { useWidgetSync } from '../../lib/widgets';
 import { TodaySummaryData, DEFAULT_SUMMARY_DATA } from '../../lib/widgets/types';
 
-export default function WidgetSettingsScreen() {
+// 숨김 운동·영양 모듈의 설정 표면 — 메뉴는 가려졌지만 딥링크·직접 URL 진입까지 같은 플래그로 차단한다
+export default function WidgetSettingsScreenGuard(): React.JSX.Element {
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2) {
+    return <Redirect href="/settings" />;
+  }
+  return <WidgetSettingsScreen />;
+}
+
+function WidgetSettingsScreen() {
   const { colors, brand } = useTheme();
   const { getData } = useWidgetSync({ autoSync: false });
 

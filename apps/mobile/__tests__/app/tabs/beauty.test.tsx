@@ -41,6 +41,19 @@ jest.mock('lucide-react-native', () => {
   );
 });
 
+// 뷰티 탭이 새로 사용하는 공용 personalMatched 계약만 고정해 네트워크 조회를 막는다.
+jest.mock('../../../hooks/useUserMatching', () => ({
+  useUserMatching: () => ({
+    getMatchedProducts: (products: Array<Record<string, unknown>>) =>
+      products.map((product) => ({
+        product,
+        matchScore: 50,
+        matchReasons: [],
+        personalMatched: false,
+      })),
+  }),
+}));
+
 import BeautyTab from '../../../app/(tabs)/beauty';
 
 function createThemeValue(isDark = false): ThemeContextValue {
@@ -102,6 +115,13 @@ describe('BeautyTab', () => {
     it('추천 제품 섹션이 표시된다', () => {
       const { getByTestId } = renderWithTheme(<BeautyTab />);
       expect(getByTestId('product-section')).toBeTruthy();
+    });
+
+    it('피부 진단 전에는 가짜 점수 대신 진단 안내를 표시한다', () => {
+      const { getByTestId, getByText } = renderWithTheme(<BeautyTab />);
+
+      expect(getByTestId('product-match-guidance')).toBeTruthy();
+      expect(getByText('피부 진단 후 제품별 개인 적합도를 확인할 수 있어요.')).toBeTruthy();
     });
 
     it('성분 스캔 진입 메뉴가 표시된다', () => {

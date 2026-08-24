@@ -68,12 +68,15 @@ describe('SkinProfileCard', () => {
     createdAt: new Date('2026-02-20'),
   };
 
-  it('피부 타입과 점수를 렌더링해야 한다', () => {
-    const { getByText } = renderWithTheme(
+  it('피부 타입과 점수 게이지 없는 원값 속성표를 렌더링해야 한다', () => {
+    const { getByText, getByTestId, queryByText } = renderWithTheme(
       <SkinProfileCard {...defaultProps} />
     );
     expect(getByText('복합성')).toBeTruthy();
-    expect(getByText(/전체 점수 78점/)).toBeTruthy();
+    expect(getByText('78')).toBeTruthy();
+    expect(getByText('분석 당시 기록')).toBeTruthy();
+    expect(getByTestId('skin-profile-readings')).toBeTruthy();
+    expect(queryByText(/전체 점수|피부 점수|78점/)).toBeNull();
   });
 
   it('고민 배지를 렌더링해야 한다', () => {
@@ -107,7 +110,7 @@ describe('SkinProfileCard', () => {
     const { getByLabelText } = renderWithTheme(
       <SkinProfileCard {...defaultProps} />
     );
-    expect(getByLabelText(/피부 프로필.*복합성.*78점/)).toBeTruthy();
+    expect(getByLabelText(/피부 프로필.*복합성.*기록된 원값 78/)).toBeTruthy();
   });
 
   it('다크모드에서 렌더링해야 한다', () => {
@@ -130,6 +133,15 @@ describe('SkinProfileCard', () => {
       <SkinProfileCard {...defaultProps} concerns={[]} />
     );
     expect(getByText('복합성')).toBeTruthy();
+  });
+
+  it('폴백 출처면 예시 결과·낮은 신뢰도 배지를 표시한다', () => {
+    const { getByTestId, getByText } = renderWithTheme(
+      <SkinProfileCard {...defaultProps} testID="skin-card" usedFallback />
+    );
+
+    expect(getByTestId('skin-card-fallback')).toBeTruthy();
+    expect(getByText('예시 결과 · 낮은 신뢰도')).toBeTruthy();
   });
 });
 
@@ -206,6 +218,7 @@ describe('ProductMiniCard', () => {
     name: '히알루론산 수분 세럼',
     brand: '이니스프리',
     matchRate: 92,
+    personalMatched: true,
     rating: 4.5,
     category: 'skincare',
     concerns: ['dryness'],
@@ -219,11 +232,23 @@ describe('ProductMiniCard', () => {
     expect(getByText('히알루론산 수분 세럼')).toBeTruthy();
   });
 
-  it('매치율을 표시해야 한다', () => {
+  it('개인 진단 근거가 있으면 개인 적합도를 표시해야 한다', () => {
     const { getByText } = renderWithTheme(
       <ProductMiniCard product={mockProduct} />
     );
-    expect(getByText('92%')).toBeTruthy();
+    expect(getByText('개인 적합도 92%')).toBeTruthy();
+  });
+
+  it('개인 진단 근거가 없으면 점수를 숨겨야 한다', () => {
+    const { getByText, queryByText } = renderWithTheme(
+      <ProductMiniCard
+        product={{ ...mockProduct, personalMatched: false, matchRate: undefined }}
+        testID="unmatched"
+      />
+    );
+
+    expect(queryByText(/92%/)).toBeNull();
+    expect(getByText('개인 근거 미확인')).toBeTruthy();
   });
 
   it('평점을 표시해야 한다', () => {
@@ -280,6 +305,7 @@ describe('BeautyProductFeed', () => {
       name: '수분 세럼',
       brand: '브랜드A',
       matchRate: 90,
+      personalMatched: true,
       rating: 4.5,
       category: 'skincare',
       concerns: ['dryness'],
@@ -289,6 +315,7 @@ describe('BeautyProductFeed', () => {
       name: '선크림',
       brand: '브랜드B',
       matchRate: 80,
+      personalMatched: true,
       rating: 4.0,
       category: 'suncare',
       concerns: ['sensitivity'],
@@ -298,6 +325,7 @@ describe('BeautyProductFeed', () => {
       name: '파운데이션',
       brand: '브랜드C',
       matchRate: 75,
+      personalMatched: true,
       rating: 4.2,
       category: 'makeup',
       concerns: ['dryness', 'pores'],

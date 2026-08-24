@@ -4,17 +4,18 @@
  */
 
 import { useAuth } from '@clerk/clerk-expo';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { FEATURE_FLAGS } from '@yiroom/shared';
 
 import { GlassCard, ScreenContainer } from '../../components/ui';
 import { BottomSheet } from '../../components/ui/BottomSheet';
 import { TIMING } from '../../lib/animations';
+import { usePrivacyDataActions } from '../../lib/privacy/usePrivacyDataActions';
 import { useTheme, typography, spacing, radii, coloredShadow, brand } from '../../lib/theme';
 import type { ThemeMode } from '../../lib/theme';
 
@@ -28,6 +29,7 @@ const THEME_OPTIONS: { key: ThemeMode; label: string; icon: string }[] = [
 export default function SettingsScreen() {
   const { colors, isDark, brand, radii, typography, themeMode, setThemeMode } = useTheme();
   const { signOut } = useAuth();
+  const { isDeleting, handleDeleteAccount } = usePrivacyDataActions();
 
   const appVersion = Constants.expoConfig?.version || '0.1.0';
   const [isAccountSheetOpen, setIsAccountSheetOpen] = useState(false);
@@ -50,6 +52,17 @@ export default function SettingsScreen() {
   const handleCloseAccountSheet = useCallback((): void => {
     setIsAccountSheetOpen(false);
   }, []);
+
+  const handleAccountPrivacy = useCallback((): void => {
+    setIsAccountSheetOpen(false);
+    Haptics.selectionAsync();
+    router.push('/settings/privacy');
+  }, []);
+
+  const handleAccountDelete = useCallback((): void => {
+    setIsAccountSheetOpen(false);
+    handleDeleteAccount();
+  }, [handleDeleteAccount]);
 
   // 로그아웃 확인 후 실행
   const handleLogout = useCallback((): void => {
@@ -201,10 +214,38 @@ export default function SettingsScreen() {
       <BottomSheet
         isVisible={isAccountSheetOpen}
         onClose={handleCloseAccountSheet}
-        snapPoints={['30%']}
+        snapPoints={['45%']}
         title="계정 관리"
         testID="settings-account-sheet"
       >
+        <Pressable
+          style={[styles.accountOption, { backgroundColor: colors.muted, borderRadius: radii.xl }]}
+          onPress={handleAccountPrivacy}
+          accessibilityRole="button"
+          accessibilityLabel="개인정보 설정으로 이동"
+          testID="settings-account-privacy"
+        >
+          <Text style={[styles.accountOptionText, { color: colors.foreground }]}>
+            개인정보 설정
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.accountOption,
+            {
+              backgroundColor: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)',
+              borderRadius: radii.xl,
+            },
+          ]}
+          onPress={handleAccountDelete}
+          disabled={isDeleting}
+          accessibilityRole="button"
+          accessibilityLabel="계정 삭제"
+          accessibilityState={{ disabled: isDeleting, busy: isDeleting }}
+          testID="settings-account-delete"
+        >
+          <Text style={[styles.accountOptionText, { color: colors.destructive }]}>계정 삭제</Text>
+        </Pressable>
         <Pressable
           style={[
             styles.accountOption,

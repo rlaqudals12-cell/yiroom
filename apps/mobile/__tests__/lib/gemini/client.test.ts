@@ -1,17 +1,14 @@
 /**
- * Gemini 클라이언트 수리 검증 (적대적 리뷰 1~3)
+ * 모바일 Gemini 호환 유틸리티 검증
  *
  * 1. parseJsonResponse: ```json 펜스/산문으로 감싼 응답도 파싱(조용한 Mock 강등 방지)
- * 2. 분석 타임아웃 상수 = 30초 (3초 상시 초과 → 전 시도 abort 문제 해소)
- * 3. 모델이 URL로 스레딩되고 기본값이 gemini-3.5-flash (구모델 하드코딩 제거)
+ * 2. 공개 키가 주입돼도 모바일에서 Google AI 직접 호출을 만들지 않음
  */
 
 describe('Gemini 클라이언트 — parseJsonResponse (견고한 파싱)', () => {
   let parseJsonResponse: <T>(text: string) => T;
 
   beforeAll(() => {
-    process.env.EXPO_PUBLIC_GEMINI_API_KEY = 'test-key';
-    delete process.env.EXPO_PUBLIC_GEMINI_MODEL;
     jest.isolateModules(() => {
       parseJsonResponse = require('@/lib/gemini/client').parseJsonResponse;
     });
@@ -37,48 +34,43 @@ describe('Gemini 클라이언트 — parseJsonResponse (견고한 파싱)', () =
   });
 });
 
-describe('Gemini 클라이언트 — callGeminiAPI (모델 URL·타임아웃)', () => {
+describe('Gemini 클라이언트 — 모바일 직접 호출 차단', () => {
   let callGeminiAPI: (prompt: string, imageBase64?: string, model?: string) => Promise<string>;
+  let isGeminiAvailable: () => boolean;
+  let validateGeminiConfig: () => boolean;
   const originalFetch = global.fetch;
 
   beforeAll(() => {
+    // 빌드 환경에 과거 공개 키가 남아 있어도 런타임 소비가 되살아나면 안 된다.
     process.env.EXPO_PUBLIC_GEMINI_API_KEY = 'test-key';
-    delete process.env.EXPO_PUBLIC_GEMINI_MODEL;
     jest.isolateModules(() => {
-      callGeminiAPI = require('@/lib/gemini/client').callGeminiAPI;
+      const client = require('@/lib/gemini/client');
+      callGeminiAPI = client.callGeminiAPI;
+      isGeminiAvailable = client.isGeminiAvailable;
+      validateGeminiConfig = client.validateGeminiConfig;
     });
   });
 
   beforeEach(() => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ candidates: [{ content: { parts: [{ text: '{"ok":1}' }] } }] }),
-    }) as unknown as typeof fetch;
+    global.fetch = jest.fn() as unknown as typeof fetch;
   });
 
   afterAll(() => {
     global.fetch = originalFetch;
+    delete process.env.EXPO_PUBLIC_GEMINI_API_KEY;
   });
 
-  it('기본 모델(gemini-3.5-flash) 엔드포인트로 호출한다', async () => {
-    await callGeminiAPI('프롬프트');
-    const url = (global.fetch as jest.Mock).mock.calls[0][0] as string;
-    expect(url).toContain('/models/gemini-3.5-flash:generateContent');
-    expect(url).not.toContain('gemini-1.5-flash');
+  it('공개 키가 있어도 네트워크 요청 없이 fail-closed한다', async () => {
+    await expect(callGeminiAPI('프롬프트', 'base64-image')).rejects.toThrow(
+      /이룸 서버 API/
+    );
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it('model 인자를 URL로 스레딩한다(무시하지 않음)', async () => {
-    await callGeminiAPI('프롬프트', undefined, 'my-custom-model');
-    const url = (global.fetch as jest.Mock).mock.calls[0][0] as string;
-    expect(url).toContain('/models/my-custom-model:generateContent');
-  });
-
-  it('분석 타임아웃을 30초로 설정한다(3초 아님)', async () => {
-    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
-    await callGeminiAPI('프롬프트');
-    expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 30000);
-    expect(setTimeoutSpy).not.toHaveBeenCalledWith(expect.any(Function), 3000);
-    setTimeoutSpy.mockRestore();
+  it('공개 키 유무와 무관하게 직접 Gemini를 사용 불가로 판정한다', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect(isGeminiAvailable()).toBe(false);
+    expect(validateGeminiConfig()).toBe(false);
+    warnSpy.mockRestore();
   });
 });

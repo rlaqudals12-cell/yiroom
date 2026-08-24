@@ -145,6 +145,8 @@ const responses: Record<string, { data: unknown; error: unknown }> = {
         { hex: '#ABCDEF', name: '서버 베스트 2' },
       ],
       worst_colors: [{ hex: '#654321', name: '서버 워스트' }],
+      image_analysis: { usedMock: true },
+      session_id: null,
       created_at: '2026-07-01T00:00:00Z',
     },
     error: null,
@@ -155,7 +157,8 @@ const responses: Record<string, { data: unknown; error: unknown }> = {
         id: 's1',
         skin_type: 'combination',
         overall_score: 82,
-        recommendations: { primaryConcerns: ['redness'] },
+        recommendations: { primaryConcerns: ['redness'], usedMock: false },
+        session_id: null,
         created_at: '2026-07-02T00:00:00Z',
       },
     ],
@@ -167,6 +170,8 @@ const responses: Record<string, { data: unknown; error: unknown }> = {
       body_type: 'straight',
       height: 170,
       weight: 65,
+      style_recommendations: { usedMock: true },
+      session_id: null,
       created_at: '2026-07-03T00:00:00Z',
     },
     error: null,
@@ -179,6 +184,8 @@ const responses: Record<string, { data: unknown; error: unknown }> = {
       overall_score: null,
       damage_level: 2,
       concerns: [],
+      recommendations: { usedFallback: true },
+      session_id: null,
       created_at: '2026-07-04T00:00:00Z',
     },
     error: null,
@@ -189,7 +196,8 @@ const responses: Record<string, { data: unknown; error: unknown }> = {
       undertone: 'warm',
       overall_score: 88,
       face_shape: 'oval',
-      recommendations: {},
+      recommendations: { usedMock: false },
+      session_id: null,
       created_at: '2026-07-05T00:00:00Z',
     },
     error: null,
@@ -304,8 +312,25 @@ describe('useUserAnalyses — 점수 null 가드', () => {
 
     // 점수가 있는 축은 정상적으로 "N점"을 노출
     const skin = result.current.analyses.find((a) => a.type === 'skin');
-    expect(skin?.summary).toBe('피부 점수 82점');
+    expect(skin?.summary).toBe('복합성 · 원값 82');
     expect(skin?.summary).not.toContain('null');
+  });
+
+  it('저장 JSONB의 usedMock/usedFallback 출처를 5축 카드 데이터에 보존한다', async () => {
+    const { result } = renderHook(() => useUserAnalyses());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const fallbackByType = Object.fromEntries(
+      result.current.analyses.map((analysis) => [analysis.type, analysis.usedFallback])
+    );
+    expect(fallbackByType).toMatchObject({
+      'personal-color': true,
+      skin: false,
+      body: true,
+      hair: true,
+      makeup: false,
+    });
+    expect(result.current.skinAnalysis?.usedFallback).toBe(false);
   });
 
   it('파생 BMI가 실재 height/weight에서 계산된다', async () => {

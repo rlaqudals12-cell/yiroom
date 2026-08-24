@@ -6,6 +6,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { computeSkinTrend } from '@yiroom/shared';
 import { useState, useEffect, useCallback } from 'react';
 
+import { resolveStoredFallback } from '../lib/analysis';
 import {
   normalizePersonalColorHexes,
   normalizePersonalColorSubtype,
@@ -34,6 +35,8 @@ export interface AnalysisSummary {
   makeupScore?: number; // M-1
   undertone?: string;
   oralHealthScore?: number;
+  /** true=예시/폴백, false=실분석 확인, undefined=구 데이터라 출처 불명 */
+  usedFallback?: boolean;
 }
 
 export interface PersonalColorResult {
@@ -46,6 +49,7 @@ export interface PersonalColorResult {
   /** 기존 소비부 호환 별칭. bestColors와 같은 배열이다. */
   colorPalette: string[];
   createdAt: Date;
+  usedFallback?: boolean;
 }
 
 export interface SkinAnalysisResult {
@@ -54,6 +58,7 @@ export interface SkinAnalysisResult {
   overallScore: number;
   concerns: string[];
   createdAt: Date;
+  usedFallback?: boolean;
 }
 
 export interface BodyAnalysisResult {
@@ -64,6 +69,7 @@ export interface BodyAnalysisResult {
   // BMI는 prod에 별도 컬럼이 없어 height/weight에서 파생 — 둘 중 하나라도 없으면 undefined
   bmi?: number;
   createdAt: Date;
+  usedFallback?: boolean;
 }
 
 export interface HairAnalysisResult {
@@ -73,6 +79,7 @@ export interface HairAnalysisResult {
   damageLevel: number;
   concerns: string[];
   createdAt: Date;
+  usedFallback?: boolean;
 }
 
 export interface MakeupAnalysisResult {
@@ -82,6 +89,7 @@ export interface MakeupAnalysisResult {
   overallScore: number | null;
   faceShape: string;
   createdAt: Date;
+  usedFallback?: boolean;
 }
 
 interface UseUserAnalysesReturn {
@@ -128,12 +136,19 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
         // 존재하지 않는 컬럼을 요청해 쿼리가 런타임 에러로 죽고 홈 집계에서 통째로 누락됐다.
         const { data: pcData, error: pcError } = await supabase
           .from('personal_color_assessments')
-          .select('id, season, undertone, season_subtype, best_colors, worst_colors, created_at')
+          .select(
+            'id, season, undertone, season_subtype, best_colors, worst_colors, image_analysis, session_id, created_at'
+          )
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
         if (pcData && !pcError) {
+          const usedFallback = await resolveStoredFallback(
+            supabase,
+            'personal-color',
+            pcData as Record<string, unknown>
+          );
           const bestColors = normalizePersonalColorHexes(pcData.best_colors);
           const worstColors = normalizePersonalColorHexes(pcData.worst_colors);
           const seasonSubtype = normalizePersonalColorSubtype(pcData.season_subtype);
@@ -148,6 +163,7 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
             // 기존 인사이트 소비부가 같은 서버 팔레트를 계속 사용하도록 별칭을 유지한다.
             colorPalette: bestColors,
             createdAt: new Date(pcData.created_at),
+            usedFallback,
           };
           setPersonalColor(pc);
           results.push({
@@ -159,6 +175,7 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
             ...(seasonSubtype ? { seasonSubtype } : {}),
             bestColors,
             worstColors,
+            usedFallback,
           });
         }
 
@@ -166,18 +183,24 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
         // prod skin_analyses엔 concerns 컬럼이 없음 → 고민은 recommendations.primaryConcerns(jsonb)에서 추출.
         const { data: skinRows, error: skinError } = await supabase
           .from('skin_analyses')
-          .select('id, skin_type, overall_score, recommendations, created_at')
+          .select('id, skin_type, overall_score, recommendations, session_id, created_at')
           .order('created_at', { ascending: false })
           .limit(2); // 추이(직전 대비)용 2건
 
         if (skinRows && skinRows.length > 0 && !skinError) {
           const latest = skinRows[0];
+          const usedFallback = await resolveStoredFallback(
+            supabase,
+            'skin',
+            latest as Record<string, unknown>
+          );
           const skin: SkinAnalysisResult = {
             id: latest.id,
             skinType: latest.skin_type,
             overallScore: latest.overall_score,
             concerns: extractConcerns(latest.recommendations),
             createdAt: new Date(latest.created_at),
+            usedFallback,
           };
           setSkinAnalysis(skin);
           // 추이는 두 점수가 모두 유효한 숫자일 때만 (점수 미저장 방어)
@@ -192,10 +215,11 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
             createdAt: skin.createdAt,
             // 점수가 없으면 "null점"을 만들지 않는다
             summary: isFiniteScore(latest.overall_score)
-              ? `피부 점수 ${latest.overall_score}점`
-              : '피부 분석 완료',
+              ? `${getSkinTypeLabel(latest.skin_type)} · 원값 ${latest.overall_score}`
+              : getSkinTypeLabel(latest.skin_type),
             ...(isFiniteScore(latest.overall_score) ? { skinScore: latest.overall_score } : {}),
             ...(trend ? { skinDelta: trend.delta, skinTrend: trend.trend } : {}),
+            usedFallback,
           });
         }
 
@@ -203,12 +227,17 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
         // prod body_analyses엔 bmi 컬럼이 없음(실재: height·weight) → BMI는 두 값에서 파생.
         const { data: bodyData, error: bodyError } = await supabase
           .from('body_analyses')
-          .select('id, body_type, height, weight, created_at')
+          .select('id, body_type, height, weight, style_recommendations, session_id, created_at')
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
         if (bodyData && !bodyError) {
+          const usedFallback = await resolveStoredFallback(
+            supabase,
+            'body',
+            bodyData as Record<string, unknown>
+          );
           const body: BodyAnalysisResult = {
             id: bodyData.id,
             bodyType: bodyData.body_type,
@@ -216,6 +245,7 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
             weight: bodyData.weight,
             bmi: computeBmi(bodyData.height, bodyData.weight),
             createdAt: new Date(bodyData.created_at),
+            usedFallback,
           };
           setBodyAnalysis(body);
           results.push({
@@ -224,18 +254,26 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
             createdAt: body.createdAt,
             summary: getBodyTypeLabel(body.bodyType),
             bodyType: body.bodyType,
+            usedFallback,
           });
         }
 
         // 헤어 분석 결과 (select 컬럼은 모두 prod에 실재)
         const { data: hairData, error: hairError } = await supabase
           .from('hair_analyses')
-          .select('id, hair_type, overall_score, damage_level, concerns, created_at')
+          .select(
+            'id, hair_type, overall_score, damage_level, concerns, recommendations, session_id, created_at'
+          )
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
         if (hairData && !hairError) {
+          const usedFallback = await resolveStoredFallback(
+            supabase,
+            'hair',
+            hairData as Record<string, unknown>
+          );
           const hair: HairAnalysisResult = {
             id: hairData.id,
             hairType: hairData.hair_type,
@@ -243,6 +281,7 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
             damageLevel: hairData.damage_level,
             concerns: hairData.concerns || [],
             createdAt: new Date(hairData.created_at),
+            usedFallback,
           };
           setHairAnalysis(hair);
           // 통합 분석 경로는 헤어 종합점수를 저장하지 않음(정성 분석) → overall_score가 null일 수 있음.
@@ -257,6 +296,7 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
               : hairLabel,
             ...(isFiniteScore(hair.overallScore) ? { hairScore: hair.overallScore } : {}),
             hairType: hair.hairType,
+            usedFallback,
           });
         }
 
@@ -264,18 +304,26 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
         // prod makeup_analyses엔 makeup_style·color_recommendations 컬럼이 없음(실재: undertone·face_shape·recommendations).
         const { data: makeupData, error: makeupError } = await supabase
           .from('makeup_analyses')
-          .select('id, undertone, overall_score, face_shape, recommendations, created_at')
+          .select(
+            'id, undertone, overall_score, face_shape, recommendations, session_id, created_at'
+          )
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
         if (makeupData && !makeupError) {
+          const usedFallback = await resolveStoredFallback(
+            supabase,
+            'makeup',
+            makeupData as Record<string, unknown>
+          );
           const makeup: MakeupAnalysisResult = {
             id: makeupData.id,
             undertone: makeupData.undertone,
             overallScore: isFiniteScore(makeupData.overall_score) ? makeupData.overall_score : null,
             faceShape: makeupData.face_shape,
             createdAt: new Date(makeupData.created_at),
+            usedFallback,
           };
           setMakeupAnalysis(makeup);
           const toneLabel = getUndertoneLabel(makeupData.undertone);
@@ -291,6 +339,7 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
               ? { makeupScore: makeupData.overall_score }
               : {}),
             undertone: makeupData.undertone,
+            usedFallback,
           });
         }
 
@@ -378,6 +427,17 @@ function getSeasonLabel(season: string): string {
     winter: '겨울 쿨톤',
   };
   return labels[season] || season;
+}
+
+function getSkinTypeLabel(skinType: string): string {
+  const labels: Record<string, string> = {
+    dry: '건성',
+    oily: '지성',
+    combination: '복합성',
+    normal: '중성',
+    sensitive: '민감성',
+  };
+  return labels[skinType] || skinType;
 }
 
 function getBodyTypeLabel(bodyType: string): string {

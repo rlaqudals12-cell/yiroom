@@ -1,7 +1,7 @@
 /**
  * 회원가입 화면
  */
-import { useSignUp } from '@clerk/clerk-expo';
+import { useAuth, useSignUp } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -19,16 +19,27 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import { BirthdateApiError, evaluateBirthdateGate, saveBirthdate } from '@/lib/api/birthdate';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
+
+function formatBirthdateInput(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+}
 
 export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
+  const { getToken, signOut } = useAuth();
   const router = useRouter();
   const { colors, typography } = useTheme();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [birthdate, setBirthdate] = useState('');
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +60,17 @@ export default function SignUpScreen() {
 
     if (password.length < 8) {
       Alert.alert('알림', '비밀번호는 8자 이상이어야 합니다.');
+      return;
+    }
+
+    const birthdateGate = evaluateBirthdateGate(false, birthdate);
+    if (!birthdateGate.ok) {
+      Alert.alert('가입 연령 확인', birthdateGate.message);
+      return;
+    }
+
+    if (!ageConfirmed) {
+      Alert.alert('가입 연령 확인', '만 14세 이상임을 확인해주세요.');
       return;
     }
 
@@ -88,6 +110,25 @@ export default function SignUpScreen() {
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
+        // 가입 단계에서 확인한 생년월일을 서버 정본(users.birth_date)에 저장한다.
+        // 세션 전환 직후 토큰이 늦게 준비되면 통합 분석의 기존 fail-closed 게이트가 다시 받는다.
+        try {
+          const token = await getToken();
+          if (!token) throw new Error('로그인 정보를 확인하지 못했습니다.');
+          await saveBirthdate(birthdate.trim(), token);
+        } catch (saveError) {
+          // 서버가 만 14세 미만으로 판정한 경우(기기 시계 조작으로 클라 게이트를 통과) —
+          // 진행하지 않고 세션을 폐기한다. fail-open 금지.
+          if (saveError instanceof BirthdateApiError && saveError.isMinor) {
+            await signOut();
+            router.replace('/(auth)/age-restricted');
+            return;
+          }
+          Alert.alert(
+            '생년월일 저장 안내',
+            '가입은 완료됐지만 생년월일을 저장하지 못했어요. 첫 분석 전에 다시 확인해주세요.'
+          );
+        }
         // 가입=첫 미팅(ADR-114): 신규 회원은 통합분석으로 이동 (웹 ?onboarding=1과 동일 의도)
         router.replace('/(analysis)/integrated?onboarding=1');
       }
@@ -240,6 +281,55 @@ export default function SignUpScreen() {
                 secureTextEntry
               />
             </View>
+
+            <View style={[styles.inputContainer, { marginTop: spacing.md }]}>
+              <Text style={[styles.label, { color: colors.foreground }]}>생년월일</Text>
+              <TextInput
+                testID="signup-birthdate-input"
+                style={[
+                  styles.input,
+                  {
+                    borderColor: colors.border,
+                    color: colors.foreground,
+                    backgroundColor: colors.muted,
+                  },
+                ]}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={colors.mutedForeground}
+                value={birthdate}
+                onChangeText={(value) => setBirthdate(formatBirthdateInput(value))}
+                keyboardType="number-pad"
+                autoCapitalize="none"
+                maxLength={10}
+              />
+              <Text style={[styles.helpText, { color: colors.mutedForeground }]}>
+                만 14세 이상 확인과 서비스 이용 자격 확인에 사용해요.
+              </Text>
+            </View>
+
+            <Pressable
+              testID="signup-age-confirmation"
+              style={styles.ageConfirmation}
+              onPress={() => setAgeConfirmed((current) => !current)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: ageConfirmed }}
+              accessibilityLabel="만 14세 이상임을 확인합니다"
+            >
+              <View
+                style={[
+                  styles.checkbox,
+                  {
+                    borderColor: ageConfirmed ? brand.primary : colors.border,
+                    backgroundColor: ageConfirmed ? brand.primary : colors.card,
+                  },
+                ]}
+              >
+                {ageConfirmed && <View style={styles.checkboxMark} />}
+              </View>
+              <Text style={[styles.ageConfirmationText, { color: colors.foreground }]}>
+                만 14세 이상임을 확인합니다
+              </Text>
+            </Pressable>
           </GlassCard>
         </Animated.View>
 
@@ -303,6 +393,38 @@ const styles = StyleSheet.create({
   label: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
+  },
+  helpText: {
+    fontSize: typography.size.xs,
+    lineHeight: 18,
+  },
+  ageConfirmation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    minHeight: 44,
+  },
+  ageConfirmationText: {
+    flex: 1,
+    fontSize: typography.size.sm,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderWidth: 1,
+    borderRadius: radii.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxMark: {
+    width: 8,
+    height: 12,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: brand.primaryForeground,
+    transform: [{ rotate: '45deg' }],
+    marginTop: -2,
   },
   input: {
     borderWidth: 1,

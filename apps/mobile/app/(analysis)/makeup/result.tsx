@@ -19,7 +19,14 @@ import {
 } from '@/components/analysis';
 import { AxisResultShareSection } from '@/components/share';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
-import { buildMakeupTopActions } from '@/lib/analysis';
+import {
+  buildMakeupTopActions,
+  finiteNumber,
+  loadStoredAnalysisRecord,
+  storedRecord,
+  stringArray,
+} from '@/lib/analysis';
+import { StoredResultError } from '@/lib/analysis/stored-result-loader';
 import {
   MakeupApiError,
   requestMakeupAnalysis,
@@ -27,6 +34,7 @@ import {
 } from '@/lib/api/makeup';
 import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { radii, spacing } from '@/lib/theme';
 
 const FACE_SHAPE_LABELS: Record<MakeupAnalysisApiResult['faceShape'], string> = {
@@ -71,12 +79,15 @@ const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주�
 
 export default function MakeupResultScreen(): React.JSX.Element {
   const { getToken } = useAuth();
-  const { imageUri, imageBase64 } = useLocalSearchParams<{
-    imageUri: string;
+  const supabase = useClerkSupabaseClient();
+  const { imageUri, imageBase64, historyId } = useLocalSearchParams<{
+    imageUri?: string;
     imageBase64?: string;
+    historyId?: string;
   }>();
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<MakeupAnalysisApiResult | null>(null);
+  const [measured, setMeasured] = useState({ faceShape: true, eyeShape: true, lipShape: true });
   const [errorMessage, setErrorMessage] = useState(DEFAULT_ERROR_MESSAGE);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
@@ -84,8 +95,55 @@ export default function MakeupResultScreen(): React.JSX.Element {
   const analyzeMakeup = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setResult(null);
+    setMeasured({ faceShape: true, eyeShape: true, lipShape: true });
 
     try {
+      const hasFreshImage = Boolean(imageBase64 || imageUri);
+      if (!hasFreshImage) {
+        const stored = await loadStoredAnalysisRecord(supabase, 'makeup', historyId);
+        const row = stored.row;
+        const faceShape = normalizeStoredFaceShape(row.face_shape);
+        const undertone = normalizeStoredUndertone(row.undertone);
+        const eyeShape = normalizeStoredEyeShape(row.eye_shape);
+        const lipShape = normalizeStoredLipShape(row.lip_shape);
+        if (!faceShape || !undertone || !eyeShape || !lipShape) {
+          throw new StoredResultError('저장된 메이크업 분석 결과를 해석하지 못했어요.');
+        }
+
+        const recommendationData = storedRecord(row.recommendations);
+        const measuredData = storedRecord(recommendationData.measured);
+        const isIntegrated = recommendationData.source === 'integrated';
+        const measuredState = isIntegrated
+          ? {
+              faceShape: measuredData.faceShape === true,
+              eyeShape: measuredData.eyeShape === true,
+              lipShape: measuredData.lipShape === true,
+            }
+          : { faceShape: true, eyeShape: true, lipShape: true };
+        const recommendations = parseStoredMakeupRecommendations(recommendationData);
+        const overall = finiteNumber(row.overall_score) ?? 0;
+        const skinTone = finiteNumber(row.skin_tone_uniformity) ?? overall;
+
+        setMeasured(measuredState);
+        setResult({
+          faceShape,
+          undertone,
+          eyeShape,
+          lipShape,
+          scores: {
+            skinTone,
+            eyeBalance: overall,
+            lipBalance: overall,
+            overall,
+          },
+          recommendations,
+          bestColors: collectStoredMakeupColors(recommendationData),
+          usedMock: stored.usedFallback === true,
+          dbSaveFailed: false,
+        });
+        return;
+      }
+
       let base64Data = imageBase64;
       if (!base64Data && imageUri) base64Data = await imageToBase64(imageUri);
       if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
@@ -103,12 +161,16 @@ export default function MakeupResultScreen(): React.JSX.Element {
         screen: 'makeup-result',
         tags: { module: 'M-1', action: 'analyze' },
       });
-      setErrorMessage(error instanceof MakeupApiError ? error.message : DEFAULT_ERROR_MESSAGE);
+      setErrorMessage(
+        error instanceof MakeupApiError || error instanceof StoredResultError
+          ? error.message
+          : DEFAULT_ERROR_MESSAGE
+      );
       setResult(null);
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, imageBase64, imageUri]);
+  }, [getToken, historyId, imageBase64, imageUri, supabase]);
 
   const hasStartedRef = useRef(false);
   useEffect(() => {
@@ -144,14 +206,26 @@ export default function MakeupResultScreen(): React.JSX.Element {
     eye: result.recommendations.eye,
     lip: result.recommendations.lip,
   });
-  const recommendationKeys = Object.keys(
-    result.recommendations
-  ) as (keyof MakeupAnalysisApiResult['recommendations'])[];
-  const sections: ReportSection[] = [
-    {
+  const recommendationKeys = (
+    Object.keys(result.recommendations) as (keyof MakeupAnalysisApiResult['recommendations'])[]
+  ).filter((key) => result.recommendations[key].trim().length > 0);
+  const applicationItems = [
+    ...(measured.faceShape && result.recommendations.contour
+      ? [`${FACE_SHAPE_LABELS[result.faceShape]}은 ${result.recommendations.contour}`]
+      : []),
+    ...(measured.eyeShape && result.recommendations.eye
+      ? [`${EYE_SHAPE_LABELS[result.eyeShape]}에는 ${result.recommendations.eye}`]
+      : []),
+    ...(measured.lipShape && result.recommendations.lip
+      ? [`${LIP_SHAPE_LABELS[result.lipShape]}에는 ${result.recommendations.lip}`]
+      : []),
+  ];
+  const sections: ReportSection[] = [];
+  if (recommendationKeys.length > 0) {
+    sections.push({
       key: 'recommendations',
       title: '부위별 맞춤 추천',
-      summary: result.recommendations.base,
+      summary: result.recommendations[recommendationKeys[0]],
       content: (
         <ReportRowTable testID="makeup-recommendation-rows">
           {recommendationKeys.map((key) => (
@@ -163,22 +237,23 @@ export default function MakeupResultScreen(): React.JSX.Element {
           ))}
         </ReportRowTable>
       ),
-    },
-    {
+    });
+  }
+  if (applicationItems.length > 0) {
+    sections.push({
       key: 'application',
       title: '적용 팁',
-      summary: result.recommendations.contour,
-      content: (
-        <ReportTextList
-          items={[
-            `${FACE_SHAPE_LABELS[result.faceShape]}은 ${result.recommendations.contour}`,
-            `${EYE_SHAPE_LABELS[result.eyeShape]}에는 ${result.recommendations.eye}`,
-            `${LIP_SHAPE_LABELS[result.lipShape]}에는 ${result.recommendations.lip}`,
-          ]}
-          testID="makeup-application-tips"
-        />
-      ),
-    },
+      summary: applicationItems[0],
+      content: <ReportTextList items={applicationItems} testID="makeup-application-tips" />,
+    });
+  }
+  const verdict = [
+    ...(measured.faceShape ? [FACE_SHAPE_LABELS[result.faceShape]] : []),
+    UNDERTONE_LABELS[result.undertone],
+  ].join(' · ');
+  const shareBadges = [
+    ...(measured.eyeShape ? [{ label: '눈매', value: EYE_SHAPE_LABELS[result.eyeShape] }] : []),
+    ...(measured.lipShape ? [{ label: '입술', value: LIP_SHAPE_LABELS[result.lipShape] }] : []),
   ];
 
   return (
@@ -200,8 +275,12 @@ export default function MakeupResultScreen(): React.JSX.Element {
       <ReportResultLayout
         attributes={
           <ReportRowTable testID="makeup-report-attrs">
-            <ReportAttrRow label="눈매" value={EYE_SHAPE_LABELS[result.eyeShape]} />
-            <ReportAttrRow label="입술" value={LIP_SHAPE_LABELS[result.lipShape]} />
+            {measured.eyeShape ? (
+              <ReportAttrRow label="눈매" value={EYE_SHAPE_LABELS[result.eyeShape]} />
+            ) : null}
+            {measured.lipShape ? (
+              <ReportAttrRow label="입술" value={LIP_SHAPE_LABELS[result.lipShape]} />
+            ) : null}
           </ReportRowTable>
         }
         conclusion={
@@ -232,22 +311,98 @@ export default function MakeupResultScreen(): React.JSX.Element {
         shareContent={
           <AxisResultShareSection
             analysisType="makeup"
-            badges={[
-              { label: '눈매', value: EYE_SHAPE_LABELS[result.eyeShape] },
-              { label: '입술', value: LIP_SHAPE_LABELS[result.lipShape] },
-            ]}
+            badges={shareBadges}
             heading="내 메이크업 카드"
             oneLine={result.recommendations.base}
             palette={result.bestColors}
             usedFallback={result.usedMock}
-            verdict={`${FACE_SHAPE_LABELS[result.faceShape]} · ${UNDERTONE_LABELS[result.undertone]}`}
+            verdict={verdict}
           />
         }
         testID="makeup-analysis-result"
         usedFallback={result.usedMock}
-        verdict={`${FACE_SHAPE_LABELS[result.faceShape]} · ${UNDERTONE_LABELS[result.undertone]}`}
+        verdict={verdict}
       />
     </>
+  );
+}
+
+function enumValue<T extends string>(value: unknown, values: readonly T[]): T | null {
+  return values.includes(value as T) ? (value as T) : null;
+}
+
+function normalizeStoredFaceShape(value: unknown): MakeupAnalysisApiResult['faceShape'] | null {
+  return enumValue(value, ['oval', 'round', 'square', 'heart', 'oblong', 'diamond'] as const);
+}
+
+function normalizeStoredUndertone(value: unknown): MakeupAnalysisApiResult['undertone'] | null {
+  return enumValue(value, ['warm', 'cool', 'neutral'] as const);
+}
+
+function normalizeStoredEyeShape(value: unknown): MakeupAnalysisApiResult['eyeShape'] | null {
+  if (value === 'downturned') return 'almond';
+  return enumValue(value, ['monolid', 'double', 'hooded', 'round', 'almond'] as const);
+}
+
+function normalizeStoredLipShape(value: unknown): MakeupAnalysisApiResult['lipShape'] | null {
+  const legacyMap: Record<string, MakeupAnalysisApiResult['lipShape']> = {
+    small: 'thin',
+    heart: 'bow',
+    asymmetric: 'wide',
+  };
+  if (typeof value === 'string' && legacyMap[value]) return legacyMap[value];
+  return enumValue(value, ['full', 'thin', 'wide', 'bow'] as const);
+}
+
+function firstStoredMakeupTip(value: unknown, category: string): string {
+  if (!Array.isArray(value)) return '';
+  for (const item of value) {
+    const group = storedRecord(item);
+    if (group.category !== category) continue;
+    return stringArray(group.tips)[0] ?? '';
+  }
+  return '';
+}
+
+function parseStoredMakeupRecommendations(
+  value: Record<string, unknown>
+): MakeupAnalysisApiResult['recommendations'] {
+  const tutorialSteps = stringArray(value.tutorialSteps);
+  return {
+    base:
+      (typeof value.baseRecommendation === 'string' ? value.baseRecommendation : '') ||
+      firstStoredMakeupTip(value.tips, '베이스'),
+    eye:
+      firstStoredMakeupTip(value.tips, '아이 메이크업') ||
+      tutorialSteps.find((step) => step.includes('아이섀도')) ||
+      '',
+    lip:
+      firstStoredMakeupTip(value.tips, '립 메이크업') ||
+      tutorialSteps.find((step) => step.includes('립 컬러')) ||
+      '',
+    blush: firstStoredMakeupTip(value.tips, '블러셔'),
+    contour: firstStoredMakeupTip(value.tips, '컨투어링'),
+  };
+}
+
+function collectStoredMakeupColors(value: Record<string, unknown>): string[] {
+  const integratedColors = [
+    ...stringArray(value.lipPalette),
+    ...stringArray(value.eyeshadowPalette),
+  ];
+  const standaloneColors: string[] = [];
+  if (Array.isArray(value.colors)) {
+    for (const groupValue of value.colors) {
+      const group = storedRecord(groupValue);
+      if (!Array.isArray(group.colors)) continue;
+      for (const colorValue of group.colors) {
+        const color = storedRecord(colorValue);
+        if (typeof color.hex === 'string') standaloneColors.push(color.hex);
+      }
+    }
+  }
+  return Array.from(new Set([...integratedColors, ...standaloneColors])).filter((color) =>
+    /^#[0-9A-Fa-f]{6}$/.test(color)
   );
 }
 

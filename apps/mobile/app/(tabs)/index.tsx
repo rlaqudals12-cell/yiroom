@@ -93,7 +93,7 @@ export default function HomeScreen(): React.JSX.Element {
   } = useUserAnalyses();
 
   // 프로필 페르소나 한 줄 ("당신은 ○○한 사람") — ADR-109 프로필 홈 상단
-  const personaOneLine = useProfilePersona();
+  const profilePersona = useProfilePersona();
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
@@ -336,7 +336,8 @@ export default function HomeScreen(): React.JSX.Element {
       {FEATURE_FLAGS.PROFILE_HOME && (
         <ProfileCardGrid
           analyses={analyses}
-          personaOneLine={personaOneLine}
+          personaOneLine={profilePersona?.oneLine}
+          personaUsedFallback={profilePersona?.usedFallback}
           style={{ marginBottom: spacing.md }}
         />
       )}

@@ -5,6 +5,7 @@
  * testID: analysis-history-screen
  */
 import React from 'react';
+import { fireEvent } from '@testing-library/react-native';
 
 import { renderWithTheme } from '../../helpers/test-utils';
 
@@ -86,9 +87,9 @@ jest.mock('react-native-safe-area-context', () => {
 
 // --- Screen-specific mocks ---
 
-const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn() };
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
-  router: mockRouter,
+  router: { push: (...args: unknown[]) => mockPush(...args) },
   useLocalSearchParams: jest.fn(() => ({})),
 }));
 
@@ -105,12 +106,18 @@ jest.mock('../../../hooks/useAnalysisHistory', () => ({
 }));
 
 jest.mock('../../../components/analysis/AnalysisHistoryCard', () => {
-  const { View, Text } = require('react-native');
+  const { Pressable, Text } = require('react-native');
   return {
-    AnalysisHistoryCard: ({ item }: { item: { id: string } }) => (
-      <View testID="history-card">
+    AnalysisHistoryCard: ({
+      item,
+      onPress,
+    }: {
+      item: { id: string };
+      onPress: (item: { id: string }) => void;
+    }) => (
+      <Pressable testID="history-card" onPress={() => onPress(item)}>
         <Text>{item.id}</Text>
-      </View>
+      </Pressable>
     ),
   };
 });
@@ -153,6 +160,29 @@ describe('AnalysisHistoryScreen', () => {
   it('에러 없이 렌더링된다', () => {
     const { getByTestId } = renderWithTheme(<AnalysisHistoryScreen />);
     expect(getByTestId('analysis-history-screen')).toBeTruthy();
+  });
+
+  it('이력 카드는 선택한 행 id를 historyId로 결과 화면에 전달한다', () => {
+    const { useAnalysisHistory } = require('../../../hooks/useAnalysisHistory');
+    useAnalysisHistory.mockReturnValue({
+      ...mockHistoryHook,
+      items: [
+        {
+          id: 'skin-history-2',
+          moduleType: 'skin',
+          createdAt: new Date('2026-08-20T00:00:00Z'),
+          summary: '복합성',
+        },
+      ],
+    });
+    const { getByTestId } = renderWithTheme(<AnalysisHistoryScreen />);
+
+    fireEvent.press(getByTestId('history-card'));
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/(analysis)/skin/result',
+      params: { historyId: 'skin-history-2' },
+    });
   });
 
   it('로딩 상태에서 로딩 텍스트가 표시된다', () => {

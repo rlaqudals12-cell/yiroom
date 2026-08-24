@@ -1,8 +1,7 @@
 /**
  * SkinProfileCard — 피부 분석 요약 카드
  *
- * 최신 피부 분석 결과를 한눈에 표시.
- * ScoreGauge로 전체 점수, 피부 타입 + 고민 배지.
+ * 최신 피부 분석 결과를 진단지 속성표로 표시한다.
  */
 import { Droplets } from 'lucide-react-native';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
@@ -10,8 +9,8 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { TIMING } from '../../lib/animations';
 import { useTheme } from '../../lib/theme';
+import { ReportAttrRow, ReportInkNumber, ReportRowTable } from '../analysis/report';
 import { Badge } from '../ui/Badge';
-import { ScoreGauge } from '../ui/ScoreGauge';
 
 const SKIN_TYPE_LABELS: Record<string, string> = {
   dry: '건성',
@@ -26,6 +25,8 @@ interface SkinProfileCardProps {
   overallScore: number;
   concerns: string[];
   createdAt: Date;
+  /** true면 저장된 결과가 AI 예시/폴백에서 왔음을 고지한다. */
+  usedFallback?: boolean;
   style?: ViewStyle;
   testID?: string;
 }
@@ -35,6 +36,7 @@ export function SkinProfileCard({
   overallScore,
   concerns,
   createdAt,
+  usedFallback,
   style,
   testID,
 }: SkinProfileCardProps): React.JSX.Element {
@@ -47,7 +49,7 @@ export function SkinProfileCard({
     <Animated.View
       entering={FadeInUp.duration(TIMING.normal)}
       testID={testID}
-      accessibilityLabel={`피부 프로필: ${skinLabel}, 점수 ${overallScore}점`}
+      accessibilityLabel={`피부 프로필: ${skinLabel}, 기록된 원값 ${overallScore}`}
       style={[
         styles.card,
         shadows.card,
@@ -81,41 +83,46 @@ export function SkinProfileCard({
         </View>
       </View>
 
-      {/* 중앙: ScoreGauge + 피부타입 */}
-      <View style={[styles.scoreRow, { marginTop: spacing.md }]}>
-        <ScoreGauge
-          score={overallScore}
-          max={100}
-          color={moduleColors.skin.base}
-          label="피부 점수"
-          size={88}
-          strokeWidth={8}
-          unit="점"
-          animated
-          delay={200}
-          testID={testID ? `${testID}-gauge` : undefined}
-        />
-        <View style={{ flex: 1, marginLeft: spacing.md }}>
-          <Text
-            style={{
-              fontSize: typography.size.xl,
-              fontWeight: typography.weight.bold,
-              color: colors.foreground,
-            }}
-          >
-            {skinLabel}
-          </Text>
-          <Text
-            style={{
-              fontSize: typography.size.sm,
-              color: colors.mutedForeground,
-              marginTop: spacing.xxs,
-            }}
-          >
-            전체 점수 {overallScore}점
+      {/* 원형 점수 게이지 대신 진단지 속성표 + 원값을 사용한다. */}
+      <View style={{ marginTop: spacing.md }}>
+        <ReportRowTable testID={testID ? `${testID}-readings` : 'skin-profile-readings'}>
+          <ReportAttrRow label="피부 타입" value={skinLabel} />
+          <ReportAttrRow
+            accessibilityLabel={`피부 상태 기록 원값 ${overallScore}`}
+            label="상태 원값"
+            value={
+              <ReportInkNumber
+                accessibilityLabel={`피부 상태 기록 원값 ${overallScore}`}
+                status="분석 당시 기록"
+                testID={testID ? `${testID}-raw-value` : 'skin-profile-raw-value'}
+                value={String(overallScore)}
+              />
+            }
+          />
+        </ReportRowTable>
+        <Text style={[styles.caveat, { color: colors.mutedForeground, marginTop: spacing.xs }]}>
+          촬영 환경에 따라 값이 달라질 수 있어요.
+        </Text>
+      </View>
+
+      {usedFallback ? (
+        <View
+          style={[
+            styles.fallbackBadge,
+            {
+              backgroundColor: colors.secondary,
+              borderColor: colors.border,
+              borderRadius: radii.full,
+              marginTop: spacing.sm,
+            },
+          ]}
+          testID={testID ? `${testID}-fallback` : 'skin-profile-fallback'}
+        >
+          <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+            예시 결과 · 낮은 신뢰도
           </Text>
         </View>
-      </View>
+      ) : null}
 
       {/* 고민 배지 */}
       {concerns.length > 0 && (
@@ -155,9 +162,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scoreRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  caveat: {
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  fallbackBadge: {
+    alignSelf: 'flex-start',
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   concernsRow: {
     flexDirection: 'row',

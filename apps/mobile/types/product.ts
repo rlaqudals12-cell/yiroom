@@ -787,6 +787,8 @@ export interface ProductWithMatch<T> {
   product: T;
   matchScore: number; // 0-100
   matchReasons: MatchReason[];
+  /** 개인 분석 축과 제품 태그가 실제로 일치할 때만 true */
+  personalMatched?: boolean;
 }
 
 /** 정렬 옵션 */

@@ -8,6 +8,7 @@
 import {
   calculateMatchScore,
   calculatePersonalMatchPercentage,
+  addMatchInfo,
   hasPersonalMatch,
   isBlanketTag,
 } from '@/lib/products/matching';
@@ -91,6 +92,16 @@ describe('제품 매칭 근거 정직성', () => {
       ])
     );
     expect(hasPersonalMatch(result.reasons)).toBe(true);
+  });
+
+  it('표시 계약은 실제 개인 축 교집합만 personalMatched=true로 보존한다', () => {
+    const matched = addMatchInfo(cosmetic({ skinTypes: ['dry'] }), { skinType: 'dry' });
+    const unverified = addMatchInfo(cosmetic({ rating: 4.8, reviewCount: 1000 }), {
+      skinType: 'dry',
+    });
+
+    expect(matched.personalMatched).toBe(true);
+    expect(unverified.personalMatched).toBe(false);
   });
 
   it('가격·브랜드·리뷰 근거만으로는 개인화됐다고 판단하지 않는다', () => {

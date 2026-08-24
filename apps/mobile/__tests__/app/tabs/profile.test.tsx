@@ -271,14 +271,14 @@ describe('ProfileScreen', () => {
   });
 
   describe('게이미피케이션 섹션', () => {
-    it('웰니스 레벨 뱃지가 표시된다', () => {
-      const { getByTestId } = renderWithTheme(<ProfileScreen />);
-      expect(getByTestId('wellness-level')).toBeTruthy();
+    it('WELLNESS_PHASE2=false이면 웰니스 레벨 뱃지가 숨겨진다', () => {
+      const { queryByTestId } = renderWithTheme(<ProfileScreen />);
+      expect(queryByTestId('wellness-level')).toBeNull();
     });
 
-    it('웰니스 점수 링이 표시된다', () => {
-      const { getByTestId } = renderWithTheme(<ProfileScreen />);
-      expect(getByTestId('wellness-score')).toBeTruthy();
+    it('WELLNESS_PHASE2=false이면 웰니스 점수 링이 숨겨진다', () => {
+      const { queryByTestId } = renderWithTheme(<ProfileScreen />);
+      expect(queryByTestId('wellness-score')).toBeNull();
     });
 
     // ADR-098 §2.4.2 기능 과잉 정리: 업적 그리드는 BADGES=false 동안 숨김

@@ -2,6 +2,7 @@
  * 알림 시스템 타입 정의
  * 훅 의존성 없이 테스트 가능
  */
+import { FEATURE_FLAGS } from '@yiroom/shared';
 
 // ============================================================
 // 개인화 트리거 설정
@@ -48,21 +49,35 @@ export interface NotificationSettings {
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   enabled: false,
-  workoutReminder: true,
+  workoutReminder: FEATURE_FLAGS.WELLNESS_PHASE2,
   workoutReminderTime: '09:00',
-  nutritionReminder: true,
+  nutritionReminder: FEATURE_FLAGS.WELLNESS_PHASE2,
   mealReminderTimes: {
     breakfast: '08:30',
     lunch: '12:30',
     dinner: '18:30',
   },
-  waterReminder: true,
+  waterReminder: FEATURE_FLAGS.WELLNESS_PHASE2,
   waterReminderInterval: 2,
   streakWarning: true,
   socialNotifications: true,
   achievementNotifications: true,
   personalizedTriggers: DEFAULT_PERSONALIZED_TRIGGER_SETTINGS,
 };
+
+/** 저장된 구버전 설정이 true여도 닫힌 웰니스 알림을 되살리지 않는다. */
+export function enforceNotificationFeatureFlags(
+  settings: NotificationSettings
+): NotificationSettings {
+  if (FEATURE_FLAGS.WELLNESS_PHASE2) return settings;
+
+  return {
+    ...settings,
+    workoutReminder: false,
+    nutritionReminder: false,
+    waterReminder: false,
+  };
+}
 
 // ============================================================
 // 개인화 트리거 타입

@@ -18,6 +18,9 @@ const WELLNESS_DEEP_LINK_PATHS = new Set([
   '/nutrition/dashboard',
   '/nutrition/camera',
   '/nutrition/water',
+  // 설정 하위의 숨김 모듈 표면 — 메뉴는 가려졌지만 딥링크 진입을 막는다
+  '/settings/widgets',
+  '/settings/goals',
 ]);
 
 /**

@@ -2,7 +2,8 @@
  * 웰니스 점수 상세 페이지
  * 종합 점수 + 영역별 분석 + 업적 + 개선 가이드
  */
-import { router } from 'expo-router';
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect, router } from 'expo-router';
 import { TrendingUp, Target, Dumbbell, Apple, Sparkles } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
@@ -66,7 +67,16 @@ function getImprovementTips(
   return guides;
 }
 
-export default function WellnessScorePage(): React.JSX.Element {
+export default function WellnessScorePageGuard(): React.JSX.Element {
+  // 탭 링크뿐 아니라 직접 URL·구 알림으로 들어오는 경로도 같은 플래그로 차단한다.
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2) {
+    return <Redirect href="/(tabs)/profile" />;
+  }
+
+  return <WellnessScorePage />;
+}
+
+function WellnessScorePage(): React.JSX.Element {
   const { colors, spacing } = useTheme();
   const { personalColor, skinAnalysis, bodyAnalysis, refetch: refetchAnalyses } = useUserAnalyses();
   const { streak: workoutStreak, refetch: refetchWorkout } = useWorkoutData();

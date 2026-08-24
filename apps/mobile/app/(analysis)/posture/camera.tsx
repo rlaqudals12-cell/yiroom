@@ -1,15 +1,25 @@
 /**
  * Posture 자세 분석 - 카메라 촬영
  */
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 export default function PostureCameraScreen() {
+  // 레이아웃 가드와 별개로 화면 자체도 fail-closed. 딥링크·테스트 렌더에서 권한 요청보다 먼저 막는다.
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <PostureCameraContent />;
+}
+
+function PostureCameraContent() {
   const { colors, brand } = useTheme();
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();

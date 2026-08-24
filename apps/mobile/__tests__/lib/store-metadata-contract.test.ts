@@ -2,10 +2,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 interface StoreMetadata {
+  ios: { ageRating: string; minimumUserAge: number };
+  android: { contentRating: string; minimumUserAge: number };
   localization: {
-    ko: { description: string };
-    en: { description: string };
+    ko: { description: string; keywords: string; whatsNew: string };
+    en: { description: string; keywords: string; whatsNew: string };
   };
+  screenshots: { required: { iphone6_5: { scenes: string[] } } };
   privacyNutritionLabels: {
     dataCollected: Array<{
       type: string;
@@ -48,5 +51,32 @@ describe('store metadata privacy contract', () => {
     expect(photoEntry).toMatchObject({ linkedToUser: true });
     expect(photoEntry?.note).toContain('별도 저장 동의 시에만 최대 1년');
     expect(photoEntry?.note).not.toContain('즉시 삭제');
+  });
+
+  it('만 14세 가입 계약과 생년월일 수집을 스토어 메타데이터에 명시한다', () => {
+    const metadata = readStoreMetadata();
+    const birthdateEntry = metadata.privacyNutritionLabels.dataCollected.find(
+      (entry) => entry.type === 'Other Data'
+    );
+
+    expect(metadata.ios.minimumUserAge).toBe(14);
+    expect(metadata.android.minimumUserAge).toBe(14);
+    expect(metadata.localization.ko.description).toContain('만 14세 이상');
+    expect(birthdateEntry).toMatchObject({ linkedToUser: true });
+  });
+
+  it('출시 빌드에서 숨긴 운동·영양·구강·리더보드 기능을 약속하지 않는다', () => {
+    const metadata = readStoreMetadata();
+    const publicCopy = [
+      metadata.localization.ko.description,
+      metadata.localization.ko.keywords,
+      metadata.localization.ko.whatsNew,
+      ...metadata.screenshots.required.iphone6_5.scenes,
+    ].join('\n');
+
+    expect(publicCopy).not.toMatch(/운동|영양|음식 분석|구강|리더보드|주간 리포트/);
+    expect(publicCopy).toMatch(/퍼스널컬러|퍼스널 컬러/);
+    expect(publicCopy).toContain('헤어');
+    expect(publicCopy).toContain('메이크업');
   });
 });

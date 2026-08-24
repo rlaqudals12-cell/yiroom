@@ -18,7 +18,7 @@ export {
 } from './useUserAnalyses';
 
 // 프로필 페르소나 한 줄 (ADR-109)
-export { useProfilePersona } from './useProfilePersona';
+export { useProfilePersona, type ProfilePersonaSummary } from './useProfilePersona';
 
 // 운동 데이터 조회
 export {

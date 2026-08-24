@@ -20,10 +20,18 @@ import {
 import { BodyReportEvidence } from '@/components/analysis/body/BodyReportEvidence';
 import { AxisResultShareSection } from '@/components/share';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
-import { buildBodyTopActions } from '@/lib/analysis';
+import {
+  buildBodyTopActions,
+  finiteNumber,
+  loadStoredAnalysisRecord,
+  storedRecord,
+  stringArray,
+} from '@/lib/analysis';
+import { StoredResultError } from '@/lib/analysis/stored-result-loader';
 import { BodyApiError, requestBodyAnalysis, type BodyAnalysisApiResult } from '@/lib/api/body';
 import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { radii, spacing, typography } from '@/lib/theme';
 
 const BMI_CAVEAT = 'BMI는 근육량에 따라 실제와 다를 수 있어요';
@@ -31,15 +39,21 @@ const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주�
 
 export default function BodyResultScreen(): React.JSX.Element {
   const { getToken } = useAuth();
-  const { height, weight, imageUri, imageBase64 } = useLocalSearchParams<{
-    height: string;
-    weight: string;
-    imageUri: string;
+  const supabase = useClerkSupabaseClient();
+  const { height, weight, imageUri, imageBase64, historyId } = useLocalSearchParams<{
+    height?: string;
+    weight?: string;
+    imageUri?: string;
     imageBase64?: string;
+    historyId?: string;
   }>();
 
   const [isLoading, setIsLoading] = useState(true);
   const [analysis, setAnalysis] = useState<BodyAnalysisApiResult | null>(null);
+  const [storedMeasurements, setStoredMeasurements] = useState<{
+    height?: number;
+    weight?: number;
+  } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>(DEFAULT_ERROR_MESSAGE);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
@@ -47,8 +61,41 @@ export default function BodyResultScreen(): React.JSX.Element {
   const analyzeBody = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setAnalysis(null);
+    setStoredMeasurements(null);
 
     try {
+      const hasFreshImage = Boolean(imageBase64 || imageUri);
+      if (!hasFreshImage) {
+        const stored = await loadStoredAnalysisRecord(supabase, 'body', historyId);
+        const row = stored.row;
+        const bodyType = normalizeStoredBodyType(row.body_type);
+        if (!bodyType) {
+          throw new StoredResultError('저장된 체형 분석 결과를 해석하지 못했어요.');
+        }
+        const styleData = storedRecord(row.style_recommendations);
+        const heightValue = finiteNumber(row.height);
+        const weightValue = finiteNumber(row.weight);
+        const bmi =
+          heightValue && heightValue > 0 && weightValue
+            ? weightValue / (heightValue / 100) ** 2
+            : undefined;
+
+        setStoredMeasurements({ height: heightValue, weight: weightValue });
+        setAnalysis({
+          bodyType,
+          bodyTypeLabel: STORED_BODY_LABELS[bodyType],
+          bodyTypeDescription: '',
+          strengths: stringArray(row.strengths),
+          avoidStyles: stringArray(styleData.avoid),
+          styleRecommendations: parseStoredBodyRecommendations(styleData),
+          insight: typeof styleData.insight === 'string' ? styleData.insight : undefined,
+          bmi,
+          usedMock: stored.usedFallback === true,
+          dbSaveFailed: false,
+        });
+        return;
+      }
+
       let base64Data = imageBase64;
       if (!base64Data && imageUri) {
         base64Data = await imageToBase64(imageUri);
@@ -63,8 +110,8 @@ export default function BodyResultScreen(): React.JSX.Element {
       const result = await requestBodyAnalysis(
         {
           imageBase64: base64Data,
-          height: parseFloat(height),
-          weight: parseFloat(weight),
+          height: parseFloat(height ?? ''),
+          weight: parseFloat(weight ?? ''),
         },
         token
       );
@@ -75,12 +122,16 @@ export default function BodyResultScreen(): React.JSX.Element {
         screen: 'body-result',
         tags: { module: 'C-1', action: 'analyze' },
       });
-      setErrorMessage(error instanceof BodyApiError ? error.message : DEFAULT_ERROR_MESSAGE);
+      setErrorMessage(
+        error instanceof BodyApiError || error instanceof StoredResultError
+          ? error.message
+          : DEFAULT_ERROR_MESSAGE
+      );
       setAnalysis(null);
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, height, imageBase64, imageUri, weight]);
+  }, [getToken, height, historyId, imageBase64, imageUri, supabase, weight]);
 
   // clerk-expo getToken 참조가 바뀌어도 화면 진입당 분석은 한 번만 실행한다.
   const hasStartedRef = useRef(false);
@@ -101,15 +152,15 @@ export default function BodyResultScreen(): React.JSX.Element {
     );
   }
 
-  const heightNumber = parseFloat(height);
-  const weightNumber = parseFloat(weight);
+  const heightNumber = storedMeasurements?.height ?? parseFloat(height ?? '');
+  const weightNumber = storedMeasurements?.weight ?? parseFloat(weight ?? '');
   const derivedBmi =
     Number.isFinite(heightNumber) && heightNumber > 0 && Number.isFinite(weightNumber)
       ? weightNumber / (heightNumber / 100) ** 2
       : null;
   const bmi = analysis?.bmi ?? derivedBmi;
 
-  if (!analysis || bmi === null) {
+  if (!analysis) {
     return (
       <AnalysisErrorState
         message={errorMessage}
@@ -206,21 +257,31 @@ export default function BodyResultScreen(): React.JSX.Element {
       <ReportResultLayout
         attributes={
           <ReportRowTable testID="body-report-attrs">
-            <ReportAttrRow label="키" value={`${height}cm`} />
-            <ReportAttrRow label="체중" value={`${weight}kg`} />
-            <ReportAttrRow
-              accessibilityLabel={`BMI ${bmi.toFixed(1)}, 참고 수치`}
-              label="BMI"
-              value={
-                <ReportInkNumber
+            {Number.isFinite(heightNumber) ? (
+              <ReportAttrRow label="키" value={`${heightNumber}cm`} />
+            ) : null}
+            {Number.isFinite(weightNumber) ? (
+              <ReportAttrRow label="체중" value={`${weightNumber}kg`} />
+            ) : null}
+            {bmi !== null ? (
+              <>
+                <ReportAttrRow
                   accessibilityLabel={`BMI ${bmi.toFixed(1)}, 참고 수치`}
-                  status="참고 수치"
-                  testID="body-bmi-reading"
-                  value={bmi.toFixed(1)}
+                  label="BMI"
+                  value={
+                    <ReportInkNumber
+                      accessibilityLabel={`BMI ${bmi.toFixed(1)}, 참고 수치`}
+                      status="참고 수치"
+                      testID="body-bmi-reading"
+                      value={bmi.toFixed(1)}
+                    />
+                  }
                 />
-              }
-            />
-            <ReportAttrRow label="BMI 안내" value={BMI_CAVEAT} />
+                <ReportAttrRow label="BMI 안내" value={BMI_CAVEAT} />
+              </>
+            ) : (
+              <ReportAttrRow label="측정값" value="저장된 키·체중 값이 없어요" />
+            )}
           </ReportRowTable>
         }
         conclusion={<ReportActionList actions={topActions} testID="body-report-actions" />}
@@ -250,6 +311,39 @@ export default function BodyResultScreen(): React.JSX.Element {
       />
     </>
   );
+}
+
+const STORED_BODY_LABELS: Record<BodyAnalysisApiResult['bodyType'], string> = {
+  S: '스트레이트',
+  W: '웨이브',
+  N: '내추럴',
+};
+
+function normalizeStoredBodyType(value: unknown): BodyAnalysisApiResult['bodyType'] | null {
+  return value === 'S' || value === 'W' || value === 'N' ? value : null;
+}
+
+function parseStoredBodyRecommendations(
+  value: Record<string, unknown>
+): BodyAnalysisApiResult['styleRecommendations'] {
+  if (Array.isArray(value.items)) {
+    return value.items.flatMap((item) => {
+      const record = storedRecord(item);
+      return typeof record.item === 'string'
+        ? [
+            {
+              item: record.item,
+              reason: typeof record.reason === 'string' ? record.reason : '',
+            },
+          ]
+        : [];
+    });
+  }
+
+  return [...stringArray(value.tops), ...stringArray(value.bottoms)].map((item) => ({
+    item,
+    reason: '',
+  }));
 }
 
 const styles = StyleSheet.create({

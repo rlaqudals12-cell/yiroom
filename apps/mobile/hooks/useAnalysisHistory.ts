@@ -43,7 +43,7 @@ interface TableConfig {
 const MODULE_TABLE_MAP: Record<AnalysisModuleType, TableConfig> = {
   'personal-color': {
     table: 'personal_color_assessments',
-    columns: 'id, season, tone, confidence, created_at',
+    columns: 'id, season, confidence, created_at',
     toItem: (row) => ({
       id: row.id as string,
       moduleType: 'personal-color',
@@ -66,13 +66,12 @@ const MODULE_TABLE_MAP: Record<AnalysisModuleType, TableConfig> = {
   },
   body: {
     table: 'body_analyses',
-    columns: 'id, body_type, bmi, image_url, created_at',
+    columns: 'id, body_type, height, weight, image_url, created_at',
     toItem: (row) => ({
       id: row.id as string,
       moduleType: 'body',
       createdAt: new Date(row.created_at as string),
       summary: getBodyTypeLabel(row.body_type as string),
-      score: row.bmi as number | undefined,
       imageUrl: row.image_url as string | null,
     }),
   },
@@ -90,12 +89,12 @@ const MODULE_TABLE_MAP: Record<AnalysisModuleType, TableConfig> = {
   },
   makeup: {
     table: 'makeup_analyses',
-    columns: 'id, makeup_style, created_at',
+    columns: 'id, undertone, face_shape, created_at',
     toItem: (row) => ({
       id: row.id as string,
       moduleType: 'makeup',
       createdAt: new Date(row.created_at as string),
-      summary: '메이크업 분석',
+      summary: getMakeupSummary(row.undertone, row.face_shape),
     }),
   },
   'oral-health': {
@@ -188,15 +187,8 @@ export function useAnalysisHistory(
   // 전체 조회 (모든 모듈)
   const fetchAll = useCallback(
     async (pageOffset: number, dateFilter: string | null): Promise<AnalysisHistoryItem[]> => {
-      const types: AnalysisModuleType[] = [
-        'personal-color',
-        'skin',
-        'body',
-        'hair',
-        'makeup',
-        'oral-health',
-        'posture',
-      ];
+      // ADR-098 공개 5축만 조회한다. 숨김 모듈을 전체 이력에서 재노출하지 않는다.
+      const types: AnalysisModuleType[] = ['personal-color', 'skin', 'body', 'hair', 'makeup'];
 
       const results = await Promise.all(types.map((type) => fetchModule(type, 0, dateFilter)));
 
@@ -310,4 +302,24 @@ function getHairTypeLabel(hairType: string): string {
     coily: '강한 곱슬',
   };
   return labels[hairType] || hairType;
+}
+
+function getMakeupSummary(undertone: unknown, faceShape: unknown): string {
+  const undertoneLabels: Record<string, string> = {
+    warm: '웜톤',
+    cool: '쿨톤',
+    neutral: '뉴트럴',
+  };
+  const faceShapeLabels: Record<string, string> = {
+    oval: '계란형',
+    round: '둥근형',
+    square: '사각형',
+    heart: '하트형',
+    oblong: '긴 얼굴형',
+    diamond: '다이아몬드형',
+  };
+  const labels = [undertoneLabels[String(undertone)], faceShapeLabels[String(faceShape)]].filter(
+    (label): label is string => Boolean(label)
+  );
+  return labels.length > 0 ? labels.join(' · ') : '메이크업 분석';
 }

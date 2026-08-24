@@ -53,12 +53,19 @@ export function TodayOutfitSuggestion({
 
   const slots = extractSlots(suggestion);
   const matchPercent = suggestion.totalScore;
+  const matchGuidance = suggestion.hasPersonalProfile
+    ? '개인 진단 근거가 확인된 조합만 적합도를 표시해요'
+    : '퍼스널컬러·체형 진단 후 개인 적합도를 확인할 수 있어요';
 
   return (
     <Animated.View
       entering={FadeInUp.duration(TIMING.normal)}
       testID={testID}
-      accessibilityLabel={`오늘의 코디: ${slots.length}개 아이템, 매칭률 ${matchPercent}%`}
+      accessibilityLabel={
+        suggestion.personalMatched
+          ? `오늘의 코디: ${slots.length}개 아이템, 개인 적합도 ${matchPercent}%`
+          : `오늘의 코디: ${slots.length}개 아이템, ${matchGuidance}`
+      }
       style={[
         styles.container,
         shadows.card,
@@ -89,7 +96,7 @@ export function TodayOutfitSuggestion({
             오늘의 코디
           </Text>
           <Text style={{ fontSize: typography.size.xs, color: colors.mutedForeground }}>
-            매칭률 {matchPercent}%
+            {suggestion.personalMatched ? `개인 적합도 ${matchPercent}%` : matchGuidance}
           </Text>
         </View>
         {onPress && (

@@ -15,7 +15,9 @@ export interface BeautyProduct {
   name: string;
   brand: string;
   imageUrl?: string;
-  matchRate: number;
+  matchRate?: number;
+  /** 개인 진단 축과 제품 태그가 실제로 일치할 때만 true */
+  personalMatched: boolean;
   rating: number;
   price?: number;
   category: string;
@@ -38,10 +40,11 @@ export function ProductMiniCard({
 }: ProductMiniCardProps): React.JSX.Element {
   const { colors, spacing, radii, typography, brand: brandColors, shadows, status } = useTheme();
 
+  const hasPersonalMatch = product.personalMatched && product.matchRate !== undefined;
   const matchColor =
-    product.matchRate >= 80
+    (product.matchRate ?? 0) >= 80
       ? status.success
-      : product.matchRate >= 60
+      : (product.matchRate ?? 0) >= 60
         ? status.warning
         : colors.mutedForeground;
 
@@ -61,7 +64,11 @@ export function ProductMiniCard({
         style,
       ]}
       onPress={() => onPress?.(product)}
-      accessibilityLabel={`${product.brand} ${product.name}, 매칭률 ${product.matchRate}%`}
+      accessibilityLabel={
+        hasPersonalMatch
+          ? `${product.brand} ${product.name}, 개인 적합도 ${product.matchRate}%`
+          : `${product.brand} ${product.name}, 개인 진단 근거 미확인`
+      }
       accessibilityRole="button"
     >
       <View style={styles.row}>
@@ -115,17 +122,29 @@ export function ProductMiniCard({
 
           {/* 하단: 매치율 + 평점 */}
           <View style={[styles.metaRow, { marginTop: spacing.xs }]}>
-            <View style={[styles.matchBadge, { backgroundColor: matchColor + '18' }]}>
+            {hasPersonalMatch ? (
+              <View style={[styles.matchBadge, { backgroundColor: matchColor + '18' }]}>
+                <Text
+                  style={{
+                    fontSize: typography.size.xs,
+                    fontWeight: typography.weight.bold,
+                    color: matchColor,
+                  }}
+                >
+                  개인 적합도 {product.matchRate}%
+                </Text>
+              </View>
+            ) : (
               <Text
+                testID={testID ? `${testID}-match-unavailable` : undefined}
                 style={{
                   fontSize: typography.size.xs,
-                  fontWeight: typography.weight.bold,
-                  color: matchColor,
+                  color: colors.mutedForeground,
                 }}
               >
-                {product.matchRate}%
+                개인 근거 미확인
               </Text>
-            </View>
+            )}
             <View style={styles.ratingRow}>
               <Star size={12} color={status.warning} fill={status.warning} />
               <Text

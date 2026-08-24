@@ -7,7 +7,12 @@
  */
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
+
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
 
 // lucide-react-native는 react-native-svg 의존성으로 Platform.OS 문제 발생 — barrel import 경유 시 필요
 jest.mock('lucide-react-native', () => {
@@ -99,7 +104,7 @@ describe('ProfileCardGrid', () => {
   it('일부 분석이 있으면 해당 축은 완료 카드, 나머지는 빈 카드를 렌더링해야 한다', () => {
     const analyses = [
       makeAnalysis('personal-color', { summary: '봄 웜톤' }),
-      makeAnalysis('skin', { summary: '피부 점수 82점', skinScore: 82 }),
+      makeAnalysis('skin', { summary: '복합성 · 원값 82', skinScore: 82 }),
     ];
     const { getByTestId, queryByTestId, getByText } = renderWithTheme(
       <ProfileCardGrid analyses={analyses} />
@@ -117,7 +122,7 @@ describe('ProfileCardGrid', () => {
     // 완성도 2/5 = 40%
     expect(getByText('나를 40% 알아냈어요')).toBeTruthy();
     expect(getByText('봄 웜톤')).toBeTruthy();
-    expect(getByText('피부 점수 82점')).toBeTruthy();
+    expect(getByText('복합성 · 원값 82')).toBeTruthy();
   });
 
   it('퍼스널컬러 카드에 서버 12톤과 개인 베스트 팔레트를 표시한다', () => {
@@ -144,20 +149,23 @@ describe('ProfileCardGrid', () => {
   it('skin 분석에 skinTrend/skinDelta가 있으면 추이 칩을 렌더링해야 한다', () => {
     const analyses = [
       makeAnalysis('skin', {
-        summary: '피부 점수 82점',
+        summary: '복합성 · 원값 82',
         skinScore: 82,
         skinTrend: 'up',
         skinDelta: 3,
       }),
     ];
-    const { getByTestId, getByText } = renderWithTheme(<ProfileCardGrid analyses={analyses} />);
+    const { getByTestId, getByText, queryByText } = renderWithTheme(
+      <ProfileCardGrid analyses={analyses} />
+    );
 
     expect(getByTestId('skin-trend-chip')).toBeTruthy();
-    expect(getByText('+3')).toBeTruthy();
+    expect(getByText('이전보다 안정적')).toBeTruthy();
+    expect(queryByText('+3')).toBeNull();
   });
 
   it('skin 분석에 skinTrend가 없으면 추이 칩을 렌더링하지 않아야 한다', () => {
-    const analyses = [makeAnalysis('skin', { summary: '피부 점수 82점', skinScore: 82 })];
+    const analyses = [makeAnalysis('skin', { summary: '복합성 · 원값 82', skinScore: 82 })];
     const { queryByTestId } = renderWithTheme(<ProfileCardGrid analyses={analyses} />);
 
     expect(queryByTestId('skin-trend-chip')).toBeNull();
@@ -178,6 +186,31 @@ describe('ProfileCardGrid', () => {
     );
 
     expect(queryByTestId('profile-persona-line')).toBeNull();
+  });
+
+  it('폴백 축과 폴백 페르소나에 예시 결과·낮은 신뢰도 배지를 표시한다', () => {
+    const { getByTestId, getAllByText } = renderWithTheme(
+      <ProfileCardGrid
+        analyses={[makeAnalysis('hair', { usedFallback: true })]}
+        personaOneLine="당신은 차분한 사람"
+        personaUsedFallback
+      />
+    );
+
+    expect(getByTestId('profile-card-hair-fallback')).toBeTruthy();
+    expect(getByTestId('profile-persona-fallback')).toBeTruthy();
+    expect(getAllByText('예시 결과 · 낮은 신뢰도')).toHaveLength(2);
+  });
+
+  it('완료 카드는 해당 분석 id를 historyId로 전달해 정확한 저장 결과를 연다', () => {
+    const analysis = makeAnalysis('makeup', { id: 'makeup/history 1' });
+    const { getByTestId } = renderWithTheme(<ProfileCardGrid analyses={[analysis]} />);
+
+    fireEvent.press(getByTestId('profile-card-makeup'));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      '/(analysis)/makeup/result?historyId=makeup%2Fhistory%201'
+    );
   });
 
   it('완료 축이 5개 미만이면 통합 분석 CTA를 렌더링해야 한다', () => {
@@ -204,7 +237,7 @@ describe('ProfileCardGrid', () => {
 
   it('다크 모드에서도 정상 렌더링되어야 한다', () => {
     const { getByTestId } = renderWithTheme(
-      <ProfileCardGrid analyses={[makeAnalysis('skin', { summary: '피부 점수 82점' })]} />,
+      <ProfileCardGrid analyses={[makeAnalysis('skin', { summary: '복합성 · 원값 82' })]} />,
       true
     );
 

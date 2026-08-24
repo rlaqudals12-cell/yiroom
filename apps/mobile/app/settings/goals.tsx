@@ -3,6 +3,8 @@
  * 일일 물, 칼로리, 운동 목표 설정
  */
 
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
@@ -39,7 +41,15 @@ const WATER_PRESETS = [1500, 2000, 2500, 3000];
 // 칼로리 목표 프리셋
 const CALORIE_PRESETS = [1500, 1800, 2000, 2500];
 
-export default function GoalsSettingsScreen() {
+// 숨김 운동·영양 모듈의 설정 표면 — 메뉴는 가려졌지만 딥링크·직접 URL 진입까지 같은 플래그로 차단한다
+export default function GoalsSettingsScreenGuard(): React.JSX.Element {
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2) {
+    return <Redirect href="/settings" />;
+  }
+  return <GoalsSettingsScreen />;
+}
+
+function GoalsSettingsScreen() {
   const { colors, brand } = useTheme();
 
   const [goals, setGoals] = useState<GoalSettings>(DEFAULT_GOALS);

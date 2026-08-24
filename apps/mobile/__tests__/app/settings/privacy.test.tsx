@@ -243,10 +243,9 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
     });
 
     it('세 개의 섹션 제목이 표시된다', () => {
-      const { getAllByText, getByText } = renderWithTheme(<PrivacySettingsScreen />);
+      const { getByText } = renderWithTheme(<PrivacySettingsScreen />);
       expect(getByText('데이터 수집')).toBeTruthy();
-      // "프로필 공개"는 섹션 제목과 토글 라벨 모두에 존재
-      expect(getAllByText('프로필 공개').length).toBeGreaterThanOrEqual(2);
+      expect(getByText('공개 및 공유')).toBeTruthy();
       expect(getByText('데이터 관리')).toBeTruthy();
     });
   });
@@ -308,9 +307,7 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
         marketingConsent: false,
       });
       const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
-      await waitFor(() =>
-        expect(getByLabelText('분석 데이터 수집 동의').props.value).toBe(true)
-      );
+      await waitFor(() => expect(getByLabelText('분석 데이터 수집 동의').props.value).toBe(true));
 
       fireEvent(getByLabelText('분석 데이터 수집 동의'), 'valueChange', false);
 
@@ -329,9 +326,7 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
         new ConsentPreferencesApiError('동의 설정을 저장할 수 없어요.', 500, 'DB_ERROR')
       );
       const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
-      await waitFor(() =>
-        expect(getByLabelText('분석 데이터 수집 동의').props.value).toBe(true)
-      );
+      await waitFor(() => expect(getByLabelText('분석 데이터 수집 동의').props.value).toBe(true));
 
       fireEvent(getByLabelText('분석 데이터 수집 동의'), 'valueChange', false);
 
@@ -348,36 +343,21 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
   });
 
   // ---------------------------------------------------------------
-  // 프로필 공개 토글
+  // 공개·공유 지원 범위
   // ---------------------------------------------------------------
-  describe('프로필 공개 토글', () => {
-    it('프로필 공개 토글이 표시된다', () => {
-      const { getAllByText, getByText, getByLabelText } = renderWithTheme(
-        <PrivacySettingsScreen />
-      );
-      // "프로필 공개"는 섹션 제목과 토글 라벨 양쪽에 존재
-      expect(getAllByText('프로필 공개').length).toBeGreaterThanOrEqual(2);
-      expect(getByText('다른 사용자가 내 프로필을 볼 수 있어요')).toBeTruthy();
-      expect(getByLabelText('프로필 공개')).toBeTruthy();
+  describe('공개·공유 지원 범위', () => {
+    it('서버에 저장되지 않는 프로필 공개 스위치 대신 미지원 상태를 안내한다', () => {
+      const { getByText, queryByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
+      expect(getByText('프로필 공개 설정')).toBeTruthy();
+      expect(getByText('모바일 공개 프로필은 아직 제공하지 않아요')).toBeTruthy();
+      expect(queryByLabelText('프로필 공개')).toBeNull();
     });
 
-    it('분석 결과 공유 허용 토글이 표시된다', () => {
-      const { getByText, getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
-      expect(getByText('분석 결과 공유 허용')).toBeTruthy();
-      expect(getByText('분석 결과를 친구와 공유할 수 있어요')).toBeTruthy();
-      expect(getByLabelText('분석 결과 공유 허용')).toBeTruthy();
-    });
-
-    it('프로필 공개 기본값이 false이다', () => {
-      const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
-      const toggle = getByLabelText('프로필 공개');
-      expect(toggle.props.value).toBe(false);
-    });
-
-    it('분석 결과 공유 허용 기본값이 false이다', () => {
-      const { getByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
-      const toggle = getByLabelText('분석 결과 공유 허용');
-      expect(toggle.props.value).toBe(false);
+    it('공유는 사용자가 결과 화면에서 명시적으로 실행할 때만 일어남을 안내한다', () => {
+      const { getByText, queryByLabelText } = renderWithTheme(<PrivacySettingsScreen />);
+      expect(getByText('분석 결과 공유')).toBeTruthy();
+      expect(getByText('결과 화면의 공유 버튼을 누른 경우에만 공유돼요')).toBeTruthy();
+      expect(queryByLabelText('분석 결과 공유 허용')).toBeNull();
     });
   });
 
@@ -536,10 +516,7 @@ describe('PrivacySettingsScreen (개인정보 설정)', () => {
         await buttons.find((button) => button.style === 'destructive')?.onPress?.();
       });
 
-      expect(mockDeleteAccount).toHaveBeenCalledWith(
-        'server-first@example.com',
-        'mock_jwt_token'
-      );
+      expect(mockDeleteAccount).toHaveBeenCalledWith('server-first@example.com', 'mock_jwt_token');
     });
 
     it('웹 hard-delete가 실패하면 로그아웃하지 않고 서버 사용자 메시지를 표시한다', async () => {

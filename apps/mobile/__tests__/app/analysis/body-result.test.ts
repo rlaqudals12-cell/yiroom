@@ -26,9 +26,10 @@ describe('C-1 체형 결과 화면 — 웹 API 정본 배선', () => {
     expect(RESULT_SRC).toContain('requestBodyAnalysis(');
   });
 
-  it('클라이언트 직접 DB 저장(saveBodyResult)이 없다 — 저장은 서버가 정본', () => {
+  it('클라이언트 직접 DB 저장은 없고, 재방문 조회는 공용 저장 결과 로더만 사용한다', () => {
     expect(RESULT_SRC).not.toContain('saveBodyResult');
-    expect(RESULT_SRC).not.toContain('useClerkSupabaseClient');
+    expect(RESULT_SRC).toContain('loadStoredAnalysisRecord');
+    expect(RESULT_SRC).not.toMatch(/\.from\(['"]body_analyses['"]\)/);
   });
 
   it('8타입 재분류 매핑이 제거되었다 — 서버가 3타입(S/W/N)을 직접 반환', () => {
@@ -41,7 +42,7 @@ describe('C-1 체형 결과 화면 — 웹 API 정본 배선', () => {
   });
 
   it('게이트·검증 에러는 서버 한국어 메시지를 그대로 보여준다', () => {
-    expect(RESULT_SRC).toContain('error instanceof BodyApiError ? error.message');
+    expect(RESULT_SRC).toContain('error instanceof BodyApiError');
     expect(RESULT_SRC).toContain('message={errorMessage}');
   });
 });

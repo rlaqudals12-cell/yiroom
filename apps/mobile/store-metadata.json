@@ -2,7 +2,7 @@
   "app": {
     "name": "이룸 - 온전한 나는?",
     "shortName": "이룸",
-    "subtitle": "AI 퍼스널 컬러, 피부, 체형 분석",
+    "subtitle": "AI 퍼스널컬러·피부·스타일 분석",
     "version": "0.1.0",
     "buildNumber": 1
   },
@@ -10,7 +10,8 @@
     "bundleId": "com.yiroom.app",
     "category": "Health & Fitness",
     "secondaryCategory": "Lifestyle",
-    "ageRating": "4+",
+    "ageRating": "13+",
+    "minimumUserAge": 14,
     "privacyPolicyUrl": "https://yiroom.com/privacy",
     "supportUrl": "https://yiroom.com/support",
     "marketingUrl": "https://yiroom.com"
@@ -18,25 +19,26 @@
   "android": {
     "packageName": "com.yiroom.app",
     "category": "Health & Fitness",
-    "contentRating": "Everyone",
+    "contentRating": "Teen",
+    "minimumUserAge": 14,
     "privacyPolicyUrl": "https://yiroom.com/privacy"
   },
   "localization": {
     "ko": {
       "name": "이룸 - 온전한 나는?",
-      "subtitle": "AI 퍼스널 컬러, 피부, 체형 분석",
-      "description": "이룸은 AI 기반 통합 웰니스 플랫폼입니다.\n\n• 퍼스널 컬러 진단: 문진과 사진 분석으로 4계절 16톤 진단\n• 피부 분석: 7가지 지표로 정확한 피부 상태 파악\n• 체형 분석: 8가지 체형별 맞춤 스타일 추천\n• 운동 관리: 체형에 맞는 운동 루틴과 연예인 루틴\n• 영양 관리: AI 음식 인식과 칼로리 트래킹\n• 통합 리포트: 주간/월간 건강 리포트\n\n사진을 포함한 분석 정보는 암호화된 연결로 이룸 서버와 Google AI에 전송되어 처리됩니다. 분석 결과는 계정에 저장되며, 원본 분석 이미지는 사용자가 저장에 동의한 경우에만 최대 1년간 보관됩니다.",
-      "keywords": "퍼스널컬러,피부분석,체형분석,운동,다이어트,칼로리,영양,AI,웰니스,건강,뷰티",
-      "whatsNew": "• 첫 번째 릴리즈\n• 퍼스널 컬러 진단 (PC-1)\n• 피부 분석 (S-1)\n• 체형 분석 (C-1)\n• 운동 관리 (W-1)\n• 영양 관리 (N-1)",
-      "promotionalText": "AI로 나만의 뷰티 & 웰니스 루틴을 찾아보세요!"
+      "subtitle": "AI 퍼스널컬러·피부·스타일 분석",
+      "description": "이룸은 만 14세 이상 사용자를 위한 AI 뷰티 분석 서비스입니다.\n\n• 퍼스널컬러 분석과 색상 가이드\n• 피부 상태 분석과 관리 가이드\n• 체형 분석과 스타일 가이드\n• 헤어 상태 분석과 관리 가이드\n• 메이크업 분석과 색상 가이드\n• 다섯 분석 결과를 모아 보는 통합 결과\n\n사진을 포함한 분석 정보는 암호화된 연결로 이룸 서버와 Google AI에 전송되어 처리됩니다. 분석 결과는 계정에 저장되며, 원본 분석 이미지는 사용자가 저장에 동의한 경우에만 최대 1년간 보관됩니다.",
+      "keywords": "퍼스널컬러,피부분석,체형분석,헤어분석,메이크업,스타일,AI,뷰티",
+      "whatsNew": "• 첫 번째 릴리즈\n• 퍼스널컬러 분석\n• 피부 분석\n• 체형 분석\n• 헤어 분석\n• 메이크업 분석",
+      "promotionalText": "AI로 나에게 맞는 뷰티 가이드를 확인해보세요."
     },
     "en": {
       "name": "Yiroom - Know Yourself",
-      "subtitle": "AI Personal Color, Skin & Body Analysis",
-      "description": "Yiroom is an AI-powered integrated wellness platform.\n\n• Personal Color Diagnosis: 4-season 16-tone analysis with questionnaire and photo\n• Skin Analysis: Accurate skin assessment with 7 indicators\n• Body Type Analysis: Personalized style recommendations for 8 body types\n• Workout Management: Body-type specific routines and celebrity workouts\n• Nutrition Management: AI food recognition and calorie tracking\n• Integrated Reports: Weekly/monthly health reports\n\nAnalysis information, including photos, is sent over encrypted connections to Yiroom servers and Google AI for processing. Analysis results are saved to your account, while original analysis images are retained for up to one year only when you consent to image storage.",
-      "keywords": "personalcolor,skinanalysis,bodytype,workout,diet,calorie,nutrition,AI,wellness,health,beauty",
-      "whatsNew": "• First Release\n• Personal Color Diagnosis (PC-1)\n• Skin Analysis (S-1)\n• Body Type Analysis (C-1)\n• Workout Management (W-1)\n• Nutrition Management (N-1)",
-      "promotionalText": "Find your personalized beauty & wellness routine with AI!"
+      "subtitle": "AI Beauty and Style Analysis",
+      "description": "Yiroom is an AI beauty analysis service for users age 14 and older.\n\n• Personal color analysis and color guidance\n• Skin analysis and care guidance\n• Body analysis and style guidance\n• Hair analysis and care guidance\n• Makeup analysis and color guidance\n• An integrated view of all five analysis results\n\nAnalysis information, including photos, is sent over encrypted connections to Yiroom servers and Google AI for processing. Analysis results are saved to your account, while original analysis images are retained for up to one year only when you consent to image storage.",
+      "keywords": "personalcolor,skinanalysis,bodytype,hairanalysis,makeup,style,AI,beauty",
+      "whatsNew": "• First Release\n• Personal Color Analysis\n• Skin Analysis\n• Body Analysis\n• Hair Analysis\n• Makeup Analysis",
+      "promotionalText": "Explore AI-powered beauty guidance made for you."
     }
   },
   "screenshots": {
@@ -49,11 +51,11 @@
           "퍼스널 컬러 결과",
           "피부 분석 결과",
           "체형 분석 결과",
-          "운동 온보딩",
-          "운동 세션",
-          "영양 대시보드",
-          "음식 분석",
-          "주간 리포트",
+          "헤어 분석 결과",
+          "메이크업 분석 결과",
+          "통합 분석 결과",
+          "뷰티 제품 탐색",
+          "내 옷장",
           "설정"
         ]
       },
@@ -95,6 +97,13 @@
         "usedForTracking": false
       },
       {
+        "type": "Other Data",
+        "items": ["Birth Date"],
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "note": "만 14세 이상 이용 자격을 확인하기 위해 수집합니다."
+      },
+      {
         "type": "Health & Fitness",
         "items": ["Health", "Fitness"],
         "linkedToUser": true,
@@ -121,6 +130,6 @@
       "email": "demo@yiroom.com",
       "password": "demo123!"
     },
-    "notes": "이 앱은 AI 기반 웰니스 분석 서비스입니다. 퍼스널 컬러, 피부, 체형 분석은 참고용 정보를 제공하며 의료적 조언을 대체하지 않습니다. 분석 이미지는 암호화된 연결로 이룸 서버를 거쳐 Google AI에 전송되어 처리됩니다. 분석 결과는 계정에 저장되며, 원본 분석 이미지는 별도 저장 동의를 한 경우에만 최대 1년간 보관됩니다. 사용자는 동의를 철회하거나 이미지 삭제를 요청할 수 있습니다."
+    "notes": "이 앱은 만 14세 이상 사용자를 위한 AI 뷰티 분석 서비스입니다. 퍼스널컬러, 피부, 체형, 헤어, 메이크업 분석은 참고용 정보를 제공하며 의료적 조언을 대체하지 않습니다. 분석 이미지는 암호화된 연결로 이룸 서버를 거쳐 Google AI에 전송되어 처리됩니다. 분석 결과는 계정에 저장되며, 원본 분석 이미지는 별도 저장 동의를 한 경우에만 최대 1년간 보관됩니다. 사용자는 동의를 철회하거나 이미지 삭제를 요청할 수 있습니다."
   }
 }

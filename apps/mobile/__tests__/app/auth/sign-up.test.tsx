@@ -59,13 +59,23 @@ const mockSignUpCreate = jest.fn();
 const mockPrepareEmailVerification = jest.fn();
 const mockAttemptEmailVerification = jest.fn();
 const mockSetActive = jest.fn();
+const mockGetToken = jest.fn();
+const mockSaveBirthdate = jest.fn();
+
+jest.mock('@/lib/api/birthdate', () => {
+  const actual = jest.requireActual('@/lib/api/birthdate');
+  return {
+    ...actual,
+    saveBirthdate: (...args: unknown[]) => mockSaveBirthdate(...args),
+  };
+});
 
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: jest.fn(() => ({
     isSignedIn: false,
     isLoaded: true,
     userId: null,
-    getToken: jest.fn(),
+    getToken: mockGetToken,
   })),
   useUser: jest.fn(() => ({
     user: null,
@@ -142,6 +152,13 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
   );
 }
 
+function fillEligibleAgeGate(
+  result: Pick<ReturnType<typeof renderWithTheme>, 'getByTestId'>
+) {
+  fireEvent.changeText(result.getByTestId('signup-birthdate-input'), '2000-06-15');
+  fireEvent.press(result.getByTestId('signup-age-confirmation'));
+}
+
 // ============================================
 // 테스트
 // ============================================
@@ -149,6 +166,8 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 describe('SignUpScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetToken.mockResolvedValue('clerk-token');
+    mockSaveBirthdate.mockResolvedValue(undefined);
   });
 
   describe('기본 렌더링', () => {
@@ -188,6 +207,14 @@ describe('SignUpScreen', () => {
       expect(getByText('비밀번호 확인')).toBeTruthy();
     });
 
+    it('생년월일 입력과 만 14세 확인을 표시한다', () => {
+      const { getByTestId, getByText } = renderWithTheme(<SignUpScreen />);
+
+      expect(getByTestId('signup-birthdate-input')).toBeTruthy();
+      expect(getByTestId('signup-age-confirmation')).toBeTruthy();
+      expect(getByText('만 14세 이상임을 확인합니다')).toBeTruthy();
+    });
+
     it('회원가입 버튼을 표시한다', () => {
       const { getByTestId } = renderWithTheme(<SignUpScreen />);
       expect(getByTestId('signup-submit-button')).toBeTruthy();
@@ -207,6 +234,8 @@ describe('SignUpScreen', () => {
       expect(getByTestId('auth-signup-screen')).toBeTruthy();
       expect(getByTestId('signup-email-input')).toBeTruthy();
       expect(getByTestId('signup-password-input')).toBeTruthy();
+      expect(getByTestId('signup-birthdate-input')).toBeTruthy();
+      expect(getByTestId('signup-age-confirmation')).toBeTruthy();
       expect(getByTestId('signup-submit-button')).toBeTruthy();
     });
   });
@@ -226,6 +255,14 @@ describe('SignUpScreen', () => {
 
       fireEvent.changeText(passwordInput, 'password123');
       expect(passwordInput.props.value).toBe('password123');
+    });
+
+    it('숫자로 입력한 생년월일을 서버 계약 형식으로 정리한다', () => {
+      const { getByTestId } = renderWithTheme(<SignUpScreen />);
+      const birthdateInput = getByTestId('signup-birthdate-input');
+
+      fireEvent.changeText(birthdateInput, '20000615');
+      expect(birthdateInput.props.value).toBe('2000-06-15');
     });
 
     it('로그인 링크 클릭 시 로그인 페이지로 이동한다', () => {
@@ -267,6 +304,44 @@ describe('SignUpScreen', () => {
       expect(alertSpy).toHaveBeenCalledWith('알림', '비밀번호는 8자 이상이어야 합니다.');
     });
 
+    it('만 14세 미만이면 계정을 만들기 전에 차단한다', () => {
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      const result = renderWithTheme(<SignUpScreen />);
+
+      fireEvent.changeText(result.getByTestId('signup-email-input'), 'minor@example.com');
+      fireEvent.changeText(result.getByTestId('signup-password-input'), 'password123');
+      fireEvent.changeText(
+        result.getByPlaceholderText('비밀번호를 다시 입력하세요'),
+        'password123'
+      );
+      fireEvent.changeText(result.getByTestId('signup-birthdate-input'), '2018-01-01');
+      fireEvent.press(result.getByTestId('signup-age-confirmation'));
+      fireEvent.press(result.getByTestId('signup-submit-button'));
+
+      expect(alertSpy).toHaveBeenCalledWith('가입 연령 확인', expect.stringContaining('만 14세'));
+      expect(mockSignUpCreate).not.toHaveBeenCalled();
+    });
+
+    it('만 14세 이상 확인을 선택하지 않으면 계정을 만들지 않는다', () => {
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      const result = renderWithTheme(<SignUpScreen />);
+
+      fireEvent.changeText(result.getByTestId('signup-email-input'), 'adult@example.com');
+      fireEvent.changeText(result.getByTestId('signup-password-input'), 'password123');
+      fireEvent.changeText(
+        result.getByPlaceholderText('비밀번호를 다시 입력하세요'),
+        'password123'
+      );
+      fireEvent.changeText(result.getByTestId('signup-birthdate-input'), '2000-06-15');
+      fireEvent.press(result.getByTestId('signup-submit-button'));
+
+      expect(alertSpy).toHaveBeenCalledWith(
+        '가입 연령 확인',
+        '만 14세 이상임을 확인해주세요.'
+      );
+      expect(mockSignUpCreate).not.toHaveBeenCalled();
+    });
+
     it('회원가입 성공 시 이메일 인증 화면으로 전환된다', async () => {
       mockSignUpCreate.mockResolvedValueOnce({});
       mockPrepareEmailVerification.mockResolvedValueOnce({});
@@ -276,6 +351,7 @@ describe('SignUpScreen', () => {
       fireEvent.changeText(getByTestId('signup-email-input'), 'test@example.com');
       fireEvent.changeText(getByTestId('signup-password-input'), 'password123');
       fireEvent.changeText(getByPlaceholderText('비밀번호를 다시 입력하세요'), 'password123');
+      fillEligibleAgeGate({ getByTestId });
       fireEvent.press(getByTestId('signup-submit-button'));
 
       await waitFor(() => {
@@ -302,6 +378,7 @@ describe('SignUpScreen', () => {
       fireEvent.changeText(getByTestId('signup-email-input'), 'exist@example.com');
       fireEvent.changeText(getByTestId('signup-password-input'), 'password123');
       fireEvent.changeText(getByPlaceholderText('비밀번호를 다시 입력하세요'), 'password123');
+      fillEligibleAgeGate({ getByTestId });
       fireEvent.press(getByTestId('signup-submit-button'));
 
       await waitFor(() => {
@@ -318,6 +395,7 @@ describe('SignUpScreen', () => {
       fireEvent.changeText(getByTestId('signup-email-input'), 'test@example.com');
       fireEvent.changeText(getByTestId('signup-password-input'), 'password123');
       fireEvent.changeText(getByPlaceholderText('비밀번호를 다시 입력하세요'), 'password123');
+      fillEligibleAgeGate({ getByTestId });
       fireEvent.press(getByTestId('signup-submit-button'));
 
       await waitFor(() => {
@@ -339,6 +417,7 @@ describe('SignUpScreen', () => {
         result.getByPlaceholderText('비밀번호를 다시 입력하세요'),
         'password123'
       );
+      fillEligibleAgeGate(result);
       fireEvent.press(result.getByTestId('signup-submit-button'));
 
       await waitFor(() => {
@@ -390,6 +469,7 @@ describe('SignUpScreen', () => {
         expect(mockSetActive).toHaveBeenCalledWith({
           session: 'session_new',
         });
+        expect(mockSaveBirthdate).toHaveBeenCalledWith('2000-06-15', 'clerk-token');
         // 가입=첫 미팅(ADR-114): 3단계 온보딩 대신 통합분석으로, 스킵 가능 컨텍스트 전달
         expect(mockReplace).toHaveBeenCalledWith('/(analysis)/integrated?onboarding=1');
       });

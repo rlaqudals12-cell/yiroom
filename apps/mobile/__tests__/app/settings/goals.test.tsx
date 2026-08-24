@@ -5,6 +5,12 @@
  * 의존성: useTheme, AsyncStorage, expo-haptics, widgets, logger
  */
 import React from 'react';
+
+// 게이트 자체는 게이트 전용 테스트에서 검증한다. 이 파일은 플래그 재활성 시의
+// 보존된 화면 구현을 검사하므로 플래그를 켠 상태로 렌더한다.
+jest.mock('@yiroom/shared', () => ({
+  FEATURE_FLAGS: { WELLNESS_PHASE2: true },
+}));
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 

@@ -308,6 +308,8 @@ export interface MatchScore {
   colorScore: number;
   bodyTypeScore: number;
   seasonScore: number;
+  /** 퍼스널컬러·체형 중 실제로 일치한 개인 진단 근거가 있을 때만 true */
+  personalMatched: boolean;
 }
 
 /** 웹 옷장 매처와 같은 기본 가중치 — 요약 재정규화도 이 값을 함께 쓴다. */
@@ -327,6 +329,7 @@ export interface MatchOptions {
 export function calculateMatchScore(item: InventoryItem, options: MatchOptions): MatchScore {
   const clothingItem = toClothingItem(item);
   const metadata = clothingItem.metadata;
+  const resolvedCategory = resolveClothingCategory(item);
 
   const colorScore = options.personalColor
     ? calculateColorMatchScore(metadata.color, options.personalColor)
@@ -334,7 +337,7 @@ export function calculateMatchScore(item: InventoryItem, options: MatchOptions):
 
   // 체형 점수 — 원본 아이템 기준 정규화(한글 sub_category·metadata.clothingCategory 대응)
   const bodyTypeScore = options.bodyType
-    ? calculateBodyTypeMatchScore(clothingItem, options.bodyType, resolveClothingCategory(item))
+    ? calculateBodyTypeMatchScore(clothingItem, options.bodyType, resolvedCategory)
     : 50;
 
   // 계절 점수 (0°C도 유효한 기온이므로 truthy가 아닌 null 검사)
@@ -354,11 +357,17 @@ export function calculateMatchScore(item: InventoryItem, options: MatchOptions):
       occasionBonus
   );
 
+  // 중립 50은 "모름"의 폴백이다. 실제 개인 축 일치가 있을 때만 적합도 노출을 허용한다.
+  const personalMatched =
+    (options.personalColor != null && colorScore > 50) ||
+    (options.bodyType != null && resolvedCategory != null && bodyTypeScore > 50);
+
   return {
     total: Math.min(100, total),
     colorScore,
     bodyTypeScore,
     seasonScore,
+    personalMatched,
   };
 }
 
@@ -460,6 +469,10 @@ export interface OutfitSuggestion {
   bag?: ClosetRecommendation;
   accessory?: ClosetRecommendation;
   totalScore: number;
+  /** 조합 안에 실제 개인 진단 일치 근거가 하나라도 있을 때만 true */
+  personalMatched?: boolean;
+  /** 퍼스널컬러·체형 진단값이 입력되었는지 여부 */
+  hasPersonalProfile?: boolean;
   tips: string[];
   /** 조립 과정에서 조건을 완화한 사실(계절) — UI에 정직하게 노출한다 */
   warnings: string[];
@@ -579,6 +592,13 @@ export function suggestOutfitFromCloset(
     ['가방', bag],
     ['액세서리', accessory],
   ];
+  const pickedRecommendations = picked.flatMap(([, recommendation]) =>
+    recommendation ? [recommendation] : []
+  );
+  const personalMatched = pickedRecommendations.some(
+    (recommendation) => recommendation.score.personalMatched
+  );
+  const hasPersonalProfile = options.personalColor != null || options.bodyType != null;
 
   const warnings = buildRelaxationWarnings(picked);
 
@@ -592,6 +612,8 @@ export function suggestOutfitFromCloset(
     bag: bag || undefined,
     accessory: accessory || undefined,
     totalScore,
+    personalMatched,
+    hasPersonalProfile,
     tips,
     warnings,
   };

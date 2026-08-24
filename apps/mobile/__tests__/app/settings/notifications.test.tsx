@@ -332,16 +332,12 @@ describe('NotificationsSettingsScreen', () => {
       expect(getByText('모든 알림 켜기/끄기')).toBeTruthy();
     });
 
-    it('영양 섹션 알림 항목들을 표시한다', () => {
-      const { getByText } = renderWithTheme(<NotificationsSettingsScreen />);
-      expect(getByText('수분 섭취 알림')).toBeTruthy();
-      expect(getByText('식사 기록 알림')).toBeTruthy();
-    });
-
-    it('운동 섹션 알림 항목들을 표시한다', () => {
-      const { getByText } = renderWithTheme(<NotificationsSettingsScreen />);
-      expect(getByText('운동 리마인더')).toBeTruthy();
-      expect(getByText('스트릭 경고')).toBeTruthy();
+    it('WELLNESS_PHASE2=false이면 물·식사·운동 알림 설정을 표시하지 않는다', () => {
+      const { queryByText } = renderWithTheme(<NotificationsSettingsScreen />);
+      expect(queryByText('수분 섭취 알림')).toBeNull();
+      expect(queryByText('식사 기록 알림')).toBeNull();
+      expect(queryByText('운동 리마인더')).toBeNull();
+      expect(queryByText('스트릭 경고')).toBeNull();
     });
 
     it('소셜 & 성취 알림 항목들을 표시한다', () => {
@@ -409,38 +405,11 @@ describe('NotificationsSettingsScreen', () => {
     });
   });
 
-  describe('물 알림 간격 선택', () => {
-    it('수분 알림 활성화 시 간격 선택 옵션을 표시한다', () => {
-      const { getByText } = renderWithTheme(<NotificationsSettingsScreen />);
-      expect(getByText('알림 간격')).toBeTruthy();
-      expect(getByText('1시간')).toBeTruthy();
-      expect(getByText('2시간')).toBeTruthy();
-      expect(getByText('3시간')).toBeTruthy();
-      expect(getByText('4시간')).toBeTruthy();
-    });
-
-    it('간격 버튼 클릭 시 updateSettings를 호출한다', async () => {
-      const { getByText } = renderWithTheme(<NotificationsSettingsScreen />);
-
-      await act(async () => {
-        fireEvent.press(getByText('3시간'));
-      });
-
-      expect(Haptics.selectionAsync).toHaveBeenCalled();
-      expect(mockUpdateSettings).toHaveBeenCalledWith({ waterReminderInterval: 3 });
-    });
-
-    it('수분 알림 비활성화 시 간격 선택이 숨겨진다', () => {
-      mockSettingsState = {
-        ...mockSettingsState,
-        settings: {
-          ...mockSettingsState.settings,
-          waterReminder: false,
-        },
-      };
-
+  describe('웰니스 알림 설정 게이트', () => {
+    it('저장된 구형 설정이 true여도 수분 간격 선택을 노출하지 않는다', () => {
       const { queryByText } = renderWithTheme(<NotificationsSettingsScreen />);
       expect(queryByText('알림 간격')).toBeNull();
+      expect(queryByText('1시간')).toBeNull();
     });
   });
 
@@ -472,11 +441,11 @@ describe('NotificationsSettingsScreen', () => {
       expect(flatStyle.backgroundColor).toBe(darkColors.background);
     });
 
-    it('다크 모드에서 모든 알림 섹션이 표시된다', () => {
-      const { getByText } = renderWithTheme(<NotificationsSettingsScreen />, true);
+    it('다크 모드에서도 닫힌 웰니스 알림 섹션은 표시되지 않는다', () => {
+      const { getByText, queryByText } = renderWithTheme(<NotificationsSettingsScreen />, true);
       expect(getByText('알림 사용')).toBeTruthy();
-      expect(getByText('수분 섭취 알림')).toBeTruthy();
-      expect(getByText('운동 리마인더')).toBeTruthy();
+      expect(queryByText('수분 섭취 알림')).toBeNull();
+      expect(queryByText('운동 리마인더')).toBeNull();
     });
   });
 

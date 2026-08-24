@@ -10,10 +10,16 @@ import { useEffect, useState } from 'react';
 
 import { useClerkSupabaseClient } from '../lib/supabase';
 
-export function useProfilePersona(): string | null {
+export interface ProfilePersonaSummary {
+  oneLine: string;
+  /** undefined는 구 데이터라 출처를 확인할 수 없다는 뜻이다. */
+  usedFallback?: boolean;
+}
+
+export function useProfilePersona(): ProfilePersonaSummary | null {
   const { user, isLoaded } = useUser();
   const supabase = useClerkSupabaseClient();
-  const [oneLine, setOneLine] = useState<string | null>(null);
+  const [summary, setSummary] = useState<ProfilePersonaSummary | null>(null);
 
   useEffect(() => {
     if (!isLoaded || !user?.id) return;
@@ -24,15 +30,18 @@ export function useProfilePersona(): string | null {
         // RLS가 clerk_user_id로 필터 → 본인 최신 세션. persona 있는 행만.
         const { data } = await supabase
           .from('integrated_analysis_sessions')
-          .select('persona')
+          .select('persona, used_fallback')
           .not('persona', 'is', null)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
         const line = (data?.persona as { oneLine?: string } | null)?.oneLine;
+        const usedFallback = Array.isArray(data?.used_fallback)
+          ? data.used_fallback.length > 0
+          : undefined;
         // 없음/실패 시 null로 리셋 — 계정 전환 등에서 이전 사용자 페르소나 잔존 방지
-        if (active) setOneLine(line ?? null);
+        if (active) setSummary(line ? { oneLine: line, usedFallback } : null);
       } catch {
         // 페르소나 없음/실패는 무시 — 프로필 카드는 페르소나 없이도 정상 동작
       }
@@ -44,5 +53,5 @@ export function useProfilePersona(): string | null {
     };
   }, [user?.id, isLoaded, supabase]);
 
-  return oneLine;
+  return summary;
 }

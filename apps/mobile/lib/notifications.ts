@@ -2,6 +2,7 @@
  * 푸시 알림 유틸리티
  * 운동/식단 리마인더 및 Streak 알림
  */
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
@@ -76,7 +77,7 @@ export async function scheduleWorkoutReminder(
   hour: number = 9,
   minute: number = 0
 ): Promise<string | null> {
-  if (IS_EXPO_GO) return null;
+  if (IS_EXPO_GO || !FEATURE_FLAGS.WELLNESS_PHASE2) return null;
 
   try {
     const id = await Notifications.scheduleNotificationAsync({
@@ -107,7 +108,7 @@ export async function scheduleMealReminder(
   hour: number,
   minute: number = 0
 ): Promise<string | null> {
-  if (IS_EXPO_GO) return null;
+  if (IS_EXPO_GO || !FEATURE_FLAGS.WELLNESS_PHASE2) return null;
 
   const mealNames = {
     breakfast: '아침',
@@ -264,7 +265,7 @@ export function addNotificationResponseListener(
  * 기본 알림 설정 (앱 시작 시 호출)
  */
 export async function setupDefaultNotifications(): Promise<void> {
-  if (IS_EXPO_GO) return;
+  if (IS_EXPO_GO || !FEATURE_FLAGS.WELLNESS_PHASE2) return;
 
   const hasPermission = await requestNotificationPermission();
 

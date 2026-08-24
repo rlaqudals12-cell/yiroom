@@ -40,6 +40,7 @@ import {
 } from '../../components/ui';
 import { useBeautyProducts } from '../../hooks/useBeautyProducts';
 import { useUserAnalyses } from '../../hooks/useUserAnalyses';
+import { useUserMatching } from '../../hooks/useUserMatching';
 import { staggeredEntry, TIMING } from '../../lib/animations';
 import { coarseCategoryOf } from '../../lib/products';
 import { useTheme, radii, ICON_BG_OPACITY, borderGlow } from '../../lib/theme';
@@ -59,6 +60,7 @@ export default function BeautyTab(): React.JSX.Element {
   const router = useRouter();
   const { colors, spacing, module: moduleColors, typography } = useTheme();
   const { skinAnalysis, isLoading, refetch: refetchAnalyses } = useUserAnalyses();
+  const { getMatchedProducts } = useUserMatching();
 
   // 통합 분석 큐레이션에서 진입한 경우 맥락 유지
   const params = useLocalSearchParams<{ source?: string; category?: string }>();
@@ -109,37 +111,33 @@ export default function BeautyTab(): React.JSX.Element {
     setSelectedRating('all');
   }, []);
 
-  // CosmeticProduct → BeautyProduct 변환 + 매칭률 계산
+  // 웹 Tier A와 같은 personalMatched 계약: 개인 축 근거가 확인된 제품만 점수를 노출한다.
   const sortedProducts = useMemo(() => {
-    const userConcerns = skinAnalysis?.concerns ?? [];
-    return cosmeticProducts
-      .map((p): BeautyProduct => {
-        const productConcerns: string[] = p.concerns ?? [];
-        // 사용자 피부 고민 매칭률 (기본 60점 + 매칭 보너스 최대 40점)
-        const matchCount = userConcerns.filter((c) => productConcerns.includes(c)).length;
-        const matchRate =
-          userConcerns.length > 0
-            ? Math.round(60 + (matchCount / userConcerns.length) * 40)
-            : p.rating
-              ? Math.round(p.rating * 16)
-              : 70;
-
+    return getMatchedProducts(cosmeticProducts)
+      .map(({ product: p, matchScore, personalMatched }): BeautyProduct => {
+        const hasPersonalMatch = personalMatched === true;
         return {
           id: p.id,
           name: p.name,
           brand: p.brand ?? '',
           imageUrl: p.imageUrl,
-          matchRate,
+          matchRate: hasPersonalMatch ? matchScore : undefined,
+          personalMatched: hasPersonalMatch,
           rating: p.rating ?? 0,
           price: p.priceKrw,
           // cosmetic 세분류(cleanser 등)를 UI 대분류(skincare 등)로 되돌려 클라 필터와 일치
           category: coarseCategoryOf(p.category),
-          concerns: productConcerns,
+          concerns: p.concerns ?? [],
           ingredients: p.keyIngredients ?? [],
         };
       })
-      .sort((a, b) => b.matchRate - a.matchRate);
-  }, [cosmeticProducts, skinAnalysis?.concerns]);
+      .sort((a, b) => {
+        if (a.personalMatched !== b.personalMatched) {
+          return Number(b.personalMatched) - Number(a.personalMatched);
+        }
+        return (b.matchRate ?? 0) - (a.matchRate ?? 0);
+      });
+  }, [cosmeticProducts, getMatchedProducts]);
 
   const hasSkinData = skinAnalysis !== null;
 
@@ -243,6 +241,7 @@ export default function BeautyTab(): React.JSX.Element {
           overallScore={skinAnalysis.overallScore}
           concerns={skinAnalysis.concerns}
           createdAt={skinAnalysis.createdAt}
+          usedFallback={skinAnalysis.usedFallback}
           style={{ marginBottom: spacing.lg, ...borderGlow.subtle }}
           testID="skin-profile-card"
         />
@@ -324,6 +323,18 @@ export default function BeautyTab(): React.JSX.Element {
             </Text>
           </Pressable>
         )}
+        <Text
+          testID="product-match-guidance"
+          style={{
+            fontSize: typography.size.xs,
+            color: colors.mutedForeground,
+            marginBottom: spacing.sm,
+          }}
+        >
+          {hasSkinData
+            ? '개인 진단 근거가 연결된 제품에만 적합도를 표시해요.'
+            : '피부 진단 후 제품별 개인 적합도를 확인할 수 있어요.'}
+        </Text>
         <BeautyProductFeed
           products={sortedProducts}
           categoryFilter={selectedCategory}

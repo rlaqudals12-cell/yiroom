@@ -24,11 +24,16 @@ import {
   deactivatePushToken,
 } from './api';
 import type { NotificationType } from './templates';
-import { createNotification, resolveNotificationActionRoute } from './templates';
+import {
+  createNotification,
+  isNotificationTypeAvailable,
+  resolveNotificationActionRoute,
+} from './templates';
 import {
   type NotificationSettings,
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_PERSONALIZED_TRIGGER_SETTINGS,
+  enforceNotificationFeatureFlags,
 } from './types';
 import { pushLogger } from '../utils/logger';
 
@@ -264,9 +269,10 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
         try {
           const dbSettings = await getUserNotificationSettings(supabase, userId);
           if (dbSettings) {
-            setSettings(dbSettings);
+            const availableSettings = enforceNotificationFeatureFlags(dbSettings);
+            setSettings(availableSettings);
             // DB 데이터를 AsyncStorage에도 백업
-            await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(dbSettings));
+            await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(availableSettings));
             pushLogger.info('Settings loaded from DB');
             return;
           }
@@ -282,14 +288,16 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
       if (stored) {
         const parsed = JSON.parse(stored);
         // personalizedTriggers 필드가 없는 이전 설정과의 호환성 보장
-        setSettings({
-          ...DEFAULT_NOTIFICATION_SETTINGS,
-          ...parsed,
-          personalizedTriggers: {
-            ...DEFAULT_PERSONALIZED_TRIGGER_SETTINGS,
-            ...(parsed.personalizedTriggers ?? {}),
-          },
-        });
+        setSettings(
+          enforceNotificationFeatureFlags({
+            ...DEFAULT_NOTIFICATION_SETTINGS,
+            ...parsed,
+            personalizedTriggers: {
+              ...DEFAULT_PERSONALIZED_TRIGGER_SETTINGS,
+              ...(parsed.personalizedTriggers ?? {}),
+            },
+          })
+        );
         pushLogger.info('Settings loaded from AsyncStorage');
       }
     } catch (error) {
@@ -331,7 +339,7 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
 
   const updateSettings = useCallback(
     async (updates: Partial<NotificationSettings>) => {
-      const newSettings = { ...settings, ...updates };
+      const newSettings = enforceNotificationFeatureFlags({ ...settings, ...updates });
       setSettings(newSettings);
       await saveSettings(newSettings);
     },
@@ -354,8 +362,9 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
     try {
       const dbSettings = await getUserNotificationSettings(supabase, userId);
       if (dbSettings) {
-        setSettings(dbSettings);
-        await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(dbSettings));
+        const availableSettings = enforceNotificationFeatureFlags(dbSettings);
+        setSettings(availableSettings);
+        await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(availableSettings));
         pushLogger.info('Settings synced from server');
       }
     } catch (error) {
@@ -370,17 +379,18 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
 
     await Notifications.cancelAllScheduledNotificationsAsync();
 
-    if (!settings.enabled) return;
+    const availableSettings = enforceNotificationFeatureFlags(settings);
+    if (!availableSettings.enabled) return;
 
     // 운동 리마인더
-    if (settings.workoutReminder) {
-      const [hour, minute] = settings.workoutReminderTime.split(':').map(Number);
+    if (availableSettings.workoutReminder) {
+      const [hour, minute] = availableSettings.workoutReminderTime.split(':').map(Number);
       await scheduleNotification('workout_reminder', { hour, minute });
     }
 
     // 식단 리마인더
-    if (settings.nutritionReminder) {
-      for (const [meal, time] of Object.entries(settings.mealReminderTimes)) {
+    if (availableSettings.nutritionReminder) {
+      for (const [meal, time] of Object.entries(availableSettings.mealReminderTimes)) {
         const [hour, minute] = time.split(':').map(Number);
         await scheduleNotification('nutrition_reminder', {
           hour,
@@ -391,8 +401,8 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
     }
 
     // 수분 리마인더 (일정 간격)
-    if (settings.waterReminder) {
-      await scheduleWaterReminder(settings.waterReminderInterval);
+    if (availableSettings.waterReminder) {
+      await scheduleWaterReminder(availableSettings.waterReminderInterval);
     }
   }, [settings]);
 
@@ -431,7 +441,7 @@ export function useNotificationScheduler(): UseNotificationSchedulerResult {
       type: NotificationType,
       variables?: Record<string, string | number>
     ): Promise<string | null> => {
-      if (IS_EXPO_GO) return null;
+      if (IS_EXPO_GO || !isNotificationTypeAvailable(type)) return null;
 
       try {
         const notification = createNotification(type, variables);
@@ -465,7 +475,7 @@ export function useNotificationScheduler(): UseNotificationSchedulerResult {
       trigger: Notifications.NotificationTriggerInput,
       variables?: Record<string, string | number>
     ): Promise<string | null> => {
-      if (IS_EXPO_GO) return null;
+      if (IS_EXPO_GO || !isNotificationTypeAvailable(type)) return null;
 
       try {
         const notification = createNotification(type, variables);
@@ -580,6 +590,8 @@ async function scheduleNotification(
     data?: Record<string, unknown>;
   }
 ): Promise<string | null> {
+  if (!isNotificationTypeAvailable(type)) return null;
+
   try {
     const notification = createNotification(type);
 
@@ -609,6 +621,8 @@ async function scheduleNotification(
 }
 
 async function scheduleWaterReminder(intervalHours: number): Promise<void> {
+  if (!isNotificationTypeAvailable('water_reminder')) return;
+
   // 8시부터 22시까지 일정 간격으로 알림
   const startHour = 8;
   const endHour = 22;

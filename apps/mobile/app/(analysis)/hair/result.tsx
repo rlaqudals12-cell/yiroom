@@ -20,12 +20,18 @@ import { AxisResultShareSection } from '@/components/share';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import {
   buildHairTopActions,
+  finiteNumber,
   getHairCautionIngredients,
   getScalpConcernNotice,
+  loadStoredAnalysisRecord,
+  storedRecord,
+  stringArray,
 } from '@/lib/analysis';
+import { StoredResultError } from '@/lib/analysis/stored-result-loader';
 import { HairApiError, requestHairAnalysis, type HairAnalysisApiResult } from '@/lib/api/hair';
 import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 import { radii, spacing, typography } from '@/lib/theme';
 
 const TEXTURE_LABELS: Record<HairAnalysisApiResult['texture'], string> = {
@@ -52,14 +58,20 @@ const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주�
 
 export default function HairResultScreen(): React.JSX.Element {
   const { getToken } = useAuth();
-  const { imageUri, imageBase64 } = useLocalSearchParams<{
-    imageUri: string;
+  const supabase = useClerkSupabaseClient();
+  const { imageUri, imageBase64, historyId } = useLocalSearchParams<{
+    imageUri?: string;
     imageBase64?: string;
+    historyId?: string;
   }>();
 
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<HairAnalysisApiResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
+  const [availableScores, setAvailableScores] = useState<
+    (keyof HairAnalysisApiResult['scores'])[] | null
+  >(null);
+  const [hasDamageReading, setHasDamageReading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>(DEFAULT_ERROR_MESSAGE);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
@@ -67,7 +79,62 @@ export default function HairResultScreen(): React.JSX.Element {
   const analyzeHair = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setUsedFallback(false);
+    setAvailableScores(null);
+    setHasDamageReading(true);
     try {
+      const hasFreshImage = Boolean(imageBase64 || imageUri);
+      if (!hasFreshImage) {
+        const stored = await loadStoredAnalysisRecord(supabase, 'hair', historyId);
+        const row = stored.row;
+        const texture = normalizeStoredHairTexture(row.hair_type);
+        const thickness = normalizeStoredHairThickness(row.hair_thickness);
+        const scalpCondition = normalizeStoredScalpType(row.scalp_type);
+        if (!texture || !thickness || !scalpCondition) {
+          throw new StoredResultError('저장된 헤어 분석 결과를 해석하지 못했어요.');
+        }
+
+        const recommendations = storedRecord(row.recommendations);
+        const scoreColumns: {
+          key: keyof HairAnalysisApiResult['scores'];
+          column: string;
+        }[] = [
+          { key: 'shine', column: 'shine' },
+          { key: 'elasticity', column: 'elasticity' },
+          { key: 'density', column: 'density' },
+          { key: 'scalpHealth', column: 'scalp_health' },
+        ];
+        const available = scoreColumns
+          .filter(({ column }) => finiteNumber(row[column]) !== undefined)
+          .map(({ key }) => key);
+        const score = (column: string): number => finiteNumber(row[column]) ?? 0;
+        const storedDamageHealth = finiteNumber(row.damage_level);
+
+        setAvailableScores(available);
+        setHasDamageReading(storedDamageHealth !== undefined);
+        setUsedFallback(stored.usedFallback === true);
+        setResult({
+          texture,
+          thickness,
+          scalpCondition,
+          damageLevel:
+            storedDamageHealth === undefined
+              ? 0
+              : Math.max(0, Math.min(100, 100 - storedDamageHealth)),
+          scores: {
+            shine: score('shine'),
+            elasticity: score('elasticity'),
+            density: score('density'),
+            scalpHealth: score('scalp_health'),
+          },
+          mainConcerns: normalizeStoredHairConcerns(row.concerns),
+          careRoutine: stringArray(recommendations.careTips),
+          recommendedStyles: normalizeStoredHairStyles(recommendations.styleRecommendations),
+          usedMock: stored.usedFallback === true,
+          dbSaveFailed: false,
+        });
+        return;
+      }
+
       let base64Data = imageBase64;
       if (!base64Data && imageUri) {
         base64Data = await imageToBase64(imageUri);
@@ -88,12 +155,16 @@ export default function HairResultScreen(): React.JSX.Element {
         screen: 'hair-result',
         tags: { module: 'H-1', action: 'analyze' },
       });
-      setErrorMessage(error instanceof HairApiError ? error.message : DEFAULT_ERROR_MESSAGE);
+      setErrorMessage(
+        error instanceof HairApiError || error instanceof StoredResultError
+          ? error.message
+          : DEFAULT_ERROR_MESSAGE
+      );
       setResult(null);
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, imageBase64, imageUri]);
+  }, [getToken, historyId, imageBase64, imageUri, supabase]);
 
   // clerk-expo getToken 참조가 바뀌어도 화면 진입당 분석은 한 번만 실행한다.
   const hasStartedRef = useRef(false);
@@ -140,19 +211,32 @@ export default function HairResultScreen(): React.JSX.Element {
     });
   }
 
-  sections.push({
-    key: 'condition',
-    title: '항목별 컨디션',
-    summary: '윤기·탄력·밀도·두피 건강',
-    content: (
-      <ReportRowTable testID="hair-condition-rows">
-        <ReportAttrRow label="윤기" value={String(result.scores.shine)} />
-        <ReportAttrRow label="탄력" value={String(result.scores.elasticity)} />
-        <ReportAttrRow label="밀도" value={String(result.scores.density)} />
-        <ReportAttrRow label="두피 건강" value={String(result.scores.scalpHealth)} />
-      </ReportRowTable>
-    ),
-  });
+  const allScoreRows: {
+    key: keyof HairAnalysisApiResult['scores'];
+    label: string;
+  }[] = [
+    { key: 'shine', label: '윤기' },
+    { key: 'elasticity', label: '탄력' },
+    { key: 'density', label: '밀도' },
+    { key: 'scalpHealth', label: '두피 건강' },
+  ];
+  const scoreRows = allScoreRows.filter(
+    ({ key }) => availableScores === null || availableScores.includes(key)
+  );
+  if (scoreRows.length > 0) {
+    sections.push({
+      key: 'condition',
+      title: '항목별 컨디션',
+      summary: scoreRows.map(({ label }) => label).join('·'),
+      content: (
+        <ReportRowTable testID="hair-condition-rows">
+          {scoreRows.map(({ key, label }) => (
+            <ReportAttrRow key={key} label={label} value={String(result.scores[key])} />
+          ))}
+        </ReportRowTable>
+      ),
+    });
+  }
 
   if (result.careRoutine.length > 0 || result.recommendedStyles.length > 0) {
     sections.push({
@@ -220,10 +304,12 @@ export default function HairResultScreen(): React.JSX.Element {
         attributes={
           <ReportRowTable testID="hair-report-attrs">
             <ReportAttrRow label="두피" value={SCALP_LABELS[result.scalpCondition]} />
-            <ReportAttrRow
-              label="손상도"
-              value={`${result.damageLevel}% · 높을수록 손상이 큰 값`}
-            />
+            {hasDamageReading ? (
+              <ReportAttrRow
+                label="손상도"
+                value={`${result.damageLevel}% · 높을수록 손상이 큰 값`}
+              />
+            ) : null}
           </ReportRowTable>
         }
         conclusion={<ReportActionList actions={topActions} testID="hair-report-actions" />}
@@ -255,6 +341,49 @@ export default function HairResultScreen(): React.JSX.Element {
       />
     </>
   );
+}
+
+const STORED_HAIR_CONCERN_LABELS: Record<string, string> = {
+  hairloss: '탈모',
+  dandruff: '비듬',
+  frizz: '푸석함',
+  damage: '손상',
+  'oily-scalp': '지성 두피',
+  'dry-scalp': '건조 두피',
+  'split-ends': '끝갈라짐',
+  'lack-volume': '볼륨 부족',
+};
+
+function normalizeStoredHairTexture(value: unknown): HairAnalysisApiResult['texture'] | null {
+  return ['straight', 'wavy', 'curly', 'coily'].includes(String(value))
+    ? (value as HairAnalysisApiResult['texture'])
+    : null;
+}
+
+function normalizeStoredHairThickness(value: unknown): HairAnalysisApiResult['thickness'] | null {
+  if (value === 'thin') return 'fine';
+  return ['fine', 'medium', 'thick'].includes(String(value))
+    ? (value as HairAnalysisApiResult['thickness'])
+    : null;
+}
+
+function normalizeStoredScalpType(value: unknown): HairAnalysisApiResult['scalpCondition'] | null {
+  return ['dry', 'oily', 'normal', 'sensitive'].includes(String(value))
+    ? (value as HairAnalysisApiResult['scalpCondition'])
+    : null;
+}
+
+function normalizeStoredHairConcerns(value: unknown): string[] {
+  return stringArray(value).map((concern) => STORED_HAIR_CONCERN_LABELS[concern] ?? concern);
+}
+
+function normalizeStoredHairStyles(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (typeof item === 'string') return [item];
+    const record = storedRecord(item);
+    return typeof record.name === 'string' ? [record.name] : [];
+  });
 }
 
 const styles = StyleSheet.create({

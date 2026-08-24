@@ -10,17 +10,25 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, Text, View, Platform } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { useTheme, spacing } from '../../lib/theme';
 import { brand } from '../../lib/theme/tokens';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+interface HiddenAwareTabOptions {
+  href?: string | null;
+  tabBarButton?: unknown;
+}
+
+/**
+ * Expo Router의 href=null과 React Navigation의 tabBarButton 숨김 계약을
+ * 커스텀 탭바에서도 그대로 존중한다.
+ */
+export function isTabRouteHidden(options: HiddenAwareTabOptions): boolean {
+  return options.href === null || options.tabBarButton != null;
+}
 
 export function BrandTabBar({
   state,
@@ -42,6 +50,8 @@ export function BrandTabBar({
     >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
+        if (isTabRouteHidden(options as HiddenAwareTabOptions)) return null;
+
         const isFocused = state.index === index;
 
         const label = options.tabBarLabel ?? options.title ?? route.name;

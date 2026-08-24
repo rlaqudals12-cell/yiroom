@@ -7,8 +7,8 @@
  * - 변동 그룹(🔒/🔄/📅): @yiroom/shared AXIS_CADENCE
  */
 
-import { Palette, Sparkles, User, Scissors, Heart } from 'lucide-react-native';
 import { getAxisCadence, type CadenceGroup } from '@yiroom/shared';
+import { Palette, Sparkles, User, Scissors, Heart } from 'lucide-react-native';
 
 import type { AnalysisSummary } from '../../hooks/useUserAnalyses';
 
@@ -69,10 +69,12 @@ export const PROFILE_META: Record<ProfileAxis, ProfileAxisMeta> = {
 /** 미완료 분석 추천 순서 (웹과 동일) */
 export const PROFILE_ORDER: ProfileAxis[] = ['personal-color', 'skin', 'body', 'hair', 'makeup'];
 
-/** 완료 축 → 최신 결과 경로. 모바일 결과 화면은 최신 1건을 보여주므로 id 파라미터 불필요. */
+/** 완료 축 → 카드가 가리키는 정확한 저장 결과. historyId를 버리면 최신 행으로 바뀔 수 있다. */
 export function getProfileResultRoute(analysis: AnalysisSummary): string {
   const meta = PROFILE_META[analysis.type as ProfileAxis];
-  return meta ? meta.resultRoute : '/(analysis)/hub';
+  return meta
+    ? `${meta.resultRoute}?historyId=${encodeURIComponent(analysis.id)}`
+    : '/(analysis)/hub';
 }
 
 /** AnalysisType(하이픈) → AXIS_CADENCE 변동 그룹. */

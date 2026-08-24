@@ -13,27 +13,21 @@ import {
 export interface PrivacySettings {
   analyticsConsent: boolean;
   marketingConsent: boolean;
-  profilePublic: boolean;
-  shareResults: boolean;
 }
 
 type ConsentSettingKey = 'analyticsConsent' | 'marketingConsent';
-type LocalSettingKey = 'profilePublic' | 'shareResults';
 
 interface UsePrivacySettingsResult {
   settings: PrivacySettings;
   isConsentLoading: boolean;
   isConsentSaving: boolean;
   handleConsentToggle: (key: ConsentSettingKey, value: boolean) => Promise<void>;
-  handleLocalToggle: (key: LocalSettingKey, value: boolean) => void;
 }
 
 const DEFAULT_SETTINGS: PrivacySettings = {
   // 서버 동의 조회 전에는 이용기록을 수집하지 않는 fail-closed 기본값이다.
   analyticsConsent: false,
   marketingConsent: false,
-  profilePublic: false,
-  shareResults: false,
 };
 
 export function usePrivacySettings(): UsePrivacySettingsResult {
@@ -112,16 +106,10 @@ export function usePrivacySettings(): UsePrivacySettingsResult {
     [getToken]
   );
 
-  const handleLocalToggle = useCallback((key: LocalSettingKey, value: boolean): void => {
-    Haptics.selectionAsync();
-    setSettings((previous) => ({ ...previous, [key]: value }));
-  }, []);
-
   return {
     settings,
     isConsentLoading,
     isConsentSaving,
     handleConsentToggle,
-    handleLocalToggle,
   };
 }

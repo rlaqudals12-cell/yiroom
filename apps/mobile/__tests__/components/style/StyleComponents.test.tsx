@@ -96,7 +96,13 @@ function createMockInventoryItem(overrides: Partial<InventoryItem> = {}): Invent
 function createMockRecommendation(item: InventoryItem): ClosetRecommendation {
   return {
     item,
-    score: { total: 85, colorScore: 90, bodyTypeScore: 80, seasonScore: 85 },
+    score: {
+      total: 85,
+      colorScore: 90,
+      bodyTypeScore: 80,
+      seasonScore: 85,
+      personalMatched: true,
+    },
     reasons: ['색상이 잘 어울려요'],
   };
 }
@@ -118,6 +124,8 @@ function createMockOutfitSuggestion(): OutfitSuggestion {
     bottom: createMockRecommendation(bottom),
     outer: createMockRecommendation(outer),
     totalScore: 87,
+    personalMatched: true,
+    hasPersonalProfile: true,
     tips: ['오늘 날씨에 딱 맞는 코디예요'],
     warnings: [],
   };
@@ -276,9 +284,23 @@ describe('TodayOutfitSuggestion', () => {
     expect(getByText('오늘의 코디')).toBeTruthy();
   });
 
-  it('매칭률을 표시해야 한다', () => {
+  it('개인 근거가 있으면 개인 적합도를 표시해야 한다', () => {
     const { getByText } = renderWithTheme(<TodayOutfitSuggestion suggestion={suggestion} />);
-    expect(getByText('매칭률 87%')).toBeTruthy();
+    expect(getByText('개인 적합도 87%')).toBeTruthy();
+  });
+
+  it('개인 진단 근거가 없으면 중립 점수를 숨기고 진단 안내를 표시해야 한다', () => {
+    const unverified: OutfitSuggestion = {
+      ...suggestion,
+      personalMatched: false,
+      hasPersonalProfile: false,
+    };
+    const { getByText, queryByText } = renderWithTheme(
+      <TodayOutfitSuggestion suggestion={unverified} />
+    );
+
+    expect(queryByText(/87%/)).toBeNull();
+    expect(getByText('퍼스널컬러·체형 진단 후 개인 적합도를 확인할 수 있어요')).toBeTruthy();
   });
 
   it('슬롯 라벨을 표시해야 한다', () => {
@@ -331,9 +353,9 @@ describe('TodayOutfitSuggestion', () => {
     expect(getByTestId('outfit')).toBeTruthy();
   });
 
-  it('접근성 라벨이 매칭률을 포함해야 한다', () => {
+  it('접근성 라벨이 개인 적합도를 포함해야 한다', () => {
     const { getByLabelText } = renderWithTheme(<TodayOutfitSuggestion suggestion={suggestion} />);
-    expect(getByLabelText(/매칭률 87%/)).toBeTruthy();
+    expect(getByLabelText(/개인 적합도 87%/)).toBeTruthy();
   });
 
   it('다크모드에서 렌더링되어야 한다', () => {

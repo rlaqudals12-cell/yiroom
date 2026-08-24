@@ -24,3 +24,15 @@ export { getHairCautionIngredients, getScalpConcernNotice } from './hair-guidanc
 
 // 진단지 지표 평문 포맷 — 등급·색상 방향성 부여 금지
 export { formatReportReading } from './report-readings';
+
+// 저장 결과 재방문 경계 — historyId 정확 조회 또는 최신 1건
+export {
+  loadStoredAnalysisRecord,
+  readStoredFallbackFlag,
+  resolveStoredFallback,
+  finiteNumber,
+  storedRecord,
+  stringArray,
+  StoredResultError,
+} from './stored-result-loader';
+export type { StoredAnalysisAxis, StoredAnalysisRecord } from './stored-result-loader';

@@ -8,10 +8,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -78,14 +75,14 @@ jest.mock('../../../hooks/useNutritionData', () => ({
     streak: null,
     isLoading: false,
   })),
-  calculateCalorieProgress: jest.fn(
-    (consumed: number, goal: number) => Math.round((consumed / goal) * 100)
+  calculateCalorieProgress: jest.fn((consumed: number, goal: number) =>
+    Math.round((consumed / goal) * 100)
   ),
   getNutrientStatus: jest.fn(),
   getNutrientStatusColor: jest.fn(),
 }));
 
-import RecordsTab from '../../../app/(tabs)/records';
+import RecordsTabGuard, { RecordsTab } from '../../../app/(tabs)/records';
 
 function createThemeValue(isDark = false): ThemeContextValue {
   return {
@@ -110,11 +107,16 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
+
+describe('RecordsTab route gate', () => {
+  it('WELLNESS_PHASE2=false이면 직접 딥링크를 오늘 화면으로 보낸다', () => {
+    const { getByTestId } = render(<RecordsTabGuard />);
+    expect(getByTestId('redirect').props.accessibilityLabel).toBe('/(tabs)');
+  });
+});
 
 describe('RecordsTab', () => {
   describe('기본 렌더링', () => {
@@ -170,26 +172,13 @@ describe('RecordsTab', () => {
     });
   });
 
-  describe('메뉴 카드 표시', () => {
-    it('운동 기록 메뉴가 표시된다', () => {
-      const { getByTestId } = renderWithTheme(<RecordsTab />);
-      expect(getByTestId('menu-workout')).toBeTruthy();
-    });
-
-    it('식단 기록 메뉴가 표시된다', () => {
-      const { getByTestId } = renderWithTheme(<RecordsTab />);
-      expect(getByTestId('menu-nutrition')).toBeTruthy();
-    });
-
-    it('주간 리포트 메뉴가 표시된다', () => {
-      const { getByTestId } = renderWithTheme(<RecordsTab />);
-      expect(getByTestId('menu-reports')).toBeTruthy();
-    });
-
-    it('운동 예정 개수가 표시된다', () => {
-      const { getByText } = renderWithTheme(<RecordsTab />);
-      // todayWorkout.exercises.length === 2
-      expect(getByText('오늘 2개 운동 예정')).toBeTruthy();
+  describe('상세 경로 메뉴 게이팅', () => {
+    it('WELLNESS_PHASE2=false이면 미지원 운동·식단·리포트 경로를 숨긴다', () => {
+      const { queryByTestId, queryByText } = renderWithTheme(<RecordsTab />);
+      expect(queryByTestId('menu-workout')).toBeNull();
+      expect(queryByTestId('menu-nutrition')).toBeNull();
+      expect(queryByTestId('menu-reports')).toBeNull();
+      expect(queryByText('오늘 2개 운동 예정')).toBeNull();
     });
   });
 
@@ -211,7 +200,7 @@ describe('RecordsTab', () => {
   });
 
   describe('데이터 없는 상태', () => {
-    it('운동 기록이 없으면 기본 설명이 표시된다', () => {
+    it('운동 기록이 없어도 닫힌 상세 경로 설명은 노출하지 않는다', () => {
       const { useWorkoutData } = require('../../../hooks/useWorkoutData');
       useWorkoutData.mockReturnValueOnce({
         streak: { currentStreak: 0, lastWorkoutDate: null },
@@ -221,10 +210,8 @@ describe('RecordsTab', () => {
         isLoading: false,
       });
 
-      const { getByText } = renderWithTheme(<RecordsTab />);
-      expect(
-        getByText('운동 루틴을 기록하고 진행 상황을 확인하세요')
-      ).toBeTruthy();
+      const { queryByText } = renderWithTheme(<RecordsTab />);
+      expect(queryByText('운동 루틴을 기록하고 진행 상황을 확인하세요')).toBeNull();
     });
   });
 
@@ -234,11 +221,11 @@ describe('RecordsTab', () => {
       expect(getByTestId('records-tab')).toBeTruthy();
     });
 
-    it('다크 모드에서 모든 메뉴가 표시된다', () => {
-      const { getByTestId } = renderWithTheme(<RecordsTab />, true);
-      expect(getByTestId('menu-workout')).toBeTruthy();
-      expect(getByTestId('menu-nutrition')).toBeTruthy();
-      expect(getByTestId('menu-reports')).toBeTruthy();
+    it('다크 모드에서도 닫힌 상세 메뉴가 표시되지 않는다', () => {
+      const { queryByTestId } = renderWithTheme(<RecordsTab />, true);
+      expect(queryByTestId('menu-workout')).toBeNull();
+      expect(queryByTestId('menu-nutrition')).toBeNull();
+      expect(queryByTestId('menu-reports')).toBeNull();
     });
   });
 });

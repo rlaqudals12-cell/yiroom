@@ -2,7 +2,8 @@
  * 기록 탭
  * 오늘 요약 + 주간 차트(칼로리/매크로/운동/영양소) + 상세 기록
  */
-import { useRouter } from 'expo-router';
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect, useRouter } from 'expo-router';
 import {
   Dumbbell,
   UtensilsCrossed,
@@ -98,7 +99,16 @@ function buildWorkoutWeek(weeklyLogs: WorkoutLog[]): WeekDay[] {
   });
 }
 
-export default function RecordsTab(): React.JSX.Element {
+export default function RecordsTabGuard(): React.JSX.Element {
+  // href=null은 탭바만 숨긴다. 직접 딥링크도 같은 출시 플래그로 차단한다.
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <RecordsTab />;
+}
+
+export function RecordsTab(): React.JSX.Element {
   const router = useRouter();
   const { colors, brand, spacing, typography, module: moduleColors, isDark } = useTheme();
 
@@ -458,48 +468,51 @@ export default function RecordsTab(): React.JSX.Element {
         />
       </Animated.View>
 
-      <View style={{ gap: spacing.md }}>
-        <Animated.View entering={staggeredEntry(0)}>
-          <MenuCard
-            icon={<Dumbbell size={20} color={moduleColors.workout.dark} />}
-            iconBg={moduleColors.workout.light + ICON_BG_OPACITY}
-            title="운동 기록"
-            description={
-              todayWorkout
-                ? `오늘 ${todayWorkout.exercises.length}개 운동 예정`
-                : '운동 루틴을 기록하고 진행 상황을 확인하세요'
-            }
-            onPress={() => router.push('/workout')}
-            testID="menu-workout"
-          />
-        </Animated.View>
+      {/* 코드는 유지하되 Phase 2가 닫힌 동안 미지원 상세 경로를 노출하지 않는다. */}
+      {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+        <View style={{ gap: spacing.md }}>
+          <Animated.View entering={staggeredEntry(0)}>
+            <MenuCard
+              icon={<Dumbbell size={20} color={moduleColors.workout.dark} />}
+              iconBg={moduleColors.workout.light + ICON_BG_OPACITY}
+              title="운동 기록"
+              description={
+                todayWorkout
+                  ? `오늘 ${todayWorkout.exercises.length}개 운동 예정`
+                  : '운동 루틴을 기록하고 진행 상황을 확인하세요'
+              }
+              onPress={() => router.push('/workout')}
+              testID="menu-workout"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(1)}>
-          <MenuCard
-            icon={<UtensilsCrossed size={20} color={moduleColors.nutrition.dark} />}
-            iconBg={moduleColors.nutrition.light + ICON_BG_OPACITY}
-            title="식단 기록"
-            description={
-              todaySummary && todaySummary.totalCalories > 0
-                ? `오늘 ${todaySummary.totalCalories}kcal 섭취`
-                : '식사를 기록하고 영양 균형을 확인하세요'
-            }
-            onPress={() => router.push('/nutrition')}
-            testID="menu-nutrition"
-          />
-        </Animated.View>
+          <Animated.View entering={staggeredEntry(1)}>
+            <MenuCard
+              icon={<UtensilsCrossed size={20} color={moduleColors.nutrition.dark} />}
+              iconBg={moduleColors.nutrition.light + ICON_BG_OPACITY}
+              title="식단 기록"
+              description={
+                todaySummary && todaySummary.totalCalories > 0
+                  ? `오늘 ${todaySummary.totalCalories}kcal 섭취`
+                  : '식사를 기록하고 영양 균형을 확인하세요'
+              }
+              onPress={() => router.push('/nutrition')}
+              testID="menu-nutrition"
+            />
+          </Animated.View>
 
-        <Animated.View entering={staggeredEntry(2)}>
-          <MenuCard
-            icon={<BarChart3 size={20} color={moduleColors.body.dark} />}
-            iconBg={moduleColors.body.light + ICON_BG_OPACITY}
-            title="주간 리포트"
-            description="일주일간의 활동을 분석한 리포트를 확인하세요"
-            onPress={() => router.push('/reports')}
-            testID="menu-reports"
-          />
-        </Animated.View>
-      </View>
+          <Animated.View entering={staggeredEntry(2)}>
+            <MenuCard
+              icon={<BarChart3 size={20} color={moduleColors.body.dark} />}
+              iconBg={moduleColors.body.light + ICON_BG_OPACITY}
+              title="주간 리포트"
+              description="일주일간의 활동을 분석한 리포트를 확인하세요"
+              onPress={() => router.push('/reports')}
+              testID="menu-reports"
+            />
+          </Animated.View>
+        </View>
+      )}
     </ScreenContainer>
   );
 }

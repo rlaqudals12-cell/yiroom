@@ -3,6 +3,7 @@
  * 물, 운동, 식사, 스트릭, 성취 알림 설정
  */
 
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import * as Haptics from 'expo-haptics';
 import { useState, useEffect } from 'react';
 import {
@@ -265,157 +266,163 @@ export default function NotificationsSettingsScreen() {
 
       {settings.enabled && (
         <>
-          {/* 물 알림 */}
-          <View style={styles.section}>
-            <Text
-              accessibilityRole="header"
-              style={[styles.sectionTitle, { color: colors.mutedForeground }]}
-            >
-              영양
-            </Text>
-            <GlassCard shadowSize="md">
-              <View style={styles.settingsRow}>
-                <View style={styles.settingsRowContent}>
-                  <Text style={styles.settingsIcon}>💧</Text>
-                  <View style={styles.settingsTextContent}>
-                    <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
-                      수분 섭취 알림
-                    </Text>
-                    <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
-                      정해진 간격으로 알림
-                    </Text>
-                  </View>
-                </View>
-                <Switch
-                  value={settings.waterReminder}
-                  onValueChange={(value) => handleToggle('waterReminder', value)}
-                  trackColor={{ false: colors.border, true: mod.body.dark }}
-                  thumbColor={Platform.OS === 'android' ? colors.card : undefined}
-                  accessibilityLabel="수분 섭취 알림"
-                  accessibilityRole="switch"
-                />
-              </View>
-
-              {settings.waterReminder && (
-                <View style={[styles.intervalSelector, { borderTopColor: colors.border }]}>
-                  <Text style={[styles.intervalLabel, { color: colors.mutedForeground }]}>
-                    알림 간격
-                  </Text>
-                  <View style={styles.intervalOptions}>
-                    {[1, 2, 3, 4].map((hours) => (
-                      <Pressable
-                        key={hours}
-                        style={[
-                          styles.intervalOption,
-                          { backgroundColor: colors.muted },
-                          settings.waterReminderInterval === hours && {
-                            backgroundColor: mod.body.dark,
-                          },
-                        ]}
-                        onPress={() => handleIntervalChange(hours)}
-                        accessibilityRole="radio"
-                        accessibilityLabel={`${hours}시간 간격`}
-                        accessibilityState={{ selected: settings.waterReminderInterval === hours }}
-                      >
-                        <Text
-                          style={[
-                            styles.intervalOptionText,
-                            { color: colors.mutedForeground },
-                            settings.waterReminderInterval === hours && {
-                              color: colors.card,
-                            },
-                          ]}
-                        >
-                          {hours}시간
+          {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+            <>
+              {/* 물·식사 알림 */}
+              <View style={styles.section}>
+                <Text
+                  accessibilityRole="header"
+                  style={[styles.sectionTitle, { color: colors.mutedForeground }]}
+                >
+                  영양
+                </Text>
+                <GlassCard shadowSize="md">
+                  <View style={styles.settingsRow}>
+                    <View style={styles.settingsRowContent}>
+                      <Text style={styles.settingsIcon}>💧</Text>
+                      <View style={styles.settingsTextContent}>
+                        <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                          수분 섭취 알림
                         </Text>
-                      </Pressable>
-                    ))}
+                        <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                          정해진 간격으로 알림
+                        </Text>
+                      </View>
+                    </View>
+                    <Switch
+                      value={settings.waterReminder}
+                      onValueChange={(value) => handleToggle('waterReminder', value)}
+                      trackColor={{ false: colors.border, true: mod.body.dark }}
+                      thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                      accessibilityLabel="수분 섭취 알림"
+                      accessibilityRole="switch"
+                    />
                   </View>
-                </View>
-              )}
 
-              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                  {settings.waterReminder && (
+                    <View style={[styles.intervalSelector, { borderTopColor: colors.border }]}>
+                      <Text style={[styles.intervalLabel, { color: colors.mutedForeground }]}>
+                        알림 간격
+                      </Text>
+                      <View style={styles.intervalOptions}>
+                        {[1, 2, 3, 4].map((hours) => (
+                          <Pressable
+                            key={hours}
+                            style={[
+                              styles.intervalOption,
+                              { backgroundColor: colors.muted },
+                              settings.waterReminderInterval === hours && {
+                                backgroundColor: mod.body.dark,
+                              },
+                            ]}
+                            onPress={() => handleIntervalChange(hours)}
+                            accessibilityRole="radio"
+                            accessibilityLabel={`${hours}시간 간격`}
+                            accessibilityState={{
+                              selected: settings.waterReminderInterval === hours,
+                            }}
+                          >
+                            <Text
+                              style={[
+                                styles.intervalOptionText,
+                                { color: colors.mutedForeground },
+                                settings.waterReminderInterval === hours && {
+                                  color: colors.card,
+                                },
+                              ]}
+                            >
+                              {hours}시간
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    </View>
+                  )}
 
-              <View style={styles.settingsRow}>
-                <View style={styles.settingsRowContent}>
-                  <Text style={styles.settingsIcon}>🍽️</Text>
-                  <View style={styles.settingsTextContent}>
-                    <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
-                      식사 기록 알림
-                    </Text>
-                    <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
-                      아침/점심/저녁 기록 알림
-                    </Text>
+                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+                  <View style={styles.settingsRow}>
+                    <View style={styles.settingsRowContent}>
+                      <Text style={styles.settingsIcon}>🍽️</Text>
+                      <View style={styles.settingsTextContent}>
+                        <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                          식사 기록 알림
+                        </Text>
+                        <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                          아침/점심/저녁 기록 알림
+                        </Text>
+                      </View>
+                    </View>
+                    <Switch
+                      value={settings.nutritionReminder}
+                      onValueChange={(value) => handleToggle('nutritionReminder', value)}
+                      trackColor={{ false: colors.border, true: mod.body.dark }}
+                      thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                      accessibilityLabel="식사 기록 알림"
+                      accessibilityRole="switch"
+                    />
                   </View>
-                </View>
-                <Switch
-                  value={settings.nutritionReminder}
-                  onValueChange={(value) => handleToggle('nutritionReminder', value)}
-                  trackColor={{ false: colors.border, true: mod.body.dark }}
-                  thumbColor={Platform.OS === 'android' ? colors.card : undefined}
-                  accessibilityLabel="식사 기록 알림"
-                  accessibilityRole="switch"
-                />
+                </GlassCard>
               </View>
-            </GlassCard>
-          </View>
 
-          {/* 운동 알림 */}
-          <View style={styles.section}>
-            <Text
-              accessibilityRole="header"
-              style={[styles.sectionTitle, { color: colors.mutedForeground }]}
-            >
-              운동
-            </Text>
-            <GlassCard shadowSize="md">
-              <View style={styles.settingsRow}>
-                <View style={styles.settingsRowContent}>
-                  <Text style={styles.settingsIcon}>🏃</Text>
-                  <View style={styles.settingsTextContent}>
-                    <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
-                      운동 리마인더
-                    </Text>
-                    <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
-                      매일 아침 운동 알림
-                    </Text>
+              {/* 운동 알림 */}
+              <View style={styles.section}>
+                <Text
+                  accessibilityRole="header"
+                  style={[styles.sectionTitle, { color: colors.mutedForeground }]}
+                >
+                  운동
+                </Text>
+                <GlassCard shadowSize="md">
+                  <View style={styles.settingsRow}>
+                    <View style={styles.settingsRowContent}>
+                      <Text style={styles.settingsIcon}>🏃</Text>
+                      <View style={styles.settingsTextContent}>
+                        <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                          운동 리마인더
+                        </Text>
+                        <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                          매일 아침 운동 알림
+                        </Text>
+                      </View>
+                    </View>
+                    <Switch
+                      value={settings.workoutReminder}
+                      onValueChange={(value) => handleToggle('workoutReminder', value)}
+                      trackColor={{ false: colors.border, true: mod.body.dark }}
+                      thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                      accessibilityLabel="운동 리마인더"
+                      accessibilityRole="switch"
+                    />
                   </View>
-                </View>
-                <Switch
-                  value={settings.workoutReminder}
-                  onValueChange={(value) => handleToggle('workoutReminder', value)}
-                  trackColor={{ false: colors.border, true: mod.body.dark }}
-                  thumbColor={Platform.OS === 'android' ? colors.card : undefined}
-                  accessibilityLabel="운동 리마인더"
-                  accessibilityRole="switch"
-                />
-              </View>
 
-              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-              <View style={styles.settingsRow}>
-                <View style={styles.settingsRowContent}>
-                  <Text style={styles.settingsIcon}>🔥</Text>
-                  <View style={styles.settingsTextContent}>
-                    <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
-                      스트릭 경고
-                    </Text>
-                    <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
-                      연속 기록이 끊기기 전 알림
-                    </Text>
+                  <View style={styles.settingsRow}>
+                    <View style={styles.settingsRowContent}>
+                      <Text style={styles.settingsIcon}>🔥</Text>
+                      <View style={styles.settingsTextContent}>
+                        <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                          스트릭 경고
+                        </Text>
+                        <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                          연속 기록이 끊기기 전 알림
+                        </Text>
+                      </View>
+                    </View>
+                    <Switch
+                      value={settings.streakWarning}
+                      onValueChange={(value) => handleToggle('streakWarning', value)}
+                      trackColor={{ false: colors.border, true: mod.body.dark }}
+                      thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                      accessibilityLabel="스트릭 경고"
+                      accessibilityRole="switch"
+                    />
                   </View>
-                </View>
-                <Switch
-                  value={settings.streakWarning}
-                  onValueChange={(value) => handleToggle('streakWarning', value)}
-                  trackColor={{ false: colors.border, true: mod.body.dark }}
-                  thumbColor={Platform.OS === 'android' ? colors.card : undefined}
-                  accessibilityLabel="스트릭 경고"
-                  accessibilityRole="switch"
-                />
+                </GlassCard>
               </View>
-            </GlassCard>
-          </View>
+            </>
+          )}
 
           {/* 소셜 & 성취 */}
           <View style={styles.section}>

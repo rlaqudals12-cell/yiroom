@@ -65,6 +65,24 @@ describe('calculateMatchScore', () => {
 
     expect(score.colorScore).toBeGreaterThanOrEqual(70);
   });
+
+  it('개인 진단 입력이 없을 때 중립 50을 개인 적합도 근거로 취급하지 않는다', () => {
+    const score = calculateMatchScore(createMockItem(), {});
+
+    expect(score.colorScore).toBe(50);
+    expect(score.bodyTypeScore).toBe(50);
+    expect(score.personalMatched).toBe(false);
+  });
+
+  it('실제 퍼스널컬러 일치가 있을 때만 personalMatched를 켠다', () => {
+    const score = calculateMatchScore(
+      createMockItem({ metadata: { color: ['코랄'], season: [], occasion: [] } }),
+      { personalColor: 'Spring' }
+    );
+
+    expect(score.colorScore).toBeGreaterThan(50);
+    expect(score.personalMatched).toBe(true);
+  });
 });
 
 describe('사용자 노출 퍼스널컬러 문구', () => {

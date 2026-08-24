@@ -66,6 +66,8 @@ interface ProfileCardGridProps {
   analyses: AnalysisSummary[];
   /** 최신 통합 분석 페르소나 한 줄("당신은 ○○한 사람") — 있으면 상단 노출 */
   personaOneLine?: string | null;
+  /** true면 페르소나가 예시/폴백 축을 포함해 만들어졌음을 고지한다. */
+  personaUsedFallback?: boolean;
   style?: ViewStyle;
   testID?: string;
 }
@@ -73,6 +75,7 @@ interface ProfileCardGridProps {
 export function ProfileCardGrid({
   analyses,
   personaOneLine,
+  personaUsedFallback,
   style,
   testID = 'profile-card-grid',
 }: ProfileCardGridProps): React.JSX.Element {
@@ -104,22 +107,22 @@ export function ProfileCardGrid({
     >
       {/* 페르소나 한 줄 — "살아있는 나" (있을 때만) */}
       {personaOneLine ? (
-        <View
-          style={[styles.personaRow, { marginBottom: spacing.smx }]}
-          testID="profile-persona-line"
-        >
-          <Sparkles size={16} color={brand.primary} />
-          <Text
-            style={{
-              flex: 1,
-              fontSize: typography.size.base,
-              fontWeight: typography.weight.bold,
-              color: brand.primary,
-            }}
-            numberOfLines={2}
-          >
-            {personaOneLine}
-          </Text>
+        <View style={{ marginBottom: spacing.smx }}>
+          <View style={styles.personaRow} testID="profile-persona-line">
+            <Sparkles size={16} color={brand.primary} />
+            <Text
+              style={{
+                flex: 1,
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.bold,
+                color: brand.primary,
+              }}
+              numberOfLines={2}
+            >
+              {personaOneLine}
+            </Text>
+          </View>
+          {personaUsedFallback ? <ExampleResultBadge testID="profile-persona-fallback" /> : null}
         </View>
       ) : null}
 
@@ -238,9 +241,12 @@ export function ProfileCardGrid({
                   {analysis.summary}
                 </Text>
                 {analysis.type === 'skin' && analysis.skinTrend ? (
-                  <SkinTrendChip trend={analysis.skinTrend} delta={analysis.skinDelta ?? 0} />
+                  <SkinTrendChip trend={analysis.skinTrend} />
                 ) : null}
               </View>
+              {analysis.usedFallback ? (
+                <ExampleResultBadge testID={`profile-card-${type}-fallback`} />
+              ) : null}
               {analysis.type === 'personal-color' &&
               (analysis.seasonSubtype || (analysis.bestColors?.length ?? 0) > 0) ? (
                 <View style={styles.personalColorDetails}>
@@ -311,22 +317,42 @@ export function ProfileCardGrid({
   );
 }
 
-/** 피부 점수 추이 칩 — 직전 분석 대비 (↑ 개선 / ↓ 하락 / 유지) */
-function SkinTrendChip({
-  trend,
-  delta,
-}: {
-  trend: 'up' | 'down' | 'flat';
-  delta: number;
-}): React.JSX.Element {
+/** 피부 원값 추이 — 숫자 차이를 확정적 개선/악화처럼 보이지 않고 정중한 언어로 표시한다. */
+function SkinTrendChip({ trend }: { trend: 'up' | 'down' | 'flat' }): React.JSX.Element {
   const c = TREND_COLORS[trend];
   const Icon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
   const label =
-    trend === 'up' ? `+${Math.abs(delta)}` : trend === 'down' ? `-${Math.abs(delta)}` : '유지';
+    trend === 'up'
+      ? '이전보다 안정적'
+      : trend === 'down'
+        ? '컨디션을 살펴보세요'
+        : '이전과 비슷해요';
   return (
     <View style={[styles.trendChip, { backgroundColor: c.bg }]} testID="skin-trend-chip">
       <Icon size={10} color={c.fg} />
       <Text style={{ fontSize: 10, fontWeight: '600', color: c.fg }}>{label}</Text>
+    </View>
+  );
+}
+
+function ExampleResultBadge({ testID }: { testID: string }): React.JSX.Element {
+  const { colors, spacing, radii, typography } = useTheme();
+  return (
+    <View
+      style={[
+        styles.fallbackBadge,
+        {
+          backgroundColor: colors.secondary,
+          borderColor: colors.border,
+          borderRadius: radii.full,
+          marginTop: spacing.xs,
+        },
+      ]}
+      testID={testID}
+    >
+      <Text style={{ color: colors.mutedForeground, fontSize: typography.size.xs }}>
+        예시 결과 · 낮은 신뢰도
+      </Text>
     </View>
   );
 }
@@ -339,6 +365,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  fallbackBadge: {
+    alignSelf: 'flex-start',
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   headerRow: {
     flexDirection: 'row',

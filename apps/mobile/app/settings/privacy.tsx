@@ -11,8 +11,7 @@ import { usePrivacyDataActions } from '@/lib/privacy/usePrivacyDataActions';
 import { usePrivacySettings } from '@/lib/privacy/usePrivacySettings';
 
 export default function PrivacySettingsScreen(): React.JSX.Element {
-  const { settings, isConsentLoading, isConsentSaving, handleConsentToggle, handleLocalToggle } =
-    usePrivacySettings();
+  const { settings, isConsentLoading, isConsentSaving, handleConsentToggle } = usePrivacySettings();
   const {
     isRevokingBiometric,
     isDeleting,
@@ -41,7 +40,6 @@ export default function PrivacySettingsScreen(): React.JSX.Element {
           isRevokingBiometric={isRevokingBiometric}
           isDeleting={isDeleting}
           onConsentToggle={handleConsentToggle}
-          onLocalToggle={handleLocalToggle}
           onDownloadData={handleDownloadData}
           onRevokeBiometricConsent={handleRevokeBiometricConsent}
           onDeleteAccount={handleDeleteAccount}

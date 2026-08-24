@@ -326,26 +326,32 @@ export default function ProfileScreen(): React.JSX.Element {
         </GradientBackground>
       </Animated.View>
 
-      {/* 레벨 뱃지 */}
-      <Animated.View entering={FadeInUp.delay(50).duration(TIMING.normal)}>
-        <LevelBadge level={level} style={{ marginBottom: spacing.md }} testID="wellness-level" />
-      </Animated.View>
+      {/* ADR-098: 웰니스 점수·등급·업적은 Phase 2가 열릴 때만 함께 노출한다. */}
+      {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+        <>
+          <Animated.View entering={FadeInUp.delay(50).duration(TIMING.normal)}>
+            <LevelBadge
+              level={level}
+              style={{ marginBottom: spacing.md }}
+              testID="wellness-level"
+            />
+          </Animated.View>
 
-      {/* 웰니스 점수 링 */}
-      <WellnessScoreRing
-        score={score}
-        breakdown={breakdown}
-        style={{ marginBottom: spacing.md, ...borderGlow.pink }}
-        testID="wellness-score"
-      />
+          <WellnessScoreRing
+            score={score}
+            breakdown={breakdown}
+            style={{ marginBottom: spacing.md, ...borderGlow.pink }}
+            testID="wellness-score"
+          />
 
-      {/* 업적 그리드 — ADR-098 §2.4.2 기능 과잉 정리: BADGES 게이팅 */}
-      {FEATURE_FLAGS.BADGES && (
-        <AchievementGrid
-          achievements={achievements}
-          style={{ marginBottom: spacing.lg, ...borderGlow.pink }}
-          testID="achievement-grid"
-        />
+          {FEATURE_FLAGS.BADGES && (
+            <AchievementGrid
+              achievements={achievements}
+              style={{ marginBottom: spacing.lg, ...borderGlow.pink }}
+              testID="achievement-grid"
+            />
+          )}
+        </>
       )}
 
       {/* 분석 이력 타임라인 */}

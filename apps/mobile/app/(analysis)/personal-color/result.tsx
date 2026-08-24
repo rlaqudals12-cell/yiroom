@@ -25,19 +25,28 @@ import {
   personalColorResultStyles as styles,
 } from '@/components/analysis/personal-color/PersonalColorResultSupport';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
-import { buildPersonalColorTopActions } from '@/lib/analysis';
+import {
+  buildPersonalColorTopActions,
+  finiteNumber,
+  loadStoredAnalysisRecord,
+  storedRecord,
+} from '@/lib/analysis';
 import {
   PERSONAL_COLOR_REPORT_DATA,
   type PersonalColorReportSeasonInfo,
 } from '@/lib/analysis/personal-color-report-data';
+import { StoredResultError } from '@/lib/analysis/stored-result-loader';
 import {
   getPersonalColorSubtypeLabel,
+  normalizePersonalColorHexes,
+  normalizePersonalColorSubtype,
   PersonalColorApiError,
   requestPersonalColorAnalysis,
   type PersonalColorApiResult,
 } from '@/lib/api/personalColor';
 import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 
 const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요.';
 const TONE_EXPLANATION: Record<PersonalColorReportSeasonInfo['tone'], string> = {
@@ -47,9 +56,11 @@ const TONE_EXPLANATION: Record<PersonalColorReportSeasonInfo['tone'], string> = 
 
 export default function PersonalColorResultScreen(): React.JSX.Element {
   const { getToken } = useAuth();
-  const { imageUri, imageBase64 } = useLocalSearchParams<{
-    imageUri: string;
+  const supabase = useClerkSupabaseClient();
+  const { imageUri, imageBase64, historyId } = useLocalSearchParams<{
+    imageUri?: string;
     imageBase64?: string;
+    historyId?: string;
   }>();
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<PersonalColorApiResult | null>(null);
@@ -64,6 +75,35 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
     setResult(null);
 
     try {
+      const hasFreshImage = Boolean(imageBase64 || imageUri);
+      if (!hasFreshImage) {
+        const stored = await loadStoredAnalysisRecord(supabase, 'personal-color', historyId);
+        const row = stored.row;
+        const season = normalizeStoredSeason(row.season);
+        const confidence = finiteNumber(row.confidence);
+        if (!season || confidence === undefined) {
+          throw new StoredResultError('저장된 퍼스널 컬러 결과를 해석하지 못했어요.');
+        }
+        const imageAnalysis = storedRecord(row.image_analysis);
+        const response: PersonalColorApiResult = {
+          season,
+          seasonSubtype: normalizePersonalColorSubtype(row.season_subtype),
+          confidence: confidence > 1 ? confidence / 100 : confidence,
+          description: typeof imageAnalysis.insight === 'string' ? imageAnalysis.insight : '',
+          bestColors: normalizePersonalColorHexes(row.best_colors),
+          worstColors: normalizePersonalColorHexes(row.worst_colors),
+          usedMock: stored.usedFallback === true,
+          dbSaveFailed: false,
+        };
+        const usesStaticDiagnosisFallback =
+          response.seasonSubtype === null ||
+          response.bestColors.length === 0 ||
+          response.worstColors.length === 0;
+        setUsedFallback(response.usedMock || usesStaticDiagnosisFallback);
+        setResult(response);
+        return;
+      }
+
       let base64Data = imageBase64;
       if (!base64Data && imageUri) base64Data = await imageToBase64(imageUri);
       if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
@@ -91,13 +131,15 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
         tags: { module: 'PC-1', action: 'analyze' },
       });
       setErrorMessage(
-        error instanceof PersonalColorApiError ? error.message : DEFAULT_ERROR_MESSAGE
+        error instanceof PersonalColorApiError || error instanceof StoredResultError
+          ? error.message
+          : DEFAULT_ERROR_MESSAGE
       );
       setResult(null);
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, imageBase64, imageUri]);
+  }, [getToken, historyId, imageBase64, imageUri, supabase]);
 
   const hasStartedRef = useRef(false);
   useEffect(() => {
@@ -284,4 +326,12 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
       />
     </>
   );
+}
+
+function normalizeStoredSeason(value: unknown): PersonalColorApiResult['season'] | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  return ['Spring', 'Summer', 'Autumn', 'Winter'].includes(normalized)
+    ? (normalized as PersonalColorApiResult['season'])
+    : null;
 }

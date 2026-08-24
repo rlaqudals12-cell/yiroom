@@ -21,7 +21,13 @@ import {
   skinResultStyles as styles,
 } from '@/components/analysis/skin/SkinResultSupport';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
-import { buildSkinTopActions, formatReportReading } from '@/lib/analysis';
+import {
+  buildSkinTopActions,
+  finiteNumber,
+  formatReportReading,
+  loadStoredAnalysisRecord,
+} from '@/lib/analysis';
+import { StoredResultError } from '@/lib/analysis/stored-result-loader';
 import { requestSkinAnalysis, SkinApiError } from '@/lib/api/skin';
 import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
@@ -56,14 +62,16 @@ const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주�
 export default function SkinResultScreen(): React.JSX.Element {
   const { getToken, userId } = useAuth();
   const supabase = useClerkSupabaseClient();
-  const { imageUri, imageBase64 } = useLocalSearchParams<{
-    imageUri: string;
+  const { imageUri, imageBase64, historyId } = useLocalSearchParams<{
+    imageUri?: string;
     imageBase64?: string;
+    historyId?: string;
   }>();
 
   const [isLoading, setIsLoading] = useState(true);
   const [skinType, setSkinType] = useState<SkinType | null>(null);
   const [metrics, setMetrics] = useState<SkinMetrics | null>(null);
+  const [availableMetrics, setAvailableMetrics] = useState<(keyof SkinMetrics)[] | null>(null);
   const [delta, setDelta] = useState<SkinMetricsDelta | null>(null);
   const [hasPreviousAnalysis, setHasPreviousAnalysis] = useState(false);
   const [usedFallback, setUsedFallback] = useState(false);
@@ -78,8 +86,50 @@ export default function SkinResultScreen(): React.JSX.Element {
     setDbSaveFailed(false);
     setDelta(null);
     setHasPreviousAnalysis(false);
+    setAvailableMetrics(null);
 
     try {
+      const hasFreshImage = Boolean(imageBase64 || imageUri);
+      if (!hasFreshImage) {
+        const stored = await loadStoredAnalysisRecord(supabase, 'skin', historyId);
+        const row = stored.row;
+        const storedSkinType = normalizeStoredSkinType(row.skin_type);
+        if (!storedSkinType) {
+          throw new StoredResultError('저장된 피부 분석 결과를 해석하지 못했어요.');
+        }
+
+        const storedMetricColumns: {
+          key: keyof SkinMetrics;
+          column: string;
+        }[] = [
+          { key: 'moisture', column: 'hydration' },
+          { key: 'oil', column: 'oil_level' },
+          { key: 'pores', column: 'pores' },
+          { key: 'wrinkles', column: 'wrinkles' },
+          { key: 'pigmentation', column: 'pigmentation' },
+          { key: 'sensitivity', column: 'sensitivity' },
+        ];
+        const available = storedMetricColumns
+          .filter(({ column }) => finiteNumber(row[column]) !== undefined)
+          .map(({ key }) => key);
+        const value = (column: string): number => finiteNumber(row[column]) ?? 0;
+
+        setSkinType(storedSkinType);
+        setMetrics({
+          moisture: value('hydration'),
+          oil: value('oil_level'),
+          pores: value('pores'),
+          wrinkles: value('wrinkles'),
+          pigmentation: value('pigmentation'),
+          sensitivity: value('sensitivity'),
+          // DB에 없는 탄력값을 만들지 않고, 저장 결과 화면에서 이 행을 숨긴다.
+          elasticity: 0,
+        });
+        setAvailableMetrics(available);
+        setUsedFallback(stored.usedFallback === true);
+        return;
+      }
+
       let base64Data = imageBase64;
       if (!base64Data && imageUri) {
         base64Data = await imageToBase64(imageUri);
@@ -132,13 +182,17 @@ export default function SkinResultScreen(): React.JSX.Element {
         screen: 'skin-result',
         tags: { module: 'S-1', action: 'analyze' },
       });
-      setErrorMessage(error instanceof SkinApiError ? error.message : DEFAULT_ERROR_MESSAGE);
+      setErrorMessage(
+        error instanceof SkinApiError || error instanceof StoredResultError
+          ? error.message
+          : DEFAULT_ERROR_MESSAGE
+      );
       setSkinType(null);
       setMetrics(null);
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, imageBase64, imageUri, supabase, userId]);
+  }, [getToken, historyId, imageBase64, imageUri, supabase, userId]);
 
   // clerk-expo getToken 참조가 바뀌어도 화면 진입당 분석은 한 번만 실행한다.
   const hasStartedRef = useRef(false);
@@ -180,6 +234,15 @@ export default function SkinResultScreen(): React.JSX.Element {
     recommendedIngredients: ingredients.good,
     avoidIngredients: ingredients.avoid,
   });
+  const hasMetric = (key: keyof SkinMetrics): boolean =>
+    availableMetrics === null || availableMetrics.includes(key);
+  const allDetailMetricRows: { key: keyof SkinMetrics; label: string }[] = [
+    { key: 'pores', label: '모공' },
+    { key: 'elasticity', label: '탄력' },
+    { key: 'wrinkles', label: '주름' },
+    { key: 'pigmentation', label: '색소침착' },
+  ];
+  const detailMetricRows = allDetailMetricRows.filter(({ key }) => hasMetric(key));
 
   const sections: ReportSection[] = [
     {
@@ -188,28 +251,26 @@ export default function SkinResultScreen(): React.JSX.Element {
       summary: typeData.description,
       content: <Text style={styles.evidenceText}>{typeData.description}</Text>,
     },
-    {
-      key: 'metrics',
-      title: '나머지 피부 지표',
-      summary: '모공·탄력·주름·색소침착',
-      content: (
-        <ReportRowTable testID="skin-detail-metrics">
-          <ReportAttrRow label="모공" value={formatReportReading(metrics.pores, delta?.pores)} />
-          <ReportAttrRow
-            label="탄력"
-            value={formatReportReading(metrics.elasticity, delta?.elasticity)}
-          />
-          <ReportAttrRow
-            label="주름"
-            value={formatReportReading(metrics.wrinkles, delta?.wrinkles)}
-          />
-          <ReportAttrRow
-            label="색소침착"
-            value={formatReportReading(metrics.pigmentation, delta?.pigmentation)}
-          />
-        </ReportRowTable>
-      ),
-    },
+    ...(detailMetricRows.length > 0
+      ? [
+          {
+            key: 'metrics',
+            title: '나머지 피부 지표',
+            summary: detailMetricRows.map(({ label }) => label).join('·'),
+            content: (
+              <ReportRowTable testID="skin-detail-metrics">
+                {detailMetricRows.map(({ key, label }) => (
+                  <ReportAttrRow
+                    key={key}
+                    label={label}
+                    value={formatReportReading(metrics[key], delta?.[key])}
+                  />
+                ))}
+              </ReportRowTable>
+            ),
+          },
+        ]
+      : []),
     {
       key: 'tips',
       title: '스킨케어 팁',
@@ -248,15 +309,21 @@ export default function SkinResultScreen(): React.JSX.Element {
       <ReportResultLayout
         attributes={
           <ReportRowTable testID="skin-report-attrs">
-            <ReportAttrRow
-              label="수분"
-              value={formatReportReading(metrics.moisture, delta?.moisture)}
-            />
-            <ReportAttrRow label="유분" value={formatReportReading(metrics.oil, delta?.oil)} />
-            <ReportAttrRow
-              label="민감도"
-              value={formatReportReading(metrics.sensitivity, delta?.sensitivity)}
-            />
+            {hasMetric('moisture') ? (
+              <ReportAttrRow
+                label="수분"
+                value={formatReportReading(metrics.moisture, delta?.moisture)}
+              />
+            ) : null}
+            {hasMetric('oil') ? (
+              <ReportAttrRow label="유분" value={formatReportReading(metrics.oil, delta?.oil)} />
+            ) : null}
+            {hasMetric('sensitivity') ? (
+              <ReportAttrRow
+                label="민감도"
+                value={formatReportReading(metrics.sensitivity, delta?.sensitivity)}
+              />
+            ) : null}
           </ReportRowTable>
         }
         conclusion={<ReportActionList actions={topActions} testID="skin-report-actions" />}
@@ -284,4 +351,10 @@ export default function SkinResultScreen(): React.JSX.Element {
       />
     </>
   );
+}
+
+function normalizeStoredSkinType(value: unknown): SkinType | null {
+  return ['dry', 'oily', 'combination', 'sensitive', 'normal'].includes(String(value))
+    ? (value as SkinType)
+    : null;
 }

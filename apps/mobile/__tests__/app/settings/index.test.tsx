@@ -40,6 +40,14 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
+const mockHandleDeleteAccount = jest.fn();
+jest.mock('../../../lib/privacy/usePrivacyDataActions', () => ({
+  usePrivacyDataActions: () => ({
+    isDeleting: false,
+    handleDeleteAccount: mockHandleDeleteAccount,
+  }),
+}));
+
 import SettingsScreen from '../../../app/settings/index';
 
 // ============================================================
@@ -205,6 +213,22 @@ describe('SettingsScreen', () => {
 
       expect(Haptics.selectionAsync).toHaveBeenCalled();
       expect(router.push).toHaveBeenCalledWith('/settings/privacy');
+    });
+
+    it('계정 관리 시트에서 개인정보 설정으로 이동할 수 있다', () => {
+      const { getByText, getByTestId } = renderWithTheme(<SettingsScreen />);
+      fireEvent.press(getByText('계정 관리'));
+      fireEvent.press(getByTestId('settings-account-privacy'));
+
+      expect(router.push).toHaveBeenCalledWith('/settings/privacy');
+    });
+
+    it('계정 관리 시트에서 기존 계정 삭제 동작을 직접 실행할 수 있다', () => {
+      const { getByText, getByTestId } = renderWithTheme(<SettingsScreen />);
+      fireEvent.press(getByText('계정 관리'));
+      fireEvent.press(getByTestId('settings-account-delete'));
+
+      expect(mockHandleDeleteAccount).toHaveBeenCalledTimes(1);
     });
 
     it('피드백 보내기 클릭 시 mailto 링크를 연다', () => {

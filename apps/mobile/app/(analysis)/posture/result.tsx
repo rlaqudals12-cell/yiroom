@@ -1,5 +1,7 @@
 /** 자세 분석 결과를 ADR-120 진단지 문법으로 표시한다. */
-import { router, useLocalSearchParams } from 'expo-router';
+import { useAuth } from '@clerk/clerk-expo';
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,15 +18,12 @@ import {
   REPORT_COLORS,
 } from '@/components/analysis';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
-import {
-  analyzePosture as analyzeWithGemini,
-  imageToBase64,
-  type PostureAnalysisResult,
-} from '@/lib/gemini';
+import { requestPostureAnalysis, type PostureAnalysisApiResult } from '@/lib/api/posture';
+import { imageToBase64 } from '@/lib/gemini';
 import { captureError } from '@/lib/monitoring/sentry';
 import { radii, shadows, spacing, typography } from '@/lib/theme';
 
-const POSTURE_TYPE_LABELS: Record<PostureAnalysisResult['postureType'], string> = {
+const POSTURE_TYPE_LABELS: Record<PostureAnalysisApiResult['postureType'], string> = {
   normal: '정상 자세',
   forward_head: '거북목',
   rounded_shoulders: '둥근 어깨',
@@ -34,12 +33,22 @@ const POSTURE_TYPE_LABELS: Record<PostureAnalysisResult['postureType'], string> 
 };
 
 export default function PostureResultScreen(): React.JSX.Element {
+  // 숨김 축에서는 결과 컴포넌트를 마운트하지 않아 이미지 변환·AI 호출 자체를 시작하지 않는다.
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <PostureResultContent />;
+}
+
+function PostureResultContent(): React.JSX.Element {
+  const { getToken } = useAuth();
   const { imageUri, imageBase64 } = useLocalSearchParams<{
     imageUri: string;
     imageBase64?: string;
   }>();
   const [isLoading, setIsLoading] = useState(true);
-  const [result, setResult] = useState<PostureAnalysisResult | null>(null);
+  const [result, setResult] = useState<PostureAnalysisApiResult | null>(null);
   const [usedFallback, setUsedFallback] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
@@ -52,9 +61,12 @@ export default function PostureResultScreen(): React.JSX.Element {
       if (!base64Data && imageUri) base64Data = await imageToBase64(imageUri);
       if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
 
-      const response = await analyzeWithGemini(base64Data);
-      setUsedFallback(response.usedFallback);
-      setResult(response.result);
+      const token = await getToken();
+      if (!token) throw new Error('로그인이 필요해요.');
+
+      const response = await requestPostureAnalysis(base64Data, token);
+      setUsedFallback(response.usedMock);
+      setResult(response);
       setShowCelebration(true);
     } catch (error) {
       captureError(error instanceof Error ? error : new Error(String(error)), {
@@ -65,7 +77,7 @@ export default function PostureResultScreen(): React.JSX.Element {
     } finally {
       setIsLoading(false);
     }
-  }, [imageBase64, imageUri]);
+  }, [getToken, imageBase64, imageUri]);
 
   useEffect(() => {
     void analyzePosture();

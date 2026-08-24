@@ -12,6 +12,7 @@ import {
   CATEGORY_ICONS,
   interpolateTemplate,
   createNotification,
+  isNotificationTypeAvailable,
   resolveNotificationActionRoute,
   getNotificationTypesByCategory,
 } from '../../lib/notifications/templates';
@@ -19,6 +20,7 @@ import {
 import {
   type NotificationSettings,
   DEFAULT_NOTIFICATION_SETTINGS,
+  enforceNotificationFeatureFlags,
 } from '../../lib/notifications/types';
 
 // ============================================================
@@ -343,11 +345,32 @@ describe('NotificationSettings 타입', () => {
 describe('DEFAULT_NOTIFICATION_SETTINGS', () => {
   it('기본값이 정의되어야 함', () => {
     expect(DEFAULT_NOTIFICATION_SETTINGS.enabled).toBe(false);
-    expect(DEFAULT_NOTIFICATION_SETTINGS.workoutReminder).toBe(true);
-    expect(DEFAULT_NOTIFICATION_SETTINGS.nutritionReminder).toBe(true);
-    expect(DEFAULT_NOTIFICATION_SETTINGS.waterReminder).toBe(true);
+    expect(DEFAULT_NOTIFICATION_SETTINGS.workoutReminder).toBe(false);
+    expect(DEFAULT_NOTIFICATION_SETTINGS.nutritionReminder).toBe(false);
+    expect(DEFAULT_NOTIFICATION_SETTINGS.waterReminder).toBe(false);
     expect(DEFAULT_NOTIFICATION_SETTINGS.streakWarning).toBe(true);
   });
+
+  it('저장된 구형 true 설정도 닫힌 Phase 2 알림을 다시 켜지 못한다', () => {
+    const sanitized = enforceNotificationFeatureFlags({
+      ...DEFAULT_NOTIFICATION_SETTINGS,
+      enabled: true,
+      workoutReminder: true,
+      nutritionReminder: true,
+      waterReminder: true,
+    });
+
+    expect(sanitized.workoutReminder).toBe(false);
+    expect(sanitized.nutritionReminder).toBe(false);
+    expect(sanitized.waterReminder).toBe(false);
+  });
+
+  it.each(['workout_reminder', 'nutrition_reminder', 'water_reminder'] as const)(
+    '%s 예약 타입을 사용할 수 없다',
+    (type) => {
+      expect(isNotificationTypeAvailable(type)).toBe(false);
+    }
+  );
 
   it('기본 시간 설정이 유효해야 함', () => {
     expect(DEFAULT_NOTIFICATION_SETTINGS.workoutReminderTime).toBe('09:00');

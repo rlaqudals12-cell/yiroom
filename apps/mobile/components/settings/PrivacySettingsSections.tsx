@@ -11,7 +11,6 @@ interface PrivacySettingsSectionsProps {
   isRevokingBiometric: boolean;
   isDeleting: boolean;
   onConsentToggle: (key: 'analyticsConsent' | 'marketingConsent', value: boolean) => Promise<void>;
-  onLocalToggle: (key: 'profilePublic' | 'shareResults', value: boolean) => void;
   onDownloadData: () => Promise<void>;
   onRevokeBiometricConsent: () => void;
   onDeleteAccount: () => void;
@@ -24,7 +23,6 @@ export function PrivacySettingsSections({
   isRevokingBiometric,
   isDeleting,
   onConsentToggle,
-  onLocalToggle,
   onDownloadData,
   onRevokeBiometricConsent,
   onDeleteAccount,
@@ -98,7 +96,7 @@ export function PrivacySettingsSections({
           accessibilityRole="header"
           style={[styles.sectionTitle, { color: colors.mutedForeground }]}
         >
-          프로필 공개
+          공개 및 공유
         </Text>
         <GlassCard shadowSize="md">
           <View style={styles.settingsRow}>
@@ -106,20 +104,13 @@ export function PrivacySettingsSections({
               <Text style={styles.settingsIcon}>👤</Text>
               <View style={styles.settingsTextContent}>
                 <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
-                  프로필 공개
+                  프로필 공개 설정
                 </Text>
                 <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
-                  다른 사용자가 내 프로필을 볼 수 있어요
+                  모바일 공개 프로필은 아직 제공하지 않아요
                 </Text>
               </View>
             </View>
-            <Switch
-              value={settings.profilePublic}
-              onValueChange={(value) => onLocalToggle('profilePublic', value)}
-              {...switchColors}
-              accessibilityLabel="프로필 공개"
-              accessibilityRole="switch"
-            />
           </View>
 
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -129,20 +120,13 @@ export function PrivacySettingsSections({
               <Text style={styles.settingsIcon}>🔗</Text>
               <View style={styles.settingsTextContent}>
                 <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
-                  분석 결과 공유 허용
+                  분석 결과 공유
                 </Text>
                 <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
-                  분석 결과를 친구와 공유할 수 있어요
+                  결과 화면의 공유 버튼을 누른 경우에만 공유돼요
                 </Text>
               </View>
             </View>
-            <Switch
-              value={settings.shareResults}
-              onValueChange={(value) => onLocalToggle('shareResults', value)}
-              {...switchColors}
-              accessibilityLabel="분석 결과 공유 허용"
-              accessibilityRole="switch"
-            />
           </View>
         </GlassCard>
       </View>

@@ -41,6 +41,17 @@ export type NotificationType =
   | 'daily_checkin'
   | 'test';
 
+const WELLNESS_PHASE2_REMINDER_TYPES: readonly NotificationType[] = [
+  'workout_reminder',
+  'nutrition_reminder',
+  'water_reminder',
+];
+
+/** 예약·즉시 전송 모두 동일한 출시 플래그를 통과해야 한다. */
+export function isNotificationTypeAvailable(type: NotificationType): boolean {
+  return FEATURE_FLAGS.WELLNESS_PHASE2 || !WELLNESS_PHASE2_REMINDER_TYPES.includes(type);
+}
+
 // ============================================================
 // 템플릿 정의
 // ============================================================

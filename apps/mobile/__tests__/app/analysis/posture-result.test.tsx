@@ -11,6 +11,16 @@ import { renderWithTheme } from '../../helpers/test-utils';
 
 // --- Standard mocks ---
 
+// 숨김 게이트 자체는 layout-gates.test.tsx에서 검증한다. 이 파일은 보존된 결과 구현을 검사한다.
+jest.mock('@yiroom/shared', () => ({
+  FEATURE_FLAGS: { WELLNESS_PHASE2: true },
+}));
+
+const mockGetToken = jest.fn(() => Promise.resolve('clerk-token'));
+jest.mock('@clerk/clerk-expo', () => ({
+  useAuth: () => ({ getToken: mockGetToken }),
+}));
+
 jest.mock('lucide-react-native', () => {
   const { View } = require('react-native');
   return new Proxy(
@@ -95,25 +105,21 @@ jest.mock('expo-router', () => ({
   })),
 }));
 
-// Gemini / AI 분석 mock
+// 웹 자세 분석 API thin client mock
 const mockPostureResult = {
   postureType: 'forward_head' as const,
-  overallScore: 72,
-  scores: {
-    headAlignment: 60,
-    shoulderBalance: 75,
-    spineAlignment: 70,
-    hipAlignment: 82,
-  },
   issues: ['거북목 경향이 있어요'],
   exercises: [{ name: '턱 당기기', description: '턱을 뒤로 당기세요', duration: '30초 x 3세트' }],
   dailyTips: ['모니터 높이를 눈높이로 맞추세요'],
+  usedMock: false,
+  dbSaveFailed: false,
 };
 
+jest.mock('../../../lib/api/posture', () => ({
+  requestPostureAnalysis: jest.fn(() => Promise.resolve(mockPostureResult)),
+}));
+
 jest.mock('../../../lib/gemini', () => ({
-  analyzePosture: jest.fn(() =>
-    Promise.resolve({ result: mockPostureResult, usedFallback: false })
-  ),
   imageToBase64: jest.fn(() => Promise.resolve('base64data')),
 }));
 
@@ -193,6 +199,7 @@ import PostureResultScreen from '../../../app/(analysis)/posture/result';
 describe('PostureResultScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetToken.mockResolvedValue('clerk-token');
   });
 
   it('초기 로딩 상태가 표시된다', () => {
@@ -203,7 +210,7 @@ describe('PostureResultScreen', () => {
 
   it('분석 완료 후 결과 화면이 렌더링된다', async () => {
     const { findByTestId, getAllByText, queryByText } = renderWithTheme(<PostureResultScreen />);
-    // analyzePosture mock이 resolve되면 결과 화면 표시
+    // 웹 API mock이 resolve되면 결과 화면 표시
     const resultScreen = await findByTestId('analysis-posture-result-screen');
     expect(resultScreen).toBeTruthy();
     expect(getAllByText('거북목').length).toBeGreaterThan(0);
@@ -222,12 +229,20 @@ describe('PostureResultScreen', () => {
   });
 
   it('분석 실패 시 에러 상태가 표시된다', async () => {
-    const { analyzePosture } = require('../../../lib/gemini');
-    analyzePosture.mockRejectedValueOnce(new Error('분석 실패'));
+    const { requestPostureAnalysis } = require('../../../lib/api/posture');
+    requestPostureAnalysis.mockRejectedValueOnce(new Error('분석 실패'));
 
     const { findByTestId } = renderWithTheme(<PostureResultScreen />);
     const errorState = await findByTestId('posture-error');
     expect(errorState).toBeTruthy();
+  });
+
+  it('이미지를 공개 키 없이 인증된 웹 API로 전송한다', async () => {
+    const { requestPostureAnalysis } = require('../../../lib/api/posture');
+    const screen = renderWithTheme(<PostureResultScreen />);
+
+    await screen.findByTestId('analysis-posture-result-screen');
+    expect(requestPostureAnalysis).toHaveBeenCalledWith('base64data', 'clerk-token');
   });
 
   // 회귀 방지: posture는 오펀(숨김 웰니스 축) — 존재하지 않는 운동 탭 CTA가 없어야 한다
