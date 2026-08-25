@@ -22,9 +22,10 @@ export function useOnlineStatus(): UseOnlineStatusReturn {
 
   useEffect(() => {
     // SSR에서는 기본값 true 사용
-    if (typeof window === 'undefined') return;
+    // RN에는 window 이벤트·navigator.onLine이 없다(웹 사포크) — 미지원 환경은 온라인 가정 유지
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
 
-    setIsOnline(navigator.onLine);
+    setIsOnline(typeof navigator !== 'undefined' ? (navigator.onLine ?? true) : true);
 
     const handleOnline = () => {
       setIsOnline(true);

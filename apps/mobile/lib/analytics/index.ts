@@ -94,8 +94,8 @@ export {
 } from './duration';
 
 // Web Vitals (Core Web Vitals 추적)
-export { initWebVitals } from './web-vitals';
-export type { Metric as WebVitalsMetric } from './web-vitals';
+// web-vitals 사포크(웹 전용 @sentry/nextjs 의존)는 배럴에서 제외 — Metro가 웹 서버
+// 코드를 모바일 번들로 끌고 들어와 번들링이 깨진다(S4 사포크 정리 대상, 소비처 0 확인).
 
 // Types re-export
 export type {

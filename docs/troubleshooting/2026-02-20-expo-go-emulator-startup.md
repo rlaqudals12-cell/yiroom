@@ -346,3 +346,37 @@ npx expo start --clear
 ---
 
 **Updated**: 2026-04-04 | v2.0 — Metro 외부 IP, APK 네이티브 모듈 누락, css-interop 크래시 추가
+
+---
+
+## 4. (2026-08-26 추가) 개발 빌드 무한 로딩·부팅 크래시 — 웹 사포크 지뢰 2종
+
+### 증상
+
+- "Bundling 100%" 또는 "Loading from …"에서 영구 정지, JS 로그(ReactNativeJS) 0
+- 또는 RedBox: `window.addEventListener is not a function`
+- 새 Metro 첫 기동 직후엔 `SocketTimeoutException`(콜드 크롤링 중 클라 타임아웃)
+
+### 근본 원인 (3층)
+
+1. **모듈 해석 실패**: `lib/analytics/index.ts` 배럴이 웹 사포크(`web-vitals.ts` →
+   `@sentry/nextjs`)를 re-export → Metro가 웹 서버 코드를 모바일 그래프로 끌어감.
+   S1 계측·배치 C 설정 화면이 배럴을 import하면서 발현.
+2. **부팅 즉사**: `lib/analytics/duration.ts` 모듈 최상위 `window.addEventListener` —
+   RN Hermes는 `window`가 **정의돼 있어** `typeof window !== 'undefined'` 가드를 통과,
+   호출 순간 TypeError → 앱 전체 부팅 사망. `hooks/useOnlineStatus.ts`도 동일 지뢰.
+   ⚠️ **release(EAS) 빌드도 동일하게 즉사한다** — Jest·tsc로는 안 잡힘(번들 경로).
+3. **전송 타임아웃**: 새 Metro의 첫 크롤링(모노레포 watchFolders) 동안 dev client의
+   okhttp 헤더 타임아웃 초과.
+
+### 해결 (정본 절차)
+
+1. 웹 API 가드는 `typeof window !== 'undefined'`가 아니라
+   **`typeof window.addEventListener === 'function'`**으로.
+2. 배럴에서 웹 전용 파일 re-export 금지(발견 즉시 절단).
+3. 에뮬 연결은 NAT(10.0.2.2) 대신 **`adb reverse tcp:8081 tcp:8081` + localhost**
+   (§3과 동일 — API도 `adb reverse tcp:3000` + EXPO_PUBLIC_YIROOM_API_URL=http://localhost:3000).
+4. Metro 재기동 직후엔 **번들 예열 후 앱 접속**:
+   `curl "http://localhost:8081/node_modules/expo-router/entry.bundle?platform=android&dev=true"`
+   (첫 빌드 수 분 → 캐시 후 2~4초).
+5. 딥링크로 직행: `adb shell am start -a android.intent.action.VIEW -d "yiroom://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"`

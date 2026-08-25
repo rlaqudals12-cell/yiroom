@@ -116,7 +116,9 @@ export const durationTrackers = {
 };
 
 // 페이지 언로드 시 남은 타이머 종료
-if (typeof window !== 'undefined') {
+// RN Hermes는 window가 정의돼 있지만 addEventListener가 없다 — typeof 가드만으로는
+// 부팅 크래시(웹 사포크 지뢰). 웹 DOM 환경에서만 배선한다.
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
   window.addEventListener('beforeunload', () => {
     // sendBeacon으로 남은 데이터 전송
     const features = Array.from(activeTimers.keys());
