@@ -20,6 +20,14 @@ export interface AgeVerificationResult {
   message: string;
 }
 
+/** 숫자 입력을 가입·기존 계정 수집 화면의 YYYY-MM-DD 표기로 통일한다. */
+export function formatBirthdateInput(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+}
+
 // ─── 핵심 함수 ───────────────────────────────────────
 
 /**
@@ -106,21 +114,28 @@ export function parseBirthDate(dateStr: string): Date | null {
 
 // ─── 연령 제한 라우트 ────────────────────────────────
 
-const AGE_RESTRICTED_ROUTES = ['/(analysis)', '/(tabs)', '/settings', '/products'];
+// 로그인 사용자의 일반 앱 표면은 기본적으로 연령 확인 대상이다. 새 라우트를 추가할 때
+// 허용 목록을 빠뜨려 우회가 생기지 않도록, 인증·법적 고지 화면만 명시적으로 면제한다.
+const AGE_VERIFICATION_EXEMPT_ROUTES = [
+  '/(auth)',
+  '/sign-in',
+  '/sign-up',
+  '/complete-profile',
+  '/age-restricted',
+  '/privacy-policy',
+  '/terms',
+  '/licenses',
+];
 
-const EXEMPT_ROUTES = ['/(auth)', '/sign-in', '/sign-up', '/age-restricted'];
+function matchesRouteOrChild(pathname: string, route: string): boolean {
+  return pathname === route || pathname.startsWith(`${route}/`);
+}
 
 /**
  * 연령 검증이 필요한 라우트인지 확인
  */
 export function isAgeVerificationRequiredRoute(pathname: string): boolean {
-  // 면제 라우트 확인
-  if (EXEMPT_ROUTES.some((route) => pathname.startsWith(route))) {
-    return false;
-  }
-
-  // 제한 라우트 확인
-  return AGE_RESTRICTED_ROUTES.some((route) => pathname.startsWith(route));
+  return !AGE_VERIFICATION_EXEMPT_ROUTES.some((route) => matchesRouteOrChild(pathname, route));
 }
 
 // ─── 유틸리티 ─────────────────────────────────────────

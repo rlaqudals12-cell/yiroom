@@ -7,9 +7,10 @@
 import { useUser } from '@clerk/clerk-expo';
 import { useState, useEffect, useCallback } from 'react';
 
+import type { AnalysisModuleType } from './useAnalysisHistory';
+import type { VisibleAnalysisModule } from '../lib/analysis/visible-modules';
 import { useClerkSupabaseClient } from '../lib/supabase';
 import { analysisLogger } from '../lib/utils/logger';
-import type { AnalysisModuleType } from './useAnalysisHistory';
 
 // 모듈별 비교 지표 정의
 interface MetricConfig {
@@ -109,7 +110,9 @@ const MODULE_LABELS: Record<AnalysisModuleType, string> = {
   posture: '자세',
 };
 
-export function useAnalysisComparison(moduleType: AnalysisModuleType): UseAnalysisComparisonReturn {
+export function useAnalysisComparison(
+  moduleType: VisibleAnalysisModule
+): UseAnalysisComparisonReturn {
   const { user, isLoaded } = useUser();
   const supabase = useClerkSupabaseClient();
 

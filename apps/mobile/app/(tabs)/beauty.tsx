@@ -43,6 +43,7 @@ import { useUserAnalyses } from '../../hooks/useUserAnalyses';
 import { useUserMatching } from '../../hooks/useUserMatching';
 import { staggeredEntry, TIMING } from '../../lib/animations';
 import { coarseCategoryOf } from '../../lib/products';
+import { calculatePersonalMatchPercentage } from '../../lib/products/matching';
 import { useTheme, radii, ICON_BG_OPACITY, borderGlow } from '../../lib/theme';
 
 // 통합 큐레이션 카테고리 → 모바일 뷰티 필터 키 매핑
@@ -114,14 +115,16 @@ export default function BeautyTab(): React.JSX.Element {
   // 웹 Tier A와 같은 personalMatched 계약: 개인 축 근거가 확인된 제품만 점수를 노출한다.
   const sortedProducts = useMemo(() => {
     return getMatchedProducts(cosmeticProducts)
-      .map(({ product: p, matchScore, personalMatched }): BeautyProduct => {
-        const hasPersonalMatch = personalMatched === true;
+      .map(({ product: p, matchReasons }): BeautyProduct => {
+        // 종합 점수에는 평점·리뷰·브랜드 보너스가 섞이므로 표시값으로 사용하지 않는다.
+        const personalMatchPercentage = calculatePersonalMatchPercentage(matchReasons);
+        const hasPersonalMatch = personalMatchPercentage !== undefined;
         return {
           id: p.id,
           name: p.name,
           brand: p.brand ?? '',
           imageUrl: p.imageUrl,
-          matchRate: hasPersonalMatch ? matchScore : undefined,
+          matchRate: personalMatchPercentage,
           personalMatched: hasPersonalMatch,
           rating: p.rating ?? 0,
           price: p.priceKrw,

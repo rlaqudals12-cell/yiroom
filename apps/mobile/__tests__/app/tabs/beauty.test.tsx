@@ -24,6 +24,18 @@ import {
   typography,
 } from '../../../lib/theme/tokens';
 
+const mockUseBeautyProducts = jest.fn();
+jest.mock('../../../hooks/useBeautyProducts', () => ({
+  useBeautyProducts: (...args: unknown[]) => mockUseBeautyProducts(...args),
+}));
+
+const mockUseUserAnalyses = jest.fn();
+jest.mock('../../../hooks/useUserAnalyses', () => ({
+  useUserAnalyses: (...args: unknown[]) => mockUseUserAnalyses(...args),
+}));
+
+const mockGetMatchedProducts = jest.fn();
+
 // lucide-react-native 아이콘 mock (Proxy로 모든 아이콘 자동 처리)
 jest.mock('lucide-react-native', () => {
   const { View } = require('react-native');
@@ -44,13 +56,7 @@ jest.mock('lucide-react-native', () => {
 // 뷰티 탭이 새로 사용하는 공용 personalMatched 계약만 고정해 네트워크 조회를 막는다.
 jest.mock('../../../hooks/useUserMatching', () => ({
   useUserMatching: () => ({
-    getMatchedProducts: (products: Array<Record<string, unknown>>) =>
-      products.map((product) => ({
-        product,
-        matchScore: 50,
-        matchReasons: [],
-        personalMatched: false,
-      })),
+    getMatchedProducts: (...args: unknown[]) => mockGetMatchedProducts(...args),
   }),
 }));
 
@@ -84,6 +90,27 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 }
 
 describe('BeautyTab', () => {
+  beforeEach(() => {
+    mockUseBeautyProducts.mockReturnValue({
+      products: [],
+      isLoading: false,
+      refetch: jest.fn(),
+    });
+    mockUseUserAnalyses.mockReturnValue({
+      skinAnalysis: null,
+      isLoading: false,
+      refetch: jest.fn(),
+    });
+    mockGetMatchedProducts.mockImplementation((products: Array<Record<string, unknown>>) =>
+      products.map((product) => ({
+        product,
+        matchScore: 50,
+        matchReasons: [],
+        personalMatched: false,
+      }))
+    );
+  });
+
   describe('기본 렌더링', () => {
     it('에러 없이 렌더링된다', () => {
       const { getByTestId } = renderWithTheme(<BeautyTab />);
@@ -133,6 +160,57 @@ describe('BeautyTab', () => {
       const { getByText } = renderWithTheme(<BeautyTab />);
       expect(getByText('AI가 피부 상태를 분석하고 맞춤 케어를 추천해요')).toBeTruthy();
       expect(getByText('나에게 어울리는 색상을 찾아보세요')).toBeTruthy();
+    });
+  });
+
+  describe('개인 적합도 정직성', () => {
+    it('평점·리뷰·브랜드가 올린 종합 점수 대신 실제 개인 축 일치 비율만 표시한다', () => {
+      const product = {
+        id: 'mixed-score-product',
+        name: '혼합 근거 제품',
+        brand: '인기 브랜드',
+        category: 'cleanser',
+        priceRange: 'budget',
+        priceKrw: 12000,
+        rating: 4.9,
+        reviewCount: 2000,
+        concerns: [],
+        keyIngredients: [],
+      };
+      mockUseBeautyProducts.mockReturnValue({
+        products: [product],
+        isLoading: false,
+        refetch: jest.fn(),
+      });
+      mockUseUserAnalyses.mockReturnValue({
+        skinAnalysis: {
+          skinType: 'dry',
+          overallScore: 72,
+          concerns: [],
+          createdAt: new Date('2026-08-25T00:00:00.000Z'),
+          usedFallback: false,
+        },
+        isLoading: false,
+        refetch: jest.fn(),
+      });
+      mockGetMatchedProducts.mockReturnValue([
+        {
+          product,
+          matchScore: 95,
+          matchReasons: [
+            { type: 'skinType', label: '건성 피부', matched: true },
+            { type: 'undertone', label: '웜 언더톤', matched: false },
+            { type: 'brand', label: '선호 브랜드', matched: true },
+            { type: 'popularity', label: '리뷰 인기', matched: true },
+          ],
+          personalMatched: true,
+        },
+      ]);
+
+      const { getByText, queryByText } = renderWithTheme(<BeautyTab />);
+
+      expect(getByText('개인 적합도 50%')).toBeTruthy();
+      expect(queryByText('개인 적합도 95%')).toBeNull();
     });
   });
 

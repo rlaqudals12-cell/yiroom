@@ -9,10 +9,12 @@ import { useEffect } from 'react';
 import { LogBox, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { AgeVerificationGate } from '../components/common/AgeVerificationGate';
 import { OfflineBanner } from '../components/common/OfflineBanner';
 import { useAnalyticsLifecycle } from '../lib/analytics/lifecycle';
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
 import { initSentry, SentryErrorBoundary, sentryWrap } from '../lib/monitoring/sentry';
+import { cleanupHiddenWellnessNotificationsOnce } from '../lib/notifications/hidden-wellness-cleanup';
 import { useNotificationResponse } from '../lib/notifications/useNotifications';
 import { ThemeProvider, useTheme, lightColors, typography, spacing } from '../lib/theme';
 import { appLogger } from '../lib/utils/logger';
@@ -32,47 +34,57 @@ function ThemedStack() {
   // 알림 탭 → 딥링크(data.route로 이동). 아침 브리핑 등 로컬 알림 탭을 [오늘] 탭으로 연결.
   useNotificationResponse();
 
+  // 배치 E 이전에 남은 운동·식사·물 예약 알림만 앱 시작 시 1회 정리한다.
+  useEffect(() => {
+    void cleanupHiddenWellnessNotificationsOnce();
+  }, []);
+
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <OfflineBanner />
-      <Stack
-        initialRouteName="index"
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: colors.card,
-          },
-          headerTintColor: colors.foreground,
-          headerTitleStyle: {
-            fontWeight: typography.weight.semibold,
-          },
-        }}
-      >
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-        <Stack.Screen name="(analysis)" options={{ headerShown: false }} />
-        <Stack.Screen name="(scan)" options={{ headerShown: false }} />
-        <Stack.Screen name="(challenges)" options={{ headerShown: false }} />
-        <Stack.Screen name="(closet)" options={{ headerShown: false }} />
-        <Stack.Screen name="(chat)" options={{ headerShown: false }} />
-        <Stack.Screen name="(coach)" options={{ headerShown: false }} />
-        <Stack.Screen name="(feed)" options={{ headerShown: false }} />
-        <Stack.Screen name="(nutrition)" options={{ headerShown: false }} />
-        <Stack.Screen name="(reports)" options={{ headerShown: false }} />
-        <Stack.Screen name="(social)" options={{ headerShown: false }} />
-        <Stack.Screen name="(workout)" options={{ headerShown: false }} />
-        <Stack.Screen name="(twin)" options={{ headerShown: false }} />
-        <Stack.Screen name="products" options={{ headerShown: false }} />
-        <Stack.Screen name="settings" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="privacy-policy"
-          options={{ title: '개인정보처리방침', headerBackTitle: '뒤로' }}
-        />
-        <Stack.Screen name="terms" options={{ title: '이용약관', headerBackTitle: '뒤로' }} />
-        <Stack.Screen name="wellness" options={{ title: '웰니스 점수', headerBackTitle: '뒤로' }} />
-      </Stack>
+      <AgeVerificationGate loadingColor={colors.foreground}>
+        <Stack
+          initialRouteName="index"
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: colors.card,
+            },
+            headerTintColor: colors.foreground,
+            headerTitleStyle: {
+              fontWeight: typography.weight.semibold,
+            },
+          }}
+        >
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+          <Stack.Screen name="(analysis)" options={{ headerShown: false }} />
+          <Stack.Screen name="(scan)" options={{ headerShown: false }} />
+          <Stack.Screen name="(challenges)" options={{ headerShown: false }} />
+          <Stack.Screen name="(closet)" options={{ headerShown: false }} />
+          <Stack.Screen name="(chat)" options={{ headerShown: false }} />
+          <Stack.Screen name="(coach)" options={{ headerShown: false }} />
+          <Stack.Screen name="(feed)" options={{ headerShown: false }} />
+          <Stack.Screen name="(nutrition)" options={{ headerShown: false }} />
+          <Stack.Screen name="(reports)" options={{ headerShown: false }} />
+          <Stack.Screen name="(social)" options={{ headerShown: false }} />
+          <Stack.Screen name="(workout)" options={{ headerShown: false }} />
+          <Stack.Screen name="(twin)" options={{ headerShown: false }} />
+          <Stack.Screen name="products" options={{ headerShown: false }} />
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="privacy-policy"
+            options={{ title: '개인정보처리방침', headerBackTitle: '뒤로' }}
+          />
+          <Stack.Screen name="terms" options={{ title: '이용약관', headerBackTitle: '뒤로' }} />
+          <Stack.Screen
+            name="wellness"
+            options={{ title: '웰니스 점수', headerBackTitle: '뒤로' }}
+          />
+        </Stack>
+      </AgeVerificationGate>
     </>
   );
 }

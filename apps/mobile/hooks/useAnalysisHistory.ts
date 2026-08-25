@@ -7,6 +7,10 @@
 import { useUser } from '@clerk/clerk-expo';
 import { useState, useEffect, useCallback } from 'react';
 
+import {
+  VISIBLE_ANALYSIS_MODULES,
+  type VisibleAnalysisModule,
+} from '../lib/analysis/visible-modules';
 import { useClerkSupabaseClient } from '../lib/supabase';
 import { analysisLogger } from '../lib/utils/logger';
 
@@ -133,7 +137,7 @@ interface UseAnalysisHistoryReturn {
 const PAGE_SIZE = 20;
 
 export function useAnalysisHistory(
-  moduleType: AnalysisModuleType | 'all',
+  moduleType: VisibleAnalysisModule | 'all',
   period: HistoryPeriod = 'all'
 ): UseAnalysisHistoryReturn {
   const { user, isLoaded } = useUser();
@@ -188,9 +192,9 @@ export function useAnalysisHistory(
   const fetchAll = useCallback(
     async (pageOffset: number, dateFilter: string | null): Promise<AnalysisHistoryItem[]> => {
       // ADR-098 공개 5축만 조회한다. 숨김 모듈을 전체 이력에서 재노출하지 않는다.
-      const types: AnalysisModuleType[] = ['personal-color', 'skin', 'body', 'hair', 'makeup'];
-
-      const results = await Promise.all(types.map((type) => fetchModule(type, 0, dateFilter)));
+      const results = await Promise.all(
+        VISIBLE_ANALYSIS_MODULES.map((type) => fetchModule(type, 0, dateFilter))
+      );
 
       // 전체를 시간순 정렬 후 페이지네이션
       return results

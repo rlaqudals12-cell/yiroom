@@ -1,12 +1,18 @@
 /**
  * 리포트 모듈 레이아웃
  */
-import { Stack } from 'expo-router';
+import { FEATURE_FLAGS } from '@yiroom/shared';
+import { Redirect, Stack } from 'expo-router';
 
-import { useTheme, typography } from '../../lib/theme';
+import { useTheme } from '../../lib/theme';
 
 export default function ReportsLayout() {
   const { colors, typography } = useTheme();
+
+  // ADR-098: 운동·영양 리포트는 Phase 2 복원 전까지 딥링크를 포함해 진입을 막는다.
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   return (
     <Stack

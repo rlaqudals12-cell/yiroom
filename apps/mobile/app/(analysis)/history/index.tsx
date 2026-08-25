@@ -12,25 +12,33 @@ import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator } from '
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
+import {
+  VISIBLE_ANALYSIS_MODULES,
+  isVisibleAnalysisModule,
+  type VisibleAnalysisModule,
+} from '@/lib/analysis/visible-modules';
 import { staggeredEntry, TIMING } from '@/lib/animations';
 
 import { AnalysisHistoryCard } from '../../../components/analysis/AnalysisHistoryCard';
 import {
   useAnalysisHistory,
-  type AnalysisModuleType,
   type HistoryPeriod,
   type AnalysisHistoryItem,
 } from '../../../hooks/useAnalysisHistory';
 import { useTheme, spacing, radii, typography } from '../../../lib/theme';
 
-// 모듈 필터 탭 — ADR-098: 5축(PC/S/C/H/M)만 노출. oral(제거)·posture(숨김) 탭 제외
-const MODULE_TABS: { key: AnalysisModuleType | 'all'; label: string }[] = [
+const MODULE_LABELS: Record<VisibleAnalysisModule, string> = {
+  'personal-color': '컬러',
+  skin: '피부',
+  body: '체형',
+  hair: '헤어',
+  makeup: '메이크업',
+};
+
+// ADR-098 공개 5축 정본에서만 탭을 만든다. oral(제거)·posture(숨김)는 쿼리로도 노출하지 않는다.
+const MODULE_TABS: { key: VisibleAnalysisModule | 'all'; label: string }[] = [
   { key: 'all', label: '전체' },
-  { key: 'personal-color', label: '컬러' },
-  { key: 'skin', label: '피부' },
-  { key: 'body', label: '체형' },
-  { key: 'hair', label: '헤어' },
-  { key: 'makeup', label: '메이크업' },
+  ...VISIBLE_ANALYSIS_MODULES.map((key) => ({ key, label: MODULE_LABELS[key] })),
 ];
 
 // 기간 필터 탭
@@ -45,9 +53,12 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
   const { colors, status, brand } = useTheme();
   const params = useLocalSearchParams<{ module?: string }>();
 
-  // 초기 모듈 필터: URL 파라미터로 전달 가능
-  const initialModule = (params.module as AnalysisModuleType | 'all') || 'all';
-  const [selectedModule, setSelectedModule] = useState<AnalysisModuleType | 'all'>(initialModule);
+  // 숨김·미지원 모듈은 쿼리로 들어와도 공개 5축을 넘지 않도록 전체 이력으로 되돌린다.
+  const initialModule =
+    params.module === 'all' || !isVisibleAnalysisModule(params.module) ? 'all' : params.module;
+  const [selectedModule, setSelectedModule] = useState<VisibleAnalysisModule | 'all'>(
+    initialModule
+  );
   const [selectedPeriod, setSelectedPeriod] = useState<HistoryPeriod>('all');
 
   const { items, isLoading, error, hasMore, loadMore, refetch } = useAnalysisHistory(
@@ -55,7 +66,7 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
     selectedPeriod
   );
 
-  const handleModuleChange = useCallback((key: AnalysisModuleType | 'all') => {
+  const handleModuleChange = useCallback((key: VisibleAnalysisModule | 'all') => {
     Haptics.selectionAsync();
     setSelectedModule(key);
   }, []);
@@ -68,14 +79,14 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
   const handleItemPress = useCallback((item: AnalysisHistoryItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     // 해당 분석의 결과 화면으로 이동
-    const routeMap: Record<AnalysisModuleType, string> = {
+    if (!isVisibleAnalysisModule(item.moduleType)) return;
+
+    const routeMap: Record<VisibleAnalysisModule, string> = {
       'personal-color': '/(analysis)/personal-color/result',
       skin: '/(analysis)/skin/result',
       body: '/(analysis)/body/result',
       hair: '/(analysis)/hair/result',
       makeup: '/(analysis)/makeup/result',
-      'oral-health': '/(analysis)/oral-health/result',
-      posture: '/(analysis)/posture/result',
     };
     const route = routeMap[item.moduleType];
     if (route) {

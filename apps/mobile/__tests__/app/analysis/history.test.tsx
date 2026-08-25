@@ -23,11 +23,7 @@ jest.mock('lucide-react-native', () => {
 
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
-  const createChainable = (): unknown =>
-    new Proxy(
-      {},
-      { get: () => createChainable }
-    );
+  const createChainable = (): unknown => new Proxy({}, { get: () => createChainable });
   return {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: unknown) => c },
@@ -88,9 +84,10 @@ jest.mock('react-native-safe-area-context', () => {
 // --- Screen-specific mocks ---
 
 const mockPush = jest.fn();
+let mockSearchParams: { module?: string } = {};
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
-  useLocalSearchParams: jest.fn(() => ({})),
+  useLocalSearchParams: jest.fn(() => mockSearchParams),
 }));
 
 const mockHistoryHook = {
@@ -133,19 +130,12 @@ jest.mock('../../../components/ui', () => {
       testID?: string;
       [key: string]: unknown;
     }) => <View testID={testID}>{children}</View>,
-    GlassCard: ({
-      children,
-      ...props
-    }: {
-      children: React.ReactNode;
-      [key: string]: unknown;
-    }) => <View {...props}>{children}</View>,
-    DataStateWrapper: ({
-      children,
-    }: {
-      children: React.ReactNode;
-      [key: string]: unknown;
-    }) => <View>{children}</View>,
+    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
+    DataStateWrapper: ({ children }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View>{children}</View>
+    ),
   };
 });
 
@@ -155,11 +145,23 @@ import AnalysisHistoryScreen from '../../../app/(analysis)/history/index';
 describe('AnalysisHistoryScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSearchParams = {};
+    const { useAnalysisHistory } = require('../../../hooks/useAnalysisHistory');
+    useAnalysisHistory.mockReturnValue(mockHistoryHook);
   });
 
   it('에러 없이 렌더링된다', () => {
     const { getByTestId } = renderWithTheme(<AnalysisHistoryScreen />);
     expect(getByTestId('analysis-history-screen')).toBeTruthy();
+  });
+
+  it('/(analysis)/history?module=posture 직접 진입은 숨김 축 대신 전체 이력으로 폴백한다', () => {
+    mockSearchParams = { module: 'posture' };
+    const { useAnalysisHistory } = require('../../../hooks/useAnalysisHistory');
+
+    renderWithTheme(<AnalysisHistoryScreen />);
+
+    expect(useAnalysisHistory).toHaveBeenCalledWith('all', 'all');
   });
 
   it('이력 카드는 선택한 행 id를 historyId로 결과 화면에 전달한다', () => {

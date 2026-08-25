@@ -8,12 +8,13 @@ import { Redirect, Stack, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, View } from 'react-native';
 
+import { VISIBLE_ANALYSIS_MODULES } from '@/lib/analysis/visible-modules';
 import { fetchAgreementStatus } from '@/lib/api/agreement';
 import { fetchBirthdate } from '@/lib/api/birthdate';
 
 import { useTheme } from '../../lib/theme';
 
-const STANDALONE_BIOMETRIC_AXES = new Set(['personal-color', 'skin', 'body', 'hair', 'makeup']);
+const STANDALONE_BIOMETRIC_AXES = new Set<string>(VISIBLE_ANALYSIS_MODULES);
 
 type GateStatus = 'checking' | 'allowed' | 'needs-setup' | 'needs-auth';
 

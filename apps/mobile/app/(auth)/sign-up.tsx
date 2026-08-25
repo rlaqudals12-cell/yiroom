@@ -18,22 +18,16 @@ import {
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
+import { formatBirthdateInput } from '@/lib/age-verification';
 import { TIMING } from '@/lib/animations';
 import { BirthdateApiError, evaluateBirthdateGate, saveBirthdate } from '@/lib/api/birthdate';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
-
-function formatBirthdateInput(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 8);
-  if (digits.length <= 4) return digits;
-  if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
-  return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
-}
 
 export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
   const { getToken, signOut } = useAuth();
   const router = useRouter();
-  const { colors, typography } = useTheme();
+  const { colors } = useTheme();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

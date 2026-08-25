@@ -15,30 +15,29 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { ComparisonCard } from '@/components/analysis/ComparisonCard';
 import { ScreenContainer, DataStateWrapper, GlassCard } from '@/components/ui';
 import { useAnalysisComparison } from '@/hooks/useAnalysisComparison';
-import type { AnalysisModuleType } from '@/hooks/useAnalysisHistory';
+import {
+  resolveVisibleAnalysisModule,
+  type VisibleAnalysisModule,
+} from '@/lib/analysis/visible-modules';
 import { TIMING } from '@/lib/animations';
 import { useTheme } from '@/lib/theme';
 
 // 모듈별 이력 화면 경로
-const MODULE_HISTORY_PATH: Record<AnalysisModuleType, string> = {
+const MODULE_HISTORY_PATH: Record<VisibleAnalysisModule, string> = {
   'personal-color': '/(analysis)/personal-color/history',
   skin: '/(analysis)/skin/history',
   body: '/(analysis)/body/history',
   hair: '/(analysis)/hair/history',
   makeup: '/(analysis)/makeup/history',
-  'oral-health': '/(analysis)/oral-health/history',
-  posture: '/(analysis)/posture/history',
 };
 
 // 모듈별 분석 시작 경로
-const MODULE_START_PATH: Record<AnalysisModuleType, string> = {
+const MODULE_START_PATH: Record<VisibleAnalysisModule, string> = {
   'personal-color': '/(analysis)/personal-color',
   skin: '/(analysis)/skin',
   body: '/(analysis)/body',
   hair: '/(analysis)/hair',
   makeup: '/(analysis)/makeup',
-  'oral-health': '/(analysis)/oral-health',
-  posture: '/(analysis)/posture',
 };
 
 function formatDate(date: Date): string {
@@ -50,7 +49,8 @@ function formatDate(date: Date): string {
 export default function CompareScreen(): React.JSX.Element {
   const { colors, spacing, radii, typography, brand } = useTheme();
   const params = useLocalSearchParams<{ module?: string }>();
-  const moduleType = (params.module || 'skin') as AnalysisModuleType;
+  // 쿼리는 신뢰 경계다. 숨김·미지원 값은 기존 기본 축인 피부로 되돌린다.
+  const moduleType = resolveVisibleAnalysisModule(params.module, 'skin');
 
   const { data, isLoading, error, refetch } = useAnalysisComparison(moduleType);
 

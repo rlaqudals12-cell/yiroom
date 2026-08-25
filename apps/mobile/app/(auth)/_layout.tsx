@@ -3,7 +3,7 @@
  */
 import { Stack } from 'expo-router';
 
-import { useTheme, typography } from '../../lib/theme';
+import { useTheme } from '../../lib/theme';
 
 export default function AuthLayout() {
   const { colors, typography } = useTheme();
@@ -30,6 +30,20 @@ export default function AuthLayout() {
         name="sign-up"
         options={{
           title: '회원가입',
+        }}
+      />
+      <Stack.Screen
+        name="complete-profile"
+        options={{
+          title: '연령 확인',
+          headerBackVisible: false,
+        }}
+      />
+      <Stack.Screen
+        name="age-restricted"
+        options={{
+          title: '이용 연령 안내',
+          headerBackVisible: false,
         }}
       />
     </Stack>

@@ -25,10 +25,12 @@ type OutfitMatch = OutfitSuggestion['top'];
 function OutfitItem({
   label,
   match,
+  showScore,
   onPress,
 }: {
   label: string;
   match: OutfitMatch;
+  showScore: boolean;
   onPress: (id: string) => void;
 }) {
   const { colors, status } = useTheme();
@@ -58,18 +60,23 @@ function OutfitItem({
         <Text style={[styles.outfitItemName, { color: colors.foreground }]} numberOfLines={1}>
           {match.item.name}
         </Text>
-        <View style={[styles.scoreContainer, { backgroundColor: colors.border }]}>
+        {showScore && (
           <View
-            style={[
-              styles.scoreBar,
-              { width: `${match.score.total}%` },
-              match.score.total >= 70 && { backgroundColor: status.success },
-              match.score.total >= 50 &&
-                match.score.total < 70 && { backgroundColor: status.warning },
-              match.score.total < 50 && { backgroundColor: status.error },
-            ]}
-          />
-        </View>
+            testID={`outfit-item-score-${match.item.id}`}
+            style={[styles.scoreContainer, { backgroundColor: colors.border }]}
+          >
+            <View
+              style={[
+                styles.scoreBar,
+                { width: `${match.score.total}%` },
+                match.score.total >= 70 && { backgroundColor: status.success },
+                match.score.total >= 50 &&
+                  match.score.total < 70 && { backgroundColor: status.warning },
+                match.score.total < 50 && { backgroundColor: status.error },
+              ]}
+            />
+          </View>
+        )}
       </View>
     </Pressable>
   );
@@ -112,14 +119,27 @@ export function RecommendOutfitSection({
     <View style={styles.outfitSection}>
       <View style={styles.outfitHeader}>
         <Text style={[styles.outfitTitle, { color: colors.foreground }]}>오늘의 추천 코디</Text>
-        <View style={[styles.scoreCircle, { backgroundColor: moduleTheme.body.dark }]}>
-          <Text style={[styles.scoreCircleText, { color: colors.card }]}>{outfit.totalScore}</Text>
-        </View>
+        {outfit.personalMatched === true && (
+          <View
+            testID="outfit-total-score"
+            style={[styles.scoreCircle, { backgroundColor: moduleTheme.body.dark }]}
+          >
+            <Text style={[styles.scoreCircleText, { color: colors.card }]}>
+              {outfit.totalScore}
+            </Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.outfitGrid}>
         {matches.map(([label, match]) => (
-          <OutfitItem key={label} label={label} match={match} onPress={onItemPress} />
+          <OutfitItem
+            key={label}
+            label={label}
+            match={match}
+            showScore={outfit.personalMatched === true}
+            onPress={onItemPress}
+          />
         ))}
       </View>
 

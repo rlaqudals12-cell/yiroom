@@ -22,11 +22,7 @@ jest.mock('lucide-react-native', () => {
 
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
-  const createChainable = (): unknown =>
-    new Proxy(
-      {},
-      { get: () => createChainable }
-    );
+  const createChainable = (): unknown => new Proxy({}, { get: () => createChainable });
   return {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: unknown) => c },
@@ -86,9 +82,10 @@ jest.mock('react-native-safe-area-context', () => {
 // --- Screen-specific mocks ---
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn() };
+let mockSearchParams: { module?: string } = { module: 'skin' };
 jest.mock('expo-router', () => ({
   router: mockRouter,
-  useLocalSearchParams: jest.fn(() => ({ module: 'skin' })),
+  useLocalSearchParams: jest.fn(() => mockSearchParams),
 }));
 
 const mockComparisonData = {
@@ -127,13 +124,9 @@ jest.mock('../../../components/ui', () => {
       testID?: string;
       [key: string]: unknown;
     }) => <View testID={testID}>{children}</View>,
-    GlassCard: ({
-      children,
-      ...props
-    }: {
-      children: React.ReactNode;
-      [key: string]: unknown;
-    }) => <View {...props}>{children}</View>,
+    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
     DataStateWrapper: ({
       children,
       isLoading,
@@ -143,12 +136,7 @@ jest.mock('../../../components/ui', () => {
       isLoading: boolean;
       isEmpty: boolean;
       [key: string]: unknown;
-    }) =>
-      isLoading || isEmpty ? (
-        <View testID="data-state-wrapper" />
-      ) : (
-        <View>{children}</View>
-      ),
+    }) => (isLoading || isEmpty ? <View testID="data-state-wrapper" /> : <View>{children}</View>),
   };
 });
 
@@ -158,6 +146,9 @@ import CompareScreen from '../../../app/(analysis)/compare';
 describe('CompareScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSearchParams = { module: 'skin' };
+    const { useAnalysisComparison } = require('../../../hooks/useAnalysisComparison');
+    useAnalysisComparison.mockReturnValue(mockComparisonData);
   });
 
   it('에러 없이 렌더링된다', () => {
@@ -169,6 +160,15 @@ describe('CompareScreen', () => {
     const { getByTestId } = renderWithTheme(<CompareScreen />);
     // data가 null이므로 isEmpty=true → data-state-wrapper 표시
     expect(getByTestId('data-state-wrapper')).toBeTruthy();
+  });
+
+  it('/(analysis)/compare?module=posture 직접 진입은 숨김 축 대신 피부 비교로 폴백한다', () => {
+    mockSearchParams = { module: 'posture' };
+    const { useAnalysisComparison } = require('../../../hooks/useAnalysisComparison');
+
+    renderWithTheme(<CompareScreen />);
+
+    expect(useAnalysisComparison).toHaveBeenCalledWith('skin');
   });
 
   it('데이터가 있을 때 ComparisonCard가 표시된다', () => {

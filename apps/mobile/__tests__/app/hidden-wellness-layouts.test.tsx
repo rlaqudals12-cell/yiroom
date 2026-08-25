@@ -31,6 +31,7 @@ jest.mock('../../lib/theme', () => ({
 import MentalHealthLayout from '../../app/mental-health/_layout';
 import YearlyReviewLayout from '../../app/yearly-review/_layout';
 import NutritionLayout from '../../app/(nutrition)/_layout';
+import ReportsLayout from '../../app/(reports)/_layout';
 import WorkoutLayout from '../../app/(workout)/_layout';
 
 describe('숨김 웰니스 라우트 그룹 게이트', () => {
@@ -41,6 +42,18 @@ describe('숨김 웰니스 라우트 그룹 게이트', () => {
     ['마음 건강 Mock', MentalHealthLayout],
   ] as const)('%s 직접 진입을 오늘 탭으로 돌린다', (_label, Layout) => {
     const { getByTestId, queryByTestId } = render(<Layout />);
+
+    expect(getByTestId('wellness-gate-redirect').props.accessibilityLabel).toBe('/(tabs)');
+    expect(queryByTestId('stack-root')).toBeNull();
+  });
+
+  it.each([
+    '/(reports)',
+    '/(reports)/weekly',
+    '/(reports)/monthly',
+    '/(reports)/nutrition-history',
+  ])('%s 직접 진입도 오늘 탭으로 돌려보낸다', (_route) => {
+    const { getByTestId, queryByTestId } = render(<ReportsLayout />);
 
     expect(getByTestId('wellness-gate-redirect').props.accessibilityLabel).toBe('/(tabs)');
     expect(queryByTestId('stack-root')).toBeNull();

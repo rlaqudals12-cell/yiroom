@@ -18,13 +18,13 @@ describe('age-verification', () => {
   describe('calculateAge', () => {
     it('생일 전 나이 계산', () => {
       const birth = new Date(2000, 11, 25); // 12월 25일
-      const ref = new Date(2020, 5, 15);     // 6월 15일
+      const ref = new Date(2020, 5, 15); // 6월 15일
       expect(calculateAge(birth, ref)).toBe(19);
     });
 
     it('생일 후 나이 계산', () => {
-      const birth = new Date(2000, 0, 15);  // 1월 15일
-      const ref = new Date(2020, 5, 15);     // 6월 15일
+      const birth = new Date(2000, 0, 15); // 1월 15일
+      const ref = new Date(2020, 5, 15); // 6월 15일
       expect(calculateAge(birth, ref)).toBe(20);
     });
 
@@ -119,12 +119,22 @@ describe('age-verification', () => {
       expect(isAgeVerificationRequiredRoute('/(tabs)/workout')).toBe(true);
     });
 
+    it('옷장 직접 진입과 루트는 검증 필요', () => {
+      expect(isAgeVerificationRequiredRoute('/(closet)/recommend')).toBe(true);
+      expect(isAgeVerificationRequiredRoute('/')).toBe(true);
+    });
+
     it('인증 라우트는 면제', () => {
       expect(isAgeVerificationRequiredRoute('/(auth)/sign-in')).toBe(false);
     });
 
     it('로그인 라우트는 면제', () => {
       expect(isAgeVerificationRequiredRoute('/sign-in')).toBe(false);
+    });
+
+    it('개인정보처리방침과 약관은 면제', () => {
+      expect(isAgeVerificationRequiredRoute('/privacy-policy')).toBe(false);
+      expect(isAgeVerificationRequiredRoute('/terms')).toBe(false);
     });
   });
 

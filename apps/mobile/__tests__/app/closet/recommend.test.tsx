@@ -178,6 +178,8 @@ const mockOutfit = {
   accessory: null,
   dress: null,
   totalScore: 78,
+  personalMatched: true,
+  hasPersonalProfile: true,
   tips: ['밝은 색상 상의를 추천해요'],
   // 조립기가 항상 동봉하는 완화 고지 (계절 가드) — 기본은 빈 배열
   warnings: [] as string[],
@@ -514,6 +516,26 @@ describe('RecommendScreen 코디 저장 기능', () => {
       expect(callArg.description).not.toContain('Spring');
       expect(callArg.description).not.toContain('스트레이트');
     });
+
+    it('personalMatched=false 코디는 아이템 점수 막대와 총점을 모두 숨긴다', () => {
+      setupDefaultMocks({
+        personalColorResult: null,
+        bodyAnalysisResult: null,
+        outfitSuggestion: {
+          ...mockOutfit,
+          personalMatched: false,
+          hasPersonalProfile: false,
+        },
+      });
+
+      const { getByTestId, queryByTestId } = renderWithTheme(<RecommendScreen />);
+
+      expect(getByTestId('recommend-analyze-cta')).toBeTruthy();
+      expect(queryByTestId('outfit-total-score')).toBeNull();
+      expect(queryByTestId('outfit-item-score-top1')).toBeNull();
+      expect(queryByTestId('outfit-item-score-bot1')).toBeNull();
+      expect(queryByTestId('outfit-item-score-shoe1')).toBeNull();
+    });
   });
 
   describe('진단이 있는 사용자 — 실제 진단은 그대로 노출', () => {
@@ -525,6 +547,13 @@ describe('RecommendScreen 코디 저장 기능', () => {
       expect(getByText('Spring')).toBeTruthy();
       expect(getByText('스트레이트')).toBeTruthy();
       expect(queryByTestId('recommend-analyze-cta')).toBeNull();
+    });
+
+    it('실제 개인 진단 일치가 있는 코디만 점수를 표시한다', () => {
+      const { getByTestId } = renderWithTheme(<RecommendScreen />);
+
+      expect(getByTestId('outfit-total-score')).toBeTruthy();
+      expect(getByTestId('outfit-item-score-top1')).toBeTruthy();
     });
 
     it('저장 코디 설명에 실제 진단을 기록한다', async () => {
