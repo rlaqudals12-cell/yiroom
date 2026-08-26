@@ -97,4 +97,15 @@ describe('IntegratedAnalysisInputScreen — 가입=첫 미팅(ADR-114)', () => {
 
     expect(queryByTestId('onboarding-skip-button')).toBeNull();
   });
+
+  it('전신 사진이 없으면 키 입력 결과도 예시이며 신뢰도가 낮다고 먼저 알린다', () => {
+    mockUseLocalSearchParams.mockReturnValue({});
+
+    const { getByText, queryByText } = renderWithTheme(<IntegratedAnalysisInputScreen />);
+
+    expect(
+      getByText('전신 사진이 없으면 키를 입력해도 예시 결과로 제공되며 신뢰도가 낮아요')
+    ).toBeTruthy();
+    expect(queryByText('전신 사진 없으면 키만 입력해도 분석 가능해요')).toBeNull();
+  });
 });

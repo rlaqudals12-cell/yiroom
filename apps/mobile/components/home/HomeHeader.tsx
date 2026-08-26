@@ -1,7 +1,7 @@
 /**
  * HomeHeader — 그라디언트 히어로 배너 + 인사말
  */
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { TIMING } from '../../lib/animations';
@@ -11,19 +11,26 @@ import { GradientBackground, GradientText } from '../ui';
 interface HomeHeaderProps {
   userName: string;
   isLoaded: boolean;
+  /** 서버 브리핑과 동일한 인사 문장 — 로컬 시계를 별도로 읽지 않는다. */
+  briefingGreeting?: string;
 }
 
-// 시간대별 인사말
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 6) return '늦은 밤이에요';
-  if (hour < 12) return '좋은 아침이에요';
-  if (hour < 18) return '좋은 오후예요';
-  return '좋은 저녁이에요';
+function getHeaderGreeting(briefingGreeting: string | undefined, userName: string): string {
+  if (!briefingGreeting) return '반가워요';
+
+  // 서버 인사는 "이름님, 좋은 아침이에요" 형식이므로 이름은 아래 제목에 한 번만 둔다.
+  const namePrefix = `${userName}님,`;
+  return briefingGreeting.startsWith(namePrefix)
+    ? briefingGreeting.slice(namePrefix.length).trim()
+    : briefingGreeting;
 }
 
-export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.Element {
-  const { colors, spacing, radii, typography, shadows, isDark, brand } = useTheme();
+export function HomeHeader({
+  userName,
+  isLoaded,
+  briefingGreeting,
+}: HomeHeaderProps): React.JSX.Element {
+  const { colors, spacing, radii, typography, isDark, brand } = useTheme();
 
   return (
     <Animated.View
@@ -62,7 +69,7 @@ export function HomeHeader({ userName, isLoaded }: HomeHeaderProps): React.JSX.E
             { fontSize: typography.size.sm, color: `${colors.overlayForeground}D9` },
           ]}
         >
-          {getGreeting()}
+          {getHeaderGreeting(briefingGreeting, userName)}
         </Text>
         <Text
           style={[

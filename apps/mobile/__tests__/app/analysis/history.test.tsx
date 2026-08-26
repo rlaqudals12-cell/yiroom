@@ -164,16 +164,22 @@ describe('AnalysisHistoryScreen', () => {
     expect(useAnalysisHistory).toHaveBeenCalledWith('all', 'all');
   });
 
-  it('이력 카드는 선택한 행 id를 historyId로 결과 화면에 전달한다', () => {
+  it.each([
+    ['personal-color', '/(analysis)/personal-color/result'],
+    ['skin', '/(analysis)/skin/result'],
+    ['body', '/(analysis)/body/result'],
+    ['hair', '/(analysis)/hair/result'],
+    ['makeup', '/(analysis)/makeup/result'],
+  ] as const)('이력의 %s 행은 해당 historyId의 저장 결과 목적지를 연다', (moduleType, pathname) => {
     const { useAnalysisHistory } = require('../../../hooks/useAnalysisHistory');
     useAnalysisHistory.mockReturnValue({
       ...mockHistoryHook,
       items: [
         {
-          id: 'skin-history-2',
-          moduleType: 'skin',
+          id: `${moduleType}-history-2`,
+          moduleType,
           createdAt: new Date('2026-08-20T00:00:00Z'),
-          summary: '복합성',
+          summary: `${moduleType} 저장 결과`,
         },
       ],
     });
@@ -182,8 +188,8 @@ describe('AnalysisHistoryScreen', () => {
     fireEvent.press(getByTestId('history-card'));
 
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/(analysis)/skin/result',
-      params: { historyId: 'skin-history-2' },
+      pathname,
+      params: { historyId: `${moduleType}-history-2` },
     });
   });
 

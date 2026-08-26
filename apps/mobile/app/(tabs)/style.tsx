@@ -9,13 +9,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { EmptyState } from '../../components/common/EmptyState';
 import { BodyProfileCard, ClosetPreviewStrip, TodayOutfitSuggestion } from '../../components/style';
-import {
-  GlassCard,
-  MenuCard,
-  GradientBackground,
-  ScreenContainer,
-  SectionHeader,
-} from '../../components/ui';
+import { GlassCard, MenuCard, ScreenContainer, SectionHeader } from '../../components/ui';
 import { useUserAnalyses } from '../../hooks';
 import { staggeredEntry, TIMING } from '../../lib/animations';
 import {
@@ -28,7 +22,7 @@ import { useTheme, ICON_BG_OPACITY, borderGlow } from '../../lib/theme';
 
 export default function StyleTab(): React.JSX.Element {
   const router = useRouter();
-  const { colors, spacing, radii, typography, module: moduleColors, status } = useTheme();
+  const { spacing, typography, module: moduleColors, status } = useTheme();
 
   // 분석 데이터
   const { bodyAnalysis, personalColor, refetch: refetchAnalyses } = useUserAnalyses();
@@ -62,28 +56,13 @@ export default function StyleTab(): React.JSX.Element {
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
-      {/* 히어로 헤더 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <GradientBackground
-          variant="body"
-          style={{
-            borderRadius: radii.xl + spacing.xs,
-            padding: spacing.lg,
-            marginBottom: spacing.lg,
-          }}
-        >
-          <SectionHeader
-            title="스타일"
-            gradient="body"
-            style={{ marginBottom: spacing.xs }}
-            titleStyle={{
-              color: colors.overlayForeground,
-              fontSize: typography.size['2xl'],
-              fontWeight: typography.weight.bold,
-              letterSpacing: typography.letterSpacing.tight,
-            }}
-          />
-        </GradientBackground>
+        <SectionHeader
+          title="스타일"
+          testID="style-tab-title"
+          style={{ marginBottom: spacing.lg }}
+          titleStyle={{ fontSize: typography.size['2xl'] }}
+        />
       </Animated.View>
 
       {/* 체형 프로필 카드 or CTA */}

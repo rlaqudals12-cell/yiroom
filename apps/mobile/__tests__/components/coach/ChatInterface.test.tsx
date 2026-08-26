@@ -83,6 +83,18 @@ jest.mock('../../../lib/coach/useCoach', () => ({
     loadSession: jest.fn(),
     startNewSession: jest.fn(),
   })),
+  useBeautyTeamCoach: jest.fn(() => ({
+    messages: [] as CoachMessage[],
+    isLoading: false,
+    error: null,
+    suggestedQuestions: ['오늘 뭐 입을까요?', '머리 어떻게 자를까요?', '오늘 화장 어떻게 할까요?'],
+    sessions: [],
+    currentSessionId: null,
+    sendMessage: mockSendMessage,
+    clearMessages: mockClearMessages,
+    loadSession: jest.fn(),
+    startNewSession: jest.fn(),
+  })),
 }));
 
 // useNetworkStatus mock
@@ -140,7 +152,7 @@ jest.mock('../../../lib/utils/logger', () => ({
 
 import { ChatInterface } from '../../../components/coach/ChatInterface';
 // useCoach를 다시 import하여 mock 제어
-const { useCoach } = require('../../../lib/coach/useCoach');
+const { useBeautyTeamCoach, useCoach } = require('../../../lib/coach/useCoach');
 
 // ============================================
 // 테마 헬퍼
@@ -196,7 +208,7 @@ describe('ChatInterface', () => {
     jest.clearAllMocks();
 
     // 기본 mock 상태 복원
-    (useCoach as jest.Mock).mockReturnValue({
+    const legacyCoachResult = {
       messages: [],
       isLoading: false,
       error: null,
@@ -211,6 +223,15 @@ describe('ChatInterface', () => {
       clearMessages: mockClearMessages,
       loadSession: jest.fn(),
       startNewSession: jest.fn(),
+    };
+    (useCoach as jest.Mock).mockReturnValue(legacyCoachResult);
+    (useBeautyTeamCoach as jest.Mock).mockReturnValue({
+      ...legacyCoachResult,
+      suggestedQuestions: [
+        '오늘 뭐 입을까요?',
+        '머리 어떻게 자를까요?',
+        '오늘 화장 어떻게 할까요?',
+      ],
     });
 
     mockUseNetworkStatus.mockReturnValue({
@@ -339,6 +360,103 @@ describe('ChatInterface', () => {
 
       fireEvent.press(getByText('오늘 컨디션 체크해줘'));
       expect(mockSendMessage).toHaveBeenCalledWith('오늘 컨디션 체크해줘');
+    });
+  });
+
+  describe('물어보기 탭 뷰티팀 게이트 (ADR-114)', () => {
+    it('뷰티팀 표면은 웰니스 훅 대신 전용 훅만 선택한다', () => {
+      renderWithTheme(<ChatInterface surface="beauty-team" />);
+
+      expect(useBeautyTeamCoach).toHaveBeenCalled();
+      expect(useCoach).not.toHaveBeenCalled();
+    });
+
+    it('출처를 판별할 수 없는 기존 웰니스 sessionId는 로드하지 않는다', () => {
+      const loadSession = jest.fn();
+      (useBeautyTeamCoach as jest.Mock).mockReturnValue({
+        messages: [],
+        isLoading: false,
+        error: null,
+        suggestedQuestions: [],
+        sessions: [],
+        currentSessionId: null,
+        sendMessage: mockSendMessage,
+        clearMessages: mockClearMessages,
+        loadSession,
+        startNewSession: jest.fn(),
+      });
+
+      renderWithTheme(<ChatInterface surface="beauty-team" initialSessionId="legacy-session-1" />);
+
+      expect(loadSession).not.toHaveBeenCalled();
+    });
+
+    it('웰니스 정체성 대신 전속 뷰티팀 헤더와 입력 문구를 표시한다', () => {
+      const { getByText, getByPlaceholderText, queryByText } = renderWithTheme(
+        <ChatInterface surface="beauty-team" />
+      );
+
+      expect(getByText('전속 뷰티팀에게 물어보세요')).toBeTruthy();
+      expect(getByText('피부·퍼스널컬러·헤어·메이크업·스타일을 편하게 물어보세요.')).toBeTruthy();
+      expect(getByPlaceholderText('뷰티팀에게 물어보세요...')).toBeTruthy();
+      expect(queryByText('AI 웰니스 코치')).toBeNull();
+      expect(queryByText('운동, 영양, 피부 관리에 대해 물어보세요!')).toBeNull();
+      expect(queryByText('🤖')).toBeNull();
+    });
+
+    it('일반·피부·컬러·스타일만 노출하고 운동·영양 탭과 스트레스·숙면 질문을 숨긴다', () => {
+      const { getByTestId, getByText, queryByText } = renderWithTheme(
+        <ChatInterface surface="beauty-team" />
+      );
+
+      expect(getByText('일반')).toBeTruthy();
+      expect(getByText('피부')).toBeTruthy();
+      expect(getByText('컬러')).toBeTruthy();
+      expect(getByText('스타일')).toBeTruthy();
+      expect(queryByText('운동')).toBeNull();
+      expect(queryByText('영양')).toBeNull();
+      expect(queryByText('스트레스 해소법 알려줘')).toBeNull();
+      expect(queryByText('숙면을 위한 팁 있어?')).toBeNull();
+      expect(getByText('머리 어떻게 자를까요?')).toBeTruthy();
+      expect(queryByText('이 제품이 저한테 맞을까요?')).toBeNull();
+      expect(getByTestId('chat-scan-button')).toBeTruthy();
+    });
+
+    it('컬러와 스타일 탭은 해당 뷰티 질문으로 전환된다', () => {
+      const { getByText, queryByText } = renderWithTheme(<ChatInterface surface="beauty-team" />);
+
+      fireEvent.press(getByText('컬러'));
+      expect(getByText('내 시즌에 맞는 립 색상 추천해줘')).toBeTruthy();
+      expect(queryByText('머리 어떻게 자를까요?')).toBeNull();
+
+      fireEvent.press(getByText('스타일'));
+      expect(getByText('체형에 맞는 옷 추천해줘요')).toBeTruthy();
+      expect(queryByText('내 시즌에 맞는 립 색상 추천해줘')).toBeNull();
+    });
+
+    it('서버가 돌려준 운동·영양 후속 질문도 뷰티팀 표면에서 필터링한다', () => {
+      (useBeautyTeamCoach as jest.Mock).mockReturnValue({
+        messages: [createMessage({ id: 'assistant-1', role: 'assistant', content: '답변입니다.' })],
+        isLoading: false,
+        error: null,
+        suggestedQuestions: [
+          '오늘 운동 뭐하면 좋을까?',
+          '단백질 많은 음식 알려줘',
+          '내 퍼스널컬러에 어울리는 립은?',
+        ],
+        sessions: [],
+        currentSessionId: null,
+        sendMessage: mockSendMessage,
+        clearMessages: mockClearMessages,
+        loadSession: jest.fn(),
+        startNewSession: jest.fn(),
+      });
+
+      const { getByText, queryByText } = renderWithTheme(<ChatInterface surface="beauty-team" />);
+
+      expect(getByText('내 퍼스널컬러에 어울리는 립은?')).toBeTruthy();
+      expect(queryByText('오늘 운동 뭐하면 좋을까?')).toBeNull();
+      expect(queryByText('단백질 많은 음식 알려줘')).toBeNull();
     });
   });
 

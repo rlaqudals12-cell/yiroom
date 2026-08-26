@@ -22,6 +22,8 @@ import {
 } from '../../components/profile';
 import { GlassCard, GradientBackground, ScreenContainer, SectionHeader } from '../../components/ui';
 import { useUserAnalyses, useWorkoutData, useNutritionData, useWellnessScore } from '../../hooks';
+import { buildStoredResultDestination, type StoredAnalysisAxis } from '../../lib/analysis';
+import { isVisibleAnalysisModule } from '../../lib/analysis/visible-modules';
 import { staggeredEntry, TIMING } from '../../lib/animations';
 import { useTheme, spacing, radii, borderGlow } from '../../lib/theme';
 import { profileLogger } from '../../lib/utils/logger';
@@ -71,6 +73,21 @@ const UNDERTONE_LABELS: Record<string, string> = {
 function toKoreanLabel(map: Record<string, string>, raw?: string | null): string | undefined {
   if (!raw) return undefined;
   return map[raw.toLowerCase()] ?? '—';
+}
+
+const ANALYSIS_START_PATHS: Record<StoredAnalysisAxis, string> = {
+  'personal-color': '/(analysis)/personal-color',
+  skin: '/(analysis)/skin',
+  body: '/(analysis)/body',
+  hair: '/(analysis)/hair',
+  makeup: '/(analysis)/makeup',
+};
+
+function openAnalysis(axis: StoredAnalysisAxis, historyId?: string): void {
+  const destination = historyId
+    ? buildStoredResultDestination(axis, historyId)
+    : ANALYSIS_START_PATHS[axis];
+  router.push(destination as never);
 }
 
 export default function ProfileScreen(): React.JSX.Element {
@@ -359,15 +376,7 @@ export default function ProfileScreen(): React.JSX.Element {
         <AnalysisTimeline
           analyses={analyses}
           onItemPress={(item) => {
-            const routeMap: Record<string, string> = {
-              'personal-color': '/(analysis)/personal-color',
-              skin: '/(analysis)/skin',
-              body: '/(analysis)/body',
-              hair: '/(analysis)/hair',
-              makeup: '/(analysis)/makeup',
-            };
-            const route = routeMap[item.type];
-            if (route) router.push(route as never);
+            if (isVisibleAnalysisModule(item.type)) openAnalysis(item.type, item.id);
           }}
           style={{ marginBottom: spacing.lg }}
           testID="analysis-timeline"
@@ -383,6 +392,7 @@ export default function ProfileScreen(): React.JSX.Element {
         >
           <MenuItem
             title="퍼스널 컬러"
+            testID="profile-analysis-personal-color"
             completed={!!personalColor}
             subtitle={
               personalColor
@@ -391,7 +401,7 @@ export default function ProfileScreen(): React.JSX.Element {
                   : '분석 완료'
                 : '진단하기'
             }
-            onPress={() => router.push('/(analysis)/personal-color')}
+            onPress={() => openAnalysis('personal-color', personalColor?.id)}
           />
           <View
             style={{
@@ -402,6 +412,7 @@ export default function ProfileScreen(): React.JSX.Element {
           />
           <MenuItem
             title="피부 분석"
+            testID="profile-analysis-skin"
             completed={!!skinAnalysis}
             subtitle={
               skinAnalysis
@@ -410,7 +421,7 @@ export default function ProfileScreen(): React.JSX.Element {
                   : '분석 완료'
                 : '진단하기'
             }
-            onPress={() => router.push('/(analysis)/skin')}
+            onPress={() => openAnalysis('skin', skinAnalysis?.id)}
           />
           <View
             style={{
@@ -421,6 +432,7 @@ export default function ProfileScreen(): React.JSX.Element {
           />
           <MenuItem
             title="체형 분석"
+            testID="profile-analysis-body"
             completed={!!bodyAnalysis}
             subtitle={
               bodyAnalysis
@@ -429,7 +441,7 @@ export default function ProfileScreen(): React.JSX.Element {
                   : '분석 완료'
                 : '진단하기'
             }
-            onPress={() => router.push('/(analysis)/body')}
+            onPress={() => openAnalysis('body', bodyAnalysis?.id)}
           />
           <View
             style={{
@@ -440,6 +452,7 @@ export default function ProfileScreen(): React.JSX.Element {
           />
           <MenuItem
             title="헤어 분석"
+            testID="profile-analysis-hair"
             completed={!!hairAnalysis}
             subtitle={
               hairAnalysis
@@ -448,7 +461,7 @@ export default function ProfileScreen(): React.JSX.Element {
                   : '분석 완료'
                 : '진단하기'
             }
-            onPress={() => router.push('/(analysis)/hair')}
+            onPress={() => openAnalysis('hair', hairAnalysis?.id)}
           />
           <View
             style={{
@@ -459,6 +472,7 @@ export default function ProfileScreen(): React.JSX.Element {
           />
           <MenuItem
             title="메이크업 분석"
+            testID="profile-analysis-makeup"
             completed={!!makeupAnalysis}
             subtitle={
               makeupAnalysis
@@ -467,7 +481,7 @@ export default function ProfileScreen(): React.JSX.Element {
                   : '분석 완료'
                 : '진단하기'
             }
-            onPress={() => router.push('/(analysis)/makeup')}
+            onPress={() => openAnalysis('makeup', makeupAnalysis?.id)}
           />
         </GlassCard>
       </Animated.View>
@@ -600,11 +614,13 @@ export default function ProfileScreen(): React.JSX.Element {
 // --- 내부 서브 컴포넌트 ---
 
 function MenuItem({
+  testID,
   title,
   completed,
   subtitle,
   onPress,
 }: {
+  testID?: string;
   title: string;
   completed?: boolean;
   subtitle?: string;
@@ -619,6 +635,7 @@ function MenuItem({
 
   return (
     <Pressable
+      testID={testID}
       style={({ pressed }) => [
         styles.menuItem,
         { paddingHorizontal: spacing.md, paddingVertical: spacing.sm + spacing.xs + 2 },

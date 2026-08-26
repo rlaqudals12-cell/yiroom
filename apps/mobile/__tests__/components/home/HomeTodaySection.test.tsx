@@ -11,10 +11,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 // lucide-react-native는 react-native-svg 의존성으로 Platform.OS 문제 발생 — barrel import 경유 시 필요
 jest.mock('lucide-react-native', () => {
   const { View } = require('react-native');
-  return new Proxy(
-    {},
-    { get: (_target, name) => (name === '__esModule' ? true : View) }
-  );
+  return new Proxy({}, { get: (_target, name) => (name === '__esModule' ? true : View) });
 });
 
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
@@ -58,9 +55,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -86,9 +81,7 @@ describe('HomeTodaySection', () => {
   });
 
   it('태스크 목록을 렌더링해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <HomeTodaySection {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<HomeTodaySection {...defaultProps} />);
 
     expect(getByText('아침 운동')).toBeTruthy();
     expect(getByText('물 2L 마시기')).toBeTruthy();
@@ -96,20 +89,14 @@ describe('HomeTodaySection', () => {
   });
 
   it('알림 메시지를 렌더링해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <HomeTodaySection {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<HomeTodaySection {...defaultProps} />);
 
     expect(getByText('오늘 운동 목표를 달성했어요!')).toBeTruthy();
   });
 
   it('알림이 없을 때 배너를 표시하지 않아야 한다', () => {
     const { queryByText } = renderWithTheme(
-      <HomeTodaySection
-        tasks={mockTasks}
-        notifications={[]}
-        onTaskPress={jest.fn()}
-      />
+      <HomeTodaySection tasks={mockTasks} notifications={[]} onTaskPress={jest.fn()} />
     );
 
     expect(queryByText('오늘 운동 목표를 달성했어요!')).toBeNull();
@@ -129,9 +116,7 @@ describe('HomeTodaySection', () => {
   });
 
   it('완료된 태스크에 체크마크를 표시해야 한다', () => {
-    const { getAllByText } = renderWithTheme(
-      <HomeTodaySection {...defaultProps} />
-    );
+    const { getAllByText } = renderWithTheme(<HomeTodaySection {...defaultProps} />);
 
     // 완료된 태스크(아침 운동)의 체크마크 확인
     const checkmarks = getAllByText('\u2713');
@@ -139,26 +124,20 @@ describe('HomeTodaySection', () => {
   });
 
   it('남은 태스크 수를 올바르게 계산해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <HomeTodaySection {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<HomeTodaySection {...defaultProps} />);
 
     // 3개 중 1개 완료, 2개 남음
     expect(getByText('2개 남음')).toBeTruthy();
   });
 
   it('"오늘 할 일" 섹션 헤더를 렌더링해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <HomeTodaySection {...defaultProps} />
-    );
+    const { getByText } = renderWithTheme(<HomeTodaySection {...defaultProps} />);
 
     expect(getByText('오늘 할 일')).toBeTruthy();
   });
 
   it('testID="home-today-section"이 존재해야 한다', () => {
-    const { getByTestId } = renderWithTheme(
-      <HomeTodaySection {...defaultProps} />
-    );
+    const { getByTestId } = renderWithTheme(<HomeTodaySection {...defaultProps} />);
 
     expect(getByTestId('home-today-section')).toBeTruthy();
   });
@@ -166,11 +145,7 @@ describe('HomeTodaySection', () => {
   it('모든 태스크가 완료되면 "0개 남음"을 표시해야 한다', () => {
     const allCompletedTasks = mockTasks.map((t) => ({ ...t, completed: true }));
     const { getByText } = renderWithTheme(
-      <HomeTodaySection
-        tasks={allCompletedTasks}
-        notifications={[]}
-        onTaskPress={jest.fn()}
-      />
+      <HomeTodaySection tasks={allCompletedTasks} notifications={[]} onTaskPress={jest.fn()} />
     );
 
     expect(getByText('0개 남음')).toBeTruthy();
@@ -178,11 +153,7 @@ describe('HomeTodaySection', () => {
 
   it('빈 태스크 배열일 때도 섹션 헤더를 렌더링해야 한다', () => {
     const { getByText } = renderWithTheme(
-      <HomeTodaySection
-        tasks={[]}
-        notifications={[]}
-        onTaskPress={jest.fn()}
-      />
+      <HomeTodaySection tasks={[]} notifications={[]} onTaskPress={jest.fn()} />
     );
 
     expect(getByText('오늘 할 일')).toBeTruthy();
@@ -228,5 +199,20 @@ describe('HomeTodaySection', () => {
     );
 
     expect(getByText('새로운 운동 추천이 있어요')).toBeTruthy();
+  });
+
+  it('홈 마무리 알림에는 장식 이모지를 붙이지 않는다', () => {
+    const { getByText, queryByTestId } = renderWithTheme(
+      <HomeTodaySection
+        tasks={[]}
+        notifications={[
+          { id: 'welcome', message: '오늘도 이룸과 함께 나다운 하루를!', type: 'info' },
+        ]}
+        onTaskPress={jest.fn()}
+      />
+    );
+
+    expect(getByText('오늘도 이룸과 함께 나다운 하루를!')).toBeTruthy();
+    expect(queryByTestId('home-notification-icon')).toBeNull();
   });
 });

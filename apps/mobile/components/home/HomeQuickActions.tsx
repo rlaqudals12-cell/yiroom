@@ -8,6 +8,7 @@ import { ScanLine } from 'lucide-react-native';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import type { StoredResultDestination } from '../../lib/analysis';
 import { TIMING, useAdaptiveAnimation } from '../../lib/animations';
 import { useTheme, typography, spacing } from '../../lib/theme';
 import { AnimatedCard } from '../ui';
@@ -23,12 +24,13 @@ export interface AnalysisHistory {
 
 // 퀵 액션 상태
 type ActionStatus = 'not-started' | 'reanalysis-recommended' | 'completed';
+export type HomeQuickActionDestination = string | StoredResultDestination;
 
 interface QuickAction {
   title: string;
   subtitle: string;
   color: string;
-  route: string;
+  route: HomeQuickActionDestination;
   completed: boolean;
 }
 
@@ -36,7 +38,7 @@ interface HomeQuickActionsProps {
   actions: QuickAction[];
   /** 분석 히스토리 — 각 모듈의 마지막 분석 일시 */
   analysisHistory?: AnalysisHistory;
-  onActionPress: (route: string) => void;
+  onActionPress: (route: HomeQuickActionDestination) => void;
   onCoachPress: () => void;
   /** 성분 스캔 진입 — "결정의 순간" 액션 (ADR-114) */
   onScanPress: () => void;
@@ -101,7 +103,6 @@ export function HomeQuickActions({
     typography,
     status,
     module: moduleColors,
-    shadows,
     isDark,
     brand,
   } = useTheme();
@@ -118,7 +119,7 @@ export function HomeQuickActions({
     return getStatusPriority(statusA.status) - getStatusPriority(statusB.status);
   });
 
-  const handleActionPress = (route: string): void => {
+  const handleActionPress = (route: HomeQuickActionDestination): void => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onActionPress(route);
   };
@@ -162,10 +163,11 @@ export function HomeQuickActions({
           onPress={handleCoachPress}
           accessibilityRole="button"
           accessibilityLabel="궁금한 것을 물어보세요"
-          accessibilityHint="운동, 영양, 뷰티 관련 질문을 할 수 있어요"
+          accessibilityHint="피부, 헤어, 메이크업, 스타일 질문을 할 수 있어요"
         >
           <GradientBackground
-            variant="workout"
+            variant="professional"
+            testID="home-coach-background"
             style={{
               borderRadius: radii.xl + 4,
               padding: spacing.md,
@@ -181,7 +183,7 @@ export function HomeQuickActions({
                 궁금한 것을 물어보세요
               </Text>
               <Text style={[styles.coachSubtitle, { color: `${colors.overlayForeground}D9` }]}>
-                운동, 영양, 뷰티 궁금한 것 무엇이든
+                피부·헤어·메이크업·스타일을 물어보세요
               </Text>
             </View>
             <Text style={[styles.coachArrow, { color: `${colors.overlayForeground}CC` }]}>›</Text>

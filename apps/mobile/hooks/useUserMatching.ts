@@ -69,7 +69,7 @@ interface UseUserMatchingResult {
 
 export function useUserMatching(): UseUserMatchingResult {
   const { user, isLoaded } = useUser();
-  const { getToken } = useAuth();
+  const { getToken, isLoaded: isAuthLoaded, isSignedIn } = useAuth();
   const supabase = useClerkSupabaseClient();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -88,13 +88,18 @@ export function useUserMatching(): UseUserMatchingResult {
   // 사용자 분석 데이터 로드
   useEffect(() => {
     async function loadUserProfile(): Promise<void> {
-      if (!isLoaded || !user) {
+      // useUser와 useAuth의 복원 시점은 같다고 보장되지 않는다. 세션 복원이 끝나기 전에
+      // 홈 위젯이 웹 API를 호출하면 Clerk 미인증 리다이렉트가 발생할 수 있으므로 둘 다 기다린다.
+      if (!isLoaded || !isAuthLoaded) return;
+
+      if (!user || !isSignedIn) {
         setIsLoading(false);
         return;
       }
 
       try {
-        const token = await getToken();
+        // 홈 진입 시 캐시된 만료 토큰으로 세 요청이 동시에 실패하지 않도록 현재 세션 토큰을 갱신한다.
+        const token = await getToken({ skipCache: true });
         if (!token) throw new Error('로그인이 필요합니다.');
         // 병렬로 모든 분석 데이터 조회 — 하나 실패해도 나머지는 사용
         const results = await Promise.allSettled([
@@ -216,7 +221,7 @@ export function useUserMatching(): UseUserMatchingResult {
     }
 
     loadUserProfile();
-  }, [isLoaded, user, getToken, supabase]);
+  }, [isLoaded, isAuthLoaded, isSignedIn, user, getToken, supabase]);
 
   // 분석 완료 여부
   const hasAnalysis = useMemo(() => {

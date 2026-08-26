@@ -68,9 +68,9 @@ type EmptyStatePreset = keyof typeof PRESETS;
 
 // 격려 메시지 (웹 동기화)
 const ENCOURAGEMENTS = [
-  '작은 시작이 큰 변화를 만들어요 ✨',
-  '오늘이 가장 좋은 시작이에요 🌱',
-  '한 걸음씩, 나만의 속도로 💫',
+  '작은 시작이 큰 변화를 만들어요',
+  '오늘이 가장 좋은 시작이에요',
+  '한 걸음씩, 나만의 속도로',
 ];
 
 interface EmptyStateProps {
@@ -110,9 +110,7 @@ export function EmptyState({
   const resolvedTitle = title ?? preset?.title ?? '';
   const resolvedDescription = description ?? preset?.description ?? '';
   const resolvedActionLabel = actionLabel ?? preset?.actionLabel;
-  const resolvedIcon = icon ?? (
-    <Text style={{ fontSize: 32 }}>{preset?.emoji ?? '📋'}</Text>
-  );
+  const resolvedIcon = icon ?? <Text style={{ fontSize: 32 }}>{preset?.emoji ?? '📋'}</Text>;
 
   // 랜덤 격려 메시지
   const encouragement = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];

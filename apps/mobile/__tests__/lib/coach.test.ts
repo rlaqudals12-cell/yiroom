@@ -3,8 +3,10 @@
  */
 
 import {
+  BEAUTY_TEAM_QUICK_QUESTIONS,
   CoachMessage,
   QUICK_QUESTIONS,
+  filterBeautyTeamSuggestedQuestions,
   getMockResponse,
 } from '../../lib/coach';
 
@@ -55,6 +57,25 @@ describe('QUICK_QUESTIONS', () => {
       expect(typeof q).toBe('string');
       expect(q.length).toBeGreaterThan(0);
     });
+  });
+});
+
+describe('물어보기 탭 뷰티팀 질문 게이트', () => {
+  it('일반·피부·컬러·스타일 질문만 정본으로 제공한다', () => {
+    expect(Object.keys(BEAUTY_TEAM_QUICK_QUESTIONS)).toEqual(['general', 'skin', 'color', 'style']);
+  });
+
+  it('구세대 운동·영양·스트레스·숙면 후속 질문을 제거한다', () => {
+    expect(
+      filterBeautyTeamSuggestedQuestions([
+        '오늘 운동 뭐하면 좋을까?',
+        '건강한 간식 추천해줘',
+        '피부에 좋은 음식은?',
+        '스트레스 해소법 알려줘',
+        '숙면을 위한 팁 있어?',
+        '내 퍼스널컬러에 어울리는 립은?',
+      ])
+    ).toEqual(['내 퍼스널컬러에 어울리는 립은?']);
   });
 });
 

@@ -40,8 +40,10 @@ import {
   useUserAnalyses,
   useProfilePersona,
   useCrossModuleInsights,
+  useBriefing,
   calculateCalorieProgress,
 } from '../../hooks';
+import { buildStoredResultDestination } from '../../lib/analysis';
 import { staggeredEntry, TIMING, usePulseGlow } from '../../lib/animations';
 import { useDailyCapsule } from '../../lib/capsule/hooks';
 import { useOnboardingCheck } from '../../lib/onboarding';
@@ -53,6 +55,7 @@ export default function HomeScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography, module: moduleColors } = useTheme();
   const router = useRouter();
   const { user, isLoaded } = useUser();
+  const briefingState = useBriefing();
 
   // 첫 진입 로딩 가드 — 가입=첫 미팅(통합분석)으로 이동하므로 온보딩 강제 진입은 없음(ADR-114).
   // onboardingLoading은 초기 AsyncStorage 읽기 동안 스켈레톤을 노출하는 용도로만 유지.
@@ -236,32 +239,41 @@ export default function HomeScreen(): React.JSX.Element {
   }, [workoutStreak, personalColor, skinAnalysis, bodyAnalysis, todaySummary, nutritionSettings]);
 
   // 퀵 액션
-  const quickActions = useMemo(
-    () => [
+  const quickActions = useMemo(() => {
+    const personalColorId = personalColor?.id?.trim();
+    const skinAnalysisId = skinAnalysis?.id?.trim();
+    const bodyAnalysisId = bodyAnalysis?.id?.trim();
+
+    return [
       {
         title: '퍼스널 컬러',
         subtitle: '나의 컬러 찾기',
         color: moduleColors.personalColor.base,
-        route: '/(analysis)/personal-color',
-        completed: !!personalColor,
+        route: personalColorId
+          ? buildStoredResultDestination('personal-color', personalColorId)
+          : '/(analysis)/personal-color',
+        completed: Boolean(personalColorId),
       },
       {
         title: '피부 분석',
         subtitle: 'AI 피부 진단',
         color: moduleColors.skin.base,
-        route: '/(analysis)/skin',
-        completed: !!skinAnalysis,
+        route: skinAnalysisId
+          ? buildStoredResultDestination('skin', skinAnalysisId)
+          : '/(analysis)/skin',
+        completed: Boolean(skinAnalysisId),
       },
       {
         title: '체형 분석',
         subtitle: '맞춤 스타일',
         color: moduleColors.body.base,
-        route: '/(analysis)/body',
-        completed: !!bodyAnalysis,
+        route: bodyAnalysisId
+          ? buildStoredResultDestination('body', bodyAnalysisId)
+          : '/(analysis)/body',
+        completed: Boolean(bodyAnalysisId),
       },
-    ],
-    [personalColor, skinAnalysis, bodyAnalysis, moduleColors]
-  );
+    ];
+  }, [personalColor, skinAnalysis, bodyAnalysis, moduleColors]);
 
   // 분석 히스토리 — 각 모듈의 마지막 분석 일시 (개인화 퀵액션용)
   const analysisHistory = useMemo(
@@ -326,11 +338,15 @@ export default function HomeScreen(): React.JSX.Element {
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
-      <HomeHeader userName={userName} isLoaded={isLoaded} />
+      <HomeHeader
+        userName={userName}
+        isLoaded={isLoaded}
+        briefingGreeting={briefingState.data?.briefing.greeting}
+      />
 
       {/* ADR-114/118: 전속 뷰티팀의 아침 메시지(브리핑 레터). 웹 /api/briefing 정본 재사용.
           신규 유저(분석 0건)면 스스로 숨겨 기존 첫 분석 유도가 노출된다. */}
-      <HomeBriefing />
+      <HomeBriefing briefingState={briefingState} />
 
       {/* ADR-109 프로필 중심: 최상단 "채워지는 5축 정체성 프로필". ON이면 아래 3-State 히어로는 중복 억제 */}
       {FEATURE_FLAGS.PROFILE_HOME && (
@@ -526,7 +542,7 @@ export default function HomeScreen(): React.JSX.Element {
         actions={quickActions}
         analysisHistory={analysisHistory}
         onActionPress={(route) => router.push(route as never)}
-        onCoachPress={() => router.push('/(coach)')}
+        onCoachPress={() => router.push('/(tabs)/ask')}
         onScanPress={() => router.push('/(scan)' as never)}
       />
 

@@ -27,22 +27,25 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { useBriefing } from '../../hooks/useBriefing';
+import type { UseBriefingResult } from '../../hooks/useBriefing';
 import { useMorningBriefing } from '../../lib/notifications/useMorningBriefing';
+import { buildStoredResultDestination } from '@/lib/analysis/stored-result-destination';
 import { useTheme } from '../../lib/theme';
 
 export interface HomeBriefingProps {
+  briefingState: UseBriefingResult;
   style?: ViewStyle;
   testID?: string;
 }
 
 export function HomeBriefing({
+  briefingState,
   style,
   testID = 'home-briefing',
 }: HomeBriefingProps): React.JSX.Element | null {
   const { colors, brand, spacing, radii, typography, isDark } = useTheme();
   const router = useRouter();
-  const { data, stale, isLoading } = useBriefing();
+  const { data, stale, isLoading } = briefingState;
   const [question, setQuestion] = useState('');
 
   // 아침 브리핑 로컬 알림 — 첫 브리핑 조회 후 "매일 아침 알려드릴까요?" 1회 제안
@@ -53,6 +56,37 @@ export function HomeBriefing({
   if (isLoading || !data || !data.hasAnalyses) return null;
 
   const { briefing, myColors, todayStyle } = data;
+  const colorAnalysisId = myColors?.analysisId?.trim();
+  // 저장 결과 목적지는 단일 정본을 쓴다(인라인 경로 조립 금지 — 배치 F 계약)
+  const colorResultRoute = colorAnalysisId
+    ? buildStoredResultDestination('personal-color', colorAnalysisId)
+    : null;
+
+  const colorSwatches = myColors ? (
+    <View style={{ flex: 1, flexDirection: 'row', gap: spacing.xs }}>
+      {myColors.colors.slice(0, 4).map((c, i) => (
+        <View key={`${c.hex}-${i}`} style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+          <View
+            style={[styles.swatch, { backgroundColor: c.hex }]}
+            testID="home-briefing-swatch"
+            accessibilityLabel={c.name || c.hex}
+          />
+          {c.name ? (
+            <Text
+              numberOfLines={2}
+              style={{
+                color: colors.mutedForeground,
+                fontSize: 10,
+                textAlign: 'center',
+              }}
+            >
+              {c.name}
+            </Text>
+          ) : null}
+        </View>
+      ))}
+    </View>
+  ) : null;
 
   function handleAsk(): void {
     const q = question.trim();
@@ -198,42 +232,42 @@ export function HomeBriefing({
           >
             나의 퍼스널컬러
           </Text>
-          <View
-            style={[
-              styles.swatchRow,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                borderRadius: radii.xl,
-                padding: spacing.md,
-              },
-            ]}
-          >
-            <View style={{ flex: 1, flexDirection: 'row', gap: spacing.xs }}>
-              {myColors.colors.slice(0, 4).map((c, i) => (
-                <View key={`${c.hex}-${i}`} style={{ flex: 1, alignItems: 'center', gap: 4 }}>
-                  <View
-                    style={[styles.swatch, { backgroundColor: c.hex }]}
-                    testID="home-briefing-swatch"
-                    accessibilityLabel={c.name || c.hex}
-                  />
-                  {c.name ? (
-                    <Text
-                      numberOfLines={2}
-                      style={{
-                        color: colors.mutedForeground,
-                        fontSize: 10,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {c.name}
-                    </Text>
-                  ) : null}
-                </View>
-              ))}
+          {colorResultRoute ? (
+            <Pressable
+              accessibilityHint="저장된 퍼스널컬러 결과를 열어요"
+              accessibilityLabel="퍼스널컬러 리포트 보기"
+              accessibilityRole="button"
+              onPress={() => router.push(colorResultRoute as never)}
+              style={[
+                styles.swatchRow,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  borderRadius: radii.xl,
+                  padding: spacing.md,
+                },
+              ]}
+              testID="home-briefing-my-colors-link"
+            >
+              {colorSwatches}
+              <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={2} />
+            </Pressable>
+          ) : (
+            <View
+              style={[
+                styles.swatchRow,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  borderRadius: radii.xl,
+                  padding: spacing.md,
+                },
+              ]}
+              testID="home-briefing-my-colors-static"
+            >
+              {colorSwatches}
             </View>
-            <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={2} />
-          </View>
+          )}
         </View>
       )}
 

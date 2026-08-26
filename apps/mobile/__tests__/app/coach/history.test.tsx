@@ -21,12 +21,26 @@ jest.mock('react-native-reanimated', () => {
   return {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: unknown) => c },
-    FadeInUp: createChainable(), FadeIn: createChainable(), FadeInDown: createChainable(),
-    ZoomIn: createChainable(), SlideInRight: createChainable(), SlideInLeft: createChainable(),
-    Easing: { out: () => ({}), exp: {}, bezier: () => ({}), linear: {}, ease: {}, in: () => ({}), inOut: () => ({}) },
+    FadeInUp: createChainable(),
+    FadeIn: createChainable(),
+    FadeInDown: createChainable(),
+    ZoomIn: createChainable(),
+    SlideInRight: createChainable(),
+    SlideInLeft: createChainable(),
+    Easing: {
+      out: () => ({}),
+      exp: {},
+      bezier: () => ({}),
+      linear: {},
+      ease: {},
+      in: () => ({}),
+      inOut: () => ({}),
+    },
     useSharedValue: (v: unknown) => ({ value: v }),
     useAnimatedStyle: () => ({}),
-    withTiming: (v: unknown) => v, withSpring: (v: unknown) => v, withDelay: (_d: unknown, v: unknown) => v,
+    withTiming: (v: unknown) => v,
+    withSpring: (v: unknown) => v,
+    withDelay: (_d: unknown, v: unknown) => v,
   };
 });
 
@@ -40,7 +54,13 @@ jest.mock('expo-haptics', () => ({
 jest.mock('react-native-safe-area-context', () => {
   const { View } = require('react-native');
   return {
-    SafeAreaView: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <View {...props}>{children}</View>,
+    SafeAreaView: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <View {...props}>{children}</View>,
     useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
   };
 });
@@ -50,8 +70,17 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('../../../components/ui', () => {
   const { View } = require('react-native');
   return {
-    ScreenContainer: ({ children, testID }: { children: React.ReactNode; testID?: string; [key: string]: unknown }) => <View testID={testID}>{children}</View>,
-    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <View {...props}>{children}</View>,
+    ScreenContainer: ({
+      children,
+      testID,
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+      [key: string]: unknown;
+    }) => <View testID={testID}>{children}</View>,
+    GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <View {...props}>{children}</View>
+    ),
   };
 });
 
@@ -81,6 +110,7 @@ const mockGetCoachSessions = jest.fn().mockResolvedValue([]);
 const mockDeleteCoachSession = jest.fn().mockResolvedValue(true);
 
 jest.mock('../../../lib/coach', () => ({
+  BEAUTY_TEAM_HISTORY_ENABLED: false,
   getCoachSessions: (...args: unknown[]) => mockGetCoachSessions(...args),
   deleteCoachSession: (...args: unknown[]) => mockDeleteCoachSession(...args),
 }));
@@ -97,7 +127,20 @@ import CoachHistoryScreen from '../../../app/(coach)/history';
 
 describe('CoachHistoryScreen', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     mockGetCoachSessions.mockResolvedValue([]);
+  });
+
+  it('출처를 구분할 수 없는 기존 상담 기록은 직접 진입해도 뷰티팀으로 되돌리고 조회하지 않는다', async () => {
+    const { router } = require('expo-router');
+    mockGetCoachSessions.mockResolvedValue([
+      { id: 'legacy-workout', title: '운동 상담', category: 'workout' },
+    ]);
+
+    renderWithTheme(<CoachHistoryScreen />);
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/(coach)'));
+    expect(mockGetCoachSessions).not.toHaveBeenCalled();
   });
 
   it('에러 없이 렌더링된다', async () => {

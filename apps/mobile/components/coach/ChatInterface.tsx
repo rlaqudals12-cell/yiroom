@@ -18,8 +18,15 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { QUICK_QUESTIONS, type QuestionCategory, type CoachMessage } from '../../lib/coach';
-import { useCoach } from '../../lib/coach/useCoach';
+import {
+  BEAUTY_TEAM_QUICK_QUESTIONS,
+  QUICK_QUESTIONS,
+  filterBeautyTeamSuggestedQuestions,
+  type BeautyTeamQuestionCategory,
+  type QuestionCategory,
+  type CoachMessage,
+} from '../../lib/coach';
+import { useBeautyTeamCoach, useCoach, type UseCoachResult } from '../../lib/coach/useCoach';
 import { useNetworkStatus } from '../../lib/offline';
 import { useTheme, typography, radii, spacing } from '../../lib/theme';
 
@@ -27,17 +34,57 @@ interface ChatInterfaceProps {
   initialSessionId?: string;
   /** 홈 브리핑 물어보기에서 넘어온 질문 — 입력창에 미리 채움(자동 전송은 안 함) */
   initialInput?: string;
+  /** ADR-114 물어보기 탭은 뷰티팀 질문만 노출하고 구세대 웰니스 표면은 보존·비노출한다. */
+  surface?: 'legacy-wellness' | 'beauty-team';
 }
 
-export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceProps) {
-  const { colors, brand, status, typography } = useTheme();
+type VisibleQuestionCategory = QuestionCategory | BeautyTeamQuestionCategory;
+
+interface ChatInterfaceContentProps extends ChatInterfaceProps {
+  coach: UseCoachResult;
+  surface: 'legacy-wellness' | 'beauty-team';
+}
+
+export function ChatInterface(props: ChatInterfaceProps): React.JSX.Element {
+  return props.surface === 'beauty-team' ? (
+    <BeautyTeamChatInterface {...props} />
+  ) : (
+    <LegacyWellnessChatInterface {...props} />
+  );
+}
+
+function BeautyTeamChatInterface(props: ChatInterfaceProps): React.JSX.Element {
+  const coach = useBeautyTeamCoach();
+  // 기존 세션에는 뷰티/웰니스 출처가 없어 운동·영양 대화를 안전하게 판별할 수 없다.
+  return (
+    <ChatInterfaceContent
+      {...props}
+      initialSessionId={undefined}
+      surface="beauty-team"
+      coach={coach}
+    />
+  );
+}
+
+function LegacyWellnessChatInterface(props: ChatInterfaceProps): React.JSX.Element {
+  const coach = useCoach();
+  return <ChatInterfaceContent {...props} surface="legacy-wellness" coach={coach} />;
+}
+
+function ChatInterfaceContent({
+  initialSessionId,
+  initialInput,
+  surface,
+  coach,
+}: ChatInterfaceContentProps): React.JSX.Element {
+  const { colors, brand, status } = useTheme();
   const { isConnected } = useNetworkStatus();
   const router = useRouter();
 
-  const { messages, isLoading, error, suggestedQuestions, sendMessage, loadSession } = useCoach();
+  const { messages, isLoading, error, suggestedQuestions, sendMessage, loadSession } = coach;
 
   const [input, setInput] = useState(initialInput ?? '');
-  const [activeCategory, setActiveCategory] = useState<QuestionCategory>('general');
+  const [activeCategory, setActiveCategory] = useState<VisibleQuestionCategory>('general');
   const flatListRef = useRef<FlatList>(null);
   const sessionLoaded = useRef(false);
 
@@ -72,7 +119,7 @@ export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceP
     await sendMessage(question);
   };
 
-  const handleCategoryChange = (category: QuestionCategory) => {
+  const handleCategoryChange = (category: VisibleQuestionCategory) => {
     Haptics.selectionAsync();
     setActiveCategory(category);
   };
@@ -83,12 +130,27 @@ export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceP
     router.push('/(scan)' as never);
   };
 
-  const categories: { key: QuestionCategory; label: string }[] = [
-    { key: 'general', label: '일반' },
-    { key: 'workout', label: '운동' },
-    { key: 'nutrition', label: '영양' },
-    { key: 'skin', label: '피부' },
-  ];
+  const isBeautyTeamSurface = surface === 'beauty-team';
+  const categories: { key: VisibleQuestionCategory; label: string }[] = isBeautyTeamSurface
+    ? [
+        { key: 'general', label: '일반' },
+        { key: 'skin', label: '피부' },
+        { key: 'color', label: '컬러' },
+        { key: 'style', label: '스타일' },
+      ]
+    : [
+        { key: 'general', label: '일반' },
+        { key: 'workout', label: '운동' },
+        { key: 'nutrition', label: '영양' },
+        { key: 'skin', label: '피부' },
+      ];
+  const quickQuestions: readonly string[] = isBeautyTeamSurface
+    ? (BEAUTY_TEAM_QUICK_QUESTIONS[activeCategory as BeautyTeamQuestionCategory] ??
+      BEAUTY_TEAM_QUICK_QUESTIONS.general)
+    : QUICK_QUESTIONS[activeCategory as QuestionCategory];
+  const visibleSuggestedQuestions = isBeautyTeamSurface
+    ? filterBeautyTeamSuggestedQuestions(suggestedQuestions)
+    : suggestedQuestions;
 
   const renderMessage = ({ item }: { item: CoachMessage }) => {
     const isUser = item.role === 'user';
@@ -141,10 +203,14 @@ export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceP
         <View style={styles.emptyContainer}>
           {/* 헤더 */}
           <View style={styles.header}>
-            <Text style={styles.headerEmoji}>🤖</Text>
-            <Text style={[styles.headerTitle, { color: colors.foreground }]}>AI 웰니스 코치</Text>
+            {!isBeautyTeamSurface && <Text style={styles.headerEmoji}>🤖</Text>}
+            <Text style={[styles.headerTitle, { color: colors.foreground }]}>
+              {isBeautyTeamSurface ? '전속 뷰티팀에게 물어보세요' : 'AI 웰니스 코치'}
+            </Text>
             <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>
-              운동, 영양, 피부 관리에 대해 물어보세요!
+              {isBeautyTeamSurface
+                ? '피부·퍼스널컬러·헤어·메이크업·스타일을 편하게 물어보세요.'
+                : '운동, 영양, 피부 관리에 대해 물어보세요!'}
             </Text>
           </View>
 
@@ -176,7 +242,7 @@ export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceP
 
           {/* 빠른 질문 */}
           <View style={styles.quickQuestions}>
-            {QUICK_QUESTIONS[activeCategory].map((question, index) => (
+            {quickQuestions.map((question, index) => (
               <Pressable
                 key={index}
                 style={[
@@ -208,9 +274,9 @@ export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceP
           />
 
           {/* 추천 질문 */}
-          {suggestedQuestions.length > 0 && !isLoading && (
+          {visibleSuggestedQuestions.length > 0 && !isLoading && (
             <View style={styles.suggestedContainer}>
-              {suggestedQuestions.map((question, index) => (
+              {visibleSuggestedQuestions.map((question, index) => (
                 <Pressable
                   key={index}
                   style={[styles.suggestedButton, { backgroundColor: colors.muted }]}
@@ -257,7 +323,7 @@ export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceP
         </Pressable>
         <TextInput
           style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground }]}
-          placeholder="무엇이든 물어보세요..."
+          placeholder={isBeautyTeamSurface ? '뷰티팀에게 물어보세요...' : '무엇이든 물어보세요...'}
           placeholderTextColor={colors.mutedForeground}
           value={input}
           onChangeText={setInput}
@@ -265,7 +331,9 @@ export function ChatInterface({ initialSessionId, initialInput }: ChatInterfaceP
           returnKeyType="send"
           multiline
           maxLength={500}
-          accessibilityLabel="코치에게 보낼 메시지"
+          accessibilityLabel={
+            isBeautyTeamSurface ? '뷰티팀에게 보낼 메시지' : '코치에게 보낼 메시지'
+          }
           accessibilityHint="메시지를 입력한 후 전송 버튼을 눌러주세요"
         />
         <Pressable

@@ -12,6 +12,7 @@ import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator } from '
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ScreenContainer } from '@/components/ui';
+import { buildStoredResultDestination } from '@/lib/analysis';
 import {
   VISIBLE_ANALYSIS_MODULES,
   isVisibleAnalysisModule,
@@ -78,23 +79,9 @@ export default function AnalysisHistoryScreen(): React.JSX.Element {
 
   const handleItemPress = useCallback((item: AnalysisHistoryItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // 해당 분석의 결과 화면으로 이동
+    // 숨김 축은 막고, 공개 5축은 홈 완료 카드와 같은 저장 결과 목적지 계약을 사용한다.
     if (!isVisibleAnalysisModule(item.moduleType)) return;
-
-    const routeMap: Record<VisibleAnalysisModule, string> = {
-      'personal-color': '/(analysis)/personal-color/result',
-      skin: '/(analysis)/skin/result',
-      body: '/(analysis)/body/result',
-      hair: '/(analysis)/hair/result',
-      makeup: '/(analysis)/makeup/result',
-    };
-    const route = routeMap[item.moduleType];
-    if (route) {
-      router.push({
-        pathname: route as '/(analysis)/personal-color/result',
-        params: { historyId: item.id },
-      });
-    }
+    router.push(buildStoredResultDestination(item.moduleType, item.id) as never);
   }, []);
 
   const renderItem = useCallback(

@@ -386,7 +386,7 @@ describe('ResultLayout 컴포넌트', () => {
     it('CTA 카드에 상담 안내 텍스트가 표시되어야 한다', () => {
       const { getByText } = renderWithTheme(<ResultLayout {...createDefaultProps()} />);
       expect(getByText('더 자세한 분석이 궁금하다면?')).toBeTruthy();
-      expect(getByText('AI 웰니스 코치와 1:1 상담을 받아보세요')).toBeTruthy();
+      expect(getByText('전속 뷰티팀과 1:1로 이야기해보세요')).toBeTruthy();
     });
 
     it('상담하기 버튼이 표시되어야 한다', () => {

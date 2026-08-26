@@ -33,15 +33,6 @@ interface HomeTodaySectionProps {
   onSuggestionPress?: (route: string) => void;
 }
 
-// 시간대별 한국어 인사 (웹 교차 모듈 패턴 포팅)
-function getTimeGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 6) return '좋은 새벽이에요';
-  if (hour < 12) return '좋은 아침이에요';
-  if (hour < 18) return '좋은 오후예요';
-  return '좋은 저녁이에요';
-}
-
 // 모듈 색상 키 → 이모지 매핑
 const SUGGESTION_EMOJI: Record<string, string> = {
   skin: '✨',
@@ -58,14 +49,21 @@ export function HomeTodaySection({
   onTaskPress,
   onSuggestionPress,
 }: HomeTodaySectionProps): React.JSX.Element {
-  const { colors, spacing, radii, typography, status, brand, shadows, module: moduleColors } = useTheme();
+  const {
+    colors,
+    spacing,
+    radii,
+    typography,
+    status,
+    brand,
+    shadows,
+    module: moduleColors,
+  } = useTheme();
 
   // 접근성: 동작 줄이기 설정 시 entering 애니메이션 생략
   const { shouldAnimate } = useAdaptiveAnimation();
 
   const remainingCount = tasks.filter((t) => !t.completed).length;
-  const greeting = getTimeGreeting();
-
   // 알림 타입별 배경색
   const getNotificationBg = (type: Notification['type']): string => {
     switch (type) {
@@ -88,19 +86,6 @@ export function HomeTodaySection({
       entering={shouldAnimate ? FadeInUp.delay(100).duration(TIMING.normal) : undefined}
       testID="home-today-section"
     >
-      {/* 시간대별 인사 */}
-      <Text
-        style={{
-          fontSize: typography.size.lg,
-          fontWeight: typography.weight.semibold,
-          color: colors.foreground,
-          marginBottom: spacing.sm,
-        }}
-        accessibilityRole="header"
-      >
-        {greeting}
-      </Text>
-
       {/* 알림 배너 — 아이콘 + 색상 보더 + 그림자 */}
       {notifications.length > 0 && (
         <View
@@ -117,13 +102,15 @@ export function HomeTodaySection({
             ...shadows.md,
           }}
         >
-          <Text style={{ fontSize: 16, marginRight: spacing.sm }}>
-            {notifications[0].type === 'success'
-              ? '🎉'
-              : notifications[0].type === 'warning'
-                ? '⚠️'
-                : '💡'}
-          </Text>
+          {notifications[0].id !== 'welcome' && (
+            <Text style={{ fontSize: 16, marginRight: spacing.sm }} testID="home-notification-icon">
+              {notifications[0].type === 'success'
+                ? '🎉'
+                : notifications[0].type === 'warning'
+                  ? '⚠️'
+                  : '💡'}
+            </Text>
+          )}
           <Text
             style={{
               fontSize: typography.size.sm,

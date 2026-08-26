@@ -118,8 +118,10 @@ describe('BeautyTab', () => {
     });
 
     it('섹션 제목 "뷰티"가 표시된다', () => {
-      const { getByText } = renderWithTheme(<BeautyTab />);
+      const { getByText, getByTestId, queryByTestId } = renderWithTheme(<BeautyTab />);
       expect(getByText('뷰티')).toBeTruthy();
+      expect(getByTestId('beauty-tab-title')).toBeTruthy();
+      expect(queryByTestId('linear-gradient')).toBeNull();
     });
   });
 

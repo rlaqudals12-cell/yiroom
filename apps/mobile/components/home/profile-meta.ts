@@ -11,6 +11,7 @@ import { getAxisCadence, type CadenceGroup } from '@yiroom/shared';
 import { Palette, Sparkles, User, Scissors, Heart } from 'lucide-react-native';
 
 import type { AnalysisSummary } from '../../hooks/useUserAnalyses';
+import { buildStoredResultDestination, type StoredResultDestination } from '../../lib/analysis';
 
 export const TOTAL_ANALYSIS_TYPES = 5;
 
@@ -24,8 +25,6 @@ export interface ProfileAxisMeta {
   moduleKey: 'personalColor' | 'skin' | 'body' | 'hair' | 'makeup';
   /** 미완료 시 이동(해당 축 분석 시작) */
   analysisRoute: string;
-  /** 완료 시 이동(최신 결과) */
-  resultRoute: string;
 }
 
 export const PROFILE_META: Record<ProfileAxis, ProfileAxisMeta> = {
@@ -34,35 +33,30 @@ export const PROFILE_META: Record<ProfileAxis, ProfileAxisMeta> = {
     label: '퍼스널 컬러',
     moduleKey: 'personalColor',
     analysisRoute: '/(analysis)/personal-color',
-    resultRoute: '/(analysis)/personal-color/result',
   },
   skin: {
     icon: Sparkles,
     label: '피부',
     moduleKey: 'skin',
     analysisRoute: '/(analysis)/skin',
-    resultRoute: '/(analysis)/skin/result',
   },
   body: {
     icon: User,
     label: '체형',
     moduleKey: 'body',
     analysisRoute: '/(analysis)/body',
-    resultRoute: '/(analysis)/body/result',
   },
   hair: {
     icon: Scissors,
     label: '헤어',
     moduleKey: 'hair',
     analysisRoute: '/(analysis)/hair',
-    resultRoute: '/(analysis)/hair/result',
   },
   makeup: {
     icon: Heart,
     label: '메이크업',
     moduleKey: 'makeup',
     analysisRoute: '/(analysis)/makeup',
-    resultRoute: '/(analysis)/makeup/result',
   },
 };
 
@@ -70,11 +64,11 @@ export const PROFILE_META: Record<ProfileAxis, ProfileAxisMeta> = {
 export const PROFILE_ORDER: ProfileAxis[] = ['personal-color', 'skin', 'body', 'hair', 'makeup'];
 
 /** 완료 축 → 카드가 가리키는 정확한 저장 결과. historyId를 버리면 최신 행으로 바뀔 수 있다. */
-export function getProfileResultRoute(analysis: AnalysisSummary): string {
-  const meta = PROFILE_META[analysis.type as ProfileAxis];
-  return meta
-    ? `${meta.resultRoute}?historyId=${encodeURIComponent(analysis.id)}`
-    : '/(analysis)/hub';
+export function getProfileResultRoute(
+  analysis: AnalysisSummary
+): StoredResultDestination | '/(analysis)/hub' {
+  const axis = analysis.type as ProfileAxis;
+  return PROFILE_META[axis] ? buildStoredResultDestination(axis, analysis.id) : '/(analysis)/hub';
 }
 
 /** AnalysisType(하이픈) → AXIS_CADENCE 변동 그룹. */

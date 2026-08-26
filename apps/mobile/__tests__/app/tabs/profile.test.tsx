@@ -52,11 +52,11 @@ jest.mock('../../../hooks/useUserAnalyses', () => ({
       },
       { id: '2', type: 'skin', summary: '복합성 피부', createdAt: new Date('2026-02-18') },
     ],
-    personalColor: { season: 'spring' },
-    skinAnalysis: { skinType: '복합성' },
+    personalColor: { id: 'pc-profile-1', season: 'spring' },
+    skinAnalysis: { id: 'skin-profile-1', skinType: '복합성' },
     bodyAnalysis: null,
-    hairAnalysis: { hairType: 'wavy' },
-    makeupAnalysis: { undertone: 'neutral' },
+    hairAnalysis: { id: 'hair-profile-1', hairType: 'wavy' },
+    makeupAnalysis: { id: 'makeup-profile-1', undertone: 'neutral' },
     isLoading: false,
     refetch: jest.fn(),
   })),
@@ -357,6 +357,82 @@ describe('ProfileScreen', () => {
     it('분석 이력 타임라인이 표시된다', () => {
       const { getByTestId } = renderWithTheme(<ProfileScreen />);
       expect(getByTestId('analysis-timeline')).toBeTruthy();
+    });
+
+    it('타임라인의 완료 행은 해당 historyId의 저장 결과로 이동한다', () => {
+      const mockPush = jest.fn();
+      const { router } = require('expo-router');
+      router.push = mockPush;
+
+      const { getByText } = renderWithTheme(<ProfileScreen />);
+      fireEvent.press(getByText('Spring Warm'));
+
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: '/(analysis)/personal-color/result',
+        params: { historyId: '1' },
+      });
+    });
+
+    it('완료된 5축 메뉴는 각 저장 결과로 이동한다', () => {
+      const { useUserAnalyses } = require('../../../hooks/useUserAnalyses');
+      useUserAnalyses.mockReturnValueOnce({
+        analyses: [],
+        personalColor: { id: 'pc-menu-1', season: 'spring' },
+        skinAnalysis: { id: 'skin-menu-1', skinType: 'combination' },
+        bodyAnalysis: { id: 'body-menu-1', bodyType: 'rectangle' },
+        hairAnalysis: { id: 'hair-menu-1', hairType: 'wavy' },
+        makeupAnalysis: { id: 'makeup-menu-1', undertone: 'neutral' },
+        isLoading: false,
+        refetch: jest.fn(),
+      });
+      const mockPush = jest.fn();
+      const { router } = require('expo-router');
+      router.push = mockPush;
+
+      const { getByTestId } = renderWithTheme(<ProfileScreen />);
+      const cases = [
+        ['profile-analysis-personal-color', '/(analysis)/personal-color/result', 'pc-menu-1'],
+        ['profile-analysis-skin', '/(analysis)/skin/result', 'skin-menu-1'],
+        ['profile-analysis-body', '/(analysis)/body/result', 'body-menu-1'],
+        ['profile-analysis-hair', '/(analysis)/hair/result', 'hair-menu-1'],
+        ['profile-analysis-makeup', '/(analysis)/makeup/result', 'makeup-menu-1'],
+      ] as const;
+
+      cases.forEach(([testID, pathname, historyId]) => {
+        fireEvent.press(getByTestId(testID));
+        expect(mockPush).toHaveBeenLastCalledWith({ pathname, params: { historyId } });
+      });
+    });
+
+    it('미완료 5축 메뉴는 기존 분석 시작 화면으로 이동한다', () => {
+      const { useUserAnalyses } = require('../../../hooks/useUserAnalyses');
+      useUserAnalyses.mockReturnValueOnce({
+        analyses: [],
+        personalColor: null,
+        skinAnalysis: null,
+        bodyAnalysis: null,
+        hairAnalysis: null,
+        makeupAnalysis: null,
+        isLoading: false,
+        refetch: jest.fn(),
+      });
+      const mockPush = jest.fn();
+      const { router } = require('expo-router');
+      router.push = mockPush;
+
+      const { getByTestId } = renderWithTheme(<ProfileScreen />);
+      const cases = [
+        ['profile-analysis-personal-color', '/(analysis)/personal-color'],
+        ['profile-analysis-skin', '/(analysis)/skin'],
+        ['profile-analysis-body', '/(analysis)/body'],
+        ['profile-analysis-hair', '/(analysis)/hair'],
+        ['profile-analysis-makeup', '/(analysis)/makeup'],
+      ] as const;
+
+      cases.forEach(([testID, pathname]) => {
+        fireEvent.press(getByTestId(testID));
+        expect(mockPush).toHaveBeenLastCalledWith(pathname);
+      });
     });
 
     it('타임라인에 분석 이력 항목이 표시된다', () => {

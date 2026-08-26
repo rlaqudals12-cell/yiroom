@@ -310,10 +310,13 @@ describe('useUserAnalyses — 점수 null 가드', () => {
     const types = result.current.analyses.map((a) => a.type).sort();
     expect(types).toEqual(['body', 'hair', 'makeup', 'personal-color', 'skin']);
 
-    // 점수가 있는 축은 정상적으로 "N점"을 노출
+    // 기록값은 피부·메이크업 모두 채점 단위 없이 같은 진단지 문법으로 노출
     const skin = result.current.analyses.find((a) => a.type === 'skin');
     expect(skin?.summary).toBe('복합성 · 원값 82');
     expect(skin?.summary).not.toContain('null');
+    const makeup = result.current.analyses.find((a) => a.type === 'makeup');
+    expect(makeup?.summary).toBe('웜톤 · 원값 88');
+    expect(makeup?.summary).not.toContain('점');
   });
 
   it('저장 JSONB의 usedMock/usedFallback 출처를 5축 카드 데이터에 보존한다', async () => {

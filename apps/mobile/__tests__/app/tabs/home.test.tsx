@@ -7,7 +7,7 @@
  *          HomeHeader, HomeTodaySection, HomeQuickActions
  */
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { FEATURE_FLAGS } from '@yiroom/shared';
 
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
@@ -26,6 +26,40 @@ import {
   shadows,
   typography,
 } from '../../../lib/theme/tokens';
+
+const mockRouterPush = jest.fn();
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockRouterPush }),
+}));
+
+function createUserAnalysesState() {
+  return {
+    analyses: [],
+    personalColor: {
+      id: 'pc-home-1',
+      season: 'spring',
+      tone: 'warm',
+      seasonSubtype: null,
+      bestColors: [],
+      worstColors: [],
+      colorPalette: [],
+      createdAt: new Date('2026-08-20T00:00:00.000Z'),
+    },
+    skinAnalysis: null,
+    bodyAnalysis: null,
+    hairAnalysis: null,
+    makeupAnalysis: null,
+    isLoading: false,
+    error: null,
+    refetch: jest.fn(async () => undefined),
+  };
+}
+
+type MockUserAnalysesState = Omit<ReturnType<typeof createUserAnalysesState>, 'personalColor'> & {
+  personalColor: ReturnType<typeof createUserAnalysesState>['personalColor'] | null;
+};
+
+let mockUserAnalysesState: MockUserAnalysesState = createUserAnalysesState();
 
 // 온보딩 완료 상태로 mock (홈 화면 렌더링 전제)
 jest.mock('../../../lib/onboarding', () => ({
@@ -81,13 +115,7 @@ jest.mock('../../../hooks/useNutritionData', () => ({
 
 // 분석 결과 mock
 jest.mock('../../../hooks/useUserAnalyses', () => ({
-  useUserAnalyses: jest.fn(() => ({
-    analyses: [],
-    personalColor: { season: 'spring' },
-    skinAnalysis: null,
-    bodyAnalysis: null,
-    isLoading: false,
-  })),
+  useUserAnalyses: jest.fn(() => mockUserAnalysesState),
 }));
 
 // 프로필 페르소나 mock (ADR-109 — ProfileCardGrid 상단 배너용)
@@ -102,21 +130,73 @@ jest.mock('../../../hooks/useCrossModuleInsights', () => ({
   })),
 }));
 
+const mockBriefingState = {
+  data: {
+    date: '2026-08-26',
+    timeSlot: 'morning',
+    briefing: {
+      greeting: '테스트님, 좋은 아침이에요',
+      advice: [],
+      closing: '오늘도 곁에서 도울게요.',
+    },
+    myColors: null,
+    todayStyle: { fashionTip: null, outfit: null },
+    hasAnalyses: true,
+  },
+  stale: false,
+  isLoading: false,
+  error: null,
+  refetch: jest.fn(),
+};
+jest.mock('../../../hooks/useBriefing', () => ({
+  useBriefing: () => mockBriefingState,
+}));
+
 // 홈 하위 컴포넌트 mock (렌더링 오류 방지)
 jest.mock('../../../components/home', () => {
-  const { View, Text } = require('react-native');
+  const { Pressable, View, Text } = require('react-native');
   return {
-    HomeHeader: ({ userName }: { userName: string }) => (
+    HomeHeader: ({
+      userName,
+      briefingGreeting,
+    }: {
+      userName: string;
+      briefingGreeting?: string;
+    }) => (
       <View testID="home-header">
         <Text>{userName}</Text>
+        <Text testID="home-header-greeting-source">{briefingGreeting}</Text>
       </View>
     ),
     HomeTodaySection: () => <View testID="home-today-section" />,
-    HomeQuickActions: () => <View testID="home-quick-actions" />,
+    HomeQuickActions: ({
+      actions,
+      onActionPress,
+      onCoachPress,
+    }: {
+      actions: Array<{ title: string; route: unknown }>;
+      onActionPress: (route: unknown) => void;
+      onCoachPress: () => void;
+    }) => (
+      <View testID="home-quick-actions">
+        <Pressable testID="home-coach-action" onPress={onCoachPress} />
+        {actions.map((action, index) => (
+          <Pressable
+            key={action.title}
+            testID={`home-quick-action-${index}`}
+            onPress={() => onActionPress(action.route)}
+          />
+        ))}
+      </View>
+    ),
     CrossModuleInsight: () => <View testID="cross-module-insight" />,
     InternalizationWidget: () => <View testID="internalization-widget" />,
     ProfileCardGrid: () => <View testID="profile-card-grid" />,
-    HomeBriefing: () => <View testID="home-briefing" />,
+    HomeBriefing: ({ briefingState }: { briefingState: typeof mockBriefingState }) => (
+      <View testID="home-briefing">
+        <Text testID="home-briefing-greeting-source">{briefingState.data?.briefing.greeting}</Text>
+      </View>
+    ),
   };
 });
 
@@ -302,6 +382,11 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 }
 
 describe('HomeScreen', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUserAnalysesState = createUserAnalysesState();
+  });
+
   describe('기본 렌더링', () => {
     it('에러 없이 렌더링된다', () => {
       const { getByTestId } = renderWithTheme(<HomeScreen />);
@@ -323,9 +408,48 @@ describe('HomeScreen', () => {
       expect(getByTestId('home-quick-actions')).toBeTruthy();
     });
 
+    it('홈 질문 카드를 누르면 물어보기 탭으로 이동한다', () => {
+      const { getByTestId } = renderWithTheme(<HomeScreen />);
+
+      fireEvent.press(getByTestId('home-coach-action'));
+
+      expect(mockRouterPush).toHaveBeenCalledWith('/(tabs)/ask');
+    });
+
+    it('완료 축을 누르면 해당 historyId의 저장 결과로 재방문한다', () => {
+      const { getByTestId } = renderWithTheme(<HomeScreen />);
+
+      fireEvent.press(getByTestId('home-quick-action-0'));
+
+      expect(mockRouterPush).toHaveBeenCalledWith({
+        pathname: '/(analysis)/personal-color/result',
+        params: { historyId: 'pc-home-1' },
+      });
+    });
+
+    it('미완료 축을 누르면 분석 시작 화면으로 이동한다', () => {
+      mockUserAnalysesState = { ...createUserAnalysesState(), personalColor: null };
+      const { getByTestId } = renderWithTheme(<HomeScreen />);
+
+      fireEvent.press(getByTestId('home-quick-action-0'));
+
+      expect(mockRouterPush).toHaveBeenCalledWith('/(analysis)/personal-color');
+    });
+
     it('브리핑 섹션(HomeBriefing)이 마운트된다', () => {
       const { getByTestId } = renderWithTheme(<HomeScreen />);
       expect(getByTestId('home-briefing')).toBeTruthy();
+    });
+
+    it('히어로와 브리핑에 같은 서버 인사 소스를 전달한다', () => {
+      const { getByTestId } = renderWithTheme(<HomeScreen />);
+
+      expect(getByTestId('home-header-greeting-source').props.children).toBe(
+        '테스트님, 좋은 아침이에요'
+      );
+      expect(getByTestId('home-briefing-greeting-source').props.children).toBe(
+        '테스트님, 좋은 아침이에요'
+      );
     });
 
     it('오늘의 요약 StatCard가 표시된다', () => {

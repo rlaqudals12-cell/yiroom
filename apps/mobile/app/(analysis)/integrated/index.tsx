@@ -558,7 +558,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
               <Text style={[styles.optional, { color: colors.mutedForeground }]}>(선택)</Text>
             </Text>
             <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
-              전신 사진 없으면 키만 입력해도 분석 가능해요
+              전신 사진이 없으면 키를 입력해도 예시 결과로 제공되며 신뢰도가 낮아요
             </Text>
             <View style={styles.numberInputRow}>
               <NumberField

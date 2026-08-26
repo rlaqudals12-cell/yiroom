@@ -259,9 +259,7 @@ export function ReportResultLayout({
           >
             <View style={styles.followupTextArea}>
               <Text style={styles.followupTitle}>더 자세한 분석이 궁금하신가요?</Text>
-              <Text style={styles.followupDescription}>
-                AI 웰니스 코치와 이어서 이야기해보세요.
-              </Text>
+              <Text style={styles.followupDescription}>전속 뷰티팀과 이어서 이야기해보세요.</Text>
             </View>
             <ChevronRight color={REPORT_COLORS.mutedInk} size={18} strokeWidth={1.75} />
           </Pressable>

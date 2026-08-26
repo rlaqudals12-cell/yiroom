@@ -1,7 +1,7 @@
 /**
  * HomeHeader 컴포넌트 테스트
  *
- * 시간대별 인사말 + 사용자명 렌더링 검증.
+ * 서버 브리핑 인사말 + 사용자명 렌더링 검증.
  * ThemeContext.Provider를 직접 사용하여 NativeWind/useColorScheme 충돌 회피.
  */
 
@@ -49,33 +49,25 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
 describe('HomeHeader', () => {
   it('사용자명을 렌더링해야 한다 (isLoaded=true)', () => {
-    const { getByText } = renderWithTheme(
-      <HomeHeader userName="홍길동" isLoaded={true} />
-    );
+    const { getByText } = renderWithTheme(<HomeHeader userName="홍길동" isLoaded={true} />);
 
     expect(getByText('홍길동님')).toBeTruthy();
   });
 
   it('로딩 중일 때 "...님"을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(
-      <HomeHeader userName="홍길동" isLoaded={false} />
-    );
+    const { getByText } = renderWithTheme(<HomeHeader userName="홍길동" isLoaded={false} />);
 
     expect(getByText('...님')).toBeTruthy();
   });
 
   it('testID="home-header"가 존재해야 한다', () => {
-    const { getByTestId } = renderWithTheme(
-      <HomeHeader userName="테스트" isLoaded={true} />
-    );
+    const { getByTestId } = renderWithTheme(<HomeHeader userName="테스트" isLoaded={true} />);
 
     expect(getByTestId('home-header')).toBeTruthy();
   });
@@ -90,50 +82,40 @@ describe('HomeHeader', () => {
     expect(getByText('다크유저님')).toBeTruthy();
   });
 
-  describe('시간대별 인사말', () => {
-    // getGreeting()은 내부 함수이므로 Date를 mock하여 검증
-    afterEach(() => {
-      jest.restoreAllMocks();
+  describe('브리핑과 단일 인사 소스', () => {
+    it('브리핑이 아직 없으면 시간대를 지어내지 않고 중립 인사를 표시한다', () => {
+      const { getByText } = renderWithTheme(<HomeHeader userName="새벽유저" isLoaded={true} />);
+
+      expect(getByText('반가워요')).toBeTruthy();
     });
 
-    it('새벽(6시 전)에는 "늦은 밤이에요"를 표시해야 한다', () => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(3);
-
+    it('서버 브리핑의 아침 인사를 그대로 사용한다', () => {
       const { getByText } = renderWithTheme(
-        <HomeHeader userName="새벽유저" isLoaded={true} />
-      );
-
-      expect(getByText('늦은 밤이에요')).toBeTruthy();
-    });
-
-    it('오전(6~12시)에는 "좋은 아침이에요"를 표시해야 한다', () => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(9);
-
-      const { getByText } = renderWithTheme(
-        <HomeHeader userName="아침유저" isLoaded={true} />
+        <HomeHeader userName="아침유저" isLoaded={true} briefingGreeting="좋은 아침이에요" />
       );
 
       expect(getByText('좋은 아침이에요')).toBeTruthy();
     });
 
-    it('오후(12~18시)에는 "좋은 오후예요"를 표시해야 한다', () => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(14);
-
+    it('서버 브리핑의 오후 인사를 그대로 사용한다', () => {
       const { getByText } = renderWithTheme(
-        <HomeHeader userName="오후유저" isLoaded={true} />
+        <HomeHeader userName="오후유저" isLoaded={true} briefingGreeting="좋은 오후예요" />
       );
 
       expect(getByText('좋은 오후예요')).toBeTruthy();
     });
 
-    it('저녁(18시 이후)에는 "좋은 저녁이에요"를 표시해야 한다', () => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(20);
-
+    it('서버가 이름을 포함하면 히어로 제목과 중복되지 않게 시간 인사만 분리한다', () => {
       const { getByText } = renderWithTheme(
-        <HomeHeader userName="저녁유저" isLoaded={true} />
+        <HomeHeader
+          userName="저녁유저"
+          isLoaded={true}
+          briefingGreeting="저녁유저님, 좋은 저녁이에요"
+        />
       );
 
       expect(getByText('좋은 저녁이에요')).toBeTruthy();
+      expect(getByText('저녁유저님')).toBeTruthy();
     });
   });
 });

@@ -1,10 +1,10 @@
 /**
- * AI 웰니스 코치 훅
+ * AI 코치 훅
  * 채팅 상태 관리 및 메시지 전송 + DB 저장
  */
 
 import { useAuth, useUser } from '@clerk/clerk-expo';
-import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useNutritionData } from '../../hooks/useNutritionData';
 import { useUserAnalyses } from '../../hooks/useUserAnalyses';
@@ -13,22 +13,23 @@ import { useNetworkStatus } from '../offline';
 import { useClerkSupabaseClient } from '../supabase';
 import {
   createCoachSession,
-  saveCoachMessage,
   getCoachSessions,
   getSessionMessages,
+  saveCoachMessage,
   type CoachSession,
 } from './history';
 import { coachLogger } from '../utils/logger';
 
 import {
-  sendCoachMessage,
+  BEAUTY_TEAM_QUICK_QUESTIONS,
   getMockResponse,
-  type CoachMessage,
+  sendCoachMessage,
   type CoachChatResponse,
+  type CoachMessage,
   type UserContext,
 } from './index';
 
-interface UseCoachResult {
+export interface UseCoachResult {
   messages: CoachMessage[];
   isLoading: boolean;
   error: string | null;
@@ -41,34 +42,33 @@ interface UseCoachResult {
   startNewSession: () => void;
 }
 
-/**
- * AI 코치 채팅 훅 (DB 저장 지원)
- */
-export function useCoach(): UseCoachResult {
-  const { getToken } = useAuth();
-  const { user } = useUser();
-  const { isConnected } = useNetworkStatus();
-  const supabase = useClerkSupabaseClient();
+const LEGACY_INITIAL_QUESTIONS = [
+  '오늘 운동 뭐하면 좋을까?',
+  '건강한 간식 추천해줘',
+  '스킨케어 루틴 알려줘',
+];
 
-  // 분석 결과 기반 사용자 컨텍스트 구성 (RAG 강화)
+const BEAUTY_TEAM_INITIAL_QUESTIONS = [...BEAUTY_TEAM_QUICK_QUESTIONS.general];
+
+/** 5축 분석만으로 뷰티팀 컨텍스트를 구성한다. */
+function useBeautyAnalysisContext(): UserContext {
   const { personalColor, skinAnalysis, bodyAnalysis, hairAnalysis, makeupAnalysis } =
     useUserAnalyses();
-  const { streak: workoutStreak, analysis: workoutAnalysis, todayWorkout } = useWorkoutData();
-  const { settings: nutritionSettings, streak: nutritionStreak } = useNutritionData();
 
-  const userContext = useMemo<UserContext>(() => {
-    const ctx: UserContext = {};
+  return useMemo<UserContext>(() => {
+    const context: UserContext = {};
+
     if (personalColor) {
-      ctx.personalColor = { season: personalColor.season, tone: personalColor.tone };
+      context.personalColor = { season: personalColor.season, tone: personalColor.tone };
     }
     if (skinAnalysis) {
-      ctx.skinAnalysis = {
+      context.skinAnalysis = {
         skinType: skinAnalysis.skinType,
         concerns: skinAnalysis.concerns,
       };
     }
     if (bodyAnalysis) {
-      ctx.bodyAnalysis = {
+      context.bodyAnalysis = {
         bodyType: bodyAnalysis.bodyType,
         bmi: bodyAnalysis.bmi,
         height: bodyAnalysis.height,
@@ -76,59 +76,41 @@ export function useCoach(): UseCoachResult {
       };
     }
     if (hairAnalysis) {
-      ctx.hairAnalysis = {
+      context.hairAnalysis = {
         hairType: hairAnalysis.hairType,
         concerns: hairAnalysis.concerns,
       };
     }
     if (makeupAnalysis) {
-      // 실재 컬럼(undertone·face_shape)만 주입 — 과거 makeupStyle·colorRecommendations는 존재하지 않는 컬럼이었음
-      ctx.makeupAnalysis = {
+      // 실재 컬럼만 전송한다. 과거 makeupStyle·colorRecommendations는 존재하지 않았다.
+      context.makeupAnalysis = {
         undertone: makeupAnalysis.undertone,
         faceShape: makeupAnalysis.faceShape,
       };
     }
-    if (workoutStreak || workoutAnalysis) {
-      ctx.workout = {
-        streak: workoutStreak?.currentStreak,
-        workoutType: workoutAnalysis?.workoutType,
-        goal: workoutAnalysis?.goals?.[0],
-        fitnessLevel: workoutAnalysis?.fitnessLevel,
-      };
-    }
-    if (nutritionSettings || nutritionStreak) {
-      ctx.nutrition = {
-        targetCalories: nutritionSettings?.dailyCalorieGoal,
-        streak: nutritionStreak?.currentStreak,
-      };
-    }
-    // 오늘의 활동 정보
-    if (todayWorkout) {
-      ctx.recentActivity = {
-        todayWorkout: todayWorkout.exercises?.map((e: { name: string }) => e.name).join(', '),
-      };
-    }
-    return ctx;
-  }, [
-    personalColor,
-    skinAnalysis,
-    bodyAnalysis,
-    hairAnalysis,
-    makeupAnalysis,
-    workoutStreak,
-    workoutAnalysis,
-    todayWorkout,
-    nutritionSettings,
-    nutritionStreak,
-  ]);
+
+    return context;
+  }, [personalColor, skinAnalysis, bodyAnalysis, hairAnalysis, makeupAnalysis]);
+}
+
+/**
+ * 컨텍스트 종류와 무관한 채팅 상태 정본.
+ * 호출자가 만든 컨텍스트만 API·오프라인 응답에 전달한다.
+ */
+function useCoachState(
+  userContext: UserContext,
+  initialSuggestedQuestions: readonly string[]
+): UseCoachResult {
+  const { getToken } = useAuth();
+  const { user } = useUser();
+  const { isConnected } = useNetworkStatus();
+  const supabase = useClerkSupabaseClient();
 
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([
-    '오늘 운동 뭐하면 좋을까?',
-    '건강한 간식 추천해줘',
-    '스킨케어 루틴 알려줘',
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>(() => [
+    ...initialSuggestedQuestions,
   ]);
   const [sessions, setSessions] = useState<CoachSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -170,18 +152,13 @@ export function useCoach(): UseCoachResult {
     setMessages([]);
     setCurrentSessionId(null);
     setError(null);
-    setSuggestedQuestions([
-      '오늘 운동 뭐하면 좋을까?',
-      '건강한 간식 추천해줘',
-      '스킨케어 루틴 알려줘',
-    ]);
-  }, []);
+    setSuggestedQuestions([...initialSuggestedQuestions]);
+  }, [initialSuggestedQuestions]);
 
   const sendMessage = useCallback(
     async (message: string) => {
       if (!message.trim() || isLoading) return;
 
-      // 사용자 메시지 추가
       const userMessage: CoachMessage = {
         id: `user-${Date.now()}`,
         role: 'user',
@@ -189,22 +166,20 @@ export function useCoach(): UseCoachResult {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, userMessage]);
+      setMessages((previous) => [...previous, userMessage]);
       setIsLoading(true);
       setError(null);
 
-      // 세션이 없으면 새로 생성
       let sessionId = currentSessionId;
       if (!sessionId && user?.id && isConnected) {
         const newSession = await createCoachSession(supabase, user.id, message.trim());
         if (newSession) {
           sessionId = newSession.id;
           setCurrentSessionId(sessionId);
-          setSessions((prev) => [newSession, ...prev]);
+          setSessions((previous) => [newSession, ...previous]);
         }
       }
 
-      // 사용자 메시지 DB 저장
       if (sessionId && isConnected) {
         await saveCoachMessage(supabase, sessionId, 'user', message.trim());
       }
@@ -213,7 +188,6 @@ export function useCoach(): UseCoachResult {
         let response: CoachChatResponse;
 
         if (isConnected) {
-          // 온라인: API 호출 (분석 결과 컨텍스트 포함)
           const token = await getToken();
           response = await sendCoachMessage(
             message,
@@ -222,11 +196,9 @@ export function useCoach(): UseCoachResult {
             userContext
           );
         } else {
-          // 오프라인: 분석 결과 기반 맞춤 Mock 응답
           response = getMockResponse(message, userContext);
         }
 
-        // AI 응답 추가
         const assistantMessage: CoachMessage = {
           id: `assistant-${Date.now()}`,
           role: 'assistant',
@@ -234,9 +206,8 @@ export function useCoach(): UseCoachResult {
           timestamp: new Date(),
         };
 
-        setMessages((prev) => [...prev, assistantMessage]);
+        setMessages((previous) => [...previous, assistantMessage]);
 
-        // AI 응답 DB 저장
         if (sessionId && isConnected) {
           await saveCoachMessage(
             supabase,
@@ -254,7 +225,6 @@ export function useCoach(): UseCoachResult {
         coachLogger.error('[Coach] error:', err);
         setError('메시지 전송에 실패했어요. 다시 시도해주세요.');
 
-        // 에러 시 분석 결과 기반 Mock 응답 사용
         const fallbackResponse = getMockResponse(message, userContext);
         const fallbackMessage: CoachMessage = {
           id: `assistant-${Date.now()}`,
@@ -263,7 +233,7 @@ export function useCoach(): UseCoachResult {
           timestamp: new Date(),
         };
 
-        setMessages((prev) => [...prev, fallbackMessage]);
+        setMessages((previous) => [...previous, fallbackMessage]);
       } finally {
         setIsLoading(false);
       }
@@ -275,12 +245,8 @@ export function useCoach(): UseCoachResult {
     setMessages([]);
     setCurrentSessionId(null);
     setError(null);
-    setSuggestedQuestions([
-      '오늘 운동 뭐하면 좋을까?',
-      '건강한 간식 추천해줘',
-      '스킨케어 루틴 알려줘',
-    ]);
-  }, []);
+    setSuggestedQuestions([...initialSuggestedQuestions]);
+  }, [initialSuggestedQuestions]);
 
   return {
     messages,
@@ -294,4 +260,54 @@ export function useCoach(): UseCoachResult {
     loadSession,
     startNewSession,
   };
+}
+
+/** ADR-114 전속 뷰티팀: 운동·영양 훅을 호출하지 않고 5축 컨텍스트만 전송한다. */
+export function useBeautyTeamCoach(): UseCoachResult {
+  const beautyContext = useBeautyAnalysisContext();
+  return useCoachState(beautyContext, BEAUTY_TEAM_INITIAL_QUESTIONS);
+}
+
+/** 구형 웰니스 코치 표면. 운동·영양 경로는 보존하되 뷰티팀에서는 호출하지 않는다. */
+export function useCoach(): UseCoachResult {
+  const beautyContext = useBeautyAnalysisContext();
+  const { streak: workoutStreak, analysis: workoutAnalysis, todayWorkout } = useWorkoutData();
+  const { settings: nutritionSettings, streak: nutritionStreak } = useNutritionData();
+
+  const userContext = useMemo<UserContext>(() => {
+    const context: UserContext = { ...beautyContext };
+
+    if (workoutStreak || workoutAnalysis) {
+      context.workout = {
+        streak: workoutStreak?.currentStreak,
+        workoutType: workoutAnalysis?.workoutType,
+        goal: workoutAnalysis?.goals?.[0],
+        fitnessLevel: workoutAnalysis?.fitnessLevel,
+      };
+    }
+    if (nutritionSettings || nutritionStreak) {
+      context.nutrition = {
+        targetCalories: nutritionSettings?.dailyCalorieGoal,
+        streak: nutritionStreak?.currentStreak,
+      };
+    }
+    if (todayWorkout) {
+      context.recentActivity = {
+        todayWorkout: todayWorkout.exercises
+          ?.map((exercise: { name: string }) => exercise.name)
+          .join(', '),
+      };
+    }
+
+    return context;
+  }, [
+    beautyContext,
+    workoutStreak,
+    workoutAnalysis,
+    todayWorkout,
+    nutritionSettings,
+    nutritionStreak,
+  ]);
+
+  return useCoachState(userContext, LEGACY_INITIAL_QUESTIONS);
 }

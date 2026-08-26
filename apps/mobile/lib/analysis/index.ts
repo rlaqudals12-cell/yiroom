@@ -36,3 +36,7 @@ export {
   StoredResultError,
 } from './stored-result-loader';
 export type { StoredAnalysisAxis, StoredAnalysisRecord } from './stored-result-loader';
+
+// 분석 이력·홈 완료 카드 → 정확한 저장 결과 화면의 단일 목적지 계약
+export { buildStoredResultDestination } from './stored-result-destination';
+export type { StoredResultDestination } from './stored-result-destination';

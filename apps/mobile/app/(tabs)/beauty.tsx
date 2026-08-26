@@ -32,7 +32,6 @@ import {
   CollapsibleSection,
   GlassCard,
   MenuCard,
-  GradientBackground,
   ScreenContainer,
   SectionHeader,
   SkeletonCircle,
@@ -182,28 +181,13 @@ export default function BeautyTab(): React.JSX.Element {
         </View>
       )}
 
-      {/* 히어로 헤더 */}
       <Animated.View entering={FadeInUp.duration(TIMING.normal)}>
-        <GradientBackground
-          variant="personalColor"
-          style={{
-            borderRadius: radii.xl + spacing.xs,
-            padding: spacing.lg,
-            marginBottom: spacing.lg,
-          }}
-        >
-          <SectionHeader
-            title="뷰티"
-            gradient="personalColor"
-            style={{ marginBottom: spacing.xs }}
-            titleStyle={{
-              color: colors.overlayForeground,
-              fontSize: typography.size['2xl'],
-              fontWeight: typography.weight.bold,
-              letterSpacing: typography.letterSpacing.tight,
-            }}
-          />
-        </GradientBackground>
+        <SectionHeader
+          title="뷰티"
+          testID="beauty-tab-title"
+          style={{ marginBottom: spacing.lg }}
+          titleStyle={{ fontSize: typography.size['2xl'] }}
+        />
       </Animated.View>
 
       {/* 피부 프로필 카드 */}

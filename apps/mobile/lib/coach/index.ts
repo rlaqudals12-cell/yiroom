@@ -12,6 +12,12 @@ import { getApiBaseUrl } from '@/lib/api/base-url';
 // RAG 모듈
 import { getRAGContext, classifyQuestion } from './rag';
 
+/**
+ * 기존 상담 세션에는 뷰티/웰니스 출처가 없어 안전하게 구분할 수 없다.
+ * 출처 컬럼이 마련되기 전까지 기록 진입을 닫고 데이터와 구현은 보존한다.
+ */
+export const BEAUTY_TEAM_HISTORY_ENABLED = false;
+
 // 도메인별 RAG + 환각 필터 re-export
 export { getHairRAG } from './hair-rag';
 export { getMakeupRAG } from './makeup-rag';
@@ -97,6 +103,41 @@ export const QUICK_QUESTIONS = {
 };
 
 export type QuestionCategory = keyof typeof QUICK_QUESTIONS;
+
+/**
+ * ADR-114 물어보기 탭 전용 질문.
+ * 구세대 웰니스 질문은 QUICK_QUESTIONS에 보존하고, 뷰티팀 표면에서만 이 허용 목록을 쓴다.
+ */
+export const BEAUTY_TEAM_QUICK_QUESTIONS = {
+  // 웹 general 정본과 동일. 제품 적합성은 ChatInterface의 성분 스캔 버튼으로 분기한다.
+  general: ['오늘 뭐 입을까요?', '머리 어떻게 자를까요?', '오늘 화장 어떻게 할까요?'],
+  skin: [
+    '피부가 건조할 때 어떻게 해요?',
+    '트러블이 났는데 어떻게 해요?',
+    '선크림 꼭 발라야 해요?',
+    '제 피부에 맞는 루틴 알려줘요',
+  ],
+  color: [
+    '내 퍼스널컬러에 안 어울리는 색이 뭐야?',
+    '웜톤인데 쿨톤 옷 입어도 돼?',
+    '내 시즌에 맞는 립 색상 추천해줘',
+  ],
+  style: [
+    '오늘 면접인데 뭐 입으면 좋을까요?',
+    '내 옷장에서 데이트룩 추천해줘요',
+    '체형에 맞는 옷 추천해줘요',
+  ],
+} as const;
+
+export type BeautyTeamQuestionCategory = keyof typeof BEAUTY_TEAM_QUICK_QUESTIONS;
+
+const HIDDEN_WELLNESS_QUESTION_PATTERN =
+  /운동|헬스|근육|스트레칭|식단|영양제|영양 관리|영양소|영양 밸런스|칼로리|단백질|간식|음식|수분 섭취|물 얼마나|스트레스|숙면|수면/;
+
+/** 서버가 구세대 후속 질문을 반환해도 뷰티팀 표면에는 다시 노출하지 않는다. */
+export function filterBeautyTeamSuggestedQuestions(questions: readonly string[]): string[] {
+  return questions.filter((question) => !HIDDEN_WELLNESS_QUESTION_PATTERN.test(question));
+}
 
 // ============================================
 // API 함수

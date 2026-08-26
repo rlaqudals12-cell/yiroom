@@ -202,15 +202,22 @@ describe('ProfileCardGrid', () => {
     expect(getAllByText('예시 결과 · 낮은 신뢰도')).toHaveLength(2);
   });
 
-  it('완료 카드는 해당 분석 id를 historyId로 전달해 정확한 저장 결과를 연다', () => {
-    const analysis = makeAnalysis('makeup', { id: 'makeup/history 1' });
+  it.each([
+    ['personal-color', '/(analysis)/personal-color/result'],
+    ['skin', '/(analysis)/skin/result'],
+    ['body', '/(analysis)/body/result'],
+    ['hair', '/(analysis)/hair/result'],
+    ['makeup', '/(analysis)/makeup/result'],
+  ] as const)('완료 %s 카드는 해당 historyId의 저장 결과 목적지를 연다', (type, pathname) => {
+    const analysis = makeAnalysis(type, { id: `${type}/history 1` });
     const { getByTestId } = renderWithTheme(<ProfileCardGrid analyses={[analysis]} />);
 
-    fireEvent.press(getByTestId('profile-card-makeup'));
+    fireEvent.press(getByTestId(`profile-card-${type}`));
 
-    expect(mockPush).toHaveBeenCalledWith(
-      '/(analysis)/makeup/result?historyId=makeup%2Fhistory%201'
-    );
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname,
+      params: { historyId: `${type}/history 1` },
+    });
   });
 
   it('완료 축이 5개 미만이면 통합 분석 CTA를 렌더링해야 한다', () => {

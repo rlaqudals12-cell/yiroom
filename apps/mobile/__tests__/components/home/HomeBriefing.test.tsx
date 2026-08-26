@@ -25,6 +25,11 @@ import {
 } from '../../../lib/theme/tokens';
 import type { BriefingData } from '../../../lib/api/briefing';
 
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
 // useBriefing mock — 분석 있는 사용자의 최소 브리핑 데이터
 const mockBriefingData: BriefingData = {
   date: '2026-07-10',
@@ -35,16 +40,13 @@ const mockBriefingData: BriefingData = {
   hasAnalyses: true,
 };
 
-const mockUseBriefing = jest.fn(() => ({
+const mockBriefingState = {
   data: mockBriefingData,
   stale: false,
   isLoading: false,
   error: null,
   refetch: jest.fn(),
-}));
-jest.mock('../../../hooks/useBriefing', () => ({
-  useBriefing: () => mockUseBriefing(),
-}));
+};
 
 // useMorningBriefing mock — 제안 상태/핸들러 제어
 const mockAcceptProposal = jest.fn().mockResolvedValue(true);
@@ -106,39 +108,75 @@ describe('HomeBriefing 아침 브리핑 제안', () => {
   });
 
   it('shouldShowProposal=true면 제안을 노출한다', () => {
-    const { getByTestId, getByText } = renderWithTheme(<HomeBriefing />);
+    const { getByTestId, getByText } = renderWithTheme(
+      <HomeBriefing briefingState={mockBriefingState} />
+    );
     expect(getByTestId('home-briefing-proposal')).toBeTruthy();
     expect(getByText('매일 아침 브리핑을 알려드릴까요?')).toBeTruthy();
   });
 
   it('수락 시 acceptProposal을 호출한다', () => {
-    const { getByTestId } = renderWithTheme(<HomeBriefing />);
+    const { getByTestId } = renderWithTheme(<HomeBriefing briefingState={mockBriefingState} />);
     fireEvent.press(getByTestId('home-briefing-proposal-accept'));
     expect(mockAcceptProposal).toHaveBeenCalledTimes(1);
   });
 
   it('닫기 시 dismissProposal을 호출한다', () => {
-    const { getByTestId } = renderWithTheme(<HomeBriefing />);
+    const { getByTestId } = renderWithTheme(<HomeBriefing briefingState={mockBriefingState} />);
     fireEvent.press(getByTestId('home-briefing-proposal-dismiss'));
     expect(mockDismissProposal).toHaveBeenCalledTimes(1);
   });
 
   it('shouldShowProposal=false면 제안을 숨긴다(1회성)', () => {
     mockMorningState = { ...mockMorningState, shouldShowProposal: false };
-    const { queryByTestId } = renderWithTheme(<HomeBriefing />);
+    const { queryByTestId } = renderWithTheme(<HomeBriefing briefingState={mockBriefingState} />);
     expect(queryByTestId('home-briefing-proposal')).toBeNull();
   });
 
   it('브리핑 데이터가 없으면(분석 0건) 아무것도 렌더하지 않는다', () => {
-    mockUseBriefing.mockReturnValueOnce({
-      data: null as unknown as BriefingData,
-      stale: false,
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
-    const { queryByTestId } = renderWithTheme(<HomeBriefing />);
+    const { queryByTestId } = renderWithTheme(
+      <HomeBriefing briefingState={{ ...mockBriefingState, data: null }} />
+    );
     expect(queryByTestId('home-briefing')).toBeNull();
     expect(queryByTestId('home-briefing-proposal')).toBeNull();
+  });
+
+  it('퍼스널컬러 밴드 전체를 해당 저장 결과로 연결한다', () => {
+    const data: BriefingData = {
+      ...mockBriefingData,
+      myColors: {
+        analysisId: 'pc-history-1',
+        colors: [
+          { name: '모브', hex: '#A78B9B' },
+          { name: '라이트 핑크', hex: '#F8C8DC' },
+        ],
+      },
+    };
+    const { getByTestId } = renderWithTheme(
+      <HomeBriefing briefingState={{ ...mockBriefingState, data }} />
+    );
+
+    fireEvent.press(getByTestId('home-briefing-my-colors-link'));
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/(analysis)/personal-color/result',
+      params: { historyId: 'pc-history-1' },
+    });
+  });
+
+  it('저장 결과 ID가 없으면 밴드의 이동 어포던스를 제거한다', () => {
+    const data: BriefingData = {
+      ...mockBriefingData,
+      myColors: {
+        analysisId: '',
+        colors: [{ name: '모브', hex: '#A78B9B' }],
+      },
+    };
+    const { getByTestId, queryByTestId } = renderWithTheme(
+      <HomeBriefing briefingState={{ ...mockBriefingState, data }} />
+    );
+
+    expect(getByTestId('home-briefing-my-colors-static')).toBeTruthy();
+    expect(queryByTestId('home-briefing-my-colors-link')).toBeNull();
   });
 });

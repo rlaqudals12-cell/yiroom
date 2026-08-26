@@ -292,7 +292,7 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
             type: 'hair',
             createdAt: hair.createdAt,
             summary: isFiniteScore(hair.overallScore)
-              ? `${hairLabel} · ${hair.overallScore}점`
+              ? `${hairLabel} · 원값 ${hair.overallScore}`
               : hairLabel,
             ...(isFiniteScore(hair.overallScore) ? { hairScore: hair.overallScore } : {}),
             hairType: hair.hairType,
@@ -331,9 +331,9 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
             id: makeup.id,
             type: 'makeup',
             createdAt: makeup.createdAt,
-            // 점수가 없으면 "null점"을 만들지 않는다
+            // 피부 축과 같은 진단지 문법: 기록값은 채점처럼 읽히는 "점" 단위를 붙이지 않는다.
             summary: isFiniteScore(makeupData.overall_score)
-              ? `${toneLabel} · ${makeupData.overall_score}점`
+              ? `${toneLabel} · 원값 ${makeupData.overall_score}`
               : toneLabel,
             ...(isFiniteScore(makeupData.overall_score)
               ? { makeupScore: makeupData.overall_score }

@@ -7,10 +7,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -68,9 +65,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -82,8 +77,10 @@ describe('StyleTab', () => {
     });
 
     it('섹션 제목 "스타일"이 표시된다', () => {
-      const { getByText } = renderWithTheme(<StyleTab />);
+      const { getByText, getByTestId, queryByTestId } = renderWithTheme(<StyleTab />);
       expect(getByText('스타일')).toBeTruthy();
+      expect(getByTestId('style-tab-title')).toBeTruthy();
+      expect(queryByTestId('linear-gradient')).toBeNull();
     });
   });
 
@@ -123,12 +120,8 @@ describe('StyleTab', () => {
       expect(
         getAllByText('AI가 체형을 분석하고 어울리는 스타일을 추천해요').length
       ).toBeGreaterThanOrEqual(1);
-      expect(
-        getByText('옷장을 관리하고 AI 코디 추천을 받으세요')
-      ).toBeTruthy();
-      expect(
-        getByText('인기 제품과 할인 정보를 확인하세요')
-      ).toBeTruthy();
+      expect(getByText('옷장을 관리하고 AI 코디 추천을 받으세요')).toBeTruthy();
+      expect(getByText('인기 제품과 할인 정보를 확인하세요')).toBeTruthy();
     });
   });
 

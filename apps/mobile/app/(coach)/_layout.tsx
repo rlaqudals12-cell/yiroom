@@ -6,10 +6,11 @@ import { router } from 'expo-router';
 import { Stack } from 'expo-router';
 import { Pressable, Text, StyleSheet } from 'react-native';
 
+import { BEAUTY_TEAM_HISTORY_ENABLED } from '../../lib/coach';
 import { useTheme, typography, spacing } from '../../lib/theme';
 
 export default function CoachLayout() {
-  const { colors, brand, typography } = useTheme();
+  const { colors, brand } = useTheme();
 
   return (
     <Stack
@@ -25,19 +26,24 @@ export default function CoachLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: 'AI 코치',
+          title: '전속 뷰티팀',
           headerLargeTitle: false,
-          headerRight: () => (
-            <Pressable onPress={() => router.push('/(coach)/history')} style={styles.headerButton}>
-              <Text style={[styles.headerButtonText, { color: brand.primary }]}>기록</Text>
-            </Pressable>
-          ),
+          headerRight: BEAUTY_TEAM_HISTORY_ENABLED
+            ? () => (
+                <Pressable
+                  onPress={() => router.push('/(coach)/history')}
+                  style={styles.headerButton}
+                >
+                  <Text style={[styles.headerButtonText, { color: brand.primary }]}>기록</Text>
+                </Pressable>
+              )
+            : undefined,
         }}
       />
       <Stack.Screen
         name="history"
         options={{
-          title: '대화 기록',
+          title: '뷰티팀 대화 기록',
         }}
       />
     </Stack>

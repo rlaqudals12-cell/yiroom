@@ -49,9 +49,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -71,11 +69,7 @@ describe('EmptyState', () => {
 
   it('아이콘을 렌더링해야 한다', () => {
     const { getByText } = renderWithTheme(
-      <EmptyState
-        icon={<Text>📝</Text>}
-        title="빈 상태"
-        description="설명 텍스트"
-      />
+      <EmptyState icon={<Text>📝</Text>} title="빈 상태" description="설명 텍스트" />
     );
 
     expect(getByText('📝')).toBeTruthy();
@@ -83,12 +77,7 @@ describe('EmptyState', () => {
 
   it('testID가 전달되어야 한다', () => {
     const { getByTestId } = renderWithTheme(
-      <EmptyState
-        icon={<Text>📝</Text>}
-        title="빈 상태"
-        description="설명"
-        testID="custom-empty"
-      />
+      <EmptyState icon={<Text>📝</Text>} title="빈 상태" description="설명" testID="custom-empty" />
     );
 
     expect(getByTestId('custom-empty')).toBeTruthy();
@@ -96,11 +85,7 @@ describe('EmptyState', () => {
 
   it('기본 testID가 empty-state여야 한다', () => {
     const { getByTestId } = renderWithTheme(
-      <EmptyState
-        icon={<Text>📝</Text>}
-        title="빈 상태"
-        description="설명"
-      />
+      <EmptyState icon={<Text>📝</Text>} title="빈 상태" description="설명" />
     );
 
     expect(getByTestId('empty-state')).toBeTruthy();
@@ -150,13 +135,18 @@ describe('EmptyState', () => {
     expect(queryByText('리뷰 작성하기')).toBeNull();
   });
 
+  it('격려 문구에 장식 이모지를 붙이지 않는다', () => {
+    const { getByText } = renderWithTheme(
+      <EmptyState icon={<Text>아이콘</Text>} title="빈 상태" description="설명" />
+    );
+
+    const encouragement = getByText(/작은 시작|오늘이 가장 좋은 시작|한 걸음씩/);
+    expect(encouragement.props.children).not.toMatch(/[✨🌱💫]/u);
+  });
+
   it('다크 모드에서도 렌더링되어야 한다', () => {
     const { getByText } = renderWithTheme(
-      <EmptyState
-        icon={<Text>🌙</Text>}
-        title="다크 모드 빈 상태"
-        description="다크 모드 설명"
-      />,
+      <EmptyState icon={<Text>🌙</Text>} title="다크 모드 빈 상태" description="다크 모드 설명" />,
       true
     );
 

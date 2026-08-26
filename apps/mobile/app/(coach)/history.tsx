@@ -22,7 +22,12 @@ import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { GlassCard, ScreenContainer } from '../../components/ui';
 import { TIMING } from '../../lib/animations';
-import { getCoachSessions, deleteCoachSession, type CoachSession } from '../../lib/coach';
+import {
+  BEAUTY_TEAM_HISTORY_ENABLED,
+  getCoachSessions,
+  deleteCoachSession,
+  type CoachSession,
+} from '../../lib/coach';
 import { useClerkSupabaseClient } from '../../lib/supabase';
 
 export default function CoachHistoryScreen() {
@@ -42,7 +47,13 @@ export default function CoachHistoryScreen() {
   }, [user?.id, supabase]);
 
   useEffect(() => {
-    fetchSessions();
+    if (!BEAUTY_TEAM_HISTORY_ENABLED) {
+      // 기존 세션은 웰니스/뷰티 출처를 구분할 수 없어 뷰티팀에 주입하지 않는다.
+      setIsLoading(false);
+      router.replace('/(coach)');
+      return;
+    }
+    void fetchSessions();
   }, [fetchSessions]);
 
   const handleSessionPress = (session: CoachSession) => {

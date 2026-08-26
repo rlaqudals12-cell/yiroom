@@ -24,7 +24,7 @@ export default function AskScreen(): React.JSX.Element {
       contentPadding={0}
       backgroundGradient="home"
     >
-      <ChatInterface initialInput={initialInput} />
+      <ChatInterface initialInput={initialInput} surface="beauty-team" />
     </ScreenContainer>
   );
 }

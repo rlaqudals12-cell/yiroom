@@ -37,6 +37,7 @@ import {
   typography,
 } from '../../../lib/theme/tokens';
 import { HomeQuickActions } from '../../../components/home/HomeQuickActions';
+import { gradients } from '../../../lib/theme/gradients';
 
 function createThemeValue(isDark = false): ThemeContextValue {
   return {
@@ -102,10 +103,19 @@ describe('HomeQuickActions', () => {
   });
 
   it('AI 코치 카드 텍스트를 렌더링해야 한다', () => {
-    const { getByText } = renderWithTheme(<HomeQuickActions {...defaultProps} />);
+    const { getByText, queryByText } = renderWithTheme(<HomeQuickActions {...defaultProps} />);
 
     expect(getByText('궁금한 것을 물어보세요')).toBeTruthy();
-    expect(getByText('운동, 영양, 뷰티 궁금한 것 무엇이든')).toBeTruthy();
+    expect(getByText('피부·헤어·메이크업·스타일을 물어보세요')).toBeTruthy();
+    expect(queryByText('운동, 영양, 뷰티 궁금한 것 무엇이든')).toBeNull();
+  });
+
+  it('물어보기 CTA는 숨김 운동 토큰 대신 정본 professional 토큰을 사용한다', () => {
+    const { getByTestId } = renderWithTheme(<HomeQuickActions {...defaultProps} />);
+
+    expect(getByTestId('home-coach-background').props.colors).toEqual([
+      ...gradients.professional.colors,
+    ]);
   });
 
   it('퀵 액션 title을 렌더링해야 한다', () => {
@@ -138,6 +148,32 @@ describe('HomeQuickActions', () => {
 
     fireEvent.press(getByText('체형 분석'));
     expect(onActionPress).toHaveBeenCalledWith('/analysis/body');
+  });
+
+  it('완료 액션을 누르면 저장 결과 목적지를 그대로 전달한다', () => {
+    const onActionPress = jest.fn();
+    const storedResultRoute = {
+      pathname: '/(analysis)/personal-color/result',
+      params: { historyId: 'pc-history-1' },
+    };
+    const completedActions = [
+      {
+        ...mockActions[0],
+        completed: true,
+        route: storedResultRoute,
+      },
+    ];
+    const { getByText } = renderWithTheme(
+      <HomeQuickActions
+        {...defaultProps}
+        actions={completedActions}
+        onActionPress={onActionPress}
+      />
+    );
+
+    fireEvent.press(getByText('퍼스널 컬러'));
+
+    expect(onActionPress).toHaveBeenCalledWith(storedResultRoute);
   });
 
   it('히스토리 없는 액션에 "시작하기" 상태가 표시되어야 한다', () => {

@@ -418,7 +418,7 @@ export function ResultLayout({
                     { color: colors.mutedForeground, fontSize: typography.size.sm },
                   ]}
                 >
-                  AI 웰니스 코치와 1:1 상담을 받아보세요
+                  전속 뷰티팀과 1:1로 이야기해보세요
                 </Text>
               </View>
               <Pressable

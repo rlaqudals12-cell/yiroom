@@ -49,8 +49,8 @@ jest.mock('../../../components/ui', () => {
 jest.mock('../../../components/coach/ChatInterface', () => {
   const { View, Text } = require('react-native');
   return {
-    ChatInterface: () => (
-      <View testID="coach-chat-interface">
+    ChatInterface: ({ surface }: { surface?: string }) => (
+      <View testID="coach-chat-interface" accessibilityLabel={surface}>
         <Text>Coach ChatInterface Mock</Text>
       </View>
     ),
@@ -70,6 +70,12 @@ describe('AskScreen (물어보기 탭)', () => {
   it('코치 ChatInterface가 포함된다 (상담 정본 단일화)', () => {
     const { getByTestId } = renderWithTheme(<AskScreen />);
     expect(getByTestId('coach-chat-interface')).toBeTruthy();
+  });
+
+  it('물어보기 탭은 ChatInterface를 뷰티팀 표면으로 게이팅한다', () => {
+    const { getByTestId } = renderWithTheme(<AskScreen />);
+
+    expect(getByTestId('coach-chat-interface').props.accessibilityLabel).toBe('beauty-team');
   });
 
   it('다크 모드에서도 에러 없이 렌더링된다', () => {
