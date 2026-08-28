@@ -118,7 +118,7 @@ describe('revokeBiometricConsentAndPurge', () => {
           ['consent_given', false],
           ['withdrawal_at', imageConsentUpdates[0]?.payload.withdrawal_at],
         ]),
-        analysisTypes: ['skin', 'body', 'personal-color', 'hair', 'makeup', 'posture'],
+        analysisTypes: ['skin', 'body', 'personal-color', 'hair', 'makeup', 'posture', 'twin'],
       })
     );
   });
@@ -179,6 +179,19 @@ describe('revokeBiometricConsentAndPurge', () => {
     expect(imageConsentUpdates[1]?.analysisTypes).not.toContain('hair');
     expect(imageConsentUpdates[1]?.analysisTypes).toEqual(
       expect.arrayContaining(['skin', 'body', 'personal-color', 'makeup', 'posture'])
+    );
+  });
+
+  it('AI 아바타 DB 행 파기 실패 시 twin 동의는 완료로 확정하지 않는다', async () => {
+    const { supabase, imageConsentUpdates } = makeSupabase(new Set(['user_twins']));
+
+    const result = await revokeBiometricConsentAndPurge(supabase, 'user-1');
+
+    expect(result.fullyPurged).toBe(false);
+    expect(result.failedTargets).toContain('db:user_twins');
+    expect(imageConsentUpdates[1]?.analysisTypes).not.toContain('twin');
+    expect(imageConsentUpdates[1]?.analysisTypes).toEqual(
+      expect.arrayContaining(['skin', 'body', 'personal-color', 'hair', 'makeup', 'posture'])
     );
   });
 

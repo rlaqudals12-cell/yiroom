@@ -23,6 +23,7 @@ import {
   notFoundError,
   internalError,
 } from '@/lib/api/error-response';
+import { requireTwinConsent } from '@/lib/api/twin-consent';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -62,6 +63,12 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
     const parsed = patchSchema.safeParse(body);
     if (!parsed.success) {
       return withCors(validationError('입력값이 올바르지 않아요', parsed.error.issues[0]?.message));
+    }
+
+    // 승인만 저장 아바타의 계속 사용을 여는 행위다. 거부·삭제는 동의 철회 뒤에도 막지 않는다.
+    if (parsed.data.action === 'approve') {
+      const consentDenied = await requireTwinConsent(userId);
+      if (consentDenied) return withCors(consentDenied);
     }
 
     const twin =

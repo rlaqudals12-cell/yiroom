@@ -9,6 +9,7 @@ export const ANALYSIS_IMAGE_BUCKETS: Record<AnalysisType, string> = {
   'personal-color': 'personal-color-images',
   hair: 'hair-images',
   makeup: 'makeup-images',
+  twin: 'twins',
 };
 
 /**

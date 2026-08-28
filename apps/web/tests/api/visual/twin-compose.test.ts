@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 
 vi.mock('@/lib/visual-expression/twin', () => ({
@@ -15,6 +15,9 @@ vi.mock('@/lib/visual-expression/twin', () => ({
 vi.mock('@/lib/visual-expression', () => ({
   checkAndConsumeBudget: vi.fn(),
 }));
+vi.mock('@/lib/api/twin-consent', () => ({
+  requireTwinConsent: vi.fn(),
+}));
 
 import { POST } from '@/app/api/visual/twin/compose/route';
 import {
@@ -24,6 +27,7 @@ import {
   TwinGenerationError,
 } from '@/lib/visual-expression/twin';
 import { checkAndConsumeBudget } from '@/lib/visual-expression';
+import { requireTwinConsent } from '@/lib/api/twin-consent';
 
 const TWIN_ID = '11111111-1111-1111-1111-111111111111';
 const VALID_BODY = { twinId: TWIN_ID, garmentImageUrl: 'https://ex.com/g.jpg' };
@@ -38,6 +42,7 @@ function makeReq(body: unknown) {
 describe('POST /api/visual/twin/compose', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(requireTwinConsent).mockResolvedValue(null);
     vi.mocked(checkAndConsumeBudget).mockResolvedValue({ allowed: true, remaining: 4, limit: 5 });
     vi.mocked(composeOnTwin).mockResolvedValue({
       imageUrl: 'data:image/png;base64,OUT',
@@ -49,6 +54,19 @@ describe('POST /api/visual/twin/compose', () => {
     vi.mocked(auth).mockResolvedValue({ userId: null } as never);
     const res = await POST(makeReq(VALID_BODY));
     expect(res.status).toBe(401);
+  });
+
+  it('현재 생체·저장 동의가 없으면 예산 소비와 이미지 결합 전에 403으로 막는다', async () => {
+    vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
+    vi.mocked(requireTwinConsent).mockResolvedValueOnce(
+      NextResponse.json({ error: 'consent required' }, { status: 403 })
+    );
+
+    const res = await POST(makeReq(VALID_BODY));
+
+    expect(res.status).toBe(403);
+    expect(checkAndConsumeBudget).not.toHaveBeenCalled();
+    expect(composeOnTwin).not.toHaveBeenCalled();
   });
 
   it('인증 + 정상 입력이면 착장 이미지를 반환한다', async () => {

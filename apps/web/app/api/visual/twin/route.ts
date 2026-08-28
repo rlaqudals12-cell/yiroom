@@ -11,9 +11,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
-import { generateTwin, getMyTwin, TwinGenerationError } from '@/lib/visual-expression/twin';
+import {
+  deleteTwin,
+  generateTwin,
+  getMyTwin,
+  TwinGenerationError,
+} from '@/lib/visual-expression/twin';
 import { checkAndConsumeBudget, refundBudget } from '@/lib/visual-expression';
 import { unauthorizedError, validationError, internalError } from '@/lib/api/error-response';
+import { queueTwinCleanupAfterRollbackFailure, requireTwinConsent } from '@/lib/api/twin-consent';
 
 // 나노바나나 이미지 생성은 수 초~수십 초 — 함수 제한 방지
 export const maxDuration = 60;
@@ -60,6 +66,9 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) return withCors(unauthorizedError());
 
+    const consentDenied = await requireTwinConsent(userId);
+    if (consentDenied) return withCors(consentDenied);
+
     const twin = await getMyTwin(userId);
     return withCors(NextResponse.json({ twin }));
   } catch (error) {
@@ -72,6 +81,10 @@ export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) return withCors(unauthorizedError());
+
+    // 얼굴 원본을 AI로 보내고 생성 아바타를 저장하기 전에 처리·저장 동의를 모두 확인한다.
+    const consentDenied = await requireTwinConsent(userId);
+    if (consentDenied) return withCors(consentDenied);
 
     const body = await req.json().catch(() => null);
     const parsed = createSchema.safeParse(body);
@@ -107,6 +120,25 @@ export async function POST(req: NextRequest) {
       // 정직한 오류 응답은 아래 바깥 catch가 담당.
       await refundBudget(userId);
       throw error;
+    }
+
+    // Gemini 생성·Storage 저장 동안 다른 탭에서 철회될 수 있다. 저장 직후 다시 확인해
+    // 철회가 먼저 끝난 뒤 결과가 되살아나는 TOCTOU 경합을 닫는다.
+    const consentLostAfterWrite = await requireTwinConsent(userId);
+    if (consentLostAfterWrite) {
+      try {
+        await deleteTwin(userId, twin.id);
+      } catch (rollbackError) {
+        console.error('[API] Twin consent rollback failed:', rollbackError);
+        await queueTwinCleanupAfterRollbackFailure(userId);
+      }
+      // 사용할 수 있는 생성 결과가 없으므로 롤백 성공 여부와 무관하게 선소비 예산을 되돌린다.
+      try {
+        await refundBudget(userId);
+      } catch (refundError) {
+        console.error('[API] Twin consent-loss budget refund failed:', refundError);
+      }
+      return withCors(consentLostAfterWrite);
     }
 
     return withCors(NextResponse.json(twin));

@@ -24,6 +24,7 @@ import {
   forbiddenError,
   internalError,
 } from '@/lib/api/error-response';
+import { requireTwinConsent } from '@/lib/api/twin-consent';
 
 // 결합 이미지 생성 — 함수 제한 방지
 export const maxDuration = 60;
@@ -56,6 +57,10 @@ export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) return withCors(unauthorizedError());
+
+    // 저장된 얼굴 유래 아바타를 AI 결합에 사용하기 전에 현재 동의를 다시 확인한다.
+    const consentDenied = await requireTwinConsent(userId);
+    if (consentDenied) return withCors(consentDenied);
 
     const body = await req.json().catch(() => null);
     const parsed = composeSchema.safeParse(body);

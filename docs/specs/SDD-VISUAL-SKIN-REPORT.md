@@ -261,7 +261,7 @@ interface ImageConsentModalProps {
   isOpen: boolean;
   onConsent: () => void;
   onSkip: () => void;
-  analysisType: 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup';
+  analysisType: 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup' | 'twin';
   consentVersion?: string;
 }
 ```
@@ -417,7 +417,7 @@ CREATE TABLE image_consents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clerk_user_id TEXT NOT NULL REFERENCES users(clerk_user_id),
   analysis_type TEXT NOT NULL CHECK (
-    analysis_type IN ('skin', 'body', 'personal-color', 'hair', 'makeup')
+    analysis_type IN ('skin', 'body', 'personal-color', 'hair', 'makeup', 'twin')
   ),
   consent_given BOOLEAN NOT NULL DEFAULT false,
   consent_version TEXT NOT NULL DEFAULT 'v1.0',
@@ -445,7 +445,7 @@ DROP POLICY IF EXISTS "image_consents_delete_own" ON image_consents;
 REVOKE INSERT, UPDATE, DELETE ON image_consents FROM anon, authenticated;
 ```
 
-동의 생성·철회는 `/api/consent`만 수행한다. 5축 비공개 Storage도 authenticated 객체 정책을
+동의 생성·철회는 `/api/consent`만 수행한다. 5축·AI 아바타 비공개 Storage도 authenticated 객체 정책을
 두지 않으며 service-role API가 활성 축별 저장 동의와 글로벌 생체정보 동의를 확인한 뒤에만
 업로드·서명·파기한다. 업로드 직후 재검증 실패 시 객체를 rollback하고, rollback 실패는
 CAS로 파기 대기에 표시해 cleanup cron이 재시도한다.
@@ -699,7 +699,7 @@ interface ZoneDetailCardProps {
 ```typescript
 interface ConsentStatusProps {
   consent: ImageConsent | null;
-  analysisType: 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup';
+  analysisType: 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup' | 'twin';
   showDetails?: boolean;
   onManage?: () => void; // 설정 페이지로 이동
 }
@@ -1315,13 +1315,13 @@ graph TD
 
 ##### 입력 스펙
 
-| 항목           | 타입                                                       | 필수 | 설명           |
-| -------------- | ---------------------------------------------------------- | ---- | -------------- |
-| isOpen         | boolean                                                    | Y    | 모달 표시 여부 |
-| onConsent      | () => void                                                 | Y    | 동의 콜백      |
-| onSkip         | () => void                                                 | Y    | 건너뛰기 콜백  |
-| analysisType   | 'skin' \| 'body' \| 'personal-color' \| 'hair' \| 'makeup' | Y    | 분석 유형      |
-| consentVersion | string                                                     | N    | 동의 버전      |
+| 항목           | 타입                                                                 | 필수 | 설명           |
+| -------------- | -------------------------------------------------------------------- | ---- | -------------- |
+| isOpen         | boolean                                                              | Y    | 모달 표시 여부 |
+| onConsent      | () => void                                                           | Y    | 동의 콜백      |
+| onSkip         | () => void                                                           | Y    | 건너뛰기 콜백  |
+| analysisType   | 'skin' \| 'body' \| 'personal-color' \| 'hair' \| 'makeup' \| 'twin' | Y    | 분석 유형      |
+| consentVersion | string                                                               | N    | 동의 버전      |
 
 ##### 출력 스펙
 

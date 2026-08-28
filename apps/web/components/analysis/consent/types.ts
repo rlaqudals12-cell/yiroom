@@ -1,7 +1,7 @@
 // 이미지 동의 시스템 타입 정의
 // SDD-VISUAL-SKIN-REPORT.md §4.2
 
-export type AnalysisType = 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup';
+export type AnalysisType = 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup' | 'twin';
 
 // DB 테이블 image_consents 매핑
 export interface ImageConsent {
@@ -58,6 +58,7 @@ export const ANALYSIS_TYPE_LABELS: Record<AnalysisType, string> = {
   'personal-color': '퍼스널 컬러',
   hair: '헤어 분석',
   makeup: '메이크업 분석',
+  twin: 'AI 아바타',
 };
 
 // 동의 버전 관리

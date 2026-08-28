@@ -151,6 +151,16 @@ describe('analysis image access consent boundary', () => {
     expect(createSignedUrls).toHaveBeenCalledWith(['user_1/photo.jpg'], 3600);
   });
 
+  it('AI 아바타도 전용 twin 동의와 twins 비공개 버킷만 사용한다', async () => {
+    const { client, eq, storageFrom } = createClient();
+
+    await expect(
+      signConsentedAnalysisImageUrls(client, 'user_1', 'twin', ['user_1/photo.jpg'])
+    ).resolves.toEqual(['https://signed/photo']);
+    expect(eq).toHaveBeenCalledWith('analysis_type', 'twin');
+    expect(storageFrom).toHaveBeenCalledWith('twins');
+  });
+
   it('클라이언트 경계도 비활성 동의면 외부 URL을 우회 통과시키지 않는다', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);

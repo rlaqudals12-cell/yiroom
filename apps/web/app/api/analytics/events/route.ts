@@ -48,6 +48,19 @@ export async function POST(request: NextRequest) {
     // DB 저장 (Service Role로 RLS 우회 - 익명 사용자도 저장 가능)
     const supabase = createServiceRoleClient();
 
+    // 식별(로그인) 사용자는 분석 수집 동의가 확인될 때만 기록한다 — 조회 실패 포함
+    // fail-closed(브리핑 계측과 동일 계약). 익명 이벤트는 식별자가 없어 그대로 둔다.
+    if (clerkUserId) {
+      const { data: agreement, error: agreementError } = await supabase
+        .from('user_agreements')
+        .select('analytics_agreed')
+        .eq('clerk_user_id', clerkUserId)
+        .maybeSingle();
+      if (agreementError || agreement?.analytics_agreed !== true) {
+        return NextResponse.json({ success: true, skipped: true });
+      }
+    }
+
     // 이벤트 데이터 변환
     const eventsToInsert = events.map((event) => ({
       clerk_user_id: clerkUserId || null,

@@ -226,6 +226,11 @@ describe('ImageConsentModal', () => {
 
       rerender(<ImageConsentModal {...defaultProps} analysisType="makeup" />);
       expect(screen.getByText('메이크업 분석 사진을 저장할까요?')).toBeInTheDocument();
+
+      rerender(<ImageConsentModal {...defaultProps} analysisType="twin" />);
+      expect(screen.getByText('AI 아바타 사진을 저장할까요?')).toBeInTheDocument();
+      expect(screen.getByText(/생성된 AI 아바타만 비공개 저장소/)).toBeInTheDocument();
+      expect(screen.getByTestId('consent-skip-button')).toHaveTextContent('지금은 만들지 않기');
     });
   });
 });

@@ -1,7 +1,7 @@
-# 🗄️ Database 스키마 v7.8 (이미지 저장 동의 5축 확장)
+# 🗄️ Database 스키마 v7.9 (이미지 저장 동의 AI 아바타 확장)
 
-**버전**: v7.8 (image_consents 헤어·메이크업 분석 축 추가 — 상세는 문서 말미)
-**업데이트**: 2026년 8월 23일
+**버전**: v7.9 (image_consents 전용 `twin` 저장 동의 추가 — 상세는 문서 말미)
+**업데이트**: 2026년 8월 27일
 **Auth**: Clerk (clerk_user_id 기반)
 **Database**: Supabase (PostgreSQL 15+)
 **차별화**: 퍼스널 컬러 + 성분 분석 + 제품 DB + 리뷰 시스템 + 운동/영양 + 헤어/정신건강
@@ -2710,11 +2710,13 @@ ALTER TABLE user_agreements
 > 마이그레이션: `supabase/migrations/202608210200_analytics_consent.sql` —
 > **prod SQL Editor 수동 gap-apply 대기** (`supabase db push` 금지).
 
-## image_consents 분석 축 확장 (2026-08-23 — prod 미적용)
+## image_consents 분석 축·AI 아바타 확장 (2026-08-27 — prod 미적용)
 
 분석 이미지 **수집·처리 필수 동의**와 분리된 원본 사진 **저장 선택 동의**를 헤어·메이크업
-진입에도 제공한다. 기존 사용자와 건너뛴 사용자는 기본적으로 동의 행이 없으므로 저장하지
-않으며, 분석 결과 자체는 계속 확인할 수 있다.
+진입에도 제공한다. 얼굴에서 파생된 AI 아바타는 5축 동의를 대신 쓰지 않고 전용 `twin`
+저장 동의를 사용한다. 기존 사용자와 건너뛴 사용자는 기본적으로 동의 행이 없으므로 저장하지
+않는다. 5축 분석 결과는 저장 미동의여도 확인할 수 있지만, 생성 결과 저장이 기능 자체인 AI
+아바타는 동의 전 생성 화면을 열지 않는다.
 
 ```sql
 ALTER TABLE image_consents
@@ -2722,13 +2724,13 @@ ALTER TABLE image_consents
 
 ALTER TABLE image_consents
   ADD CONSTRAINT image_consents_analysis_type_check
-  CHECK (analysis_type IN ('skin', 'body', 'personal-color', 'hair', 'makeup'));
+  CHECK (analysis_type IN ('skin', 'body', 'personal-color', 'hair', 'makeup', 'twin'));
 ```
 
 - 기존 행과 `UNIQUE(clerk_user_id, analysis_type)`는 유지한다. 클라이언트는 own SELECT만
   허용하고 INSERT·UPDATE·DELETE grant/policy는 제거해 동의 POST/DELETE API의
   `PURGE_PENDING`·CAS를 우회하지 못하게 한다.
-- API 및 저장 버킷 매핑: `hair` → `hair-images`, `makeup` → `makeup-images`.
+- API 및 저장 버킷 매핑: `hair` → `hair-images`, `makeup` → `makeup-images`, `twin` → `twins`.
 - 두 버킷은 `public=false`, 파일당 10MB, JPEG·PNG·WebP·HEIC·HEIF만 허용한다.
 - 5축 Storage 객체의 업로드·서명·파기는 service-role API만 수행한다. 과거
   authenticated INSERT·SELECT·DELETE 정책 15개는 제거하며, 결과/이력 화면은 축별 활성
@@ -2744,6 +2746,13 @@ ALTER TABLE image_consents
 
 > 마이그레이션: `supabase/migrations/202608230300_image_consents_hair_makeup.sql` —
 > **prod SQL Editor 수동 gap-apply 대기** (`supabase db push` 금지).
+>
+> AI 아바타 확장: `supabase/migrations/202608270100_image_consents_twin.sql` —
+> **prod SQL Editor 수동 gap-apply 대기**. 철회 시 `twins/{userId}` 객체와 `user_twins` 행을
+> 함께 파기한다. 마이그레이션은 기존 `user_twins` 소유자를 `consent_given=false`인 파기
+> 대기 행으로 backfill한다. `users`와 조인해 FK가 유효한 행만 만들고, 배포 중 생성된 유효
+> `twin` 동의는 `ON CONFLICT DO NOTHING`으로 보존한다. 물리 객체를 SQL로 직접 지우지 않고
+> 배포 직후 `cleanup-consents` cron이 Storage API로 객체와 `user_twins` 행을 함께 정리한다.
 
 ## integrated-sessions 선택 원본 버킷 정본화 (2026-08-23 — prod 미적용)
 
@@ -2774,6 +2783,6 @@ ALTER TABLE image_consents
 
 ---
 
-**버전**: v7.8 (이미지 저장 동의 5축 + 선택 동의 계측 게이트 + 생체동의·감사로그 정합)
-**최종 업데이트**: 2026년 8월 23일
+**버전**: v7.9 (이미지 저장 동의 5축·AI 아바타 + 선택 동의 계측 게이트 + 생체동의·감사로그 정합)
+**최종 업데이트**: 2026년 8월 27일
 **상태**: Phase 1 + Phase 2 + Phase G + Phase H + W-1 + H-1 + M-1 + K + 소셜 모더레이션 + ConnectionAwareness + 쇼핑 고도화 + 인벤토리/옷장 동기화 + 법적 컴플라이언스 게이트 완료 ✅

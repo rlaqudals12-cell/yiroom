@@ -41,13 +41,34 @@ composeOnTwin(twinId, layer: { kind: 'outfit'; garmentImageUrl: string } ): Prom
 - 비용 가드: ADR-113 `budget.ts` 일 5회 상한 **공유**(보정+착장+트윈 합산).
 - Storage: 비공개 버킷/경로 `twins/{userId}/...` — 분석 이미지 경로와 분리. 서명 URL로 클라 전달.
 
+### 2.1 생체정보·저장 동의 경계
+
+- 모바일 `(twin)/_layout`은 5축 분석과 같은 로그인·만 14세·글로벌 생체정보 동의 게이트를
+  먼저 통과하고, 전용 `image_consents.analysis_type='twin'` 저장 동의까지 확인한 뒤에만
+  사진 입력 화면을 연다. 조회 오류·만료·행 없음은 모두 fail-closed다.
+- 웹 `TwinStudio`도 기존 `ImageConsentModal`로 같은 전용 동의를 받고, 서버는 클라이언트
+  상태와 무관하게 글로벌 생체정보 동의와 전용 저장 동의를 다시 확인한다.
+- 입력 셀카·전신 사진은 생성 요청을 위해 이룸 서버를 거쳐 Google AI로 전송하지만 원본은
+  저장하지 않는다. 생성된 AI 아바타만 비공개 `twins` 버킷에 최대 1년 저장한다.
+- 동의 철회는 `twins/{userId}` 객체와 `user_twins` 행을 함께 파기한다. 철회 후에도 거부·삭제
+  경로는 열어 두며, 조회·생성·합성·승인만 차단해 사용자가 잔여 데이터를 정리할 수 있게 한다.
+- `202608270100_image_consents_twin.sql` 배포 시 기존 `user_twins` 소유자는 동의로 추정하지
+  않고 미동의 파기 대기 행으로 backfill한다. `users` FK가 유효한 행만 대상으로 하며, 이미
+  생성된 유효 `twin` 동의는 보존한다. 배포 직후 `cleanup-consents` cron이 Storage API를 통해
+  객체와 행을 함께 파기하며 `storage.objects`를 SQL로 직접 삭제하지 않는다.
+- 생성 요청은 AI 호출 전에 동의를 확인하고, 20~40초 생성·Storage 저장 직후 다시 확인한다.
+  다른 탭 철회가 사이에 끼면 방금 만든 Storage 객체와 `user_twins` 행을 즉시 롤백하고 403을
+  반환한다. 즉시 롤백 실패 시 철회된 동의 행을 파기 대기로 되돌려 cleanup cron이 재시도하며,
+  그 사이 재동의된 활성 행은 조건부 갱신으로 덮지 않는다. 사용자에게 쓸 수 있는 결과가
+  전달되지 않으므로 선소비한 일 생성 예산도 롤백 성공 여부와 무관하게 환불한다.
+
 ## 3. API
 
-- `POST /api/visual/twin` — 생성(인증·상한·zod·이미지 ≤10MB). 응답 TwinRecord(pending).
-- `GET /api/visual/twin` — 내 트윈(approved 우선, 없으면 최신 pending).
-- `PATCH /api/visual/twin/[id]` — { action: 'approve'|'reject' }.
+- `POST /api/visual/twin` — 생성(인증·생체정보·전용 저장 동의·상한·zod·이미지 ≤10MB). 응답 TwinRecord(pending).
+- `GET /api/visual/twin` — 내 트윈(생체정보·전용 저장 동의, approved 우선, 없으면 최신 pending).
+- `PATCH /api/visual/twin/[id]` — `{ action: 'approve'|'reject' }`. approve만 동의를 요구하고 reject는 철회 뒤에도 허용.
 - `DELETE /api/visual/twin/[id]` — 파일+행 삭제.
-- `POST /api/visual/twin/compose` — { twinId, garmentImageUrl } → 착장 이미지(approved 트윈만).
+- `POST /api/visual/twin/compose` — `{ twinId, garmentImageUrl }` → 착장 이미지(생체정보·전용 저장 동의, approved 트윈만).
 
 ## 4. UI (One Canon — 새 페이지 최소)
 

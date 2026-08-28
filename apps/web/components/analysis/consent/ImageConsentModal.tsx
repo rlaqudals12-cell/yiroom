@@ -35,22 +35,38 @@ export function ImageConsentModal({
   isLoading = false,
 }: ImageConsentModalProps) {
   const typeLabel = ANALYSIS_TYPE_LABELS[analysisType];
+  const isTwin = analysisType === 'twin';
 
   // 모든 축에서 실제로 제공하는 저장·결과 확인·철회 범위만 안내한다.
-  const benefits = [
-    {
-      icon: Camera,
-      text: `${typeLabel}에 사용한 사진을 분석 기록과 함께 저장해요`,
-    },
-    {
-      icon: FileImage,
-      text: '저장된 사진은 해당 분석 결과에서 다시 확인할 수 있어요',
-    },
-    {
-      icon: Shield,
-      text: '저장하지 않아도 이번 분석은 그대로 진행돼요',
-    },
-  ];
+  const benefits = isTwin
+    ? [
+        {
+          icon: Camera,
+          text: '셀카와 선택한 전신 사진은 Google AI로 전송되지만 원본은 저장하지 않아요',
+        },
+        {
+          icon: FileImage,
+          text: '생성된 AI 아바타만 비공개 저장소에 보관해 스타일 기능에 사용해요',
+        },
+        {
+          icon: Shield,
+          text: '개인정보 설정에서 언제든 동의를 철회하고 AI 아바타를 삭제할 수 있어요',
+        },
+      ]
+    : [
+        {
+          icon: Camera,
+          text: `${typeLabel}에 사용한 사진을 분석 기록과 함께 저장해요`,
+        },
+        {
+          icon: FileImage,
+          text: '저장된 사진은 해당 분석 결과에서 다시 확인할 수 있어요',
+        },
+        {
+          icon: Shield,
+          text: '저장하지 않아도 이번 분석은 그대로 진행돼요',
+        },
+      ];
 
   // 저장 정보
   const storageInfo = [
@@ -140,13 +156,15 @@ export function ImageConsentModal({
             className="flex-1"
             data-testid="consent-skip-button"
           >
-            건너뛰기
+            {isTwin ? '지금은 만들지 않기' : '건너뛰기'}
           </Button>
         </div>
 
         {/* 안심 메시지 */}
         <p className="text-xs text-center text-muted-foreground">
-          건너뛰어도 이번 분석 결과는 볼 수 있어요
+          {isTwin
+            ? 'AI 아바타는 생성 결과를 저장해야 사용할 수 있어요'
+            : '건너뛰어도 이번 분석 결과는 볼 수 있어요'}
         </p>
       </DialogContent>
     </Dialog>

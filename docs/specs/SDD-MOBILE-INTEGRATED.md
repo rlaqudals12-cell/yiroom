@@ -122,6 +122,8 @@ export type AxisCode = 'personal_color' | 'skin' | 'body' | 'hair' | 'makeup';
 export interface IntegratedAnalysisInput {
   faceImageBase64: string;
   bodyImageBase64?: string;
+  // 동일 제출 재전송의 중복 과금·중복 세션을 막는 UUID v4 상관 ID
+  clientRequestId: string;
   questionnaire: {
     skin: { selfReportedType: string; concerns?: string[] };
     hair: { length?: string; density?: string; curlType?: string };
@@ -162,6 +164,16 @@ export interface IntegratedAnalysisResult {
   completedAt: string;
 }
 ```
+
+- 화면은 제출 직전에 `clientRequestId`를 한 번 생성해 Clerk 사용자별 AsyncStorage에
+  보존한다. 앱 재마운트·프로세스 재시작 뒤에도 같은 ID로 정확한 세션만 복구하며, 사진은
+  영속 저장하지 않는다.
+- 완전 결과 성공, 재사용된 `completed`/`partial` 세션, 서버가 시작하지 않았음이 확정된 4xx,
+  사용자의 명시적 포기에서만 마커를 폐기한다. 네트워크 오류·5xx·재사용된
+  `pending`/`failed`는 같은 ID를 유지해 중복 과금·중복 세션을 막는다.
+- 복구 조회는 `questionnaire->_clientRequestId` 일치 세션만 최대 90초 동안 확인한다. 저장소
+  읽기·삭제 실패는 새 요청을 열지 않는 fail-closed이며, 상한 뒤에는 다시 확인/포기 동선을
+  제공한다.
 
 > **동기화 규칙**: 웹 types.ts 변경 시 모바일도 업데이트 필요. Phase D.2에서 `packages/shared`로 추출.
 

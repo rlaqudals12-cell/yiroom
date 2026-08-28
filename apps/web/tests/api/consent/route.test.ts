@@ -58,6 +58,7 @@ const createMockServiceClient = () => {
   const mockSingle = vi.fn();
   const mockUpdate = vi.fn();
   const mockInsert = vi.fn();
+  const mockDelete = vi.fn();
   let eqAwaitResult: { error: unknown; count?: number } = { error: null, count: 1 };
 
   // eq()는 체이닝과 최종 Promise 반환을 모두 지원해야 함
@@ -91,6 +92,7 @@ const createMockServiceClient = () => {
     select: mockSelect,
     update: mockUpdate,
     insert: mockInsert,
+    delete: mockDelete,
   });
 
   mockSelect.mockReturnValue({
@@ -107,6 +109,10 @@ const createMockServiceClient = () => {
     }),
   });
 
+  mockDelete.mockReturnValue({
+    eq: mockEq,
+  });
+
   return {
     from: mockFrom,
     storage: mockStorage,
@@ -119,6 +125,7 @@ const createMockServiceClient = () => {
       mockSingle,
       mockUpdate,
       mockInsert,
+      mockDelete,
       mockList,
       mockRemove,
       setEqAwaitResult: (value: { error: unknown; count?: number }) => {
@@ -211,18 +218,21 @@ describe('Consent API', () => {
       expect(data.consent).toBeNull();
     });
 
-    it.each(['hair', 'makeup'] as const)('%s 이미지 저장 동의 타입을 허용한다', async (type) => {
-      mockServiceClient._mocks.mockMaybeSingle.mockResolvedValueOnce({
-        data: null,
-        error: null,
-      });
+    it.each(['hair', 'makeup', 'twin'] as const)(
+      '%s 이미지 저장 동의 타입을 허용한다',
+      async (type) => {
+        mockServiceClient._mocks.mockMaybeSingle.mockResolvedValueOnce({
+          data: null,
+          error: null,
+        });
 
-      const request = createMockRequest('GET', { analysisType: type });
-      const response = await GET(request);
+        const request = createMockRequest('GET', { analysisType: type });
+        const response = await GET(request);
 
-      expect(response.status).toBe(200);
-      expect(mockServiceClient._mocks.mockEq).toHaveBeenCalledWith('analysis_type', type);
-    });
+        expect(response.status).toBe(200);
+        expect(mockServiceClient._mocks.mockEq).toHaveBeenCalledWith('analysis_type', type);
+      }
+    );
   });
 
   describe('POST /api/consent', () => {
@@ -482,7 +492,7 @@ describe('Consent API', () => {
       );
     });
 
-    it.each(['hair', 'makeup'] as const)('%s 이미지 저장 동의를 기록한다', async (type) => {
+    it.each(['hair', 'makeup', 'twin'] as const)('%s 이미지 저장 동의를 기록한다', async (type) => {
       mockServiceClient._mocks.mockMaybeSingle
         .mockResolvedValueOnce({ data: null, error: null })
         .mockResolvedValueOnce({ data: { birth_date: '1990-01-01' }, error: null });
@@ -579,6 +589,7 @@ describe('Consent API', () => {
     it.each([
       ['hair', 'hair-images'],
       ['makeup', 'makeup-images'],
+      ['twin', 'twins'],
     ] as const)('%s 동의 철회 시 해당 비공개 버킷을 정리한다', async (type, bucket) => {
       mockServiceClient._mocks.mockList.mockResolvedValueOnce({ data: [], error: null });
 
@@ -587,6 +598,17 @@ describe('Consent API', () => {
 
       expect(response.status).toBe(200);
       expect(mockServiceClient.storage.from).toHaveBeenCalledWith(bucket);
+    });
+
+    it('twin 동의 철회는 생성 이미지를 지운 뒤 user_twins 레코드도 파기한다', async () => {
+      mockServiceClient._mocks.mockList.mockResolvedValueOnce({ data: [], error: null });
+
+      const response = await DELETE(createMockRequest('DELETE', { analysisType: 'twin' }));
+
+      expect(response.status).toBe(200);
+      expect(mockServiceClient._mocks.mockFrom).toHaveBeenCalledWith('user_twins');
+      expect(mockServiceClient._mocks.mockDelete).toHaveBeenCalledTimes(1);
+      expect(mockServiceClient._mocks.mockEq).toHaveBeenCalledWith('clerk_user_id', mockUserId);
     });
 
     it('저장소 조회 실패 시 철회 상태를 먼저 유지하고 파기 대기를 500으로 드러낸다', async () => {

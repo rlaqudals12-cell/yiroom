@@ -18,6 +18,7 @@ const IMAGE_CONSENT_TYPES = [
   'hair',
   'makeup',
   'posture',
+  'twin',
 ] as const;
 
 type ImageConsentType = (typeof IMAGE_CONSENT_TYPES)[number];
@@ -36,6 +37,7 @@ const AXIS_PURGE_TARGETS: Record<ImageConsentType, { storage: string; metadata: 
   hair: { storage: 'storage:hair-images', metadata: 'db:hair_analyses' },
   makeup: { storage: 'storage:makeup-images', metadata: 'db:makeup_analyses' },
   posture: { storage: 'storage:posture-images', metadata: 'db:posture_analyses' },
+  twin: { storage: 'storage:twins', metadata: 'db:user_twins' },
 };
 
 /**

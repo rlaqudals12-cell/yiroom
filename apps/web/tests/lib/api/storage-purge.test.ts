@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   BIOMETRIC_STORAGE_BUCKETS,
+  clearAnalysisImagePointers,
   purgeStoragePrefix,
   purgeUserStorage,
   purgeUserStorageBuckets,
@@ -65,6 +66,20 @@ function makeStorageMock(
 }
 
 describe('purgeUserStorage', () => {
+  it('twin 저장 철회는 NOT NULL 이미지 포인터 대신 user_twins 레코드를 삭제한다', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const deleteRows = vi.fn().mockReturnValue({ eq });
+    const from = vi.fn().mockReturnValue({ delete: deleteRows });
+
+    await expect(clearAnalysisImagePointers({ from } as never, 'user-1', 'twin')).resolves.toEqual({
+      cleared: true,
+      failedTarget: null,
+    });
+    expect(from).toHaveBeenCalledWith('user_twins');
+    expect(deleteRows).toHaveBeenCalledTimes(1);
+    expect(eq).toHaveBeenCalledWith('clerk_user_id', 'user-1');
+  });
+
   it('세션 prefix만 재귀 수집해 포인터 없는 통합 원본을 회수한다', async () => {
     const prefix = 'user-1/00000000-0000-4000-8000-000000000001';
     const { supabase, remove } = makeStorageMock({

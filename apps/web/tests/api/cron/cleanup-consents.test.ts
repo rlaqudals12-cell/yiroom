@@ -290,6 +290,30 @@ describe('GET /api/cron/cleanup-consents', () => {
     expect(json.processed).toBe(1);
   });
 
+  it('레거시 twin 파기 대기는 twins 객체와 user_twins 행 정리 경로로 보낸다', async () => {
+    const consentTable = pagedTable([
+      [
+        consentRow(1, {
+          analysis_type: 'twin',
+          withdrawal_at: '2026-08-27T00:00:00.000Z',
+        }),
+      ],
+    ]);
+    configureTables(consentTable);
+
+    const json = await (await GET(request())).json();
+
+    expect(mocks.purgeUserStorageBuckets).toHaveBeenCalledWith(expect.anything(), 'user-1', [
+      'twins',
+    ]);
+    expect(mocks.clearAnalysisImagePointers).toHaveBeenCalledWith(
+      expect.anything(),
+      'user-1',
+      'twin'
+    );
+    expect(json.processed).toBe(1);
+  });
+
   it('일반 동의 101건을 100건 상한에 멈추지 않고 두 페이지 모두 처리한다', async () => {
     const first = Array.from({ length: 100 }, (_, index) => consentRow(index));
     const consentTable = pagedTable([first, [consentRow(100)]]);

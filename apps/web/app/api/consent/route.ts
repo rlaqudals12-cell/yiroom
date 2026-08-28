@@ -14,7 +14,7 @@ import {
  */
 
 // 유효한 분석 타입
-const VALID_ANALYSIS_TYPES = ['skin', 'body', 'personal-color', 'hair', 'makeup'] as const;
+const VALID_ANALYSIS_TYPES = ['skin', 'body', 'personal-color', 'hair', 'makeup', 'twin'] as const;
 type AnalysisType = (typeof VALID_ANALYSIS_TYPES)[number];
 
 /**

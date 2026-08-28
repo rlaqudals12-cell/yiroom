@@ -31,7 +31,7 @@ import PrivacySettingsPage from '@/app/(main)/settings/privacy/page';
 type ImageRow = {
   id: string;
   clerk_user_id: string;
-  analysis_type: 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup';
+  analysis_type: 'skin' | 'body' | 'personal-color' | 'hair' | 'makeup' | 'twin';
   consent_given: boolean;
   consent_version: string;
   consent_at: string | null;
@@ -48,6 +48,7 @@ const IMAGE_TYPES: ImageRow['analysis_type'][] = [
   'personal-color',
   'hair',
   'makeup',
+  'twin',
 ];
 
 const activeSkinConsent: ImageRow = {
@@ -121,10 +122,10 @@ describe('PrivacySettingsPage', () => {
     });
   });
 
-  it('이미지 동의를 5축으로 보여주고 체형에는 존재하지 않는 opt-in CTA를 만들지 않는다', async () => {
+  it('이미지 동의를 5축과 AI 아바타로 보여주고 체형에는 존재하지 않는 opt-in CTA를 만들지 않는다', async () => {
     await renderLoaded();
 
-    for (const type of ['skin', 'body', 'personal-color', 'hair', 'makeup']) {
+    for (const type of IMAGE_TYPES) {
       expect(screen.getByTestId(`consent-${type}`)).toBeInTheDocument();
     }
     expect(

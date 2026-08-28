@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 
 vi.mock('@/lib/visual-expression/twin', () => ({
@@ -11,6 +11,9 @@ vi.mock('@/lib/visual-expression/twin', () => ({
   rejectTwin: vi.fn(),
   deleteTwin: vi.fn(),
   TwinNotFoundError: class TwinNotFoundError extends Error {},
+}));
+vi.mock('@/lib/api/twin-consent', () => ({
+  requireTwinConsent: vi.fn(),
 }));
 
 import { PATCH, DELETE } from '@/app/api/visual/twin/[id]/route';
@@ -20,6 +23,7 @@ import {
   deleteTwin,
   TwinNotFoundError,
 } from '@/lib/visual-expression/twin';
+import { requireTwinConsent } from '@/lib/api/twin-consent';
 
 const ctx = { params: Promise.resolve({ id: 't-1' }) };
 
@@ -35,6 +39,7 @@ const APPROVED = { id: 't-1', imageUrl: 'https://s/t-1', status: 'approved', aiG
 describe('PATCH /api/visual/twin/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(requireTwinConsent).mockResolvedValue(null);
     vi.mocked(approveTwin).mockResolvedValue(APPROVED as never);
     vi.mocked(rejectTwin).mockResolvedValue({ ...APPROVED, status: 'rejected' } as never);
   });
@@ -54,11 +59,24 @@ describe('PATCH /api/visual/twin/[id]', () => {
     expect(approveTwin).toHaveBeenCalledWith('user-1', 't-1');
   });
 
+  it('현재 동의가 없으면 approve를 403으로 막고 상태를 바꾸지 않는다', async () => {
+    vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
+    vi.mocked(requireTwinConsent).mockResolvedValueOnce(
+      NextResponse.json({ error: 'consent required' }, { status: 403 })
+    );
+
+    const res = await PATCH(makeReq({ action: 'approve' }), ctx);
+
+    expect(res.status).toBe(403);
+    expect(approveTwin).not.toHaveBeenCalled();
+  });
+
   it('action=reject면 rejectTwin을 호출한다', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'user-1' } as never);
     const res = await PATCH(makeReq({ action: 'reject' }), ctx);
     expect(res.status).toBe(200);
     expect(rejectTwin).toHaveBeenCalledWith('user-1', 't-1');
+    expect(requireTwinConsent).not.toHaveBeenCalled();
   });
 
   it('잘못된 action이면 400을 반환한다', async () => {
@@ -95,6 +113,7 @@ describe('DELETE /api/visual/twin/[id]', () => {
     expect(res.status).toBe(200);
     expect(data.success).toBe(true);
     expect(deleteTwin).toHaveBeenCalledWith('user-1', 't-1');
+    expect(requireTwinConsent).not.toHaveBeenCalled();
   });
 
   it('트윈이 없으면 404를 반환한다', async () => {

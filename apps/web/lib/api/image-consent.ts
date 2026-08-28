@@ -9,7 +9,14 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { isImageConsentActive } from '@/lib/consent/version-check';
 
 // 분석 유형별 이미지 동의 타입
-export type AnalysisType = 'skin' | 'body' | 'posture' | 'personal-color' | 'hair' | 'makeup';
+export type AnalysisType =
+  | 'skin'
+  | 'body'
+  | 'posture'
+  | 'personal-color'
+  | 'hair'
+  | 'makeup'
+  | 'twin';
 
 // 동의 확인 결과
 export interface ImageConsentResult {
@@ -42,6 +49,7 @@ const ANALYSIS_TYPES_REQUIRING_BIOMETRIC_CONSENT = new Set<AnalysisType>([
   'personal-color',
   'hair',
   'makeup',
+  'twin',
 ]);
 
 async function readImageConsentState(

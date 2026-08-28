@@ -28,9 +28,28 @@ vi.mock('sonner', () => ({
 
 const APPROVED_HANDLER = vi.fn();
 
-function uploadFaceAndGenerate() {
+const ACTIVE_TWIN_CONSENT = {
+  consent_given: true,
+  consent_version: 'v1.0',
+  retention_until: '2099-01-01T00:00:00.000Z',
+};
+
+function jsonResponse(body: unknown, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  };
+}
+
+function isConsentCheck(input: unknown, init?: RequestInit): boolean {
+  return String(input).startsWith('/api/consent?analysisType=twin') && !init?.method;
+}
+
+async function uploadFaceAndGenerate() {
   // intro → 시작하기
   fireEvent.click(screen.getByTestId('twin-intro-continue'));
+  await screen.findByTestId('twin-upload');
   // 얼굴 파일 업로드 (첫 번째 file input)
   const fileInputs = document.querySelectorAll('input[type="file"]');
   const faceInput = fileInputs[0] as HTMLInputElement;
@@ -47,20 +66,22 @@ describe('TwinStudio', () => {
   it('생성 성공 시 승인 게이트 3버튼과 "AI 생성" 라벨을 노출한다', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          id: 'twin-1',
-          imageUrl: 'https://x/twin.jpg',
-          status: 'pending',
-          aiGenerated: true,
-        }),
-      })
+      vi.fn((input: unknown, init?: RequestInit) =>
+        Promise.resolve(
+          isConsentCheck(input, init)
+            ? jsonResponse({ consent: ACTIVE_TWIN_CONSENT })
+            : jsonResponse({
+                id: 'twin-1',
+                imageUrl: 'https://x/twin.jpg',
+                status: 'pending',
+                aiGenerated: true,
+              })
+        )
+      )
     );
 
     render(<TwinStudio open onOpenChange={() => {}} onApproved={APPROVED_HANDLER} />);
-    uploadFaceAndGenerate();
+    await uploadFaceAndGenerate();
 
     // 트윈 만들기 버튼 활성화 대기 후 클릭
     const genBtn = await screen.findByTestId('twin-generate-button');
@@ -76,25 +97,24 @@ describe('TwinStudio', () => {
   });
 
   it('승인 클릭 시 PATCH approve 호출 + onApproved 콜백', async () => {
-    const fetchMock = vi
-      .fn()
-      // POST 생성
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
+    const fetchMock = vi.fn((input: unknown, init?: RequestInit) => {
+      if (isConsentCheck(input, init)) {
+        return Promise.resolve(jsonResponse({ consent: ACTIVE_TWIN_CONSENT }));
+      }
+      if (init?.method === 'PATCH') return Promise.resolve(jsonResponse({}));
+      return Promise.resolve(
+        jsonResponse({
           id: 'twin-1',
           imageUrl: 'https://x/twin.jpg',
           status: 'pending',
           aiGenerated: true,
-        }),
-      })
-      // PATCH approve
-      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) });
+        })
+      );
+    });
     vi.stubGlobal('fetch', fetchMock);
 
     render(<TwinStudio open onOpenChange={() => {}} onApproved={APPROVED_HANDLER} />);
-    uploadFaceAndGenerate();
+    await uploadFaceAndGenerate();
     fireEvent.click(await screen.findByTestId('twin-generate-button'));
 
     const approveBtn = await screen.findByTestId('twin-approve-button');
@@ -109,6 +129,10 @@ describe('TwinStudio', () => {
   });
 
   it('사용자 대면 라벨은 "트윈"이 아니라 "AI 아바타"를 쓴다', () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(jsonResponse({ consent: ACTIVE_TWIN_CONSENT }))
+    );
     render(<TwinStudio open onOpenChange={() => {}} />);
 
     // 안내(intro) 화면: 상한 고지 문구가 "AI 아바타" 표현
@@ -119,18 +143,48 @@ describe('TwinStudio', () => {
   it('429(일 상한) 응답 시 안내 문구를 노출한다', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 429,
-        json: async () => ({ error: '오늘은 트윈을 더 만들 수 없어요. 내일 다시 시도해 주세요.' }),
-      })
+      vi.fn((input: unknown, init?: RequestInit) =>
+        Promise.resolve(
+          isConsentCheck(input, init)
+            ? jsonResponse({ consent: ACTIVE_TWIN_CONSENT })
+            : jsonResponse(
+                { error: '오늘은 트윈을 더 만들 수 없어요. 내일 다시 시도해 주세요.' },
+                429
+              )
+        )
+      )
     );
 
     render(<TwinStudio open onOpenChange={() => {}} />);
-    uploadFaceAndGenerate();
+    await uploadFaceAndGenerate();
     fireEvent.click(await screen.findByTestId('twin-generate-button'));
 
     await waitFor(() => expect(screen.getByTestId('twin-error')).toBeInTheDocument());
     expect(screen.getByText(/오늘은 트윈을 더 만들 수 없어요/)).toBeInTheDocument();
+  });
+
+  it('전용 twin 저장 동의가 없으면 업로드를 열지 않고 동의 후에만 연다', async () => {
+    const fetchMock = vi.fn((input: unknown, init?: RequestInit) => {
+      if (isConsentCheck(input, init)) return Promise.resolve(jsonResponse({ consent: null }));
+      if (String(input) === '/api/consent' && init?.method === 'POST') {
+        return Promise.resolve(jsonResponse({ consent: ACTIVE_TWIN_CONSENT }));
+      }
+      throw new Error(`unexpected fetch: ${String(input)}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<TwinStudio open onOpenChange={() => {}} />);
+    fireEvent.click(screen.getByTestId('twin-intro-continue'));
+
+    expect(await screen.findByTestId('image-consent-modal')).toBeInTheDocument();
+    expect(screen.queryByTestId('twin-upload')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('consent-agree-button'));
+
+    expect(await screen.findByTestId('twin-upload')).toBeInTheDocument();
+    const consentPost = fetchMock.mock.calls.find(
+      ([input, init]) => String(input) === '/api/consent' && init?.method === 'POST'
+    );
+    expect(consentPost).toBeTruthy();
+    expect(JSON.parse(String(consentPost?.[1]?.body))).toEqual({ analysisType: 'twin' });
   });
 });

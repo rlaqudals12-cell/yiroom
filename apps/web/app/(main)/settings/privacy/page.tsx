@@ -33,6 +33,7 @@ const IMAGE_CONSENT_AXES: ReadonlyArray<{
   { type: 'personal-color', label: '퍼스널 컬러', analysisHref: '/analysis/personal-color' },
   { type: 'hair', label: '헤어 분석', analysisHref: '/analysis/hair' },
   { type: 'makeup', label: '메이크업 분석', analysisHref: '/analysis/makeup' },
+  { type: 'twin', label: 'AI 아바타', analysisHref: null },
 ];
 
 type ConsentByAxis = Partial<Record<AnalysisType, ImageConsent>>;
@@ -360,6 +361,11 @@ export default function PrivacySettingsPage() {
                     ) : type === 'body' ? (
                       <p className="mt-2 text-sm text-muted-foreground">
                         체형 분석의 새 사진 저장 선택은 현재 지원하지 않습니다.
+                      </p>
+                    ) : type === 'twin' ? (
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        생성된 AI 아바타를 저장하지 않습니다. 새 아바타를 만들 때 저장 여부를 선택할
+                        수 있습니다.
                       </p>
                     ) : (
                       <p className="mt-2 text-sm text-muted-foreground">

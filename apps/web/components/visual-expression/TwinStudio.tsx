@@ -10,7 +10,7 @@
  * O가 엔진/라우트를 동시 구현 중 — fetch는 SDD §3 스키마 기준, 응답 필드 방어.
  */
 
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Sparkles, Loader2, Upload, Check, RefreshCw, X, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,9 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
+import { ImageConsentModal } from '@/components/analysis/consent';
+import type { ImageConsent } from '@/components/analysis/consent/types';
+import { isImageConsentActive } from '@/lib/consent/version-check';
 import { parseTwinRecord, type TwinRecord } from './useTwin';
 
 type Phase = 'intro' | 'upload' | 'generating' | 'review' | 'error';
@@ -40,6 +43,10 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
   const [twin, setTwin] = useState<TwinRecord | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const [showStorageConsent, setShowStorageConsent] = useState(false);
+  const [storageConsentActive, setStorageConsentActive] = useState(false);
+  const [storageConsentChecked, setStorageConsentChecked] = useState(false);
+  const [storageConsentSaving, setStorageConsentSaving] = useState(false);
   const faceInputRef = useRef<HTMLInputElement>(null);
   const bodyInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,6 +57,10 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
     setTwin(null);
     setErrorMsg('');
     setBusy(false);
+    setShowStorageConsent(false);
+    setStorageConsentActive(false);
+    setStorageConsentChecked(false);
+    setStorageConsentSaving(false);
   };
 
   const handleOpenChange = (v: boolean) => {
@@ -64,6 +75,68 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
       else setBodyImage(b64);
     } catch {
       toast.error('사진을 불러오지 못했어요. 다른 사진을 선택해 주세요.');
+    }
+  };
+
+  const fetchStorageConsent = useCallback(async (): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/consent?analysisType=twin');
+      if (!response.ok) return false;
+      const body = (await response.json().catch(() => null)) as {
+        consent?: ImageConsent | null;
+      } | null;
+      const active = isImageConsentActive(body?.consent);
+      setStorageConsentActive(active);
+      return active;
+    } catch {
+      return false;
+    } finally {
+      setStorageConsentChecked(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (open) void fetchStorageConsent();
+  }, [fetchStorageConsent, open]);
+
+  const beginUpload = async (): Promise<void> => {
+    const active =
+      storageConsentActive || (!storageConsentChecked && (await fetchStorageConsent()));
+    if (active) {
+      setPhase('upload');
+      return;
+    }
+    setShowStorageConsent(true);
+  };
+
+  const saveStorageConsent = async (): Promise<void> => {
+    setStorageConsentSaving(true);
+    try {
+      const response = await fetch('/api/consent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysisType: 'twin' }),
+      });
+      const body = (await response.json().catch(() => null)) as {
+        error?: string | { userMessage?: string };
+      } | null;
+      if (!response.ok) {
+        const message =
+          typeof body?.error === 'string'
+            ? body.error
+            : (body?.error?.userMessage ?? 'AI 아바타 저장 동의를 저장하지 못했어요.');
+        toast.error(message);
+        return;
+      }
+
+      setStorageConsentActive(true);
+      setStorageConsentChecked(true);
+      setShowStorageConsent(false);
+      setPhase('upload');
+    } catch {
+      toast.error('네트워크 연결을 확인한 뒤 다시 시도해 주세요.');
+    } finally {
+      setStorageConsentSaving(false);
     }
   };
 
@@ -177,7 +250,7 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
       </div>
       <Button
         className="w-full"
-        onClick={() => setPhase('upload')}
+        onClick={() => void beginUpload()}
         data-testid="twin-intro-continue"
       >
         시작하기
@@ -369,20 +442,29 @@ export function TwinStudio({ open, onOpenChange, onApproved }: TwinStudioProps) 
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md" data-testid="twin-studio">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" aria-hidden="true" />내 AI 아바타 만들기
-          </DialogTitle>
-          <DialogDescription>
-            나를 닮은 AI 아바타를 만들어, 옷과 스타일을 입혀볼 수 있어요.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-md" data-testid="twin-studio">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" aria-hidden="true" />내 AI 아바타 만들기
+            </DialogTitle>
+            <DialogDescription>
+              나를 닮은 AI 아바타를 만들어, 옷과 스타일을 입혀볼 수 있어요.
+            </DialogDescription>
+          </DialogHeader>
 
-        {renderPhase()}
-      </DialogContent>
-    </Dialog>
+          {renderPhase()}
+        </DialogContent>
+      </Dialog>
+      <ImageConsentModal
+        analysisType="twin"
+        isLoading={storageConsentSaving}
+        isOpen={open && showStorageConsent}
+        onConsent={() => void saveStorageConsent()}
+        onSkip={() => setShowStorageConsent(false)}
+      />
+    </>
   );
 }
 

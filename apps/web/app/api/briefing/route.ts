@@ -260,6 +260,16 @@ async function trackMobileBriefingView(
 ): Promise<void> {
   try {
     const supabase = createServiceRoleClient();
+
+    // service role은 RLS를 우회하므로 사용자 조건을 직접 건다. 동의 행이 없거나 조회가
+    // 실패한 경우도 false로 간주해 이용기록을 남기지 않는다(fail-closed).
+    const { data: agreement, error: agreementError } = await supabase
+      .from('user_agreements')
+      .select('analytics_agreed')
+      .eq('clerk_user_id', clerkUserId)
+      .maybeSingle();
+    if (agreementError || agreement?.analytics_agreed !== true) return;
+
     await supabase.from('analytics_events').insert({
       clerk_user_id: clerkUserId,
       // 모바일엔 웹식 세션 개념이 없다 — 유저·일자로 파생(하루의 여러 열람을 한 세션으로 묶음).

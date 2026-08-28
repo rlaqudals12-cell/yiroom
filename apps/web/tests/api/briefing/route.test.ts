@@ -29,11 +29,23 @@ vi.mock('@/lib/supabase/server', () => ({
 
 // Service-role — 모바일 briefing_view 계측(analytics_events insert) 캡처
 const mockAnalyticsInsert = vi.fn().mockResolvedValue({ error: null });
+const mockAnalyticsAgreementMaybeSingle = vi.fn().mockResolvedValue({
+  data: { analytics_agreed: true },
+  error: null,
+});
+const mockAnalyticsAgreementEq = vi.fn(() => ({
+  maybeSingle: mockAnalyticsAgreementMaybeSingle,
+}));
 vi.mock('@/lib/supabase/service-role', () => ({
   createServiceRoleClient: () => ({
-    from: (table: string) => ({
-      insert: (payload: unknown) => mockAnalyticsInsert(table, payload),
-    }),
+    from: (table: string) =>
+      table === 'user_agreements'
+        ? {
+            select: () => ({ eq: mockAnalyticsAgreementEq }),
+          }
+        : {
+            insert: (payload: unknown) => mockAnalyticsInsert(table, payload),
+          },
   }),
 }));
 
@@ -85,6 +97,10 @@ describe('GET /api/briefing', () => {
     mockSupabase.from.mockReturnValue(mockSupabase);
     mockSupabase.select.mockReturnValue(mockSupabase);
     mockSupabase.order.mockReturnValue(mockSupabase);
+    mockAnalyticsAgreementMaybeSingle.mockResolvedValue({
+      data: { analytics_agreed: true },
+      error: null,
+    });
     vi.mocked(auth).mockResolvedValue({ userId: 'user-123' } as never);
     vi.mocked(currentUser).mockResolvedValue({ firstName: '지민', username: null } as never);
   });
@@ -343,6 +359,43 @@ describe('GET /api/briefing', () => {
       expect(payload.event_data).toMatchObject({ platform: 'mobile', hasAnalyses: true });
       // 세션은 유저·일자 파생 (DAU distinct에 무해)
       expect(payload.session_id).toMatch(/^mobile:user-123:\d{4}-\d{2}-\d{2}$/);
+      expect(mockAnalyticsAgreementEq).toHaveBeenCalledWith('clerk_user_id', 'user-123');
+    });
+
+    it('분석 수집 미동의 사용자는 모바일 헤더가 있어도 계측하지 않는다', async () => {
+      mockAnalyticsAgreementMaybeSingle.mockResolvedValueOnce({
+        data: { analytics_agreed: false },
+        error: null,
+      });
+      queueAnalyses({});
+
+      const res = await GET(mobileReq());
+
+      expect(res.status).toBe(200);
+      expect(mockAnalyticsInsert).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['동의 행 없음', { data: null, error: null }],
+      ['동의 조회 오류', { data: null, error: { message: 'db down' } }],
+    ])('%s이면 fail-closed로 계측하지 않는다', async (_case, agreementResult) => {
+      mockAnalyticsAgreementMaybeSingle.mockResolvedValueOnce(agreementResult);
+      queueAnalyses({});
+
+      const res = await GET(mobileReq());
+
+      expect(res.status).toBe(200);
+      expect(mockAnalyticsInsert).not.toHaveBeenCalled();
+    });
+
+    it('동의 조회 예외도 브리핑 응답은 유지하고 계측하지 않는다', async () => {
+      mockAnalyticsAgreementMaybeSingle.mockRejectedValueOnce(new Error('db unavailable'));
+      queueAnalyses({});
+
+      const res = await GET(mobileReq());
+
+      expect(res.status).toBe(200);
+      expect(mockAnalyticsInsert).not.toHaveBeenCalled();
     });
 
     it('웹 요청(헤더 없음)은 계측하지 않는다 — 클라이언트 track과 중복 방지', async () => {

@@ -67,6 +67,7 @@ export const IMAGE_CONSENT_STORAGE_BUCKETS = {
   'personal-color': 'personal-color-images',
   hair: 'hair-images',
   makeup: 'makeup-images',
+  twin: 'twins',
 } as const satisfies Record<string, UserStorageBucket>;
 
 export type ImageStorageAnalysisType = keyof typeof IMAGE_CONSENT_STORAGE_BUCKETS;
@@ -91,6 +92,8 @@ const ANALYSIS_IMAGE_POINTERS: Record<
   },
   hair: { table: 'hair_analyses', values: { image_url: '' } },
   makeup: { table: 'makeup_analyses', values: { image_url: '' } },
+  // 트윈은 image_path NOT NULL이라 포인터만 비울 수 없다. 저장 철회 시 레코드도 함께 파기한다.
+  twin: { table: 'user_twins', values: {} },
 };
 
 export interface PointerCleanupResult {
@@ -107,6 +110,13 @@ export async function clearAnalysisImagePointers(
   const pointer = ANALYSIS_IMAGE_POINTERS[analysisType];
 
   try {
+    if (analysisType === 'twin') {
+      const { error } = await supabase.from(pointer.table).delete().eq('clerk_user_id', userId);
+      return error
+        ? { cleared: false, failedTarget: `db:${pointer.table}` }
+        : { cleared: true, failedTarget: null };
+    }
+
     const { error } = await supabase
       .from(pointer.table)
       .update(pointer.values)
