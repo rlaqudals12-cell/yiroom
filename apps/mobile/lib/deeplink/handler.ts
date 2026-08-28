@@ -23,6 +23,9 @@ const WELLNESS_DEEP_LINK_PATHS = new Set([
   '/settings/goals',
 ]);
 
+// 검색·Q&A는 실제 데이터 연결 전까지 출시 라우트에서 폐기한다.
+const RETIRED_PRODUCT_DEEP_LINK_PATHS = new Set(['/products/search', '/products/qa']);
+
 /**
  * 딥링크 URL 파싱
  */
@@ -72,11 +75,16 @@ export function navigateToDeepLink(parsed: ParsedDeepLink): boolean {
     return false;
   }
 
+  if (RETIRED_PRODUCT_DEEP_LINK_PATHS.has(parsed.path)) {
+    deepLinkLogger.info('Retired product deep link:', parsed.path);
+    return false;
+  }
+
   // 경로 매핑
   let targetPath = PATH_MAPPING[parsed.path];
 
   // 동적 경로 처리 (예: /products/:id)
-  if (!targetPath && parsed.path.startsWith('/products/') && parsed.path !== '/products/search') {
+  if (!targetPath && parsed.path.startsWith('/products/')) {
     const id = parsed.path.split('/').pop();
     targetPath = `/products/${id}`;
   }

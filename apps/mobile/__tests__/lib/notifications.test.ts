@@ -365,12 +365,34 @@ describe('DEFAULT_NOTIFICATION_SETTINGS', () => {
     expect(sanitized.waterReminder).toBe(false);
   });
 
+  it('저장된 구형 true 설정도 닫힌 소셜·배지 알림을 다시 켜지 못한다', () => {
+    const sanitized = enforceNotificationFeatureFlags({
+      ...DEFAULT_NOTIFICATION_SETTINGS,
+      socialNotifications: true,
+      achievementNotifications: true,
+    });
+
+    expect(sanitized.socialNotifications).toBe(false);
+    expect(sanitized.achievementNotifications).toBe(false);
+  });
+
   it.each(['workout_reminder', 'nutrition_reminder', 'water_reminder'] as const)(
     '%s 예약 타입을 사용할 수 없다',
     (type) => {
       expect(isNotificationTypeAvailable(type)).toBe(false);
     }
   );
+
+  it.each([
+    'friend_request',
+    'friend_accepted',
+    'challenge_invite',
+    'challenge_complete',
+    'level_up',
+    'badge_earned',
+  ] as const)('%s 숨김 모듈 알림을 사용할 수 없다', (type) => {
+    expect(isNotificationTypeAvailable(type)).toBe(false);
+  });
 
   it('기본 시간 설정이 유효해야 함', () => {
     expect(DEFAULT_NOTIFICATION_SETTINGS.workoutReminderTime).toBe('09:00');

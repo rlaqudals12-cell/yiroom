@@ -51,4 +51,22 @@ describe('숨김 웰니스 딥링크 게이트', () => {
     expect(navigateToDeepLink(parsed)).toBe(true);
     expect(router.push).toHaveBeenCalledWith('/products');
   });
+
+  it.each(['/products/search', '/products/qa'])(
+    '폐기한 %s 딥링크는 제품 상세로 위장해 열지 않는다',
+    (path) => {
+      const parsed = parseDeepLink(`yiroom://${path.slice(1)}`);
+
+      expect(navigateToDeepLink(parsed)).toBe(false);
+      expect(router.push).not.toHaveBeenCalled();
+      expect(Haptics.impactAsync).not.toHaveBeenCalled();
+    }
+  );
+
+  it('실제 제품 ID 딥링크는 상세 화면으로 계속 이동한다', () => {
+    const parsed = parseDeepLink('yiroom://products/cosmetic-1');
+
+    expect(navigateToDeepLink(parsed)).toBe(true);
+    expect(router.push).toHaveBeenCalledWith('/products/cosmetic-1');
+  });
 });

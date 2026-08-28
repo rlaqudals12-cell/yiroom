@@ -105,20 +105,20 @@ describe('HelpScreen', () => {
   });
 
   describe('FAQ 목록 표시', () => {
-    it('6개의 질문이 모두 표시된다', () => {
-      const { getByText } = renderWithTheme(<HelpScreen />);
+    it('출시 중인 기능의 질문만 표시한다', () => {
+      const { getByText, queryByText } = renderWithTheme(<HelpScreen />);
       expect(getByText('분석 결과는 얼마나 정확한가요?')).toBeTruthy();
       expect(getByText('사진은 어떻게 촬영하면 좋나요?')).toBeTruthy();
       expect(getByText('분석 결과를 다시 받을 수 있나요?')).toBeTruthy();
-      expect(getByText('운동/식단 데이터는 어디에 저장되나요?')).toBeTruthy();
       expect(getByText('오프라인에서도 사용할 수 있나요?')).toBeTruthy();
       expect(getByText('알림이 오지 않아요')).toBeTruthy();
+      expect(queryByText('운동/식단 데이터는 어디에 저장되나요?')).toBeNull();
     });
 
     it('초기 상태에서 답변이 숨겨져 있다 (▼ 표시)', () => {
       const { getAllByText } = renderWithTheme(<HelpScreen />);
       const downArrows = getAllByText('▼');
-      expect(downArrows.length).toBe(6);
+      expect(downArrows.length).toBe(5);
     });
   });
 
@@ -174,7 +174,7 @@ describe('HelpScreen', () => {
       expect(upArrows.length).toBe(1);
 
       const downArrows = getAllByText('▼');
-      expect(downArrows.length).toBe(5);
+      expect(downArrows.length).toBe(4);
     });
   });
 

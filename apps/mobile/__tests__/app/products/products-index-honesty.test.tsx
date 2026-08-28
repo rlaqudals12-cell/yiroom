@@ -149,4 +149,16 @@ describe('ProductsScreen 개인화 점수 정직성', () => {
     await waitFor(() => expect(getByText(PRODUCT.name)).toBeTruthy());
     expect(queryByText(/\d+%/)).toBeNull();
   });
+
+  it('평점과 리뷰가 없는 제품을 ★ 0.0 (0)으로 표시하지 않는다', async () => {
+    mockGetCosmeticProducts.mockResolvedValue([
+      { ...PRODUCT, id: 'no-review', name: '무평점 제품', rating: 0, reviewCount: 0 },
+    ]);
+
+    const { getByText, queryByText } = renderScreen();
+
+    await waitFor(() => expect(getByText('무평점 제품')).toBeTruthy());
+    expect(queryByText('0.0 (0)')).toBeNull();
+    expect(getByText('아직 리뷰가 없어요')).toBeTruthy();
+  });
 });

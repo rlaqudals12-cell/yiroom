@@ -9,6 +9,13 @@ import { coachLogger } from '../utils/logger';
 
 import type { CoachMessage } from './index';
 
+export const BEAUTY_COACH_SESSION_CATEGORY = 'beauty-team';
+export const LEGACY_COACH_SESSION_CATEGORY = 'legacy-wellness';
+
+export type CoachSessionCategory =
+  | typeof BEAUTY_COACH_SESSION_CATEGORY
+  | typeof LEGACY_COACH_SESSION_CATEGORY;
+
 /**
  * 채팅 세션 타입
  */
@@ -28,7 +35,8 @@ export interface CoachSession {
 export async function createCoachSession(
   supabase: SupabaseClient,
   clerkUserId: string,
-  firstMessage?: string
+  firstMessage?: string,
+  category: CoachSessionCategory = LEGACY_COACH_SESSION_CATEGORY
 ): Promise<CoachSession | null> {
   // 첫 메시지에서 제목 추출 (최대 50자)
   const title = firstMessage
@@ -40,7 +48,7 @@ export async function createCoachSession(
     .insert({
       clerk_user_id: clerkUserId,
       title,
-      category: 'general',
+      category,
     })
     .select()
     .single();
@@ -96,14 +104,20 @@ export async function saveCoachMessage(
 export async function getCoachSessions(
   supabase: SupabaseClient,
   clerkUserId: string,
-  limit = 20
+  options: { limit?: number; category?: CoachSessionCategory } = {}
 ): Promise<CoachSession[]> {
-  const { data, error } = await supabase
+  const { limit = 20, category } = options;
+  let query = supabase
     .from('coach_sessions')
     .select('*')
     .eq('clerk_user_id', clerkUserId)
-    .order('updated_at', { ascending: false })
-    .limit(limit);
+    .order('updated_at', { ascending: false });
+
+  if (category) {
+    query = query.eq('category', category);
+  }
+
+  const { data, error } = await query.limit(limit);
 
   if (error) {
     coachLogger.error('[Coach History] Sessions fetch error:', error);
@@ -126,8 +140,23 @@ export async function getCoachSessions(
  */
 export async function getSessionMessages(
   supabase: SupabaseClient,
-  sessionId: string
-): Promise<CoachMessage[]> {
+  sessionId: string,
+  category?: CoachSessionCategory
+): Promise<CoachMessage[] | null> {
+  if (category) {
+    // RLS 소유권 검사에 더해 표면 출처를 확인해 뷰티팀에서 웰니스 세션을 열지 못하게 한다.
+    const { data: session, error: sessionError } = await supabase
+      .from('coach_sessions')
+      .select('id')
+      .eq('id', sessionId)
+      .eq('category', category)
+      .maybeSingle();
+
+    if (sessionError || !session) {
+      return null;
+    }
+  }
+
   const { data, error } = await supabase
     .from('coach_messages')
     .select('*')
@@ -136,7 +165,7 @@ export async function getSessionMessages(
 
   if (error) {
     coachLogger.error('[Coach History] Messages fetch error:', error);
-    return [];
+    return null;
   }
 
   return data.map((msg) => ({
@@ -152,12 +181,37 @@ export async function getSessionMessages(
  */
 export async function deleteCoachSession(
   supabase: SupabaseClient,
-  sessionId: string
+  sessionId: string,
+  category?: CoachSessionCategory
 ): Promise<boolean> {
-  const { error } = await supabase.from('coach_sessions').delete().eq('id', sessionId);
+  let query = supabase.from('coach_sessions').delete().eq('id', sessionId);
+  if (category) {
+    query = query.eq('category', category);
+  }
+
+  const { error } = await query;
 
   if (error) {
     coachLogger.error('[Coach History] Session delete error:', error);
+    return false;
+  }
+
+  return true;
+}
+
+/** 출처를 판별할 수 없는 구형 상담 데이터만 일괄 삭제한다. */
+export async function deleteLegacyCoachSessions(
+  supabase: SupabaseClient,
+  clerkUserId: string
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('coach_sessions')
+    .delete()
+    .eq('clerk_user_id', clerkUserId)
+    .or(`category.neq.${BEAUTY_COACH_SESSION_CATEGORY},category.is.null`);
+
+  if (error) {
+    coachLogger.error('[Coach History] Legacy sessions delete error:', error);
     return false;
   }
 

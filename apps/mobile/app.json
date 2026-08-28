@@ -17,9 +17,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.yiroom.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "퍼스널 컬러, 피부 분석을 위해 카메라 접근이 필요합니다.",
-        "NSPhotoLibraryUsageDescription": "체형 분석 및 음식 기록을 위해 사진 접근이 필요합니다.",
-        "NSPhotoLibraryAddUsageDescription": "분석 결과를 저장하기 위해 사진 저장 권한이 필요합니다."
+        "NSCameraUsageDescription": "퍼스널컬러·피부·체형·헤어·메이크업 분석 사진 촬영에 사용합니다.",
+        "NSPhotoLibraryUsageDescription": "퍼스널컬러·피부·체형·헤어·메이크업 분석과 AI 아바타 생성용 사진 선택에 사용합니다.",
+        "NSPhotoLibraryAddUsageDescription": "분석 결과와 AI 생성 이미지를 기기에 저장할 때 사용합니다."
       },
       "entitlements": {
         "com.apple.security.application-groups": ["group.com.yiroom.app"]
@@ -44,13 +44,13 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "퍼스널 컬러, 피부 분석을 위해 카메라 접근이 필요합니다."
+          "cameraPermission": "퍼스널컬러·피부·체형·헤어·메이크업 분석 사진 촬영에 사용합니다."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "체형 분석 및 음식 기록을 위해 사진 접근이 필요합니다."
+          "photosPermission": "퍼스널컬러·피부·체형·헤어·메이크업 분석과 AI 아바타 생성용 사진 선택에 사용합니다."
         }
       ],
       "expo-web-browser",

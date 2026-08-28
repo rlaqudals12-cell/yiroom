@@ -60,22 +60,22 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   waterReminder: FEATURE_FLAGS.WELLNESS_PHASE2,
   waterReminderInterval: 2,
   streakWarning: true,
-  socialNotifications: true,
-  achievementNotifications: true,
+  socialNotifications: FEATURE_FLAGS.SOCIAL_FEED,
+  achievementNotifications: FEATURE_FLAGS.BADGES,
   personalizedTriggers: DEFAULT_PERSONALIZED_TRIGGER_SETTINGS,
 };
 
-/** 저장된 구버전 설정이 true여도 닫힌 웰니스 알림을 되살리지 않는다. */
+/** 저장된 구버전 설정이 true여도 닫힌 모듈 알림을 되살리지 않는다. */
 export function enforceNotificationFeatureFlags(
   settings: NotificationSettings
 ): NotificationSettings {
-  if (FEATURE_FLAGS.WELLNESS_PHASE2) return settings;
-
   return {
     ...settings,
-    workoutReminder: false,
-    nutritionReminder: false,
-    waterReminder: false,
+    workoutReminder: FEATURE_FLAGS.WELLNESS_PHASE2 ? settings.workoutReminder : false,
+    nutritionReminder: FEATURE_FLAGS.WELLNESS_PHASE2 ? settings.nutritionReminder : false,
+    waterReminder: FEATURE_FLAGS.WELLNESS_PHASE2 ? settings.waterReminder : false,
+    socialNotifications: FEATURE_FLAGS.SOCIAL_FEED ? settings.socialNotifications : false,
+    achievementNotifications: FEATURE_FLAGS.BADGES ? settings.achievementNotifications : false,
   };
 }
 

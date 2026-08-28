@@ -340,10 +340,11 @@ describe('NotificationsSettingsScreen', () => {
       expect(queryByText('스트릭 경고')).toBeNull();
     });
 
-    it('소셜 & 성취 알림 항목들을 표시한다', () => {
-      const { getByText } = renderWithTheme(<NotificationsSettingsScreen />);
-      expect(getByText('소셜 알림')).toBeTruthy();
-      expect(getByText('성취 알림')).toBeTruthy();
+    it('출시 플래그가 닫힌 소셜·성취 알림 항목을 표시하지 않는다', () => {
+      const { queryByText } = renderWithTheme(<NotificationsSettingsScreen />);
+      expect(queryByText('소셜 & 성취')).toBeNull();
+      expect(queryByText('소셜 알림')).toBeNull();
+      expect(queryByText('성취 알림')).toBeNull();
     });
 
     it('테스트 알림 버튼을 표시한다', () => {

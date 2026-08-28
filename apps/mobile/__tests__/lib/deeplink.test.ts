@@ -10,7 +10,6 @@ type DeepLinkPath =
   | '/nutrition/record'
   | '/nutrition/camera'
   | '/products'
-  | '/products/search'
   | '/profile'
   | '/settings'
   | '/settings/notifications'
@@ -27,7 +26,6 @@ const DEEP_LINK_ROUTES: Record<DeepLinkPath, string> = {
   '/nutrition/record': '/(nutrition)/record',
   '/nutrition/camera': '/(nutrition)/camera',
   '/products': '/products',
-  '/products/search': '/products/search',
   '/profile': '/(tabs)/profile',
   '/settings': '/settings',
   '/settings/notifications': '/settings/notifications',
@@ -39,9 +37,7 @@ const DEEP_LINK_ROUTES: Record<DeepLinkPath, string> = {
 };
 
 // URL 파싱 함수
-function parseDeepLinkUrl(
-  url: string
-): { path: string; params: Record<string, string> } | null {
+function parseDeepLinkUrl(url: string): { path: string; params: Record<string, string> } | null {
   if (!url || !url.startsWith('yiroom://')) {
     return null;
   }
@@ -68,7 +64,6 @@ describe('DEEP_LINK_ROUTES', () => {
     '/nutrition/record': '/(nutrition)/record',
     '/nutrition/camera': '/(nutrition)/camera',
     '/products': '/products',
-    '/products/search': '/products/search',
     '/profile': '/(tabs)/profile',
     '/settings': '/settings',
     '/settings/notifications': '/settings/notifications',
@@ -128,7 +123,6 @@ describe('DeepLinkPath 타입', () => {
     '/nutrition/record',
     '/nutrition/camera',
     '/products',
-    '/products/search',
     '/profile',
     '/settings',
     '/settings/notifications',
@@ -140,7 +134,7 @@ describe('DeepLinkPath 타입', () => {
   ];
 
   it('모든 딥링크 경로가 정의되어야 함', () => {
-    expect(allPaths.length).toBe(14);
+    expect(allPaths.length).toBe(13);
   });
 
   allPaths.forEach((path) => {

@@ -2,21 +2,16 @@
  * 분석 모듈 레이아웃
  * 슬라이드/페이드 전환 애니메이션 + 반투명 헤더
  */
-import { useAuth } from '@clerk/clerk-expo';
 import { FEATURE_FLAGS } from '@yiroom/shared';
 import { Redirect, Stack, useSegments } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, View } from 'react-native';
+import { Platform } from 'react-native';
 
+import { BiometricRouteGate } from '@/components/analysis/BiometricRouteGate';
 import { VISIBLE_ANALYSIS_MODULES } from '@/lib/analysis/visible-modules';
-import { fetchAgreementStatus } from '@/lib/api/agreement';
-import { fetchBirthdate } from '@/lib/api/birthdate';
 
 import { useTheme } from '../../lib/theme';
 
 const STANDALONE_BIOMETRIC_AXES = new Set<string>(VISIBLE_ANALYSIS_MODULES);
-
-type GateStatus = 'checking' | 'allowed' | 'needs-setup' | 'needs-auth';
 
 function analysisRouteParts(segments: readonly string[]): {
   module: string | undefined;
@@ -36,80 +31,6 @@ export function requiresStandaloneAnalysisGate(segments: readonly string[]): boo
 
 function isPostureRoute(segments: readonly string[]): boolean {
   return analysisRouteParts(segments).module === 'posture';
-}
-
-function StandaloneAnalysisGate({
-  children,
-  loadingColor,
-}: {
-  children: React.ReactNode;
-  loadingColor: string;
-}): React.JSX.Element {
-  const { getToken, isLoaded, isSignedIn, userId } = useAuth();
-  const [status, setStatus] = useState<GateStatus>('checking');
-
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
-
-    let active = true;
-    // 같은 레이아웃에서 계정만 전환되어도 이전 계정의 허용 상태를 재사용하지 않는다.
-    setStatus('checking');
-    void (async () => {
-      try {
-        const token = await getToken();
-        if (!active) return;
-        if (!token) {
-          setStatus('needs-auth');
-          return;
-        }
-
-        // 통합 분석과 같은 서버 정본을 조회한다. 둘 중 하나라도 없거나 조회에 실패하면
-        // 사진을 받지 않고 기존 통합 분석의 연령·동의 수집 화면으로 보낸다.
-        const [birthdate, agreement] = await Promise.allSettled([
-          fetchBirthdate(token),
-          fetchAgreementStatus(token),
-        ]);
-        if (!active) return;
-
-        const isReady =
-          birthdate.status === 'fulfilled' &&
-          birthdate.value.hasBirthDate &&
-          agreement.status === 'fulfilled' &&
-          agreement.value.hasAgreed;
-        setStatus(isReady ? 'allowed' : 'needs-setup');
-      } catch {
-        if (active) setStatus('needs-setup');
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-    // Clerk의 getToken은 렌더마다 새 참조일 수 있다. 로그인 판정 후 마운트당 한 번만 조회한다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn, userId]);
-
-  if (!isLoaded || (isSignedIn && status === 'checking')) {
-    return (
-      <View
-        accessibilityLabel="분석 이용 조건 확인 중"
-        style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}
-        testID="standalone-analysis-gate-loading"
-      >
-        <ActivityIndicator color={loadingColor} />
-      </View>
-    );
-  }
-
-  if (!isSignedIn || status === 'needs-auth') {
-    return <Redirect href="/(auth)/sign-in" />;
-  }
-
-  if (status === 'needs-setup') {
-    return <Redirect href="/(analysis)/integrated" />;
-  }
-
-  return <>{children}</>;
 }
 
 export default function AnalysisLayout(): React.JSX.Element {
@@ -193,17 +114,19 @@ export default function AnalysisLayout(): React.JSX.Element {
         }}
       />
       <Stack.Screen name="skin/history" options={{ title: '피부 분석 이력' }} />
-      <Stack.Screen name="skin/diary" options={{ title: '피부 다이어리' }} />
+      {/* 피부 다이어리·상담·솔루션은 출시 후 재배선 전까지 라우트 등록에서 제외한다. */}
+      <Stack.Screen name="skin/diary" redirect options={{ title: '피부 다이어리' }} />
       <Stack.Screen
         name="skin/diary-entry"
+        redirect
         options={{
           title: '다이어리 기록',
           presentation: 'modal',
           animation: 'slide_from_bottom',
         }}
       />
-      <Stack.Screen name="skin/consultation" options={{ title: '피부 상담' }} />
-      <Stack.Screen name="skin/solution" options={{ title: '피부 솔루션' }} />
+      <Stack.Screen name="skin/consultation" redirect options={{ title: '피부 상담' }} />
+      <Stack.Screen name="skin/solution" redirect options={{ title: '피부 솔루션' }} />
       <Stack.Screen
         name="body/index"
         options={{
@@ -296,6 +219,11 @@ export default function AnalysisLayout(): React.JSX.Element {
           animation: 'fade_from_bottom',
         }}
       />
+      {/* 축별 구형 비교 화면은 제네릭 비교 화면으로 통합되어 직접 등록하지 않는다. */}
+      <Stack.Screen name="skin/compare" redirect />
+      <Stack.Screen name="body/compare" redirect />
+      <Stack.Screen name="hair/compare" redirect />
+      <Stack.Screen name="makeup/compare" redirect />
       {/* Posture 자세 분석 */}
       <Stack.Screen
         name="posture/index"
@@ -324,7 +252,12 @@ export default function AnalysisLayout(): React.JSX.Element {
 
   // 통합 분석은 자체 화면에서 연령·동의를 수집하므로 이 게이트의 대상이 아니다.
   return requiresStandaloneAnalysisGate(segments) ? (
-    <StandaloneAnalysisGate loadingColor={colors.foreground}>{stack}</StandaloneAnalysisGate>
+    <BiometricRouteGate
+      loadingColor={colors.foreground}
+      loadingTestID="standalone-analysis-gate-loading"
+    >
+      {stack}
+    </BiometricRouteGate>
   ) : (
     stack
   );

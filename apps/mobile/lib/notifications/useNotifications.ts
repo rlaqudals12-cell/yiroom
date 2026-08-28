@@ -10,6 +10,7 @@
 
 import { useAuth } from '@clerk/clerk-expo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FEATURE_FLAGS } from '@yiroom/shared';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
@@ -549,32 +550,15 @@ export function useNotificationResponse() {
 // 헬퍼 함수
 // ============================================================
 
-async function setupAndroidChannels() {
-  await Notifications.setNotificationChannelAsync('workout', {
-    name: '운동 알림',
-    importance: Notifications.AndroidImportance.HIGH,
-    vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#ef4444',
-  });
-
-  await Notifications.setNotificationChannelAsync('nutrition', {
-    name: '식단 알림',
-    importance: Notifications.AndroidImportance.HIGH,
-    vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#10b981',
-  });
-
-  await Notifications.setNotificationChannelAsync('social', {
-    name: '소셜 알림',
-    importance: Notifications.AndroidImportance.DEFAULT,
-    lightColor: '#8b5cf6',
-  });
-
-  await Notifications.setNotificationChannelAsync('achievement', {
-    name: '성취 알림',
-    importance: Notifications.AndroidImportance.DEFAULT,
-    lightColor: '#f59e0b',
-  });
+export async function setupAndroidChannels(): Promise<void> {
+  // 숨김 운동·식단·소셜 모듈은 OS 설정에도 채널을 남겨 기능이 있는 것처럼 보이지 않는다.
+  if (FEATURE_FLAGS.BADGES) {
+    await Notifications.setNotificationChannelAsync('achievement', {
+      name: '성취 알림',
+      importance: Notifications.AndroidImportance.DEFAULT,
+      lightColor: '#f59e0b',
+    });
+  }
 
   await Notifications.setNotificationChannelAsync('system', {
     name: '시스템 알림',

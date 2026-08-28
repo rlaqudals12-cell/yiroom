@@ -3,7 +3,7 @@
  */
 import { Stack } from 'expo-router';
 
-import { useTheme, typography } from '../../lib/theme';
+import { useTheme } from '../../lib/theme';
 
 export default function SettingsLayout() {
   const { colors, typography } = useTheme();
@@ -45,8 +45,10 @@ export default function SettingsLayout() {
           title: '위젯 설정',
         }}
       />
+      {/* 건강 연동은 숨김 웰니스 백로그로, 파일은 보존하되 라우트 등록에서 제외한다. */}
       <Stack.Screen
         name="health-sync"
+        redirect
         options={{
           title: '건강 데이터 연동',
         }}

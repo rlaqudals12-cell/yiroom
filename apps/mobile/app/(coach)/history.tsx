@@ -23,9 +23,11 @@ import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import { GlassCard, ScreenContainer } from '../../components/ui';
 import { TIMING } from '../../lib/animations';
 import {
+  BEAUTY_COACH_SESSION_CATEGORY,
   BEAUTY_TEAM_HISTORY_ENABLED,
   getCoachSessions,
   deleteCoachSession,
+  deleteLegacyCoachSessions,
   type CoachSession,
 } from '../../lib/coach';
 import { useClerkSupabaseClient } from '../../lib/supabase';
@@ -41,7 +43,9 @@ export default function CoachHistoryScreen() {
   const fetchSessions = useCallback(async () => {
     if (!user?.id) return;
     setIsLoading(true);
-    const data = await getCoachSessions(supabase, user.id);
+    const data = await getCoachSessions(supabase, user.id, {
+      category: BEAUTY_COACH_SESSION_CATEGORY,
+    });
     setSessions(data);
     setIsLoading(false);
   }, [user?.id, supabase]);
@@ -72,7 +76,11 @@ export default function CoachHistoryScreen() {
         text: '삭제',
         style: 'destructive',
         onPress: async () => {
-          const success = await deleteCoachSession(supabase, session.id);
+          const success = await deleteCoachSession(
+            supabase,
+            session.id,
+            BEAUTY_COACH_SESSION_CATEGORY
+          );
           if (success) {
             setSessions((prev) => prev.filter((s) => s.id !== session.id));
           } else {
@@ -86,6 +94,31 @@ export default function CoachHistoryScreen() {
   const handleNewSession = () => {
     Haptics.selectionAsync();
     router.replace('/(coach)');
+  };
+
+  const handleDeleteLegacy = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Alert.alert(
+      '이전 대화 데이터 삭제',
+      '뷰티팀과 웰니스 출처를 구분할 수 없는 이전 대화 데이터를 모두 삭제할까요?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '삭제',
+          style: 'destructive',
+          onPress: async () => {
+            if (!user?.id) return;
+            const success = await deleteLegacyCoachSessions(supabase, user.id);
+            Alert.alert(
+              success ? '삭제 완료' : '오류',
+              success
+                ? '이전 대화 데이터를 삭제했어요.'
+                : '이전 대화 데이터를 삭제하지 못했어요. 다시 시도해 주세요.'
+            );
+          },
+        },
+      ]
+    );
   };
 
   // 상대 시간 포맷
@@ -104,20 +137,6 @@ export default function CoachHistoryScreen() {
     return `${Math.floor(diffDays / 30)}달 전`;
   };
 
-  // 카테고리 이모지
-  const getCategoryEmoji = (category: string): string => {
-    switch (category) {
-      case 'workout':
-        return '💪';
-      case 'nutrition':
-        return '🥗';
-      case 'skin':
-        return '✨';
-      default:
-        return '💬';
-    }
-  };
-
   const renderSession = ({ item }: { item: CoachSession }) => (
     <Pressable
       style={[styles.sessionCard, { backgroundColor: colors.card }]}
@@ -125,7 +144,6 @@ export default function CoachHistoryScreen() {
       onLongPress={() => handleDelete(item)}
     >
       <View style={styles.sessionRow}>
-        <Text style={styles.categoryEmoji}>{getCategoryEmoji(item.category)}</Text>
         <View style={styles.sessionInfo}>
           <Text style={[styles.sessionTitle, { color: colors.foreground }]} numberOfLines={1}>
             {item.title || '새 대화'}
@@ -175,17 +193,27 @@ export default function CoachHistoryScreen() {
             </Text>
           </Pressable>
         </GlassCard>
+        <Pressable
+          style={styles.legacyDeleteButton}
+          onPress={handleDeleteLegacy}
+          accessibilityRole="button"
+          accessibilityLabel="이전 대화 데이터 삭제"
+          testID="delete-legacy-coach-history"
+        >
+          <Text style={[styles.legacyDeleteText, { color: colors.mutedForeground }]}>
+            이전 대화 데이터 삭제
+          </Text>
+        </Pressable>
       </Animated.View>
 
       {/* 세션 목록 */}
       {sessions.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyEmoji}>📝</Text>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             아직 대화 기록이 없어요
           </Text>
           <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>
-            AI 코치와 대화를 시작해보세요!
+            전속 뷰티팀과 대화를 시작해보세요
           </Text>
         </View>
       ) : (
@@ -227,6 +255,14 @@ const styles = StyleSheet.create({
     fontSize: typography.size.base,
     fontWeight: typography.weight.semibold,
   },
+  legacyDeleteButton: {
+    alignItems: 'center',
+    paddingTop: spacing.smx,
+  },
+  legacyDeleteText: {
+    fontSize: typography.size.xs,
+    textDecorationLine: 'underline',
+  },
   listHeader: {
     fontSize: 13,
     paddingHorizontal: spacing.md,
@@ -245,10 +281,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  categoryEmoji: {
-    fontSize: typography.size['2xl'],
-    marginRight: spacing.smx,
-  },
   sessionInfo: {
     flex: 1,
   },
@@ -265,10 +297,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xl,
-  },
-  emptyEmoji: {
-    fontSize: 48,
-    marginBottom: spacing.md,
   },
   emptyText: {
     fontSize: typography.size.base,

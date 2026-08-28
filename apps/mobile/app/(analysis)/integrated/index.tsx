@@ -9,7 +9,7 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -23,11 +23,16 @@ import {
 } from 'react-native';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
+import {
+  usePendingIntegratedSession,
+  type PendingIntegratedRecoveryState,
+} from '@/hooks/usePendingIntegratedSession';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 import { trackAnalysisComplete, trackAnalysisStart } from '@/lib/analytics/tracker';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 import {
   requestIntegratedAnalysis,
+  createIntegratedClientRequestId,
   IntegratedApiError,
   fetchBirthdate,
   saveBirthdate,
@@ -46,6 +51,11 @@ import {
 } from '@/lib/api';
 import { toUserMessage } from '@/lib/api/error-text';
 import { getLastSubmission, rememberSubmission } from '@/lib/integrated/last-submission';
+import {
+  clearPendingIntegratedRequest,
+  getOrCreatePendingIntegratedRequest,
+  readPendingIntegratedRequest,
+} from '@/lib/integrated/pending-request';
 
 // ============================================
 // 자가입력 선택지
@@ -78,6 +88,28 @@ const AXIS_OPTIONS: Array<{ code: AxisCode; label: string }> = [
 ];
 const ALL_AXES = AXIS_OPTIONS.map((a) => a.code);
 
+// 웹과 동일하게 서버가 요청을 시작하지 않았음이 확정된 상태에서만 상관 ID를 폐기한다.
+const DEFINITIVE_REJECT_STATUSES = new Set([400, 401, 403, 404, 409, 422, 429]);
+
+function pendingRecoveryMessage(state: PendingIntegratedRecoveryState): string {
+  switch (state) {
+    case 'checking':
+      return '기존 요청 상태를 확인하고 있어요.';
+    case 'not_found':
+      return '아직 요청 세션을 찾지 못했어요. 서버에서 시작 중일 수 있어 계속 확인할게요.';
+    case 'error':
+      return '요청 상태를 불러오지 못했어요. 자동으로 다시 확인할게요.';
+    case 'pending':
+      return '아직 마무리되지 않았어요. 완료될 때까지 계속 확인할게요.';
+    case 'completed':
+      return '분석은 저장됐어요. 결과를 불러오고 있어요.';
+    case 'failed':
+      return '분석이 완료되지 못했어요. 기존 요청을 포기한 뒤 다시 시도해주세요.';
+    case 'stalled':
+      return '자동 확인을 마쳤지만 결과를 확정하지 못했어요. 직접 다시 확인할 수 있어요.';
+  }
+}
+
 // ============================================
 // 메인 화면
 // ============================================
@@ -106,7 +138,7 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
 
 function IntegratedAnalysisForm(): React.JSX.Element {
   const { colors } = useTheme();
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
 
   // 가입=첫 미팅(ADR-114): 가입 직후 진입 시 강제하지 않고 건너뛰기 경로 제공
   // retryAxes: 결과 화면 "다시 시도"에서 넘어온 미완료 축(콤마 구분) — 그 축만 재실행(mode:update)하는 재시도 컨텍스트.
@@ -138,6 +170,69 @@ function IntegratedAnalysisForm(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null);
   // 재시도 재진입 시 직전 제출 사진을 인메모리 캐시에서 복원했는지 여부 (UI 표시용).
   const [restoredFromCache, setRestoredFromCache] = useState(false);
+  // UUID만 사용자별로 영속화한다. 사진은 last-submission의 인메모리 계약을 그대로 지킨다.
+  const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
+  const [isPendingRequestResolved, setIsPendingRequestResolved] = useState(false);
+  const [pendingStorageError, setPendingStorageError] = useState(false);
+  const [pendingMarkerReloadToken, setPendingMarkerReloadToken] = useState(0);
+  const navigatingSessionRef = useRef<string | null>(null);
+  // disabled state 반영 전 연속 탭도 두 번째 요청을 시작하지 못하게 동기 잠금한다.
+  const submissionLockRef = useRef(false);
+  const pendingRecovery = usePendingIntegratedSession(
+    isPendingRequestResolved && !isSubmitting && !pendingStorageError ? pendingRequestId : null
+  );
+
+  useEffect(() => {
+    let active = true;
+    if (!userId) {
+      setPendingRequestId(null);
+      setPendingStorageError(false);
+      setIsPendingRequestResolved(true);
+      return () => {
+        active = false;
+      };
+    }
+
+    setIsPendingRequestResolved(false);
+    setPendingRequestId(null);
+    setPendingStorageError(false);
+    void readPendingIntegratedRequest(userId)
+      .then((requestId) => {
+        if (active) setPendingRequestId(requestId);
+      })
+      .catch(() => {
+        // 기존 ID를 읽었는지 모르는 상태에서 새 ID를 만들면 중복 세션이 생긴다 — fail-closed.
+        if (active) setPendingStorageError(true);
+      })
+      .finally(() => {
+        if (active) setIsPendingRequestResolved(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [pendingMarkerReloadToken, userId]);
+
+  // 앱 재시작 뒤 완료 세션을 찾으면 축 payload를 추측하지 않고 sessionId-only 결과 로더로 보낸다.
+  useEffect(() => {
+    const recoveredSession = pendingRecovery.session;
+    if (
+      !userId ||
+      pendingRecovery.recoveryState !== 'completed' ||
+      !recoveredSession ||
+      navigatingSessionRef.current === recoveredSession.id
+    ) {
+      return;
+    }
+
+    navigatingSessionRef.current = recoveredSession.id;
+    void clearPendingIntegratedRequest(userId)
+      .catch(() => undefined)
+      .finally(() => {
+        setPendingRequestId(null);
+        router.replace(`/(analysis)/integrated/result/${recoveredSession.id}` as never);
+      });
+  }, [pendingRecovery.recoveryState, pendingRecovery.session, userId]);
 
   // 연령 확인 게이트(만 14세) — 서버는 users.birth_date 없으면 생체분석을 403으로 막는다.
   // 마운트 시 저장 여부를 조회해 이미 있으면 입력을 숨기고(중복 요구 금지), 없으면 입력을 받는다.
@@ -251,13 +346,35 @@ function IntegratedAnalysisForm(): React.JSX.Element {
     }
   };
 
-  const canSubmit = faceImage !== null && !isSubmitting;
-  const hasBodyMeasurements = body.heightCm !== undefined || body.weightKg !== undefined;
-  const needsBodyInput = bodyImage === null && !hasBodyMeasurements;
+  // 저장소 장애(pendingStorageError)는 복구만 포기하고 새 분석은 허용한다 —
+  // AsyncStorage가 지속 실패하는 기기에서 통합분석이 영구 차단되면 안 된다(하드락 금지).
+  const canSubmit =
+    faceImage !== null && !isSubmitting && isPendingRequestResolved && pendingRequestId === null;
+  const needsBodyInput = bodyImage === null;
+
+  const abandonPendingRequest = async (): Promise<void> => {
+    if (!userId || pendingRequestId === null) return;
+    try {
+      await clearPendingIntegratedRequest(userId);
+      setPendingRequestId(null);
+      setError(null);
+    } catch {
+      // 디스크의 구 ID가 남았는데 state만 비우면 다음 제출이 다시 그 ID를 읽는다.
+      setError('기존 분석 요청을 정리하지 못했어요. 다시 시도해주세요.');
+    }
+  };
 
   const handleSubmit = async (): Promise<void> => {
     if (!faceImage) {
       setError('얼굴 사진이 필요해요.');
+      return;
+    }
+    if (!userId) {
+      setError('로그인 세션이 만료됐어요. 다시 로그인해주세요.');
+      return;
+    }
+    if (!isPendingRequestResolved || pendingRequestId !== null) {
+      setError('기존 분석 요청을 확인 중이에요. 새로 시작하려면 기존 요청 포기를 선택해주세요.');
       return;
     }
 
@@ -278,6 +395,8 @@ function IntegratedAnalysisForm(): React.JSX.Element {
       setError(agreementGate.message);
       return;
     }
+    if (submissionLockRef.current) return;
+    submissionLockRef.current = true;
 
     setError(null);
     setIsSubmitting(true);
@@ -304,9 +423,23 @@ function IntegratedAnalysisForm(): React.JSX.Element {
         setHasAgreed(true);
       }
 
+      // 네트워크 전 ID를 디스크에 먼저 기록해야 remount·프로세스 재시작도 같은 세션을 찾는다.
+      // 저장소가 실패하면 복구 가능성만 포기하고 비영속 ID로 진행한다(제출 차단 금지).
+      let clientRequestId: string;
+      try {
+        clientRequestId = await getOrCreatePendingIntegratedRequest(
+          userId,
+          createIntegratedClientRequestId
+        );
+      } catch {
+        clientRequestId = createIntegratedClientRequestId();
+      }
+      setPendingRequestId(clientRequestId);
+
       const input: IntegratedAnalysisInput = {
         faceImageBase64: faceImage,
         bodyImageBase64: bodyImage ?? undefined,
+        clientRequestId,
         questionnaire: {
           skin: { selfReportedType: skinType, concerns: [] },
           hair: { length: hairLength },
@@ -323,6 +456,25 @@ function IntegratedAnalysisForm(): React.JSX.Element {
 
       void trackAnalysisStart('integrated', isPartialUpdate ? 'update' : 'full', token);
       const result = await requestIntegratedAnalysis(input, token);
+
+      // 멱등 재요청은 축 payload 없이 세션 요약만 준다. 완료/부분완료는 저장 결과 로더로,
+      // pending/failed는 복구 배너로 보내 axes 없는 객체의 결과 화면 주입을 막는다.
+      if (result.reused === true) {
+        if (result.status === 'pending' || result.status === 'failed') {
+          setIsSubmitting(false);
+          return;
+        }
+
+        navigatingSessionRef.current = result.sessionId;
+        await clearPendingIntegratedRequest(userId).catch(() => undefined);
+        setPendingRequestId(null);
+        router.replace(`/(analysis)/integrated/result/${result.sessionId}` as never);
+        return;
+      }
+
+      // 완전 결과 성공 — 다음 분석은 새 상관 ID를 사용한다.
+      await clearPendingIntegratedRequest(userId).catch(() => undefined);
+      setPendingRequestId(null);
       void trackAnalysisComplete(
         'integrated',
         {
@@ -339,6 +491,10 @@ function IntegratedAnalysisForm(): React.JSX.Element {
         `/(analysis)/integrated/result/${result.sessionId}?payload=${encodeURIComponent(JSON.stringify(result))}` as never
       );
     } catch (e) {
+      if (e instanceof IntegratedApiError && DEFINITIVE_REJECT_STATUSES.has(e.status)) {
+        await clearPendingIntegratedRequest(userId).catch(() => undefined);
+        setPendingRequestId(null);
+      }
       // 서버 에러 봉투의 userMessage(연령·생체동의 게이트 403 등)를 그대로 노출 — 일반 문구로 뭉개지 않는다.
       const message =
         e instanceof BirthdateApiError || e instanceof AgreementApiError
@@ -351,6 +507,8 @@ function IntegratedAnalysisForm(): React.JSX.Element {
       // 최종 가드: 클라이언트가 이미 방어하지만, 비문자열·"[object Object]"가 새면 정직한 일반 문구로 대체.
       setError(toUserMessage(message, '분석 요청에 실패했어요. 잠시 후 다시 시도해주세요.'));
       setIsSubmitting(false);
+    } finally {
+      submissionLockRef.current = false;
     }
   };
 
@@ -379,6 +537,50 @@ function IntegratedAnalysisForm(): React.JSX.Element {
             셀카 한 장으로 색·피부·체형·헤어를 한 번에{'\n'}약 2분이면 완료돼요
           </Text>
         </View>
+
+        {isPendingRequestResolved && (pendingRequestId || pendingStorageError) && (
+          <GlassCard style={styles.pendingCard} testID="pending-integrated-analysis">
+            <Text style={[styles.pendingTitle, { color: colors.foreground }]}>
+              {pendingStorageError
+                ? '분석 요청 상태를 확인할 수 없어요'
+                : '진행 중이던 분석이 있어요'}
+            </Text>
+            <Text style={[styles.pendingMessage, { color: colors.mutedForeground }]}>
+              {pendingStorageError
+                ? '저장된 요청 정보를 읽지 못했어요. 새 분석은 그대로 진행할 수 있어요.'
+                : pendingRecoveryMessage(pendingRecovery.recoveryState)}
+            </Text>
+            <View style={styles.pendingActions}>
+              <Pressable
+                accessibilityLabel="기존 분석 다시 확인"
+                disabled={!pendingStorageError && pendingRecovery.isLoading}
+                onPress={
+                  pendingStorageError
+                    ? () => setPendingMarkerReloadToken((value) => value + 1)
+                    : pendingRecovery.refetch
+                }
+                style={[styles.pendingAction, { borderColor: colors.border }]}
+                testID="pending-analysis-refetch"
+              >
+                <Text style={[styles.pendingActionText, { color: colors.foreground }]}>
+                  다시 확인
+                </Text>
+              </Pressable>
+              {!pendingStorageError && (
+                <Pressable
+                  accessibilityLabel="기존 분석 요청 포기"
+                  onPress={() => void abandonPendingRequest()}
+                  style={[styles.pendingAction, { borderColor: colors.border }]}
+                  testID="pending-analysis-dismiss"
+                >
+                  <Text style={[styles.pendingActionText, { color: colors.mutedForeground }]}>
+                    기존 요청 포기
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          </GlassCard>
+        )}
 
         {/* 선택 재분석 (재방문 사용자 또는 재시도 재진입, ADR-109 2A) */}
         {showAxisSelect && (
@@ -844,6 +1046,7 @@ function NumberField({ label, value, onChange, min, max }: NumberFieldProps): Re
     <View style={styles.numberFieldWrap}>
       <Text style={[styles.numberFieldLabel, { color: colors.mutedForeground }]}>{label}</Text>
       <TextInput
+        accessibilityLabel={label}
         keyboardType="numeric"
         value={value !== undefined ? String(value) : ''}
         onChangeText={(text) => {
@@ -883,6 +1086,34 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: spacing.md,
     padding: spacing.md,
+  },
+  pendingCard: {
+    marginBottom: spacing.md,
+    padding: spacing.md,
+  },
+  pendingTitle: {
+    fontSize: typography.size.base,
+    fontWeight: '700',
+  },
+  pendingMessage: {
+    fontSize: typography.size.sm,
+    lineHeight: typography.size.sm * typography.lineHeight.normal,
+    marginTop: spacing.xs,
+  },
+  pendingActions: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  pendingAction: {
+    borderRadius: radii.md,
+    borderWidth: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  pendingActionText: {
+    fontSize: typography.size.sm,
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: typography.size.base,

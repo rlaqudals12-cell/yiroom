@@ -31,6 +31,16 @@ function isHiddenWellnessReminder(request: Notifications.NotificationRequest): b
 export async function cleanupHiddenWellnessNotificationsOnce(): Promise<number> {
   if (FEATURE_FLAGS.WELLNESS_PHASE2) return 0;
 
+  // 업그레이드 기기 잔존 정리: Android 알림 채널은 앱 업데이트에도 남는다 —
+  // 구 빌드가 만든 숨김 모듈 채널을 삭제한다(삭제는 멱등, 실패해도 예약 정리는 계속).
+  try {
+    for (const channelId of ['workout', 'nutrition', 'social']) {
+      await Notifications.deleteNotificationChannelAsync(channelId).catch(() => {});
+    }
+  } catch {
+    // Android 외 플랫폼·권한 문제 등은 무시
+  }
+
   try {
     const isComplete = await AsyncStorage.getItem(CLEANUP_COMPLETE_KEY);
     if (isComplete === 'true') return 0;

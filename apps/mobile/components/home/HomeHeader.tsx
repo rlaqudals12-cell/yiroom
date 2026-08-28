@@ -4,6 +4,7 @@
 import { Platform, StyleSheet, Text } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
+import { getTimeGreeting } from '../../hooks/useTimeGreeting';
 import { TIMING } from '../../lib/animations';
 import { useTheme, typography, spacing } from '../../lib/theme';
 import { GradientBackground, GradientText } from '../ui';
@@ -11,12 +12,15 @@ import { GradientBackground, GradientText } from '../ui';
 interface HomeHeaderProps {
   userName: string;
   isLoaded: boolean;
-  /** 서버 브리핑과 동일한 인사 문장 — 로컬 시계를 별도로 읽지 않는다. */
+  /** 서버 브리핑과 동일한 인사 문장 — 없으면 로컬 시간 인사로 안전하게 폴백한다. */
   briefingGreeting?: string;
 }
 
 function getHeaderGreeting(briefingGreeting: string | undefined, userName: string): string {
-  if (!briefingGreeting) return '반가워요';
+  if (!briefingGreeting) {
+    const localGreeting = getTimeGreeting();
+    return localGreeting === '좋은 오후' ? '좋은 오후예요' : `${localGreeting}이에요`;
+  }
 
   // 서버 인사는 "이름님, 좋은 아침이에요" 형식이므로 이름은 아래 제목에 한 번만 둔다.
   const namePrefix = `${userName}님,`;

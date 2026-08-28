@@ -13,7 +13,12 @@ export { checkRateLimit, incrementRateLimit, getRateLimitInfo } from './rate-lim
 export { deleteAccount, AccountApiError } from './account';
 
 // 통합 분석 HTTP 클라이언트 (웹 API 재사용) — ADR-102
-export { requestIntegratedAnalysis, IntegratedApiError } from './integrated';
+export {
+  requestIntegratedAnalysis,
+  createIntegratedClientRequestId,
+  isIntegratedAnalysisResult,
+  IntegratedApiError,
+} from './integrated';
 
 // 단독 축 분석 HTTP 클라이언트 (웹 API 재사용 — ADR-118 thin client)
 // 체형(body) + 4축(피부·퍼스널컬러·헤어·메이크업). 실 AI·서버 저장·연령/생체 게이트 정본.
@@ -85,6 +90,8 @@ export type {
 export type {
   IntegratedAnalysisInput,
   IntegratedAnalysisResult,
+  IntegratedAnalysisResponse,
+  ReusedIntegratedAnalysisResult,
   PersonaProfile,
   AxisCode,
   AxisResult,

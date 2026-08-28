@@ -8,10 +8,15 @@
 import { DEFAULT_API_BASE_URL } from '@/lib/api/base-url';
 import {
   requestIntegratedAnalysis,
+  createIntegratedClientRequestId,
   IntegratedApiError,
   type IntegratedAnalysisInput,
   type IntegratedAnalysisResult,
 } from '@/lib/api';
+
+jest.mock('expo-crypto', () => ({
+  randomUUID: jest.fn(() => 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'),
+}));
 
 // ============================================
 // Fixtures
@@ -19,6 +24,7 @@ import {
 
 const validInput: IntegratedAnalysisInput = {
   faceImageBase64: 'data:image/jpeg;base64,/9j/4AAQ',
+  clientRequestId: '11111111-2222-4333-8444-555555555555',
   questionnaire: {
     skin: { selfReportedType: 'combination', concerns: [] },
     hair: { length: 'medium' },
@@ -85,7 +91,36 @@ describe('requestIntegratedAnalysis', () => {
     const result = await requestIntegratedAnalysis(validInput, 'fake-token', 'http://test');
     expect(result.sessionId).toBe('7a3f1234-5678-4abc-def0-0123456789ab');
     expect(result.status).toBe('completed');
+    expect(result.reused).not.toBe(true);
+    if (result.reused === true) throw new Error('완전 결과 대신 재사용 요약이 반환됨');
     expect(result.axesCompleted).toHaveLength(5);
+  });
+
+  it('멱등 재사용 응답은 축 payload 없는 세션 요약으로 구분한다', async () => {
+    global.fetch = mockFetch({
+      ok: true,
+      status: 200,
+      body: {
+        success: true,
+        result: { sessionId: 'session-reused', status: 'completed', reused: true },
+      },
+    });
+
+    await expect(
+      requestIntegratedAnalysis(validInput, 'fake-token', 'http://test')
+    ).resolves.toEqual({ sessionId: 'session-reused', status: 'completed', reused: true });
+  });
+
+  it('reused 표식도 axes도 없는 불완전 성공 응답을 완전 결과로 단언하지 않는다', async () => {
+    global.fetch = mockFetch({
+      ok: true,
+      status: 200,
+      body: { success: true, result: { sessionId: 'session-broken', status: 'completed' } },
+    });
+
+    await expect(
+      requestIntegratedAnalysis(validInput, 'fake-token', 'http://test')
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE', status: 200 });
   });
 
   it('Authorization 헤더에 Clerk 토큰이 포함', async () => {
@@ -102,6 +137,12 @@ describe('requestIntegratedAnalysis', () => {
     const headers = (callArgs[1] as RequestInit).headers as Record<string, string>;
     expect(headers.Authorization).toBe('Bearer my-jwt');
     expect(headers['Content-Type']).toBe('application/json');
+    const body = JSON.parse(String((callArgs[1] as RequestInit).body)) as Record<string, unknown>;
+    expect(body.clientRequestId).toBe('11111111-2222-4333-8444-555555555555');
+  });
+
+  it('Expo Crypto가 만든 UUID v4를 웹 멱등 계약용 ID로 사용한다', () => {
+    expect(createIntegratedClientRequestId()).toBe('aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee');
   });
 
   it('401 응답 시 IntegratedApiError + status 401', async () => {

@@ -14,7 +14,6 @@ export type DeepLinkPath =
   | '/nutrition/water'
   | '/products'
   | '/products/:id'
-  | '/products/search'
   | '/settings'
   | '/settings/notifications'
   | '/settings/goals'
@@ -52,7 +51,6 @@ export const PATH_MAPPING: Record<string, string> = {
   '/nutrition/camera': '/(nutrition)/camera',
   '/nutrition/water': '/(nutrition)/water',
   '/products': '/products',
-  '/products/search': '/products/search',
   '/settings': '/settings',
   '/settings/notifications': '/settings/notifications',
   '/settings/goals': '/settings/goals',

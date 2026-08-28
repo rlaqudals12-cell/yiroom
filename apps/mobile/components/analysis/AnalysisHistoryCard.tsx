@@ -16,7 +16,7 @@ import {
 import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native';
 
 import type { AnalysisModuleType, AnalysisHistoryItem } from '../../hooks/useAnalysisHistory';
-import { useTheme, typography, radii, spacing } from '../../lib/theme';
+import { useTheme, radii, spacing } from '../../lib/theme';
 
 interface ModuleConfig {
   label: string;
@@ -41,6 +41,15 @@ function formatDate(date: Date): string {
   const h = date.getHours().toString().padStart(2, '0');
   const min = date.getMinutes().toString().padStart(2, '0');
   return `${y}.${m}.${d} ${h}:${min}`;
+}
+
+function formatScore(item: AnalysisHistoryItem): string {
+  if (item.moduleType === 'personal-color' && item.score !== undefined) {
+    const confidence = item.score <= 1 ? item.score * 100 : item.score;
+    return `분석 신뢰도 ${Math.round(confidence)}%`;
+  }
+
+  return `${item.score}점`;
 }
 
 export interface AnalysisHistoryCardProps {
@@ -145,7 +154,7 @@ export function AnalysisHistoryCard({
                     color: colors.card,
                   }}
                 >
-                  {item.score}점
+                  {formatScore(item)}
                 </Text>
               </View>
             )}

@@ -12,11 +12,8 @@ import { getApiBaseUrl } from '@/lib/api/base-url';
 // RAG 모듈
 import { getRAGContext, classifyQuestion } from './rag';
 
-/**
- * 기존 상담 세션에는 뷰티/웰니스 출처가 없어 안전하게 구분할 수 없다.
- * 출처 컬럼이 마련되기 전까지 기록 진입을 닫고 데이터와 구현은 보존한다.
- */
-export const BEAUTY_TEAM_HISTORY_ENABLED = false;
+/** 신규 세션에 뷰티팀 출처를 기록하고 조회도 같은 출처로 제한한다. */
+export const BEAUTY_TEAM_HISTORY_ENABLED = true;
 
 // 도메인별 RAG + 환각 필터 re-export
 export { getHairRAG } from './hair-rag';
@@ -298,7 +295,14 @@ function detectQuestionCategory(question: string): 'workout' | 'nutrition' | 'sk
  * Mock 응답 생성 (RAG + 분석 결과 기반 맞춤 응답)
  */
 // 히스토리 관련 re-export
-export { getCoachSessions, deleteCoachSession, type CoachSession } from './history';
+export {
+  BEAUTY_COACH_SESSION_CATEGORY,
+  LEGACY_COACH_SESSION_CATEGORY,
+  getCoachSessions,
+  deleteCoachSession,
+  deleteLegacyCoachSessions,
+  type CoachSession,
+} from './history';
 
 export function getMockResponse(message: string, userContext?: UserContext): CoachChatResponse {
   const category = detectQuestionCategory(message);

@@ -371,7 +371,7 @@ describe('ChatInterface', () => {
       expect(useCoach).not.toHaveBeenCalled();
     });
 
-    it('출처를 판별할 수 없는 기존 웰니스 sessionId는 로드하지 않는다', () => {
+    it('뷰티팀 이력에서 전달된 sessionId를 전용 훅으로 로드한다', async () => {
       const loadSession = jest.fn();
       (useBeautyTeamCoach as jest.Mock).mockReturnValue({
         messages: [],
@@ -388,7 +388,7 @@ describe('ChatInterface', () => {
 
       renderWithTheme(<ChatInterface surface="beauty-team" initialSessionId="legacy-session-1" />);
 
-      expect(loadSession).not.toHaveBeenCalled();
+      await waitFor(() => expect(loadSession).toHaveBeenCalledWith('legacy-session-1'));
     });
 
     it('웰니스 정체성 대신 전속 뷰티팀 헤더와 입력 문구를 표시한다', () => {

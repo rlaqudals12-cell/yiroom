@@ -36,7 +36,7 @@ const FALLBACK_announcements: Announcement[] = [
     id: 'fallback-1',
     title: '이룸에 오신 것을 환영해요!',
     content:
-      '안녕하세요, 이룸팀이에요!\n\n이룸은 AI 기반 통합 웰니스 플랫폼이에요.\n\n• 퍼스널컬러, 피부, 체형 AI 분석\n• 맞춤 운동·영양 플랜\n• 뷰티 제품 추천\n\n새로운 소식이 생기면 이곳에서 알려드릴게요.',
+      '안녕하세요, 이룸팀이에요!\n\n이룸은 나를 알아가는 AI 뷰티 분석 서비스예요.\n\n• 퍼스널컬러, 피부, 체형 분석\n• 헤어, 메이크업 분석\n• 뷰티 제품 탐색\n\n새로운 소식이 생기면 이곳에서 알려드릴게요.',
     category: 'notice',
     date: new Date().toISOString().split('T')[0],
     isImportant: false,

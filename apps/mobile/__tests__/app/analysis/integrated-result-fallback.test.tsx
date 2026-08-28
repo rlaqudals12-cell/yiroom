@@ -110,6 +110,21 @@ describe('통합 결과 화면 — 축별 Mock 고지 배선', () => {
     mockUseLocalSearchParams.mockReturnValue({});
   });
 
+  it('axes 없는 reused 요약 payload는 완전 결과로 소비하지 않고 sessionId 저장 조회로 넘긴다', () => {
+    mockUseLocalSearchParams.mockReturnValue({
+      sessionId: 'sess-reused-summary',
+      payload: encodeURIComponent(
+        JSON.stringify({ sessionId: 'sess-reused-summary', status: 'completed', reused: true })
+      ),
+    });
+    mockUseIntegratedSession.mockReturnValue({ result: null, isLoading: true, error: null });
+
+    const { getByTestId } = renderWithTheme(<IntegratedResultScreen />);
+
+    expect(mockUseIntegratedSession).toHaveBeenCalledWith('sess-reused-summary', null);
+    expect(getByTestId('integrated-result-loading')).toBeTruthy();
+  });
+
   it('폴백 축이 있으면 화면에 샘플 고지가 노출된다', () => {
     setPayload(buildResult(['skin', 'body']));
     const { getByTestId, getByText } = renderWithTheme(<IntegratedResultScreen />);

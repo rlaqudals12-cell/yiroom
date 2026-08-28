@@ -12,10 +12,13 @@ import { useWorkoutData } from '../../hooks/useWorkoutData';
 import { useNetworkStatus } from '../offline';
 import { useClerkSupabaseClient } from '../supabase';
 import {
+  BEAUTY_COACH_SESSION_CATEGORY,
+  LEGACY_COACH_SESSION_CATEGORY,
   createCoachSession,
   getCoachSessions,
   getSessionMessages,
   saveCoachMessage,
+  type CoachSessionCategory,
   type CoachSession,
 } from './history';
 import { coachLogger } from '../utils/logger';
@@ -99,7 +102,8 @@ function useBeautyAnalysisContext(): UserContext {
  */
 function useCoachState(
   userContext: UserContext,
-  initialSuggestedQuestions: readonly string[]
+  initialSuggestedQuestions: readonly string[],
+  sessionCategory: CoachSessionCategory
 ): UseCoachResult {
   const { getToken } = useAuth();
   const { user } = useUser();
@@ -121,20 +125,27 @@ function useCoachState(
     if (!user?.id || initialLoadDone.current) return;
 
     const loadSessions = async () => {
-      const loadedSessions = await getCoachSessions(supabase, user.id);
+      const loadedSessions = await getCoachSessions(supabase, user.id, {
+        category: sessionCategory,
+      });
       setSessions(loadedSessions);
       initialLoadDone.current = true;
     };
 
     loadSessions();
-  }, [user?.id, supabase]);
+  }, [user?.id, supabase, sessionCategory]);
 
   // 특정 세션 로드
   const loadSession = useCallback(
     async (sessionId: string) => {
       setIsLoading(true);
       try {
-        const loadedMessages = await getSessionMessages(supabase, sessionId);
+        const loadedMessages = await getSessionMessages(supabase, sessionId, sessionCategory);
+        if (!loadedMessages) {
+          setCurrentSessionId(null);
+          setError('이 대화 기록을 불러올 수 없어요.');
+          return;
+        }
         setMessages(loadedMessages);
         setCurrentSessionId(sessionId);
       } catch (err) {
@@ -144,7 +155,7 @@ function useCoachState(
         setIsLoading(false);
       }
     },
-    [supabase]
+    [supabase, sessionCategory]
   );
 
   // 새 세션 시작
@@ -172,7 +183,12 @@ function useCoachState(
 
       let sessionId = currentSessionId;
       if (!sessionId && user?.id && isConnected) {
-        const newSession = await createCoachSession(supabase, user.id, message.trim());
+        const newSession = await createCoachSession(
+          supabase,
+          user.id,
+          message.trim(),
+          sessionCategory
+        );
         if (newSession) {
           sessionId = newSession.id;
           setCurrentSessionId(sessionId);
@@ -238,7 +254,17 @@ function useCoachState(
         setIsLoading(false);
       }
     },
-    [isLoading, isConnected, getToken, messages, currentSessionId, user?.id, supabase, userContext]
+    [
+      isLoading,
+      isConnected,
+      getToken,
+      messages,
+      currentSessionId,
+      user?.id,
+      supabase,
+      userContext,
+      sessionCategory,
+    ]
   );
 
   const clearMessages = useCallback(() => {
@@ -265,7 +291,7 @@ function useCoachState(
 /** ADR-114 전속 뷰티팀: 운동·영양 훅을 호출하지 않고 5축 컨텍스트만 전송한다. */
 export function useBeautyTeamCoach(): UseCoachResult {
   const beautyContext = useBeautyAnalysisContext();
-  return useCoachState(beautyContext, BEAUTY_TEAM_INITIAL_QUESTIONS);
+  return useCoachState(beautyContext, BEAUTY_TEAM_INITIAL_QUESTIONS, BEAUTY_COACH_SESSION_CATEGORY);
 }
 
 /** 구형 웰니스 코치 표면. 운동·영양 경로는 보존하되 뷰티팀에서는 호출하지 않는다. */
@@ -309,5 +335,5 @@ export function useCoach(): UseCoachResult {
     nutritionStreak,
   ]);
 
-  return useCoachState(userContext, LEGACY_INITIAL_QUESTIONS);
+  return useCoachState(userContext, LEGACY_INITIAL_QUESTIONS, LEGACY_COACH_SESSION_CATEGORY);
 }

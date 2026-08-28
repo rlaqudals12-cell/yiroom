@@ -10,7 +10,7 @@ import { REPORT_COLORS } from '@/components/analysis/report';
 import { useHasClosetItems } from '@/hooks/useHasClosetItems';
 import { useIntegratedSession } from '@/hooks/useIntegratedSession';
 import { trackAnalysisResultView } from '@/lib/analytics/tracker';
-import type { IntegratedAnalysisResult } from '@/lib/api';
+import { isIntegratedAnalysisResult, type IntegratedAnalysisResult } from '@/lib/api/integrated';
 import { radii, spacing, typography } from '@/lib/theme';
 
 export default function IntegratedResultScreen(): React.JSX.Element {
@@ -23,7 +23,10 @@ export default function IntegratedResultScreen(): React.JSX.Element {
   const initialResult = useMemo<IntegratedAnalysisResult | null>(() => {
     if (!payload || typeof payload !== 'string') return null;
     try {
-      return JSON.parse(decodeURIComponent(payload)) as IntegratedAnalysisResult;
+      const parsed: unknown = JSON.parse(decodeURIComponent(payload));
+      // 멱등 재사용 응답은 {sessionId,status,reused}뿐이라 axes가 없다. 이를 완전 결과로
+      // 단언하면 보고서가 axes 접근에서 크래시하므로, 불완전 payload는 저장 결과 조회로 넘긴다.
+      return isIntegratedAnalysisResult(parsed) ? parsed : null;
     } catch {
       return null;
     }

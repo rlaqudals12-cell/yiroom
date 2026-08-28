@@ -18,6 +18,7 @@ const mockSendCoachMessage = jest.fn<
 }));
 const mockGetCoachSessions = jest.fn<Promise<never[]>, unknown[]>(async () => []);
 const mockCreateCoachSession = jest.fn<Promise<null>, unknown[]>(async () => null);
+const mockGetSessionMessages = jest.fn<Promise<never[] | null>, unknown[]>(async () => []);
 
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: () => ({ getToken: jest.fn(async () => 'token-1') }),
@@ -64,9 +65,11 @@ jest.mock('../../../lib/coach', () => ({
 }));
 
 jest.mock('../../../lib/coach/history', () => ({
-  createCoachSession: () => mockCreateCoachSession(),
-  getCoachSessions: () => mockGetCoachSessions(),
-  getSessionMessages: jest.fn(async () => []),
+  BEAUTY_COACH_SESSION_CATEGORY: 'beauty-team',
+  LEGACY_COACH_SESSION_CATEGORY: 'legacy-wellness',
+  createCoachSession: (...args: unknown[]) => mockCreateCoachSession(...args),
+  getCoachSessions: (...args: unknown[]) => mockGetCoachSessions(...args),
+  getSessionMessages: (...args: unknown[]) => mockGetSessionMessages(...args),
   saveCoachMessage: jest.fn(async () => undefined),
 }));
 
@@ -79,6 +82,7 @@ import { useBeautyTeamCoach } from '../../../lib/coach/useCoach';
 describe('useBeautyTeamCoach 컨텍스트 경계', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetSessionMessages.mockResolvedValue([]);
   });
 
   it('운동·영양 훅을 호출하지 않고 5축 컨텍스트만 전송한다', async () => {
@@ -103,5 +107,31 @@ describe('useBeautyTeamCoach 컨텍스트 경계', () => {
     expect(sentContext).not.toHaveProperty('workout');
     expect(sentContext).not.toHaveProperty('nutrition');
     expect(sentContext).not.toHaveProperty('recentActivity');
+    expect(mockGetCoachSessions).toHaveBeenCalledWith(expect.anything(), 'user-1', {
+      category: 'beauty-team',
+    });
+    expect(mockCreateCoachSession).toHaveBeenCalledWith(
+      expect.anything(),
+      'user-1',
+      '오늘 메이크업을 추천해 주세요',
+      'beauty-team'
+    );
+  });
+
+  it('뷰티 출처가 아닌 sessionId는 현재 세션으로 채택하지 않는다', async () => {
+    mockGetSessionMessages.mockResolvedValue(null);
+    const { result } = renderHook(() => useBeautyTeamCoach());
+
+    await act(async () => {
+      await result.current.loadSession('legacy-session-1');
+    });
+
+    expect(mockGetSessionMessages).toHaveBeenCalledWith(
+      expect.anything(),
+      'legacy-session-1',
+      'beauty-team'
+    );
+    expect(result.current.currentSessionId).toBeNull();
+    expect(result.current.error).toBe('이 대화 기록을 불러올 수 없어요.');
   });
 });

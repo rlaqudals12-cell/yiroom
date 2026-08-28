@@ -10,6 +10,8 @@
  * @see docs/specs/SDD-MOBILE-INTEGRATED.md §2
  */
 
+import { randomUUID } from 'expo-crypto';
+
 import { getApiBaseUrl } from './base-url';
 
 // ============================================
@@ -39,6 +41,8 @@ export interface BodyQuestionnaire {
 export interface IntegratedAnalysisInput {
   faceImageBase64: string;
   bodyImageBase64?: string;
+  /** 동일 제출의 재전송을 서버가 같은 세션으로 합칠 수 있게 하는 UUID 상관 ID. */
+  clientRequestId: string;
   questionnaire: {
     skin: SkinQuestionnaire;
     hair: HairQuestionnaire;
@@ -53,6 +57,14 @@ export interface IntegratedAnalysisInput {
   /** 선택 재분석 (ADR-109 2A): 'update'면 axes의 축만 재실행, 나머지는 프로필 최신값 유지 */
   mode?: 'full' | 'update';
   axes?: AxisCode[];
+}
+
+/**
+ * 웹 통합분석과 같은 UUID v4 상관 ID를 만든다.
+ * 분석 결과를 만드는 난수가 아니라 중복 과금·중복 세션을 막는 요청 식별자다.
+ */
+export function createIntegratedClientRequestId(): string {
+  return randomUUID();
 }
 
 export interface AxisError {
@@ -85,6 +97,8 @@ export interface PersonaProfile {
 export interface IntegratedAnalysisResult {
   sessionId: string;
   status: 'completed' | 'partial' | 'failed';
+  /** 새 분석의 완전한 결과에는 reused가 없거나 false다. */
+  reused?: false;
   axes: {
     personalColor: AxisResult<AxisData>;
     skin: AxisResult<AxisData>;
@@ -99,6 +113,37 @@ export interface IntegratedAnalysisResult {
   usedFallback: AxisCode[];
   createdAt: string;
   completedAt: string;
+}
+
+/** 멱등 재요청은 축 payload를 반복 전송하지 않고 기존 세션의 상태만 반환한다. */
+export interface ReusedIntegratedAnalysisResult {
+  sessionId: string;
+  status: 'pending' | 'partial' | 'completed' | 'failed';
+  reused: true;
+}
+
+export type IntegratedAnalysisResponse = IntegratedAnalysisResult | ReusedIntegratedAnalysisResult;
+
+const AXIS_KEYS = ['personalColor', 'skin', 'body', 'hair', 'makeup'] as const;
+
+/** 쿼리 payload가 실제 완전 결과인지 확인해 축 없는 멱등 요약의 결과 화면 주입을 막는다. */
+export function isIntegratedAnalysisResult(value: unknown): value is IntegratedAnalysisResult {
+  if (typeof value !== 'object' || value === null) return false;
+  const result = value as Record<string, unknown>;
+  const axes = result.axes;
+  if (typeof axes !== 'object' || axes === null) return false;
+  const axisRecord = axes as Record<string, unknown>;
+
+  return (
+    typeof result.sessionId === 'string' &&
+    (result.status === 'completed' || result.status === 'partial' || result.status === 'failed') &&
+    AXIS_KEYS.every((key) => typeof axisRecord[key] === 'object' && axisRecord[key] !== null) &&
+    Array.isArray(result.axesCompleted) &&
+    Array.isArray(result.axesFailed) &&
+    Array.isArray(result.usedFallback) &&
+    typeof result.createdAt === 'string' &&
+    typeof result.completedAt === 'string'
+  );
 }
 
 // ============================================
@@ -123,7 +168,7 @@ export class IntegratedApiError extends Error {
 
 interface ApiSuccessResponse {
   success: true;
-  result: IntegratedAnalysisResult;
+  result: unknown;
 }
 
 /**
@@ -176,7 +221,7 @@ export async function requestIntegratedAnalysis(
   input: IntegratedAnalysisInput,
   clerkToken: string,
   baseUrl?: string
-): Promise<IntegratedAnalysisResult> {
+): Promise<IntegratedAnalysisResponse> {
   const url = getApiBaseUrl(baseUrl);
 
   let response: Response;
@@ -211,5 +256,37 @@ export async function requestIntegratedAnalysis(
     throw new IntegratedApiError(message ?? '분석 요청에 실패했어요.', response.status, code);
   }
 
-  return (json as ApiSuccessResponse).result;
+  const result = (json as ApiSuccessResponse).result;
+  if (typeof result !== 'object' || result === null) {
+    throw new IntegratedApiError(
+      '분석 결과 형식이 올바르지 않아요.',
+      response.status,
+      'INVALID_RESPONSE'
+    );
+  }
+
+  const summary = result as Record<string, unknown>;
+  const validSessionId = typeof summary.sessionId === 'string';
+  const validStatus =
+    summary.status === 'pending' ||
+    summary.status === 'partial' ||
+    summary.status === 'completed' ||
+    summary.status === 'failed';
+
+  if (summary.reused === true && validSessionId && validStatus) {
+    return {
+      sessionId: summary.sessionId as string,
+      status: summary.status as ReusedIntegratedAnalysisResult['status'],
+      reused: true,
+    };
+  }
+
+  if (!isIntegratedAnalysisResult(result)) {
+    throw new IntegratedApiError(
+      '분석 결과 형식이 올바르지 않아요.',
+      response.status,
+      'INVALID_RESPONSE'
+    );
+  }
+  return result;
 }

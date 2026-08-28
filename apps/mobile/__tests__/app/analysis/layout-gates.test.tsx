@@ -29,8 +29,17 @@ jest.mock('@yiroom/shared', () => ({
 jest.mock('expo-router', () => {
   const { View } = require('react-native');
   const Stack = Object.assign(
-    ({ children }: { children: React.ReactNode }) => <View testID="analysis-stack">{children}</View>,
-    { Screen: () => <View /> }
+    ({ children }: { children: React.ReactNode }) => (
+      <View testID="analysis-stack">{children}</View>
+    ),
+    {
+      Screen: ({ name, redirect }: { name: string; redirect?: boolean }) => (
+        <View
+          accessibilityState={{ disabled: redirect === true }}
+          testID={`analysis-route-${name}`}
+        />
+      ),
+    }
   );
 
   return {
@@ -58,9 +67,7 @@ jest.mock('../../../lib/theme', () => ({
   }),
 }));
 
-import AnalysisLayout, {
-  requiresStandaloneAnalysisGate,
-} from '../../../app/(analysis)/_layout';
+import AnalysisLayout, { requiresStandaloneAnalysisGate } from '../../../app/(analysis)/_layout';
 
 describe('분석 레이아웃 선제 게이트', () => {
   beforeEach(() => {
@@ -100,6 +107,23 @@ describe('분석 레이아웃 선제 게이트', () => {
 
     expect(screen.getByTestId('analysis-stack')).toBeTruthy();
     expect(screen.queryByTestId('analysis-gate-redirect')).toBeNull();
+  });
+
+  it.each([
+    'skin/diary',
+    'skin/diary-entry',
+    'skin/consultation',
+    'skin/solution',
+    'skin/compare',
+    'body/compare',
+    'hair/compare',
+    'makeup/compare',
+  ])('%s 백로그 화면을 Expo Router 등록에서 제외한다', (routeName) => {
+    const screen = render(<AnalysisLayout />);
+
+    expect(screen.getByTestId(`analysis-route-${routeName}`).props.accessibilityState).toEqual({
+      disabled: true,
+    });
   });
 
   it('미로그인 사용자는 사진 화면보다 먼저 기존 로그인 플로우로 보낸다', () => {

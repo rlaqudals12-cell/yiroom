@@ -47,9 +47,27 @@ const WELLNESS_PHASE2_REMINDER_TYPES: readonly NotificationType[] = [
   'water_reminder',
 ];
 
+const SOCIAL_FEED_NOTIFICATION_TYPES: readonly NotificationType[] = [
+  'friend_request',
+  'friend_accepted',
+  'challenge_invite',
+  'challenge_complete',
+];
+
+const BADGE_NOTIFICATION_TYPES: readonly NotificationType[] = ['level_up', 'badge_earned'];
+
 /** 예약·즉시 전송 모두 동일한 출시 플래그를 통과해야 한다. */
 export function isNotificationTypeAvailable(type: NotificationType): boolean {
-  return FEATURE_FLAGS.WELLNESS_PHASE2 || !WELLNESS_PHASE2_REMINDER_TYPES.includes(type);
+  if (!FEATURE_FLAGS.WELLNESS_PHASE2 && WELLNESS_PHASE2_REMINDER_TYPES.includes(type)) {
+    return false;
+  }
+  if (!FEATURE_FLAGS.SOCIAL_FEED && SOCIAL_FEED_NOTIFICATION_TYPES.includes(type)) {
+    return false;
+  }
+  if (!FEATURE_FLAGS.BADGES && BADGE_NOTIFICATION_TYPES.includes(type)) {
+    return false;
+  }
+  return true;
 }
 
 // ============================================================

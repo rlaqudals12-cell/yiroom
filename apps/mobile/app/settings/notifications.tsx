@@ -424,62 +424,69 @@ export default function NotificationsSettingsScreen() {
             </>
           )}
 
-          {/* 소셜 & 성취 */}
-          <View style={styles.section}>
-            <Text
-              accessibilityRole="header"
-              style={[styles.sectionTitle, { color: colors.mutedForeground }]}
-            >
-              소셜 & 성취
-            </Text>
-            <GlassCard shadowSize="md">
-              <View style={styles.settingsRow}>
-                <View style={styles.settingsRowContent}>
-                  <Text style={styles.settingsIcon}>👥</Text>
-                  <View style={styles.settingsTextContent}>
-                    <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
-                      소셜 알림
-                    </Text>
-                    <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
-                      친구 요청, 챌린지 초대
-                    </Text>
+          {(FEATURE_FLAGS.SOCIAL_FEED || FEATURE_FLAGS.BADGES) && (
+            <View style={styles.section}>
+              <Text
+                accessibilityRole="header"
+                style={[styles.sectionTitle, { color: colors.mutedForeground }]}
+              >
+                소셜 & 성취
+              </Text>
+              <GlassCard shadowSize="md">
+                {FEATURE_FLAGS.SOCIAL_FEED && (
+                  <View style={styles.settingsRow}>
+                    <View style={styles.settingsRowContent}>
+                      <Text style={styles.settingsIcon}>👥</Text>
+                      <View style={styles.settingsTextContent}>
+                        <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                          소셜 알림
+                        </Text>
+                        <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                          친구 요청, 챌린지 초대
+                        </Text>
+                      </View>
+                    </View>
+                    <Switch
+                      value={settings.socialNotifications}
+                      onValueChange={(value) => handleToggle('socialNotifications', value)}
+                      trackColor={{ false: colors.border, true: mod.body.dark }}
+                      thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                      accessibilityLabel="소셜 알림"
+                      accessibilityRole="switch"
+                    />
                   </View>
-                </View>
-                <Switch
-                  value={settings.socialNotifications}
-                  onValueChange={(value) => handleToggle('socialNotifications', value)}
-                  trackColor={{ false: colors.border, true: mod.body.dark }}
-                  thumbColor={Platform.OS === 'android' ? colors.card : undefined}
-                  accessibilityLabel="소셜 알림"
-                  accessibilityRole="switch"
-                />
-              </View>
+                )}
 
-              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                {FEATURE_FLAGS.SOCIAL_FEED && FEATURE_FLAGS.BADGES && (
+                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                )}
 
-              <View style={styles.settingsRow}>
-                <View style={styles.settingsRowContent}>
-                  <Text style={styles.settingsIcon}>🏆</Text>
-                  <View style={styles.settingsTextContent}>
-                    <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
-                      성취 알림
-                    </Text>
-                    <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
-                      레벨업, 뱃지 획득
-                    </Text>
+                {FEATURE_FLAGS.BADGES && (
+                  <View style={styles.settingsRow}>
+                    <View style={styles.settingsRowContent}>
+                      <Text style={styles.settingsIcon}>🏆</Text>
+                      <View style={styles.settingsTextContent}>
+                        <Text style={[styles.settingsLabel, { color: colors.foreground }]}>
+                          성취 알림
+                        </Text>
+                        <Text style={[styles.settingsDesc, { color: colors.mutedForeground }]}>
+                          레벨업, 뱃지 획득
+                        </Text>
+                      </View>
+                    </View>
+                    <Switch
+                      value={settings.achievementNotifications}
+                      onValueChange={(value) => handleToggle('achievementNotifications', value)}
+                      trackColor={{ false: colors.border, true: mod.body.dark }}
+                      thumbColor={Platform.OS === 'android' ? colors.card : undefined}
+                      accessibilityLabel="성취 알림"
+                      accessibilityRole="switch"
+                    />
                   </View>
-                </View>
-                <Switch
-                  value={settings.achievementNotifications}
-                  onValueChange={(value) => handleToggle('achievementNotifications', value)}
-                  trackColor={{ false: colors.border, true: mod.body.dark }}
-                  thumbColor={Platform.OS === 'android' ? colors.card : undefined}
-                  accessibilityLabel="성취 알림"
-                  accessibilityRole="switch"
-                />
-              </View>
-            </GlassCard>
-          </View>
+                )}
+              </GlassCard>
+            </View>
+          )}
 
           {/* 테스트 알림 */}
           <View style={styles.section}>

@@ -3,7 +3,7 @@
     "name": "이룸 - 온전한 나는?",
     "shortName": "이룸",
     "subtitle": "AI 퍼스널컬러·피부·스타일 분석",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "buildNumber": 1
   },
   "ios": {
@@ -12,16 +12,16 @@
     "secondaryCategory": "Lifestyle",
     "ageRating": "13+",
     "minimumUserAge": 14,
-    "privacyPolicyUrl": "https://yiroom.com/privacy",
-    "supportUrl": "https://yiroom.com/support",
-    "marketingUrl": "https://yiroom.com"
+    "privacyPolicyUrl": "https://yiroom.vercel.app/privacy",
+    "supportUrl": "https://yiroom.vercel.app/help",
+    "marketingUrl": "https://yiroom.vercel.app"
   },
   "android": {
     "packageName": "com.yiroom.app",
     "category": "Health & Fitness",
     "contentRating": "Teen",
     "minimumUserAge": 14,
-    "privacyPolicyUrl": "https://yiroom.com/privacy"
+    "privacyPolicyUrl": "https://yiroom.vercel.app/privacy"
   },
   "localization": {
     "ko": {

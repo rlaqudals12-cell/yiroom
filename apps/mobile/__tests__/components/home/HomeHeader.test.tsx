@@ -54,6 +54,10 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 }
 
 describe('HomeHeader', () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('사용자명을 렌더링해야 한다 (isLoaded=true)', () => {
     const { getByText } = renderWithTheme(<HomeHeader userName="홍길동" isLoaded={true} />);
 
@@ -83,10 +87,31 @@ describe('HomeHeader', () => {
   });
 
   describe('브리핑과 단일 인사 소스', () => {
-    it('브리핑이 아직 없으면 시간대를 지어내지 않고 중립 인사를 표시한다', () => {
+    it('브리핑이 아직 없으면 로컬 시간대의 자연스러운 인사를 표시한다', () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 7, 27, 7, 0, 0));
       const { getByText } = renderWithTheme(<HomeHeader userName="새벽유저" isLoaded={true} />);
 
-      expect(getByText('반가워요')).toBeTruthy();
+      expect(getByText('좋은 아침이에요')).toBeTruthy();
+    });
+
+    it('오프라인 밤 시간에는 좋은 밤 인사를 표시한다', () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 7, 27, 23, 0, 0));
+      const { getByText } = renderWithTheme(<HomeHeader userName="밤유저" isLoaded={true} />);
+
+      expect(getByText('좋은 밤이에요')).toBeTruthy();
+    });
+
+    it('오프라인 오후 시간에는 자연스러운 좋은 오후예요를 표시한다', () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 7, 27, 15, 0, 0));
+      const { getByText, queryByText } = renderWithTheme(
+        <HomeHeader userName="오후유저" isLoaded={true} />
+      );
+
+      expect(getByText('좋은 오후예요')).toBeTruthy();
+      expect(queryByText('좋은 오후이에요')).toBeNull();
     });
 
     it('서버 브리핑의 아침 인사를 그대로 사용한다', () => {

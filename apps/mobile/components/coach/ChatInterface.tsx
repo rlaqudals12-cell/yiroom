@@ -55,15 +55,7 @@ export function ChatInterface(props: ChatInterfaceProps): React.JSX.Element {
 
 function BeautyTeamChatInterface(props: ChatInterfaceProps): React.JSX.Element {
   const coach = useBeautyTeamCoach();
-  // 기존 세션에는 뷰티/웰니스 출처가 없어 운동·영양 대화를 안전하게 판별할 수 없다.
-  return (
-    <ChatInterfaceContent
-      {...props}
-      initialSessionId={undefined}
-      surface="beauty-team"
-      coach={coach}
-    />
-  );
+  return <ChatInterfaceContent {...props} surface="beauty-team" coach={coach} />;
 }
 
 function LegacyWellnessChatInterface(props: ChatInterfaceProps): React.JSX.Element {

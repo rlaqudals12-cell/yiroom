@@ -29,8 +29,19 @@ jest.mock('@/hooks/useUserAnalyses', () => ({
   })),
 }));
 
+jest.mock('@/hooks/usePendingIntegratedSession', () => ({
+  usePendingIntegratedSession: () => ({
+    session: null,
+    isLoading: false,
+    error: null,
+    recoveryState: 'not_found',
+    refetch: jest.fn(),
+  }),
+}));
+
 jest.mock('@/lib/api', () => ({
   requestIntegratedAnalysis: jest.fn(),
+  createIntegratedClientRequestId: jest.fn(() => '11111111-2222-4333-8444-555555555555'),
   IntegratedApiError: class IntegratedApiError extends Error {},
   // 연령 게이트 대응 — 마운트 시 조회. 이미 저장됨으로 응답해 생년월일 입력이 뜨지 않게 함.
   fetchBirthdate: jest.fn().mockResolvedValue({ birthDate: '2000-01-01', hasBirthDate: true }),
@@ -107,5 +118,15 @@ describe('IntegratedAnalysisInputScreen — 가입=첫 미팅(ADR-114)', () => {
       getByText('전신 사진이 없으면 키를 입력해도 예시 결과로 제공되며 신뢰도가 낮아요')
     ).toBeTruthy();
     expect(queryByText('전신 사진 없으면 키만 입력해도 분석 가능해요')).toBeNull();
+  });
+
+  it('키를 먼저 입력해도 신체정보 카드와 몸무게 입력이 사라지지 않는다', () => {
+    mockUseLocalSearchParams.mockReturnValue({});
+
+    const { getByLabelText } = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    fireEvent.changeText(getByLabelText('키 (cm)'), '165');
+
+    expect(getByLabelText('키 (cm)').props.value).toBe('165');
+    expect(getByLabelText('몸무게 (kg)')).toBeTruthy();
   });
 });

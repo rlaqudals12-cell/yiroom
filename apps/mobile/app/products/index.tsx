@@ -448,10 +448,18 @@ export default function ProductsScreen() {
                       {product.name}
                     </Text>
                     <View style={styles.ratingRow}>
-                      <Text style={[styles.ratingStar, { color: status.warning }]}>★</Text>
-                      <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
-                        {(product.rating ?? 0).toFixed(1)} ({product.reviewCount ?? 0})
-                      </Text>
+                      {(product.reviewCount ?? 0) > 0 && (product.rating ?? 0) > 0 ? (
+                        <>
+                          <Text style={[styles.ratingStar, { color: status.warning }]}>★</Text>
+                          <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
+                            {`${product.rating!.toFixed(1)} (${product.reviewCount})`}
+                          </Text>
+                        </>
+                      ) : (
+                        <Text style={[styles.ratingText, { color: colors.mutedForeground }]}>
+                          아직 리뷰가 없어요
+                        </Text>
+                      )}
                     </View>
                     {product.price != null && (
                       <Text style={[styles.productPrice, { color: colors.foreground }]}>

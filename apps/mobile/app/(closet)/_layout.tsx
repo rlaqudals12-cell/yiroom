@@ -52,6 +52,7 @@ export default function ClosetLayout() {
       />
       <Stack.Screen
         name="gallery"
+        redirect
         options={{
           title: '스타일 갤러리',
         }}
@@ -77,6 +78,7 @@ export default function ClosetLayout() {
       />
       <Stack.Screen
         name="weather"
+        redirect
         options={{
           title: '날씨 코디',
         }}
@@ -89,24 +91,29 @@ export default function ClosetLayout() {
       />
       <Stack.Screen
         name="style-profile"
+        redirect
         options={{
           title: '스타일 프로필',
         }}
       />
       <Stack.Screen
         name="wardrobe-stats"
+        redirect
         options={{
           title: '옷장 통계',
         }}
       />
       <Stack.Screen
         name="color-analysis"
+        redirect
         options={{
           title: '색상 분석',
         }}
       />
+      {/* 하위 5개 화면은 현재 제품 동선과 연결되지 않은 보류 표면이라 등록에서 제외한다. */}
       <Stack.Screen
         name="style"
+        redirect
         options={{
           headerShown: false,
         }}
