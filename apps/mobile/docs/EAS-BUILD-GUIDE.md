@@ -25,10 +25,10 @@ eas init
 cp .env.example .env.local
 
 # 환경변수 입력
-# - EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+# - EXPO_PUBLIC_CLERK_PUBLISHABLE
 # - EXPO_PUBLIC_SUPABASE_URL
-# - EXPO_PUBLIC_SUPABASE_ANON_KEY
-# - EXPO_PUBLIC_GEMINI_API_KEY
+# - EXPO_PUBLIC_SUPABASE_ANON
+# Google AI 자격증명은 모바일에 넣지 않고 웹 서버 환경에만 둡니다.
 ```
 
 ### 4. EAS Secrets 설정 (민감 정보)

@@ -2,12 +2,15 @@ jest.mock('../../../lib/utils/logger', () => ({
   analyticsLogger: { error: jest.fn() },
 }));
 
-let mockUpdatesChannel: string | null = 'preview';
-jest.mock('expo-updates', () => ({
-  get channel() {
-    return mockUpdatesChannel;
-  },
-}));
+const originalDevDescriptor = Object.getOwnPropertyDescriptor(globalThis, '__DEV__');
+
+function setDevMode(value: boolean): void {
+  Object.defineProperty(globalThis, '__DEV__', {
+    configurable: true,
+    writable: true,
+    value,
+  });
+}
 
 describe('mobile analytics tracker', () => {
   const originalApiUrl = process.env.EXPO_PUBLIC_YIROOM_API_URL;
@@ -15,7 +18,7 @@ describe('mobile analytics tracker', () => {
 
   beforeEach(() => {
     jest.resetModules();
-    mockUpdatesChannel = 'preview';
+    setDevMode(true);
     process.env.EXPO_PUBLIC_YIROOM_API_URL = 'https://analytics.example.test/';
     global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200 }) as jest.Mock;
     const { setAnalyticsConsent } =
@@ -32,6 +35,11 @@ describe('mobile analytics tracker', () => {
     else process.env.EXPO_PUBLIC_YIROOM_API_URL = originalApiUrl;
     if (originalLegacyApiUrl === undefined) delete process.env.EXPO_PUBLIC_API_URL;
     else process.env.EXPO_PUBLIC_API_URL = originalLegacyApiUrl;
+    if (originalDevDescriptor) {
+      Object.defineProperty(globalThis, '__DEV__', originalDevDescriptor);
+    } else {
+      delete (globalThis as typeof globalThis & { __DEV__?: boolean }).__DEV__;
+    }
   });
 
   it('앱 세션 시작을 Clerk 토큰과 함께 전송한다', async () => {
@@ -149,7 +157,7 @@ describe('mobile analytics tracker', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it('preview/null 채널에서 API URL이 명시되지 않으면 prod로 전송하거나 큐잉하지 않는다', async () => {
+  it('개발 모드에서 API URL이 명시되지 않으면 prod로 전송하거나 큐잉하지 않는다', async () => {
     delete process.env.EXPO_PUBLIC_YIROOM_API_URL;
     delete process.env.EXPO_PUBLIC_API_URL;
     const { flushEvents, trackAppStarted } =
@@ -162,10 +170,10 @@ describe('mobile analytics tracker', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  it('production 채널은 명시 URL 없이도 prod 폴백 전송을 허용한다', async () => {
+  it('릴리스 빌드는 명시 URL 없이도 prod 폴백 전송을 허용한다', async () => {
     delete process.env.EXPO_PUBLIC_YIROOM_API_URL;
     delete process.env.EXPO_PUBLIC_API_URL;
-    mockUpdatesChannel = 'production';
+    setDevMode(false);
     const { trackAppStarted } =
       require('../../../lib/analytics/tracker') as typeof import('../../../lib/analytics/tracker');
 
@@ -231,12 +239,7 @@ describe('mobile analytics tracker', () => {
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({ ok: false, status: 503 })
       .mockResolvedValueOnce({ ok: true, status: 200 });
-    const {
-      resetAnalyticsIdentity,
-      setAnalyticsConsent,
-      trackAnalysisComplete,
-      trackAppStarted,
-    } =
+    const { resetAnalyticsIdentity, setAnalyticsConsent, trackAnalysisComplete, trackAppStarted } =
       require('../../../lib/analytics/tracker') as typeof import('../../../lib/analytics/tracker');
 
     await trackAnalysisComplete('body', { status: 'completed' }, 'token-a');

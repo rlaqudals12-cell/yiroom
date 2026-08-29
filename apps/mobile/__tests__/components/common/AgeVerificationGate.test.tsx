@@ -98,9 +98,18 @@ describe('AgeVerificationGate', () => {
       </AgeVerificationGate>
     );
 
-    await waitFor(() => {
-      expect(queryByTestId('global-age-verification-loading')).toBeNull();
-    });
+    await waitFor(
+      () => {
+        expect(mockFetchBirthdate).toHaveBeenCalledWith('clerk-token');
+      },
+      { timeout: 3000 }
+    );
+    await waitFor(
+      () => {
+        expect(queryByTestId('global-age-verification-loading')).toBeNull();
+      },
+      { timeout: 3000 }
+    );
     expect(getByTestId('protected-tabs')).toBeTruthy();
     expect(getByTestId('age-verification-content').props.pointerEvents).toBe('auto');
     expect(mockReplace).not.toHaveBeenCalled();

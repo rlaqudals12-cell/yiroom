@@ -113,35 +113,39 @@ AI가 분석하는 나만의 웰니스 여정! 퍼스널 컬러, 피부, 체형�
 ### 연락처
 
 ```
-이메일: support@yiroom.com
+이메일: <support-local>@<confirmed-domain> — 도메인 확정 후 주입
 전화번호: +82-2-xxxx-xxxx
 ```
 
-### 데모 계정 (심사용)
+### 심사용 계정 주입 절차
 
-```
-이메일: demo@yiroom.com
-비밀번호: demo1234!
-```
+- 심사 자격증명은 저장소·문서·스토어 메타데이터에 평문으로 저장하지 않습니다.
+- 수신 가능한 도메인을 먼저 확정한 뒤 `<local>+clerk_test@<confirmed-domain>` 형식의 Clerk 심사 계정을 생성합니다.
+- 프로덕션 AAB에서 로그인과 만 14세 연령 게이트를 확인한 후 Play Console의 **앱 액세스** 입력란에만 제출 시 직접 주입합니다.
+- 계정 값은 승인된 비밀번호 관리자에서 별도로 관리하며, 변경 시에도 이 문서를 수정하지 않습니다.
 
 ### 심사 메모
 
 ```
 [한국어]
-이 앱은 AI를 활용한 웰니스 플랫폼입니다.
-카메라는 퍼스널 컬러, 피부, 음식 분석에 사용됩니다.
-모든 이미지는 기기에서만 처리되며, 서버로 전송되지 않습니다.
+이 앱은 만 14세 이상 사용자를 위한 AI 뷰티 분석 서비스입니다.
+카메라와 사진은 퍼스널컬러·피부·체형·헤어·메이크업 분석에 사용됩니다.
+분석 입력은 암호화된 연결로 이룸 서버와 유료 Google Gemini API에 전송되어 처리됩니다.
+분석 결과는 계정에 저장되고, 원본 이미지는 별도 저장 동의 시에만 최대 1년 보관됩니다.
+AI 코치 대화는 답변 생성과 대화 이어보기를 위해 계정에 연결해 서버에 저장됩니다.
+Google Play 선공개 앱은 기기 위치와 소셜 콘텐츠를 수집하지 않습니다.
 
-데모 계정으로 모든 기능을 테스트하실 수 있습니다.
-운동 세션은 "홈 > 운동 시작"에서 확인 가능합니다.
+심사용 계정은 Play Console의 앱 액세스 입력란에서 제공합니다.
 
 [English]
-This is an AI-powered wellness platform.
-Camera is used for personal color, skin, and food analysis.
-All images are processed on-device only, not sent to servers.
+This is an AI beauty analysis service for users age 14 and older.
+Camera and photos are used for personal color, skin, body, hair, and makeup analysis.
+Analysis inputs are sent over encrypted connections to Yiroom servers and the paid Google Gemini API.
+Results are stored with the account; original images are retained for up to one year only with separate storage consent.
+AI coach messages are linked to the account and stored to generate responses and resume conversations.
+The Google Play early-release app does not collect device location or social content.
 
-You can test all features with the demo account.
-Workout sessions can be accessed from "Home > Start Workout".
+Review credentials are provided only in the Play Console App access fields.
 ```
 
 ---
@@ -150,20 +154,20 @@ Workout sessions can be accessed from "Home > Start Workout".
 
 ### iOS (Info.plist)
 
-| 권한                              | 설명                                                    |
-| --------------------------------- | ------------------------------------------------------- |
-| NSCameraUsageDescription          | 퍼스널 컬러, 피부 분석을 위해 카메라 접근이 필요합니다. |
-| NSPhotoLibraryUsageDescription    | 체형 분석 및 음식 기록을 위해 사진 접근이 필요합니다.   |
-| NSPhotoLibraryAddUsageDescription | 분석 결과를 저장하기 위해 사진 저장 권한이 필요합니다.  |
+| 권한                              | 실제 설명                                         |
+| --------------------------------- | ------------------------------------------------- |
+| NSCameraUsageDescription          | 퍼스널컬러·피부·체형·헤어·메이크업 분석 사진 촬영 |
+| NSPhotoLibraryUsageDescription    | 5축 분석과 AI 아바타 생성용 사진 선택             |
+| NSPhotoLibraryAddUsageDescription | 분석 결과와 AI 생성 이미지의 기기 저장            |
 
 ### Android (AndroidManifest.xml)
 
-| 권한                   | 설명                     |
-| ---------------------- | ------------------------ |
-| CAMERA                 | 퍼스널 컬러, 피부 분석용 |
-| READ_EXTERNAL_STORAGE  | 갤러리 접근용            |
-| WRITE_EXTERNAL_STORAGE | 결과 저장용              |
-| INTERNET               | 서버 통신용              |
+| 권한   | 실제 설명                                         |
+| ------ | ------------------------------------------------- |
+| CAMERA | 퍼스널컬러·피부·체형·헤어·메이크업 분석 사진 촬영 |
+
+사진 선택은 시스템 사진 선택기를 사용하며 `READ_EXTERNAL_STORAGE`·`WRITE_EXTERNAL_STORAGE`를
+별도로 요청하지 않습니다.
 
 ---
 
@@ -171,21 +175,32 @@ Workout sessions can be accessed from "Home > Start Workout".
 
 ### 수집 데이터
 
-| 데이터 유형   | 수집 여부 | 용도           |
-| ------------- | --------- | -------------- |
-| 연락처        | ❌        | -              |
-| 건강/피트니스 | ✅        | 운동/영양 기록 |
-| 사용자 콘텐츠 | ✅ (선택) | 분석용 이미지  |
-| 식별자        | ✅        | 사용자 ID      |
-| 사용 데이터   | ✅        | 앱 분석        |
-| 진단          | ✅        | 크래시 리포트  |
+| Google Play 데이터 유형 | 수집 여부 | 용도                                          |
+| ----------------------- | --------- | --------------------------------------------- |
+| 개인정보                | ✅        | 이메일·사용자 ID·생년월일, 계정 및 연령 확인  |
+| 건강 정보               | ✅ (선택) | 키·체중 및 체형 분석                          |
+| 사진 및 동영상          | ✅ (선택) | 5축 AI 분석·개인화                            |
+| 메시지                  | ✅ (선택) | AI 코치의 기타 인앱 메시지 답변·대화 이어보기 |
+| 앱 활동                 | ✅ (선택) | 분석 수집 동의 시 앱 상호작용 분석            |
+| 진단                    | ✅        | 크래시·오류 모니터링                          |
+| 위치                    | ❌        | 모바일 앱은 기기 위치 권한을 요청하지 않음    |
+| 소셜 콘텐츠             | ❌        | Google Play 선공개 앱에서 기능 비활성화       |
+
+- **제3자 공유:** 없음. 앱 기능 제공을 위해 계약된 서비스 제공자가 이룸의 지시에 따라 처리하는
+  전송은 Google Play Data Safety에서 공유로 신고하지 않습니다.
+- **Google 처리 역할:** 유료 Gemini API의 활성 Cloud Billing 및 DPA 적용을 확인한 경우에만
+  서비스 제공자(수탁자)로 신고합니다. 안전 모니터링을 위한 제한 기간 처리는 Google 약관을 따릅니다.
+- [ ] 제출 직전 프로덕션 Gemini 프로젝트의 유료 결제·DPA 적용 상태를 확인했습니다.
 
 ### 개인정보 URL
 
 ```
-개인정보 처리방침: https://yiroom.com/privacy
-이용약관: https://yiroom.com/terms
+제출용 개인정보 처리방침: https://<confirmed-domain>/privacy
+제출용 이용약관: https://<confirmed-domain>/terms
 ```
+
+도메인 소유·HTTPS·공개 접근을 확인한 뒤 Play Console에 주입합니다. 확정 전 검증용 경로는
+`https://yiroom.vercel.app/privacy`와 `https://yiroom.vercel.app/terms`입니다.
 
 ---
 

@@ -5,11 +5,12 @@ import { useAuth } from '@clerk/clerk-expo';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { useMemo, useRef, useEffect } from 'react';
 
+import { PUBLIC_RUNTIME_CONFIG } from './config/public-env';
 import { dbLogger } from './utils/logger';
 
 // Supabase 설정
-const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+const SUPABASE_URL = PUBLIC_RUNTIME_CONFIG.supabaseUrl;
+const SUPABASE_ANON_KEY = PUBLIC_RUNTIME_CONFIG.supabaseAnon;
 
 /**
  * 공개 데이터용 Supabase 클라이언트
@@ -78,7 +79,7 @@ export function validateSupabaseConfig(): boolean {
     return false;
   }
   if (!SUPABASE_ANON_KEY) {
-    dbLogger.warn('Missing EXPO_PUBLIC_SUPABASE_ANON_KEY');
+    dbLogger.warn('Supabase 공개 익명 구성이 없습니다.');
     return false;
   }
   return true;

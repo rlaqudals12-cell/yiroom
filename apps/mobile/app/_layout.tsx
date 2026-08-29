@@ -128,7 +128,7 @@ function RootLayout() {
 
   // Clerk key가 없으면 경고 (개발 중에는 무시)
   if (!CLERK_PUBLISHABLE_KEY) {
-    appLogger.warn('Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY');
+    appLogger.warn('Clerk 공개 구성이 없습니다.');
   }
 
   if (!fontsLoaded && !fontError) {

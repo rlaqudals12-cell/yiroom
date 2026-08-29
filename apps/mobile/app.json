@@ -32,7 +32,12 @@
       },
       "package": "com.yiroom.app",
       "edgeToEdgeEnabled": true,
-      "permissions": ["android.permission.CAMERA"]
+      "permissions": ["android.permission.CAMERA"],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -44,13 +49,22 @@
       [
         "expo-camera",
         {
+          "recordAudioAndroid": false,
           "cameraPermission": "퍼스널컬러·피부·체형·헤어·메이크업 분석 사진 촬영에 사용합니다."
         }
       ],
       [
         "expo-image-picker",
         {
+          "microphonePermission": false,
           "photosPermission": "퍼스널컬러·피부·체형·헤어·메이크업 분석과 AI 아바타 생성용 사진 선택에 사용합니다."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#EC4899"
         }
       ],
       "expo-web-browser",

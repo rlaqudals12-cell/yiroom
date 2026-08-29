@@ -550,6 +550,7 @@ export default function ProfileScreen(): React.JSX.Element {
             onPress={() => router.push('/settings/notifications')}
           />
           <View
+            testID="profile-settings-separator"
             style={{
               height: StyleSheet.hairlineWidth,
               backgroundColor: colors.border,
@@ -565,6 +566,25 @@ export default function ProfileScreen(): React.JSX.Element {
                 onPress={() => router.push('/settings/goals')}
               />
               <View
+                testID="profile-settings-separator"
+                style={{
+                  height: StyleSheet.hairlineWidth,
+                  backgroundColor: colors.border,
+                  marginHorizontal: spacing.md,
+                }}
+              />
+            </>
+          )}
+          {/* 위젯은 WELLNESS_PHASE2 공개 전까지 프로필 진입점도 함께 숨긴다. */}
+          {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+            <>
+              <MenuItem
+                title="위젯 설정"
+                subtitle="홈 화면 위젯"
+                onPress={() => router.push('/settings/widgets')}
+              />
+              <View
+                testID="profile-settings-separator"
                 style={{
                   height: StyleSheet.hairlineWidth,
                   backgroundColor: colors.border,
@@ -574,30 +594,12 @@ export default function ProfileScreen(): React.JSX.Element {
             </>
           )}
           <MenuItem
-            title="위젯 설정"
-            subtitle="홈 화면 위젯"
-            onPress={() => router.push('/settings/widgets')}
-          />
-          <View
-            style={{
-              height: StyleSheet.hairlineWidth,
-              backgroundColor: colors.border,
-              marginHorizontal: spacing.md,
-            }}
-          />
-          <View
-            style={{
-              height: StyleSheet.hairlineWidth,
-              backgroundColor: colors.border,
-              marginHorizontal: spacing.md,
-            }}
-          />
-          <MenuItem
             title="개인정보 설정"
             subtitle="데이터 관리, 계정 삭제"
             onPress={() => router.push('/settings/privacy')}
           />
           <View
+            testID="profile-settings-separator"
             style={{
               height: StyleSheet.hairlineWidth,
               backgroundColor: colors.border,

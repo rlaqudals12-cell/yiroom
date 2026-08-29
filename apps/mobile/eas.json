@@ -26,6 +26,10 @@
       "extends": "base",
       "distribution": "internal",
       "channel": "preview",
+      "environment": "preview",
+      "env": {
+        "_YIROOM_SENTRY_DSN_NOTE": "Inject EXPO_PUBLIC_SENTRY_DSN from the EAS preview environment before distribution; do not add an empty profile override."
+      },
       "ios": {
         "resourceClass": "m1-medium"
       },
@@ -37,6 +41,11 @@
       "extends": "base",
       "autoIncrement": true,
       "channel": "production",
+      "environment": "production",
+      "env": {
+        "_YIROOM_SENTRY_DSN_NOTE": "Inject EXPO_PUBLIC_SENTRY_DSN from the EAS production environment before release; do not add an empty profile override.",
+        "_YIROOM_API_URL_NOTE": "Inject EXPO_PUBLIC_YIROOM_API_URL from the EAS production environment after the domain is confirmed; omission uses the canonical production fallback."
+      },
       "ios": {
         "resourceClass": "m1-medium"
       },

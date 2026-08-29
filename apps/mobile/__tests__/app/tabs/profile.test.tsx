@@ -305,9 +305,11 @@ describe('ProfileScreen', () => {
       expect(queryByText('목표 설정')).toBeNull();
     });
 
-    it('위젯 설정 메뉴가 표시된다', () => {
-      const { getByText } = renderWithTheme(<ProfileScreen />);
-      expect(getByText('위젯 설정')).toBeTruthy();
+    it('위젯 설정 메뉴가 숨겨진다 (WELLNESS_PHASE2 게이팅)', () => {
+      const { queryByText, getAllByTestId } = renderWithTheme(<ProfileScreen />);
+      expect(queryByText('위젯 설정')).toBeNull();
+      // 알림→개인정보→전체 설정 사이의 구분선만 남아 연속 헤어라인이 생기지 않는다.
+      expect(getAllByTestId('profile-settings-separator')).toHaveLength(2);
     });
 
     it('전체 설정 메뉴가 표시된다', () => {

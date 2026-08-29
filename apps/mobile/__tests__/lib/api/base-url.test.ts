@@ -9,6 +9,7 @@
  */
 import fs from 'fs';
 import path from 'path';
+import ts from 'typescript';
 
 import {
   getApiBaseUrl,
@@ -128,9 +129,11 @@ describe('getWebHostLabel', () => {
 // ============================================
 
 const MOBILE_ROOT = path.resolve(__dirname, '../../..');
-const SCAN_DIRS = ['app', 'lib', 'components', 'hooks', 'types'];
-const SOURCE_EXTENSIONS = ['.ts', '.tsx'];
+const SCAN_DIRS = ['app', 'lib', 'components', 'hooks', 'plugins', 'types'];
+const SOURCE_EXTENSIONS = ['.cjs', '.js', '.jsx', '.mjs', '.ts', '.tsx'];
+const TEST_SOURCE_PATTERN = /\.(?:spec|test)\.[cm]?[jt]sx?$/;
 const CANON = path.join('lib', 'api', 'base-url.ts');
+const SECRET_SHAPED_PUBLIC_ENV = /EXPO_PUBLIC_[A-Z_]*(?:KEY|SECRET|TOKEN)/;
 
 function collectSourceFiles(dir: string, acc: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -139,7 +142,10 @@ function collectSourceFiles(dir: string, acc: string[] = []): string[] {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       collectSourceFiles(fullPath, acc);
-    } else if (SOURCE_EXTENSIONS.includes(path.extname(entry.name))) {
+    } else if (
+      SOURCE_EXTENSIONS.includes(path.extname(entry.name)) &&
+      !TEST_SOURCE_PATTERN.test(entry.name)
+    ) {
       acc.push(fullPath);
     }
   }
@@ -159,6 +165,38 @@ function offendersFor(needle: string): string[] {
     .map((file) => path.relative(MOBILE_ROOT, file));
 }
 
+function sourceWithoutComments(file: string): string {
+  const source = fs.readFileSync(file, 'utf8');
+  const languageVariant = /\.[jt]sx$/.test(file)
+    ? ts.LanguageVariant.JSX
+    : ts.LanguageVariant.Standard;
+  const scanner = ts.createScanner(ts.ScriptTarget.Latest, false, languageVariant, source);
+  const chunks: string[] = [];
+
+  for (let token = scanner.scan(); token !== ts.SyntaxKind.EndOfFileToken; token = scanner.scan()) {
+    if (
+      token !== ts.SyntaxKind.SingleLineCommentTrivia &&
+      token !== ts.SyntaxKind.MultiLineCommentTrivia
+    ) {
+      chunks.push(scanner.getTokenText());
+    }
+  }
+
+  return chunks.join('');
+}
+
+function secretShapedPublicEnvOffenders(): string[] {
+  const files = SCAN_DIRS.map((dir) => path.join(MOBILE_ROOT, dir))
+    .filter((dir) => fs.existsSync(dir))
+    .flatMap((dir) => collectSourceFiles(dir));
+
+  expect(files.length).toBeGreaterThan(100);
+
+  return files
+    .filter((file) => SECRET_SHAPED_PUBLIC_ENV.test(sourceWithoutComments(file)))
+    .map((file) => path.relative(MOBILE_ROOT, file));
+}
+
 describe('base URL 하드코딩 잔존 0', () => {
   it('프로덕션 호스트 리터럴은 정본 모듈에만 있다', () => {
     expect(offendersFor(PROD_HOST)).toEqual([CANON]);
@@ -170,5 +208,11 @@ describe('base URL 하드코딩 잔존 0', () => {
 
   it('범용 env 직접 참조는 정본 모듈에만 있다', () => {
     expect(offendersFor(ENV_GENERIC)).toEqual([CANON]);
+  });
+});
+
+describe('모바일 공개 환경변수 보안 경계', () => {
+  it('app/lib/components/hooks/plugins/types의 주석·테스트 제외 소스에 비밀형 공개 env가 없다', () => {
+    expect(secretShapedPublicEnvOffenders()).toEqual([]);
   });
 });

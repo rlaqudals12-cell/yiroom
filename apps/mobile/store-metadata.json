@@ -105,9 +105,10 @@
       },
       {
         "type": "Health & Fitness",
-        "items": ["Health", "Fitness"],
+        "items": ["Health"],
         "linkedToUser": true,
-        "usedForTracking": false
+        "usedForTracking": false,
+        "note": "키·체중 및 체형 분석 정보. 운동·영양 기록은 Google Play 선공개 모바일 앱에서 수집하지 않습니다."
       },
       {
         "type": "User Content",
@@ -117,19 +118,114 @@
         "note": "이룸 서버와 Google AI로 전송되어 분석되며, 별도 저장 동의 시에만 최대 1년 보관(동의 철회·삭제 요청·회원 탈퇴 시 조기 파기)"
       },
       {
+        "type": "User Content",
+        "items": ["Other User Content"],
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "note": "AI 코치 대화는 답변 생성과 대화 이어보기를 위해 계정에 연결해 처리·저장하며 사용자가 삭제할 수 있습니다."
+      },
+      {
+        "type": "Messages",
+        "items": ["Other In-App Messages"],
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "platform": "Google Play",
+        "note": "AI 코치 대화 내용"
+      },
+      {
         "type": "Usage Data",
         "items": ["Product Interaction"],
         "linkedToUser": true,
         "usedForTracking": false
+      },
+      {
+        "type": "Diagnostics",
+        "items": ["Crash Data", "Performance Data"],
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "note": "오류 및 성능 모니터링"
       }
     ],
     "purposes": ["App Functionality", "Analytics", "Product Personalization"]
   },
-  "reviewNotes": {
-    "demoAccount": {
-      "email": "demo@yiroom.com",
-      "password": "demo123!"
+  "googlePlayDataSafety": {
+    "dataCollected": [
+      {
+        "category": "Personal info",
+        "items": ["Email address", "User IDs", "Date of birth"],
+        "linkedToUser": true,
+        "required": true,
+        "purposes": ["App functionality", "Account management"]
+      },
+      {
+        "category": "Health and fitness",
+        "items": ["Health info"],
+        "linkedToUser": true,
+        "required": false,
+        "purposes": ["App functionality", "Personalization"],
+        "note": "키·체중 및 체형 분석 정보"
+      },
+      {
+        "category": "Photos and videos",
+        "items": ["Photos"],
+        "linkedToUser": true,
+        "required": false,
+        "purposes": ["App functionality", "Personalization"]
+      },
+      {
+        "category": "Messages",
+        "items": ["Other In-App Messages"],
+        "linkedToUser": true,
+        "required": false,
+        "purposes": ["App functionality"],
+        "note": "AI 코치 대화 내용"
+      },
+      {
+        "category": "App activity",
+        "items": ["App interactions"],
+        "linkedToUser": true,
+        "required": false,
+        "purposes": ["Analytics", "Personalization"],
+        "note": "분석 수집 동의 상태가 켜진 경우에만 전송"
+      },
+      {
+        "category": "App info and performance",
+        "items": ["Crash logs", "Diagnostics"],
+        "linkedToUser": true,
+        "required": true,
+        "purposes": ["App functionality"],
+        "note": "오류 및 성능 모니터링"
+      }
+    ],
+    "notCollectedInAndroidRelease": [
+      {
+        "category": "Location",
+        "items": ["Approximate location", "Precise location"],
+        "note": "Google Play 선공개 앱은 기기 위치 권한을 요청하지 않습니다."
+      },
+      {
+        "category": "Social",
+        "items": ["Friend lists", "Feed posts", "Comments", "Likes"],
+        "note": "Google Play 선공개 앱에서는 소셜 기능이 비활성화되어 있습니다."
+      }
+    ],
+    "dataSharing": {
+      "sharedWithThirdParties": false,
+      "note": "사용자 데이터 전송은 앱 기능 제공을 위해 계약된 서비스 제공자가 이룸의 지시에 따라 처리하는 경우로 한정합니다."
     },
+    "serviceProviderProcessing": [
+      {
+        "provider": "Google LLC (Gemini API)",
+        "role": "Service provider (processor)",
+        "contractBasis": "Paid Services with active Cloud Billing and the Data Processing Addendum; verify production project before submission",
+        "data": ["Analysis images", "AI coach message inputs"],
+        "purposes": ["AI analysis", "Coach response generation"],
+        "countsAsDataSharing": false
+      }
+    ]
+  },
+  "reviewNotes": {
+    "reviewAccessInstructions": "심사용 계정은 수신 가능한 도메인을 확정한 뒤 <local>+clerk_test@<confirmed-domain> 형식으로 생성하고, 자격증명은 저장소가 아닌 Play Console 앱 액세스 항목에만 제출 시 직접 입력합니다.",
     "notes": "이 앱은 만 14세 이상 사용자를 위한 AI 뷰티 분석 서비스입니다. 퍼스널컬러, 피부, 체형, 헤어, 메이크업 분석은 참고용 정보를 제공하며 의료적 조언을 대체하지 않습니다. 분석 이미지는 암호화된 연결로 이룸 서버를 거쳐 Google AI에 전송되어 처리됩니다. 분석 결과는 계정에 저장되며, 원본 분석 이미지는 별도 저장 동의를 한 경우에만 최대 1년간 보관됩니다. 사용자는 동의를 철회하거나 이미지 삭제를 요청할 수 있습니다."
   }
 }

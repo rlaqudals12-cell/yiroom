@@ -3,8 +3,6 @@
  * @description 사용자 행동 이벤트 수집 및 전송
  */
 
-import * as Updates from 'expo-updates';
-
 import { getApiBaseUrl, hasConfiguredApiBaseUrl } from '@/lib/api/base-url';
 import { analyticsLogger } from '@/lib/utils/logger';
 import type { AnalyticsEventType, AnalyticsEventInput } from '@/types/analytics';
@@ -57,8 +55,8 @@ interface TrackEventOptions {
 function canDeliver(clerkToken: string | null | undefined): clerkToken is string {
   if (analyticsConsent !== true) return false;
   if (!clerkToken) return false;
-  // 명시 URL은 dev/preview QA 서버를 허용한다. 폴백 prod URL은 production 채널만 허용한다.
-  return hasConfiguredApiBaseUrl() || Updates.channel === 'production';
+  // 개발 중에는 명시한 서버만 사용하고, 릴리스 번들은 정본 프로덕션 폴백을 허용한다.
+  return hasConfiguredApiBaseUrl() || !__DEV__;
 }
 
 /**

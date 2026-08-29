@@ -17,8 +17,8 @@
    ```bash
    # EAS Secrets 또는 eas.json에 설정
    EXPO_PUBLIC_SUPABASE_URL=<your-supabase-url>
-   EXPO_PUBLIC_SUPABASE_ANON_KEY=<your-supabase-anon-key>
-   EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=<your-clerk-key>
+   EXPO_PUBLIC_SUPABASE_ANON=<your-supabase-anon-value>
+   EXPO_PUBLIC_CLERK_PUBLISHABLE=<your-clerk-publishable-value>
    EXPO_PUBLIC_PROJECT_ID=<your-expo-project-id>
    ```
 

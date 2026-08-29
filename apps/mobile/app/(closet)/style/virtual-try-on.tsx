@@ -13,6 +13,7 @@ import { useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
 
 import { getApiBaseUrl } from '../../../lib/api/base-url';
+import { requiresLegacyAndroidGalleryFallback } from '../../../lib/image/camera-fallback';
 import { useTheme, brand } from '../../../lib/theme';
 import {
   LIP_PRESETS,
@@ -110,6 +111,18 @@ export default function VirtualTryOnScreen(): React.JSX.Element {
   }, []);
 
   const takePhoto = useCallback(async () => {
+    if (requiresLegacyAndroidGalleryFallback()) {
+      Alert.alert(
+        '앨범에서 선택해주세요',
+        'Android 9 이하에서는 이 화면에서 바로 촬영할 수 없어요. 카메라로 촬영한 뒤 앨범에서 선택해 주세요.',
+        [
+          { text: '취소', style: 'cancel' },
+          { text: '앨범 열기', onPress: () => void pickImage() },
+        ]
+      );
+      return;
+    }
+
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') return;
 
@@ -124,7 +137,7 @@ export default function VirtualTryOnScreen(): React.JSX.Element {
       setResultUri(null);
       setSelectedColor(null);
     }
-  }, []);
+  }, [pickImage]);
 
   // API 기반 VTO 시뮬레이션
   const applyTryOn = useCallback(

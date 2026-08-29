@@ -171,16 +171,21 @@ export default function SettingsScreen() {
         )}
       </Animated.View>
 
-      {/* 위젯 */}
-      <Animated.View entering={FadeInUp.delay(200).duration(TIMING.normal)} style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>위젯</Text>
-        <SettingsItem
-          icon="📱"
-          title="위젯 설정"
-          subtitle="홈 화면 위젯 미리보기"
-          onPress={() => handlePress('/settings/widgets')}
-        />
-      </Animated.View>
+      {/* 위젯은 WELLNESS_PHASE2 공개 전까지 설정 진입점도 함께 숨긴다. */}
+      {FEATURE_FLAGS.WELLNESS_PHASE2 && (
+        <Animated.View
+          entering={FadeInUp.delay(200).duration(TIMING.normal)}
+          style={styles.section}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>위젯</Text>
+          <SettingsItem
+            icon="📱"
+            title="위젯 설정"
+            subtitle="홈 화면 위젯 미리보기"
+            onPress={() => handlePress('/settings/widgets')}
+          />
+        </Animated.View>
+      )}
 
       {/* 앱 정보 — 네이티브 페이지로 이동 */}
       <Animated.View entering={FadeInUp.delay(280).duration(TIMING.normal)} style={styles.section}>

@@ -19,11 +19,35 @@ interface StoreMetadata {
   privacyNutritionLabels: {
     dataCollected: {
       type: string;
+      items: string[];
       linkedToUser: boolean;
+      usedForTracking: boolean;
       note?: string;
     }[];
   };
-  reviewNotes: { notes: string };
+  googlePlayDataSafety: {
+    dataCollected: {
+      category: string;
+      items: string[];
+      linkedToUser: boolean;
+      required: boolean;
+      purposes: string[];
+    }[];
+    notCollectedInAndroidRelease: { category: string; items: string[] }[];
+    dataSharing: { sharedWithThirdParties: boolean };
+    serviceProviderProcessing: {
+      provider: string;
+      role: string;
+      contractBasis: string;
+      data: string[];
+      countsAsDataSharing: boolean;
+    }[];
+  };
+  reviewNotes: {
+    notes: string;
+    reviewAccessInstructions: string;
+    demoAccount?: unknown;
+  };
 }
 
 interface AppConfig {
@@ -68,6 +92,10 @@ function readSubmissionMetadata(): SubmissionMetadata {
   ) as SubmissionMetadata;
 }
 
+function readStoreChecklist(): string {
+  return readFileSync(join(process.cwd(), 'docs', 'APP-STORE-CHECKLIST.md'), 'utf8');
+}
+
 describe('store metadata privacy contract', () => {
   it('분석이 서버와 Google AI에서 처리되고 선택 저장됨을 한국어·영어로 고지한다', () => {
     const metadata = readStoreMetadata();
@@ -94,6 +122,78 @@ describe('store metadata privacy contract', () => {
     expect(photoEntry).toMatchObject({ linkedToUser: true });
     expect(photoEntry?.note).toContain('별도 저장 동의 시에만 최대 1년');
     expect(photoEntry?.note).not.toContain('즉시 삭제');
+  });
+
+  it('AI 코치 대화를 Play Messages 수집 항목으로 직접 신고한다', () => {
+    const metadata = readStoreMetadata();
+    const messageEntry = metadata.privacyNutritionLabels.dataCollected.find(
+      (entry) => entry.type === 'Messages'
+    );
+    const playMessageEntry = metadata.googlePlayDataSafety.dataCollected.find(
+      (entry) => entry.category === 'Messages'
+    );
+
+    expect(messageEntry).toMatchObject({
+      items: ['Other In-App Messages'],
+      linkedToUser: true,
+      usedForTracking: false,
+    });
+    expect(playMessageEntry).toMatchObject({
+      items: ['Other In-App Messages'],
+      linkedToUser: true,
+      required: false,
+      purposes: ['App functionality'],
+    });
+  });
+
+  it('Play 선공개 앱의 위치·소셜 미수집과 Google 서비스 제공자 처리를 분리한다', () => {
+    const metadata = readStoreMetadata();
+    const notCollected = metadata.googlePlayDataSafety.notCollectedInAndroidRelease;
+    const google = metadata.googlePlayDataSafety.serviceProviderProcessing.find((entry) =>
+      entry.provider.includes('Google')
+    );
+    const diagnostics = metadata.googlePlayDataSafety.dataCollected.find(
+      (entry) => entry.category === 'App info and performance'
+    );
+
+    expect(notCollected.find((entry) => entry.category === 'Location')?.items).toEqual([
+      'Approximate location',
+      'Precise location',
+    ]);
+    expect(notCollected.find((entry) => entry.category === 'Social')?.items).toEqual([
+      'Friend lists',
+      'Feed posts',
+      'Comments',
+      'Likes',
+    ]);
+    expect(metadata.googlePlayDataSafety.dataSharing.sharedWithThirdParties).toBe(false);
+    expect(diagnostics).toMatchObject({
+      items: ['Crash logs', 'Diagnostics'],
+      linkedToUser: true,
+      required: true,
+    });
+    expect(google).toMatchObject({
+      role: 'Service provider (processor)',
+      data: ['Analysis images', 'AI coach message inputs'],
+      countsAsDataSharing: false,
+    });
+    expect(google?.contractBasis).toMatch(/Paid Services.*Cloud Billing.*Data Processing Addendum/);
+  });
+
+  it('심사 자격증명을 저장하지 않고 확정 도메인 계정의 제출 시 주입만 지시한다', () => {
+    const metadata = readStoreMetadata();
+    const checklist = readStoreChecklist();
+
+    expect(metadata.reviewNotes).not.toHaveProperty('demoAccount');
+    expect(JSON.stringify(metadata.reviewNotes)).not.toMatch(/"password"\s*:/i);
+    expect(metadata.reviewNotes.reviewAccessInstructions).toContain(
+      '+clerk_test@<confirmed-domain>'
+    );
+    expect(metadata.reviewNotes.reviewAccessInstructions).toContain('Play Console');
+    expect(checklist).toContain('<local>+clerk_test@<confirmed-domain>');
+    expect(checklist).toContain('<support-local>@<confirmed-domain>');
+    expect(checklist).not.toMatch(/비밀번호\s*:/);
+    expect(checklist).not.toMatch(/[\w.+-]+@yiroom\.(?:com|app)/i);
   });
 
   it('만 14세 가입 계약과 생년월일 수집을 스토어 메타데이터에 명시한다', () => {

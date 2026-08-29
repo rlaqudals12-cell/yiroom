@@ -68,6 +68,11 @@ jest.mock('expo-image-picker', () => ({
   launchCameraAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
 }));
 
+const mockRequiresLegacyAndroidGalleryFallback = jest.fn(() => false);
+jest.mock('../../../lib/image/camera-fallback', () => ({
+  requiresLegacyAndroidGalleryFallback: () => mockRequiresLegacyAndroidGalleryFallback(),
+}));
+
 // global fetch mock
 global.fetch = jest.fn().mockResolvedValue({
   ok: true,
@@ -79,6 +84,7 @@ global.fetch = jest.fn().mockResolvedValue({
 
 import VirtualTryOnScreen from '../../../app/(closet)/style/virtual-try-on';
 import * as ImagePicker from 'expo-image-picker';
+import { Alert } from 'react-native';
 
 // --- 테마 헬퍼 ---
 
@@ -116,6 +122,7 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(false);
   });
 
   describe('초기 렌더링', () => {
@@ -378,6 +385,33 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
           })
         );
       });
+    });
+
+    it('Android 9 이하에서는 카메라를 열지 않고 앨범 선택을 안내한다', async () => {
+      mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(true);
+      const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+      const { getByText } = renderWithTheme(<VirtualTryOnScreen />);
+
+      fireEvent.press(getByText('촬영'));
+
+      expect(ImagePicker.requestCameraPermissionsAsync).not.toHaveBeenCalled();
+      expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith(
+        '앨범에서 선택해주세요',
+        expect.stringContaining('Android 9 이하'),
+        expect.any(Array)
+      );
+
+      const actions = alertSpy.mock.calls[0]?.[2];
+      const openAlbum = actions?.find((action) => action.text === '앨범 열기');
+      openAlbum?.onPress?.();
+
+      await waitFor(() => {
+        expect(ImagePicker.requestMediaLibraryPermissionsAsync).toHaveBeenCalled();
+        expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled();
+      });
+
+      alertSpy.mockRestore();
     });
 
     it('이미지 선택 후 안내 메시지가 사라져야 한다', async () => {

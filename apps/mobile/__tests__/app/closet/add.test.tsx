@@ -76,6 +76,11 @@ jest.mock('expo-image-picker', () => ({
   MediaTypeOptions: { Images: 'Images' },
 }));
 
+const mockRequiresLegacyAndroidGalleryFallback = jest.fn(() => false);
+jest.mock('../../../lib/image/camera-fallback', () => ({
+  requiresLegacyAndroidGalleryFallback: () => mockRequiresLegacyAndroidGalleryFallback(),
+}));
+
 jest.mock('../../../lib/animations', () => ({
   TIMING: { fast: 200, normal: 300, slow: 500 },
   ENTERING: {},
@@ -181,6 +186,7 @@ import { renderWithTheme } from '../../helpers/test-utils';
 describe('ClosetAddScreen 렌더링', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(false);
   });
 
   it('화면이 testID "closet-add-screen"으로 렌더링된다', () => {
@@ -200,6 +206,40 @@ describe('ClosetAddScreen 렌더링', () => {
   it('저장 버튼 "옷장에 추가"가 표시된다', () => {
     const { getByText } = renderWithTheme(<ClosetAddScreen />);
     expect(getByText('옷장에 추가')).toBeTruthy();
+  });
+});
+
+describe('ClosetAddScreen 구형 Android 카메라 폴백', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(false);
+  });
+
+  it('Android 9 이하에서는 카메라를 열지 않고 앨범 선택을 안내한다', async () => {
+    mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(true);
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const { getByText } = renderWithTheme(<ClosetAddScreen />);
+
+    fireEvent.press(getByText('📸 촬영'));
+
+    expect(ImagePicker.requestCameraPermissionsAsync).not.toHaveBeenCalled();
+    expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
+    expect(alertSpy).toHaveBeenCalledWith(
+      '앨범에서 선택해주세요',
+      expect.stringContaining('Android 9 이하'),
+      expect.any(Array)
+    );
+
+    const actions = alertSpy.mock.calls[0]?.[2];
+    const openAlbum = actions?.find((action) => action.text === '앨범 열기');
+    openAlbum?.onPress?.();
+
+    await waitFor(() => {
+      expect(ImagePicker.requestMediaLibraryPermissionsAsync).toHaveBeenCalled();
+      expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled();
+    });
+
+    alertSpy.mockRestore();
   });
 });
 

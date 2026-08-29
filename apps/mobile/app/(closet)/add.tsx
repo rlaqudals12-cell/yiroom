@@ -24,6 +24,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import { uploadInventoryImage, InventoryUploadError } from '@/lib/api';
+import { requiresLegacyAndroidGalleryFallback } from '@/lib/image/camera-fallback';
 import { downscaleToUri } from '@/lib/image/downscale';
 import {
   buildClosetMetadata,
@@ -142,6 +143,18 @@ export default function ClosetAddScreen() {
 
   // 카메라 촬영
   const handleCamera = async () => {
+    if (requiresLegacyAndroidGalleryFallback()) {
+      Alert.alert(
+        '앨범에서 선택해주세요',
+        'Android 9 이하에서는 이 화면에서 바로 촬영할 수 없어요. 카메라로 촬영한 뒤 앨범에서 선택해 주세요.',
+        [
+          { text: '취소', style: 'cancel' },
+          { text: '앨범 열기', onPress: () => void handleImagePick() },
+        ]
+      );
+      return;
+    }
+
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
     if (status !== 'granted') {

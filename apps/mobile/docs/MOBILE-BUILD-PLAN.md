@@ -99,9 +99,9 @@ npm run dev
 
 ```bash
 # 환경 변수 확인 (apps/mobile/.env.local)
-EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+EXPO_PUBLIC_CLERK_PUBLISHABLE=pk_test_...
 EXPO_PUBLIC_SUPABASE_URL=https://...supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+EXPO_PUBLIC_SUPABASE_ANON=eyJ...
 
 # 테스트 실행 명령
 cd apps/mobile
@@ -252,7 +252,7 @@ npx eas build:view <BUILD_ID>
 
 ```bash
 # 프로덕션 API 키 등록 (암호화 저장)
-eas secret:create --scope project --name GEMINI_API_KEY --value "실제_API_키"
+# Google AI 키는 모바일 EAS가 아니라 웹 서버(Vercel) 환경에만 등록합니다.
 eas secret:create --scope project --name SUPABASE_URL --value "실제_URL"
 eas secret:create --scope project --name SUPABASE_ANON_KEY --value "실제_키"
 eas secret:create --scope project --name CLERK_PUBLISHABLE_KEY --value "실제_키"
@@ -268,10 +268,9 @@ eas secret:list
 "production": {
   "extends": "base",
   "env": {
-    "EXPO_PUBLIC_GEMINI_API_KEY": "@GEMINI_API_KEY",
     "EXPO_PUBLIC_SUPABASE_URL": "@SUPABASE_URL",
-    "EXPO_PUBLIC_SUPABASE_ANON_KEY": "@SUPABASE_ANON_KEY",
-    "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "@CLERK_PUBLISHABLE_KEY"
+    "EXPO_PUBLIC_SUPABASE_ANON": "@SUPABASE_ANON_VALUE",
+    "EXPO_PUBLIC_CLERK_PUBLISHABLE": "@CLERK_PUBLISHABLE_VALUE"
   }
 }
 ```
