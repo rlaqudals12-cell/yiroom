@@ -2,7 +2,7 @@
  * 개인정보처리방침 화면 테스트
  *
  * 대상: app/privacy-policy.tsx
- * 목적: 웹 정본(2026-07-12 법적 감사) 동기화 문구 회귀 가드 —
+ * 목적: 웹 정본(2026-08-30 법적 감사) 동기화 문구 회귀 가드 —
  *       성별·생년월일 필수화, AI 코치 대화 서버 저장, 생체정보 보유기간,
  *       국외이전 고지, 허위 문구("익명 집계"·"서버 미저장") 부재 확인.
  */
@@ -45,10 +45,10 @@ describe('PrivacyPolicyScreen (개인정보처리방침)', () => {
     expect(getByTestId('privacy-policy-screen')).toBeTruthy();
   });
 
-  it('시행일이 2026년 7월 12일로 표시된다', () => {
+  it('시행일이 2026년 8월 30일로 표시된다', () => {
     const { getByText } = renderWithTheme(<PrivacyPolicyScreen />);
-    expect(getByText('최종 업데이트: 2026년 7월 12일')).toBeTruthy();
-    expect(getByText(/2026년 7월 12일부터 적용됩니다/)).toBeTruthy();
+    expect(getByText('최종 업데이트: 2026년 8월 30일')).toBeTruthy();
+    expect(getByText(/2026년 8월 30일부터 적용됩니다/)).toBeTruthy();
   });
 
   describe('수집 항목 (§2) — 성별·생년월일 필수화', () => {
@@ -92,13 +92,22 @@ describe('PrivacyPolicyScreen (개인정보처리방침)', () => {
     });
   });
 
-  describe('국외 이전 고지 (§5)', () => {
+  describe('위탁·국외 이전 고지 (§5)', () => {
     it('Google LLC 미국 이전 및 거부 방법이 고지된다', () => {
       const { getByText } = renderWithTheme(<PrivacyPolicyScreen />);
-      expect(getByText('개인정보의 국외 이전')).toBeTruthy();
+      expect(getByText('처리 수탁자에 대한 개인정보의 국외 이전')).toBeTruthy();
       expect(getByText(/이전받는 자: Google LLC/)).toBeTruthy();
       expect(getByText(/이전 국가: 미국/)).toBeTruthy();
       expect(getByText(/이전 거부 방법 및 효과/)).toBeTruthy();
+    });
+
+    it('유료 Gemini API의 DPA 전제와 서비스 제공자 처리를 제3자 공유와 구분한다', () => {
+      const { getByText, queryByText } = renderWithTheme(<PrivacyPolicyScreen />);
+
+      expect(getByText('AI 분석·코치 처리 위탁')).toBeTruthy();
+      expect(getByText(/활성 Cloud Billing 및 데이터 처리 부속약관\(DPA\)/)).toBeTruthy();
+      expect(getByText(/서비스 제공자\(수탁자\)/)).toBeTruthy();
+      expect(queryByText('AI 분석 서비스 관련 제3자 제공')).toBeNull();
     });
 
     it('제휴 클릭 기록이 회원 식별자와 함께 저장됨을 고지한다 ("익명 집계" 허위 문구 제거)', () => {
@@ -114,6 +123,21 @@ describe('PrivacyPolicyScreen (개인정보처리방침)', () => {
       expect(getByText(/Tawk\.to: 고객 상담 위젯 운영/)).toBeTruthy();
       // "Sentry: 오류 모니터링"은 쿠키 섹션에도 등장 — 위탁 목록 + 쿠키 고지 2곳 확인
       expect(getAllByText(/Sentry: 오류 모니터링/).length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('Google Play 플랫폼 한정 고지', () => {
+    it('모바일 위치와 소셜 데이터를 수집하지 않는다고 명시한다', () => {
+      const { getByText } = renderWithTheme(<PrivacyPolicyScreen />);
+
+      expect(getByText(/기기 위치 권한을 요청하지 않으며 대략적·정밀 위치정보/)).toBeTruthy();
+      expect(getByText(/소셜 기능을 제공하지 않으며 친구·피드·댓글·좋아요 정보/)).toBeTruthy();
+    });
+
+    it('AI 코치 대화의 수집·저장을 숨기지 않는다', () => {
+      const { getAllByText } = renderWithTheme(<PrivacyPolicyScreen />);
+
+      expect(getAllByText(/AI 코치 대화/).length).toBeGreaterThanOrEqual(2);
     });
   });
 

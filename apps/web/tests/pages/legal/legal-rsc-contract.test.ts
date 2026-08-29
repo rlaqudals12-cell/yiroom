@@ -33,4 +33,16 @@ describe('법무 페이지 RSC 계약', () => {
     expect(termsPage.match(/prefetch=\{false\}/g)).toHaveLength(2);
     expect(privacyContent.match(/prefetch=\{false\}/g)).toHaveLength(2);
   });
+
+  it('Google 처리는 유료 서비스의 위탁으로, 모바일 위치·소셜은 미수집으로 고지한다', () => {
+    const privacyContent = readAppFile('privacy', 'PrivacyContent.tsx');
+
+    expect(privacyContent).toContain('활성 Cloud');
+    expect(privacyContent).toContain('데이터 처리 부속약관(DPA)');
+    expect(privacyContent).toContain('서비스 제공자(수탁자)');
+    expect(privacyContent).not.toContain('AI 분석 서비스 관련 제3자 제공');
+    expect(privacyContent).toMatch(/모바일\s+앱은 기기 위치 권한을 요청하지 않으며/);
+    expect(privacyContent).toMatch(/모바일 앱은 소셜 기능을 제공하지 않으며/);
+    expect(privacyContent).toMatch(/service\s+provider \(processor\)/);
+  });
 });

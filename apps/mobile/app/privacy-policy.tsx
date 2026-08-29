@@ -2,7 +2,7 @@
  * 개인정보처리방침 네이티브 화면
  *
  * 정본 = 웹 apps/web/app/privacy/PrivacyContent.tsx (KoreanContent §1~§13).
- * 웹 법적 감사(2026-07-12) 반영: 성별·생년월일 필수화, 생체정보 보유기간(동의일로부터 1년),
+ * 웹 법적 감사(2026-08-30) 반영: 성별·생년월일 필수화, 생체정보 보유기간(동의일로부터 1년),
  * AI 코치 대화 서버 저장, 국외이전(Google/미국·거부방법), 쿠키·자동수집, 위탁 현황,
  * 자동화된 결정, 안전성 확보조치, 아동 보호, 보호책임자 성명.
  * 영문 전문은 웹 개인정보처리방침 링크로 갈음.
@@ -130,7 +130,7 @@ function KoreanContent({ colors }: ContentProps) {
   return (
     <View>
       <Text style={[styles.lastUpdated, { color: colors.mutedForeground }]}>
-        최종 업데이트: 2026년 7월 12일
+        최종 업데이트: 2026년 8월 30일
       </Text>
 
       {/* 1. 개인정보의 처리 목적 */}
@@ -145,16 +145,17 @@ function KoreanContent({ colors }: ContentProps) {
           회원 가입 및 관리: 회원 가입의사 확인, 회원제 서비스 제공에 따른 본인 식별·인증
         </BulletItem>
         <BulletItem colors={colors}>
-          서비스 제공: 퍼스널 컬러 진단, 피부 분석, 체형 분석, 운동/영양 관리 서비스 제공
+          서비스 제공: 퍼스널 컬러, 피부, 체형, 헤어, 메이크업 분석과 맞춤형 뷰티 가이드 제공
         </BulletItem>
         <BulletItem colors={colors}>
           AI 분석: 사용자가 업로드한 이미지를 기반으로 한 AI 분석 서비스 제공
         </BulletItem>
         <BulletItem colors={colors}>
-          AI 코치: 사용자 맞춤형 웰니스 조언을 위한 AI 코칭 서비스 제공
+          AI 코치: 사용자 맞춤형 뷰티 조언을 위한 AI 코칭 서비스 제공
         </BulletItem>
         <BulletItem colors={colors}>
-          소셜 기능: 친구 연결, 활동 피드, 리더보드, 챌린지 참여 기능 제공
+          Google Play 선공개 모바일 앱은 소셜 기능을 제공하지 않으며 친구·피드·댓글·좋아요 정보를
+          수집하지 않음
         </BulletItem>
         <BulletItem colors={colors}>
           제품 추천: 사용자 분석 결과 기반 맞춤형 제품 추천 및 제휴 서비스 제공
@@ -176,10 +177,10 @@ function KoreanContent({ colors }: ContentProps) {
         </BulletItem>
         <BulletItem colors={colors}>선택 항목: 프로필 사진, 키, 체중</BulletItem>
         <BulletItem colors={colors}>
-          서비스 이용 시 수집: 얼굴/체형 이미지, 운동 기록, 식단 기록, AI 코치 대화 내용
+          서비스 이용 시 수집: 얼굴/체형/헤어 이미지, AI 코치 대화 내용
         </BulletItem>
         <BulletItem colors={colors}>
-          소셜 기능 이용 시: 친구 목록, 활동 피드 게시물, 댓글, 좋아요 기록
+          모바일 앱 미수집: 기기 위치정보, 친구 목록, 활동 피드 게시물, 댓글, 좋아요 기록
         </BulletItem>
         <BulletItem colors={colors}>
           자동 수집: 서비스 이용 기록, 접속 로그, 기기 정보, 제휴 링크 클릭 기록
@@ -205,7 +206,7 @@ function KoreanContent({ colors }: ContentProps) {
           언제든 삭제 가능 (회원 탈퇴 시 파기)
         </BulletItem>
         <BulletItem colors={colors}>
-          소셜 활동 기록: 회원 탈퇴 시까지 (탈퇴 후 30일 이내 파기)
+          Google Play 선공개 모바일 앱에서는 소셜 활동 기록을 수집·보관하지 않음
         </BulletItem>
         <BulletItem colors={colors}>서비스 이용 기록: 3년</BulletItem>
       </View>
@@ -251,9 +252,9 @@ function KoreanContent({ colors }: ContentProps) {
         </View>
       </View>
 
-      {/* 5. 개인정보의 제3자 제공 및 AI 서비스 */}
+      {/* 5. 개인정보의 제3자 제공 및 처리 위탁 */}
       <View style={styles.section}>
-        <SectionTitle colors={colors}>5. 개인정보의 제3자 제공 및 AI 서비스</SectionTitle>
+        <SectionTitle colors={colors}>5. 개인정보의 제3자 제공 및 처리 위탁</SectionTitle>
         <Paragraph colors={colors}>
           회사는 원칙적으로 정보주체의 개인정보를 수집·이용 목적으로 명시한 범위 내에서 처리하며,
           다음의 경우를 제외하고는 정보주체의 사전 동의 없이 본래의 목적 범위를 초과하여 처리하거나
@@ -268,12 +269,14 @@ function KoreanContent({ colors }: ContentProps) {
         </BulletItem>
         <InfoBox colors={colors}>
           <Text style={[styles.infoTitle, { color: colors.cardForeground }]}>
-            AI 분석 서비스 관련 제3자 제공
+            AI 분석·코치 처리 위탁
           </Text>
           <Text style={[styles.infoText, { color: colors.cardForeground }]}>
-            이룸의 AI 분석 기능(퍼스널컬러, 피부, 체형 등)은 Google Gemini API를 활용합니다. 분석 시
-            사용자의 이미지 데이터가 Google의 AI 서버로 전송되어 처리됩니다. Google의 데이터 처리에
-            관한 자세한 내용은 Google Gemini API Terms of Service를 참조해주세요.
+            이룸은 AI 분석과 코치 답변 생성을 위해 유료 Google Gemini API를 사용합니다. 활성 Cloud
+            Billing 및 데이터 처리 부속약관(DPA)이 적용되는 범위에서 Google은 이룸의 지시에 따라
+            이미지와 코치 대화 입력을 처리하는 서비스 제공자(수탁자)이며, Google 자체 목적을 위한
+            개인정보 제3자 제공 대상으로 분류하지 않습니다. 데이터 처리 조건은 Google Gemini API
+            Terms of Service를 참조해주세요.
           </Text>
           <Pressable onPress={() => Linking.openURL('https://ai.google.dev/gemini-api/terms')}>
             <Text style={styles.linkText}>Google Gemini API Terms of Service →</Text>
@@ -281,24 +284,25 @@ function KoreanContent({ colors }: ContentProps) {
         </InfoBox>
         <InfoBox colors={colors}>
           <Text style={[styles.infoTitle, { color: colors.cardForeground }]}>
-            개인정보의 국외 이전
+            처리 수탁자에 대한 개인정보의 국외 이전
           </Text>
           <Text style={[styles.infoText, { color: colors.cardForeground }]}>
-            AI 분석 서비스 제공을 위해 아래와 같이 개인정보가 국외로 이전됩니다 (개인정보보호법
-            제28조의8).
+            AI 분석과 코치 답변 제공을 위한 위탁 처리 과정에서 아래와 같이 개인정보가 국외로
+            이전됩니다 (개인정보보호법 제28조의8).
           </Text>
           <BulletItem colors={colors}>이전받는 자: Google LLC (Google Gemini API)</BulletItem>
           <BulletItem colors={colors}>
             이전 국가: 미국 등 Google이 운영하는 데이터센터 소재국
           </BulletItem>
-          <BulletItem colors={colors}>이전 항목: 분석용 얼굴/체형/퍼스널컬러 이미지</BulletItem>
+          <BulletItem colors={colors}>
+            이전 항목: 분석용 얼굴/체형/퍼스널컬러/헤어 이미지, AI 코치 대화 입력
+          </BulletItem>
           <BulletItem colors={colors}>
             이전 일시 및 방법: 분석 요청 시 암호화된 통신(HTTPS)으로 실시간 전송
           </BulletItem>
-          <BulletItem colors={colors}>이용 목적: AI 이미지 분석 처리</BulletItem>
+          <BulletItem colors={colors}>이용 목적: AI 이미지 분석 및 코치 답변 생성 처리</BulletItem>
           <BulletItem colors={colors}>
-            보유·이용 기간: 실시간 처리 후 Gemini API 약관에 따라 모델 학습 목적으로 저장·이용되지
-            않음
+            보유·이용 기간: Gemini API 유료 서비스 및 데이터 처리 부속약관에 따른 제한된 처리 기간
           </BulletItem>
           <BulletItem colors={colors}>
             이전 거부 방법 및 효과: 분석 기능을 이용하지 않거나 계정을 삭제하면 이전이 중단됩니다.
@@ -328,7 +332,9 @@ function KoreanContent({ colors }: ContentProps) {
           <BulletItem colors={colors}>
             Supabase: 데이터 저장 및 관리 (클라우드 데이터베이스)
           </BulletItem>
-          <BulletItem colors={colors}>Google (Gemini API): AI 이미지 분석 처리</BulletItem>
+          <BulletItem colors={colors}>
+            Google (Gemini API): AI 이미지 분석 및 코치 답변 생성 처리(서비스 제공자·수탁자)
+          </BulletItem>
           <BulletItem colors={colors}>Clerk: 회원 인증 및 계정 관리</BulletItem>
           <BulletItem colors={colors}>Vercel: 서비스 호스팅 및 트래픽 통계</BulletItem>
           <BulletItem colors={colors}>Tawk.to: 고객 상담 위젯 운영</BulletItem>
@@ -356,13 +362,11 @@ function KoreanContent({ colors }: ContentProps) {
           </Text>
         </InfoBox>
         <InfoBox colors={colors}>
-          <Text style={[styles.infoTitle, { color: colors.cardForeground }]}>위치정보의 이용</Text>
+          <Text style={[styles.infoTitle, { color: colors.cardForeground }]}>모바일 위치정보</Text>
           <Text style={[styles.infoText, { color: colors.cardForeground }]}>
-            코디 추천 및 날씨 기반 조언 시, 사용자가 기기에서 위치 접근을 명시적으로 허용한 경우에
-            한해 기기의 대략적인 위치(좌표)를 일시적으로 사용합니다. 이 위치정보는 별도로 저장되지
-            않으며, 날씨 조회(Open-Meteo)에만 이용됩니다. 기기 설정에서 위치 접근을 거부하거나
-            차단할 수 있으며, 이 경우 위치 기반 추천 기능만 제한되고 다른 기능은 정상적으로 이용하실
-            수 있습니다.
+            Google Play 선공개 모바일 앱은 기기 위치 권한을 요청하지 않으며 대략적·정밀 위치정보를
+            수집하거나 저장하지 않습니다. 웹 서비스의 브라우저 위치 기능은 웹 개인정보처리방침에서
+            별도로 안내합니다.
           </Text>
         </InfoBox>
       </View>
@@ -492,9 +496,12 @@ function KoreanContent({ colors }: ContentProps) {
       <View style={styles.section}>
         <SectionTitle colors={colors}>13. 개인정보처리방침의 변경</SectionTitle>
         <Paragraph colors={colors}>
-          이 개인정보처리방침은 2026년 7월 12일부터 적용됩니다. 이전의 개인정보처리방침은 아래에서
+          이 개인정보처리방침은 2026년 8월 30일부터 적용됩니다. 이전의 개인정보처리방침은 아래에서
           확인하실 수 있습니다.
         </Paragraph>
+        <Text style={[styles.historyItem, { color: colors.mutedForeground }]}>
+          • 2026년 7월 12일 ~ 2026년 8월 29일 적용 버전
+        </Text>
         <Text style={[styles.historyItem, { color: colors.mutedForeground }]}>
           • 2026년 2월 20일 ~ 2026년 7월 11일 적용 버전
         </Text>
@@ -524,7 +531,7 @@ function EnglishContent({ colors }: ContentProps) {
   return (
     <View>
       <Text style={[styles.lastUpdated, { color: colors.mutedForeground }]}>
-        Last updated: July 12, 2026
+        Last updated: August 30, 2026
       </Text>
       <View style={styles.section}>
         <SectionTitle colors={colors}>Privacy Policy (English)</SectionTitle>

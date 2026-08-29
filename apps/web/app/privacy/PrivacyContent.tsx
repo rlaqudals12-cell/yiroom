@@ -60,7 +60,7 @@ export function PrivacyContent({ lang }: { lang: Lang }) {
 function KoreanContent() {
   return (
     <>
-      <p className="text-muted-foreground">최종 업데이트: 2026년 7월 12일</p>
+      <p className="text-muted-foreground">최종 업데이트: 2026년 8월 30일</p>
 
       <section className="mt-8">
         <h2 className="text-xl font-semibold mb-4">1. 개인정보의 처리 목적</h2>
@@ -71,10 +71,12 @@ function KoreanContent() {
         </p>
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>회원 가입 및 관리: 회원 가입의사 확인, 회원제 서비스 제공에 따른 본인 식별·인증</li>
-          <li>서비스 제공: 퍼스널 컬러 진단, 피부 분석, 체형 분석, 운동/영양 관리 서비스 제공</li>
+          <li>
+            서비스 제공: 퍼스널 컬러, 피부, 체형, 헤어, 메이크업 분석과 맞춤형 뷰티 가이드 제공
+          </li>
           <li>AI 분석: 사용자가 업로드한 이미지를 기반으로 한 AI 분석 서비스 제공</li>
-          <li>AI 코치: 사용자 맞춤형 웰니스 조언을 위한 AI 코칭 서비스 제공</li>
-          <li>소셜 기능: 친구 연결, 활동 피드, 리더보드, 챌린지 참여 기능 제공</li>
+          <li>AI 코치: 사용자 맞춤형 뷰티 조언을 위한 AI 코칭 서비스 제공</li>
+          <li>웹 소셜 기능 이용 시: 친구 연결, 활동 피드, 댓글 등 선택 기능 제공</li>
           <li>제품 추천: 사용자 분석 결과 기반 맞춤형 제품 추천 및 제휴 서비스 제공</li>
           <li>서비스 개선: 서비스 이용 기록 분석, 서비스 개선 및 신규 서비스 개발</li>
         </ul>
@@ -92,11 +94,11 @@ function KoreanContent() {
             <strong>선택 항목:</strong> 프로필 사진, 키, 체중
           </li>
           <li>
-            <strong>서비스 이용 시 수집:</strong> 얼굴/체형 이미지, 운동 기록, 식단 기록, AI 코치
-            대화 내용
+            <strong>서비스 이용 시 수집:</strong> 얼굴/체형/헤어 이미지, AI 코치 대화 내용
           </li>
           <li>
-            <strong>소셜 기능 이용 시:</strong> 친구 목록, 활동 피드 게시물, 댓글, 좋아요 기록
+            <strong>웹 소셜 기능 이용 시:</strong> 친구 목록, 활동 피드 게시물, 댓글, 좋아요 기록.
+            Google Play 선공개 모바일 앱은 소셜 기능을 제공하지 않으며 이 항목을 수집하지 않습니다.
           </li>
           <li>
             <strong>자동 수집:</strong> 서비스 이용 기록, 접속 로그, 기기 정보, 제휴 링크 클릭 기록
@@ -120,7 +122,7 @@ function KoreanContent() {
             AI 코치 대화: 대화 이어보기 기능 제공을 위해 서버에 저장되며, 설정 또는 삭제 요청으로
             언제든 삭제 가능 (회원 탈퇴 시 파기)
           </li>
-          <li>소셜 활동 기록: 회원 탈퇴 시까지 (탈퇴 후 30일 이내 파기)</li>
+          <li>웹 소셜 활동 기록: 회원 탈퇴 시까지 (탈퇴 후 30일 이내 파기)</li>
           <li>서비스 이용 기록: 3년</li>
         </ul>
       </section>
@@ -165,7 +167,7 @@ function KoreanContent() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">5. 개인정보의 제3자 제공 및 AI 서비스</h2>
+        <h2 className="text-xl font-semibold mb-4">5. 개인정보의 제3자 제공 및 처리 위탁</h2>
         <p>
           회사는 원칙적으로 정보주체의 개인정보를 수집·이용 목적으로 명시한 범위 내에서 처리하며,
           다음의 경우를 제외하고는 정보주체의 사전 동의 없이 본래의 목적 범위를 초과하여 처리하거나
@@ -181,11 +183,12 @@ function KoreanContent() {
           </li>
         </ul>
         <div className="mt-4 p-4 bg-muted rounded-lg">
-          <p className="font-medium">AI 분석 서비스 관련 제3자 제공</p>
+          <p className="font-medium">AI 분석·코치 처리 위탁</p>
           <p className="mt-2 text-sm">
-            이룸의 AI 분석 기능(퍼스널컬러, 피부, 체형 등)은 Google Gemini API를 활용합니다. 분석 시
-            사용자의 이미지 데이터가 Google의 AI 서버로 전송되어 처리됩니다. Google의 데이터 처리에
-            관한 자세한 내용은{' '}
+            이룸은 AI 분석과 코치 답변 생성을 위해 유료 Google Gemini API를 사용합니다. 활성 Cloud
+            Billing 및 데이터 처리 부속약관(DPA)이 적용되는 범위에서 Google은 이룸의 지시에 따라
+            이미지와 코치 대화 입력을 처리하는 서비스 제공자(수탁자)이며, Google 자체 목적을 위한
+            개인정보 제3자 제공 대상으로 분류하지 않습니다. 데이터 처리 조건은{' '}
             <a
               href="https://ai.google.dev/gemini-api/terms"
               target="_blank"
@@ -198,20 +201,19 @@ function KoreanContent() {
           </p>
         </div>
         <div className="mt-4 p-4 bg-muted rounded-lg">
-          <p className="font-medium">개인정보의 국외 이전</p>
+          <p className="font-medium">처리 수탁자에 대한 개인정보의 국외 이전</p>
           <p className="mt-2 text-sm">
-            AI 분석 서비스 제공을 위해 아래와 같이 개인정보가 국외로 이전됩니다 (개인정보보호법
-            제28조의8).
+            AI 분석과 코치 답변 제공을 위한 위탁 처리 과정에서 아래와 같이 개인정보가 국외로
+            이전됩니다 (개인정보보호법 제28조의8).
           </p>
           <ul className="mt-2 text-sm list-disc pl-6 space-y-1">
             <li>이전받는 자: Google LLC (Google Gemini API)</li>
             <li>이전 국가: 미국 등 Google이 운영하는 데이터센터 소재국</li>
-            <li>이전 항목: 분석용 얼굴/체형/퍼스널컬러 이미지</li>
+            <li>이전 항목: 분석용 얼굴/체형/퍼스널컬러/헤어 이미지, AI 코치 대화 입력</li>
             <li>이전 일시 및 방법: 분석 요청 시 암호화된 통신(HTTPS)으로 실시간 전송</li>
-            <li>이용 목적: AI 이미지 분석 처리</li>
+            <li>이용 목적: AI 이미지 분석 및 코치 답변 생성 처리</li>
             <li>
-              보유·이용 기간: 실시간 처리 후 Gemini API 약관에 따라 모델 학습 목적으로 저장·이용되지
-              않음
+              보유·이용 기간: Gemini API 유료 서비스 및 데이터 처리 부속약관에 따른 제한된 처리 기간
             </li>
             <li>
               이전 거부 방법 및 효과: 분석 기능을 이용하지 않거나 계정을 삭제하면 이전이 중단됩니다.
@@ -237,7 +239,9 @@ function KoreanContent() {
           <p className="font-medium">개인정보 처리 위탁 현황</p>
           <ul className="mt-2 text-sm list-disc pl-6 space-y-1">
             <li>Supabase: 데이터 저장 및 관리 (클라우드 데이터베이스)</li>
-            <li>Google (Gemini API): AI 이미지 분석 처리</li>
+            <li>
+              Google (Gemini API): AI 이미지 분석 및 코치 답변 생성 처리(서비스 제공자·수탁자)
+            </li>
             <li>Clerk: 회원 인증 및 계정 관리</li>
             <li>Vercel: 서비스 호스팅 및 트래픽 통계</li>
             <li>Tawk.to: 고객 상담 위젯 운영</li>
@@ -262,13 +266,12 @@ function KoreanContent() {
           </p>
         </div>
         <div className="mt-4 p-4 bg-muted rounded-lg">
-          <p className="font-medium">위치정보의 이용</p>
+          <p className="font-medium">플랫폼별 위치정보의 이용</p>
           <p className="mt-2 text-sm">
-            코디 추천 및 날씨 기반 조언 시, 사용자가 브라우저에서 위치 접근을 명시적으로 허용한
-            경우에 한해 기기의 대략적인 위치(좌표)를 <strong>일시적으로</strong> 사용합니다. 이
-            위치정보는 별도로 저장되지 않으며, 날씨 조회(Open-Meteo)에만 이용됩니다. 브라우저
-            설정에서 위치 접근을 거부하거나 차단할 수 있으며, 이 경우 위치 기반 추천 기능만 제한되고
-            다른 기능은 정상적으로 이용하실 수 있습니다.
+            웹에서 코디 추천 및 날씨 기반 조언을 이용할 때, 사용자가 브라우저 위치 접근을 명시적으로
+            허용한 경우에만 기기의 대략적인 위치(좌표)를 <strong>일시적으로</strong> 사용합니다. 이
+            위치정보는 저장하지 않고 날씨 조회(Open-Meteo)에만 이용합니다. Google Play 선공개 모바일
+            앱은 기기 위치 권한을 요청하지 않으며 대략적·정밀 위치정보를 수집하지 않습니다.
           </p>
         </div>
       </section>
@@ -387,10 +390,11 @@ function KoreanContent() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold mb-4">13. 개인정보처리방침의 변경</h2>
         <p>
-          이 개인정보처리방침은 2026년 7월 12일부터 적용됩니다. 이전의 개인정보처리방침은 아래에서
+          이 개인정보처리방침은 2026년 8월 30일부터 적용됩니다. 이전의 개인정보처리방침은 아래에서
           확인하실 수 있습니다.
         </p>
         <ul className="list-disc pl-6 mt-2 space-y-1 text-sm text-muted-foreground">
+          <li>2026년 7월 12일 ~ 2026년 8월 29일 적용 버전</li>
           <li>2026년 2월 20일 ~ 2026년 7월 11일 적용 버전</li>
           <li>2026년 1월 8일 ~ 2026년 2월 19일 적용 버전</li>
           <li>2025년 1월 20일 ~ 2026년 1월 7일 적용 버전</li>
@@ -403,7 +407,7 @@ function KoreanContent() {
 function EnglishContent() {
   return (
     <>
-      <p className="text-muted-foreground">Last updated: July 12, 2026</p>
+      <p className="text-muted-foreground">Last updated: August 30, 2026</p>
 
       <section className="mt-8">
         <h2 className="text-xl font-semibold mb-4">1. Purpose of Processing Personal Data</h2>
@@ -417,12 +421,12 @@ function EnglishContent() {
             Membership management: identity verification and authentication for account registration
           </li>
           <li>
-            Service delivery: personal color diagnosis, skin analysis, body type analysis, workout
-            and nutrition management
+            Service delivery: personal color, skin, body, hair, and makeup analysis and personalized
+            beauty guidance
           </li>
           <li>AI analysis: AI-powered analysis based on user-uploaded images</li>
-          <li>AI coaching: personalized wellness advice through AI coaching</li>
-          <li>Social features: friend connections, activity feeds, leaderboards, and challenges</li>
+          <li>AI coaching: personalized beauty advice through AI coaching</li>
+          <li>Web social features: optional friend connections, activity feeds, and comments</li>
           <li>
             Product recommendations: personalized product suggestions based on analysis results and
             affiliate services
@@ -446,11 +450,13 @@ function EnglishContent() {
             <strong>Optional:</strong> Profile photo, height, weight
           </li>
           <li>
-            <strong>Collected during service use:</strong> Face/body images, workout records, diet
-            records, AI coach conversation content
+            <strong>Collected during service use:</strong> Face/body/hair images and AI coach
+            conversation content
           </li>
           <li>
-            <strong>Social features:</strong> Friend lists, activity feed posts, comments, likes
+            <strong>Web social features:</strong> Friend lists, activity feed posts, comments, and
+            likes. The Google Play early-release mobile app does not provide social features and
+            does not collect this data.
           </li>
           <li>
             <strong>Automatically collected:</strong> Service usage logs, access logs, device
@@ -479,7 +485,8 @@ function EnglishContent() {
             you can delete them anytime via settings or by request (destroyed upon account deletion)
           </li>
           <li>
-            Social activity records: Until account deletion (destroyed within 30 days of deletion)
+            Web social activity records: Until account deletion (destroyed within 30 days of
+            deletion)
           </li>
           <li>Service usage logs: 3 years</li>
         </ul>
@@ -531,7 +538,9 @@ function EnglishContent() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">5. Third-Party Data Sharing and AI Services</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          5. Third-Party Data Sharing and Processing Partners
+        </h2>
         <p>
           The Company does not share personal data with third parties beyond the stated purposes
           without prior consent, except in the following cases:
@@ -545,13 +554,15 @@ function EnglishContent() {
           </li>
         </ul>
         <div className="mt-4 p-4 bg-muted rounded-lg">
-          <p className="font-medium">AI Analysis Service &mdash; Third-Party Processing</p>
+          <p className="font-medium">
+            AI Analysis and Coaching &mdash; Service-Provider Processing
+          </p>
           <p className="mt-2 text-sm">
-            Yiroom&apos;s AI analysis features (personal color, skin, body type, etc.) utilize the{' '}
-            <strong>Google Gemini API</strong>. When you use these features, your image data is
-            transmitted to and processed by Google&apos;s AI servers. Images are processed in
-            real-time and are not stored by Google for model training purposes under the Gemini API
-            terms. For details on Google&apos;s data handling, please refer to the{' '}
+            Yiroom uses the paid <strong>Google Gemini API</strong> for AI analysis and coach
+            responses. Where active Cloud Billing and the Data Processing Addendum (DPA) apply,
+            Google processes images and coach-message inputs on Yiroom&apos;s instructions as a
+            service provider (processor); we do not classify this as disclosure to Google for its
+            own independent purposes. Processing is governed by the{' '}
             <a
               href="https://ai.google.dev/gemini-api/terms"
               target="_blank"
@@ -564,25 +575,25 @@ function EnglishContent() {
           </p>
         </div>
         <div className="mt-4 p-4 bg-muted rounded-lg">
-          <p className="font-medium">International Data Transfer</p>
+          <p className="font-medium">International Transfer to a Processing Partner</p>
           <p className="mt-2 text-sm">
-            To provide AI analysis, personal data is transferred internationally as follows (PIPA
-            Art. 28-8; GDPR Art. 44&ndash;49):
+            In the course of outsourced AI analysis and coach-response processing, personal data is
+            transferred internationally as follows (PIPA Art. 28-8; GDPR Art. 44&ndash;49):
           </p>
           <ul className="mt-2 text-sm list-disc pl-6 space-y-1">
             <li>Recipient: Google LLC (Google Gemini API)</li>
             <li>
               Destination: United States and other countries where Google operates data centers
             </li>
-            <li>Data transferred: Facial/body/personal-color images for analysis</li>
+            <li>Data transferred: Facial/body/personal-color/hair images and AI coach inputs</li>
             <li>
               Timing &amp; method: Transmitted in real time over encrypted connections (HTTPS) when
               you request an analysis
             </li>
-            <li>Purpose: AI image analysis processing</li>
+            <li>Purpose: AI image analysis and coach-response processing</li>
             <li>
-              Retention: Processed in real time; not stored for model training under the Gemini API
-              terms
+              Retention: Limited processing period under the Gemini API Paid Services terms and Data
+              Processing Addendum
             </li>
             <li>
               How to refuse &amp; effect: You may refuse the transfer by not using the analysis
@@ -612,7 +623,10 @@ function EnglishContent() {
           <p className="font-medium">Data Processing Partners</p>
           <ul className="mt-2 text-sm list-disc pl-6 space-y-1">
             <li>Supabase: Data storage and management (cloud database)</li>
-            <li>Google (Gemini API): AI image analysis processing</li>
+            <li>
+              Google (Gemini API): AI image analysis and coach-response processing (service
+              provider)
+            </li>
             <li>Clerk: Member authentication and account management</li>
             <li>Vercel: Service hosting and traffic analytics</li>
             <li>Tawk.to: Customer support chat widget</li>
@@ -639,14 +653,13 @@ function EnglishContent() {
           </p>
         </div>
         <div className="mt-4 p-4 bg-muted rounded-lg">
-          <p className="font-medium">Use of Location Data</p>
+          <p className="font-medium">Location Data by Platform</p>
           <p className="mt-2 text-sm">
-            For outfit recommendations and weather-based advice, we use your device&apos;s
-            approximate location (coordinates) <strong>temporarily</strong>, only when you
-            explicitly grant location access in your browser. This location data is not stored and
-            is used solely to look up weather (Open-Meteo). You can deny or block location access in
-            your browser settings; in that case only location-based recommendations are limited, and
-            all other features work normally.
+            On the web, we use approximate device coordinates <strong>temporarily</strong> for
+            outfit and weather-based advice only after you explicitly allow browser location access.
+            The coordinates are not stored and are used only for an Open-Meteo weather lookup. The
+            Google Play early-release mobile app does not request device location permission or
+            collect approximate or precise location data.
           </p>
         </div>
       </section>
@@ -767,10 +780,11 @@ function EnglishContent() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold mb-4">13. Changes to This Policy</h2>
         <p>
-          This Privacy Policy is effective as of July 12, 2026. Previous versions are available
+          This Privacy Policy is effective as of August 30, 2026. Previous versions are available
           below:
         </p>
         <ul className="list-disc pl-6 mt-2 space-y-1 text-sm text-muted-foreground">
+          <li>Version effective July 12, 2026 &ndash; August 29, 2026</li>
           <li>Version effective February 20, 2026 &ndash; July 11, 2026</li>
           <li>Version effective January 8, 2026 &ndash; February 19, 2026</li>
           <li>Version effective January 20, 2025 &ndash; January 7, 2026</li>
