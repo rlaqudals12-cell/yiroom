@@ -97,7 +97,7 @@ export default function FeedbackPage() {
   if (isSubmitted) {
     return (
       <div
-        className="container flex min-h-[80vh] max-w-lg flex-col items-center justify-center py-6"
+        className="container mx-auto flex min-h-[80vh] max-w-lg flex-col items-center justify-center px-4 py-6"
         data-testid="feedback-success"
       >
         {/* 체크 아이콘 - 바운스 애니메이션 */}
@@ -123,7 +123,7 @@ export default function FeedbackPage() {
   const canSubmit = feedbackType && content.trim().length >= 10;
 
   return (
-    <div className="container max-w-lg space-y-6 py-6" data-testid="feedback-page">
+    <div className="container mx-auto max-w-lg space-y-6 px-4 py-6" data-testid="feedback-page">
       {/* 헤더 */}
       <div className="flex items-center gap-4">
         <Link href="/help/faq">

@@ -25,13 +25,17 @@ const ANALYSIS_TYPE_BY_BUCKET = Object.fromEntries(
   Object.entries(ANALYSIS_IMAGE_BUCKETS).map(([type, bucket]) => [bucket, type])
 ) as Record<string, AnalysisType>;
 const ANALYSIS_SIGNED_URL_MAX_SECONDS = 60 * 60;
+const PRIVATE_SIGNED_URL_MAX_SECONDS = 24 * 60 * 60;
 
 function cappedExpiry(expiresIn: unknown, isAnalysisImage: boolean): number {
   const requested =
     typeof expiresIn === 'number' && Number.isFinite(expiresIn) && expiresIn > 0
       ? expiresIn
       : ANALYSIS_SIGNED_URL_MAX_SECONDS;
-  return isAnalysisImage ? Math.min(requested, ANALYSIS_SIGNED_URL_MAX_SECONDS) : requested;
+  return Math.min(
+    requested,
+    isAnalysisImage ? ANALYSIS_SIGNED_URL_MAX_SECONDS : PRIVATE_SIGNED_URL_MAX_SECONDS
+  );
 }
 
 /** 경로 첫 세그먼트가 요청자 userId인지 — 유일한 소유권 가드(service role은 RLS를 우회한다) */

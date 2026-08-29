@@ -888,7 +888,7 @@ export default function PersonalColorResultPage() {
       {/* P14: 하단 액션 바 — primary는 "다음 행동" 1개만, 공유는 보조 클러스터 (verdict-first 위계) */}
       {result && (
         <div
-          className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10"
+          className="sticky bottom-20 left-0 right-0 z-10 border-t border-border bg-card p-4"
           data-print-hide
         >
           <div className="max-w-md mx-auto space-y-2">

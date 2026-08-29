@@ -193,7 +193,7 @@ export function WishlistPageClient({ clerkUserId }: WishlistPageClientProps) {
   }
 
   return (
-    <div className="px-4 py-6 pb-24">
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 pb-24">
       <h1 className="text-2xl font-bold text-foreground mb-2">
         위시리스트
         <span className="text-primary text-lg font-normal ml-2">{wishlists.length}개</span>

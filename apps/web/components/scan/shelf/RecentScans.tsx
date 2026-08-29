@@ -81,6 +81,7 @@ export function RecentScans({ limit = 5, className }: RecentScansProps) {
                   src={item.productImageUrl}
                   alt={item.productName}
                   fill
+                  sizes="56px"
                   className="object-cover"
                 />
               ) : (

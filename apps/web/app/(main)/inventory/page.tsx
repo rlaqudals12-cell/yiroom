@@ -72,7 +72,7 @@ const visibleCategories = inventoryCategories.filter(
 
 export default function InventoryPage() {
   return (
-    <div className="container max-w-4xl py-8" data-testid="inventory-page">
+    <div className="container mx-auto max-w-4xl px-4 py-8" data-testid="inventory-page">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">내 인벤토리</h1>
         <p className="text-muted-foreground mt-1">

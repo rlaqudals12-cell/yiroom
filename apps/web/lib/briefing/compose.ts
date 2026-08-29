@@ -17,6 +17,8 @@
  * @see docs/adr/ADR-114-beauty-team-ia.md §결정 4
  */
 
+import { withSubjectParticle } from '@/lib/utils/korean';
+
 /** 시간대 구분 — 인사/맺음말 톤 결정 */
 export type TimeSlot = 'morning' | 'afternoon' | 'evening' | 'night';
 
@@ -235,8 +237,8 @@ function shelfObservation(product: BriefingRecentProduct): ObservationResult {
     const alt = product.alternativeName?.trim();
     return {
       text: alt
-        ? `${when} ${product.name}가 잘 안 맞는다고 하셨죠. 대신 ${alt} 어때요?`
-        : `${when} ${product.name}가 잘 안 맞는다고 하셨죠. 다른 제품을 찾아볼까요?`,
+        ? `${when} ${withSubjectParticle(product.name)} 잘 안 맞는다고 하셨죠. 대신 ${alt} 어때요?`
+        : `${when} ${withSubjectParticle(product.name)} 잘 안 맞는다고 하셨죠. 다른 제품을 찾아볼까요?`,
     };
   }
 

@@ -218,7 +218,18 @@ export function FeedCard({
                 post.media_urls.length === 1 ? 'aspect-video' : 'aspect-square'
               )}
             >
-              <Image src={url} alt={`이미지 ${i + 1}`} fill className="object-cover" unoptimized />
+              <Image
+                src={url}
+                alt={`이미지 ${i + 1}`}
+                fill
+                sizes={
+                  post.media_urls.length === 1
+                    ? '(max-width: 768px) 100vw, 640px'
+                    : '(max-width: 768px) 50vw, 320px'
+                }
+                className="object-cover"
+                unoptimized
+              />
               {/* 4장 초과 시 오버레이 */}
               {i === 3 && post.media_urls.length > 4 && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">

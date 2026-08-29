@@ -388,6 +388,7 @@ export default function MakeupAnalysisPage() {
                     src={imagePreview}
                     alt={t('upload.selectedImage')}
                     fill
+                    sizes="(max-width: 512px) 100vw, 480px"
                     className="object-cover"
                     unoptimized
                   />

@@ -24,7 +24,7 @@ export default async function FriendRequestsPage() {
   const requests = await getReceivedRequests(supabase, userId);
 
   return (
-    <div className="container max-w-2xl py-6 space-y-6">
+    <div className="container mx-auto max-w-2xl space-y-6 px-4 py-6">
       {/* 헤더 */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -37,9 +37,7 @@ export default async function FriendRequestsPage() {
             <Inbox className="h-6 w-6" />
             받은 친구 요청
           </h1>
-          <p className="text-sm text-muted-foreground">
-            {requests.length}건의 요청이 있습니다
-          </p>
+          <p className="text-sm text-muted-foreground">{requests.length}건의 요청이 있습니다</p>
         </div>
       </div>
 

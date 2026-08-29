@@ -168,7 +168,10 @@ function SkinCompareContent() {
   const overallChange = data.changes.overall;
 
   return (
-    <div className="min-h-screen bg-background" data-testid="skin-compare-page">
+    <div
+      className="mx-auto min-h-screen w-full max-w-7xl bg-background"
+      data-testid="skin-compare-page"
+    >
       {/* 헤더 */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between p-4">

@@ -118,9 +118,7 @@ export function DraggableClothingLayer({
         height: scale.height,
         transform: `rotate(${rotation}deg)`,
         opacity,
-        zIndex: isSelected
-          ? 1000
-          : selectByKey(item.id, { outer: 4, top: 3, bottom: 2 }, 1)!,
+        zIndex: isSelected ? 1000 : selectByKey(item.id, { outer: 4, top: 3, bottom: 2 }, 1)!,
       }}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
@@ -129,6 +127,7 @@ export function DraggableClothingLayer({
         src={item.imageUrl}
         alt={item.name || item.type}
         fill
+        sizes="(max-width: 768px) 100vw, 640px"
         className="object-contain pointer-events-none"
         draggable={false}
         unoptimized

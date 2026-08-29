@@ -152,6 +152,14 @@ describe('ProductFilters', () => {
         skinTypes: undefined,
       });
     });
+
+    it('제거 버튼은 어떤 필터를 지우는지 접근 가능한 이름으로 알린다', () => {
+      render(
+        <ProductFilters filters={{ skinTypes: ['dry'] }} onFiltersChange={mockOnFiltersChange} />
+      );
+
+      expect(screen.getByRole('button', { name: '건성 필터 제거' })).toBeInTheDocument();
+    });
   });
 
   describe('Sheet 열기/닫기', () => {
@@ -207,6 +215,18 @@ describe('ProductFilters', () => {
   });
 
   describe('필터 옵션', () => {
+    it('선택 칩은 aria-pressed와 체크 표식으로 색상 외 상태를 알린다', async () => {
+      render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
+      fireEvent.click(screen.getByRole('button', { name: /필터/i }));
+
+      const chip = await screen.findByRole('button', { name: '~2만원' });
+      expect(chip).toHaveAttribute('aria-pressed', 'false');
+
+      fireEvent.click(chip);
+      expect(chip).toHaveAttribute('aria-pressed', 'true');
+      expect(chip.querySelector('[data-testid="lucide-check"]')).not.toBeNull();
+    });
+
     it('가격대 옵션 표시', async () => {
       render(<ProductFilters filters={{}} onFiltersChange={mockOnFiltersChange} />);
 

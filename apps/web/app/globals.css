@@ -490,8 +490,10 @@ html:not(.dark)
   body {
     @apply bg-background text-foreground;
   }
+  /* 페이지마다 목적에 맞는 지면·읽기 폭을 소유한다. 루트 main에 액자를 씌우면
+     풀블리드 크림 지면 바깥에 body 백색이 드러나 ADR-120 지면 계약이 깨진다. */
   main {
-    @apply max-w-7xl mx-auto pt-16 px-4;
+    @apply pt-16;
   }
 }
 

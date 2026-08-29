@@ -319,7 +319,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="bg-background min-h-screen" data-testid="profile-page">
+    <div className="mx-auto min-h-screen w-full max-w-7xl bg-background" data-testid="profile-page">
       <div className="space-y-4 px-4 py-6">
         {/* K-5: 시간대별 인사말 헤더 */}
         <FadeInUp>

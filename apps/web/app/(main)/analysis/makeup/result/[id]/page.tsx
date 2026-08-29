@@ -679,7 +679,7 @@ export default function MakeupAnalysisResultPage() {
 
       {/* 하단 액션 바 — sticky로 콘텐츠 가림 방지 */}
       {result && (
-        <div className="sticky bottom-20 left-0 right-0 p-4 bg-card/80 dark:bg-card/90 backdrop-blur-sm border-t border-border/50 dark:border-border z-10">
+        <div className="sticky bottom-20 left-0 right-0 z-10 border-t border-border bg-card p-4">
           <div className="max-w-md mx-auto space-y-2">
             <Button
               className="w-full"

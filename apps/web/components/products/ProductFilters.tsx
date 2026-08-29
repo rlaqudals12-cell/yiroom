@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { SlidersHorizontal, X, RotateCcw } from 'lucide-react';
+import { Check, RotateCcw, SlidersHorizontal, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -334,13 +334,15 @@ function FilterChip({
     <button
       type="button"
       onClick={onToggle}
+      aria-pressed={Boolean(selected)}
       className={cn(
-        'inline-flex items-center rounded-full px-3 py-1.5 text-sm transition-colors',
+        'inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm transition-colors',
         selected
           ? 'bg-primary text-primary-foreground'
           : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
       )}
     >
+      {selected ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
       {label}
     </button>
   );
@@ -351,8 +353,13 @@ function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void 
   return (
     <Badge variant="secondary" className="gap-1 pr-1">
       {label}
-      <button type="button" onClick={onRemove} className="ml-1 rounded-full p-0.5 hover:bg-muted">
-        <X className="h-3 w-3" />
+      <button
+        type="button"
+        onClick={onRemove}
+        className="ml-1 rounded-full p-0.5 hover:bg-muted"
+        aria-label={`${label} 필터 제거`}
+      >
+        <X className="h-3 w-3" aria-hidden="true" />
       </button>
     </Badge>
   );

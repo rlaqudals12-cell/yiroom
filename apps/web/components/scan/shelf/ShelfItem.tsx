@@ -79,7 +79,13 @@ export function ShelfItem({ item, onSelect, onStatusChange, onDelete, className 
       {/* 제품 이미지 */}
       <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-muted">
         {item.productImageUrl ? (
-          <Image src={item.productImageUrl} alt={item.productName} fill className="object-cover" />
+          <Image
+            src={item.productImageUrl}
+            alt={item.productName}
+            fill
+            sizes="64px"
+            className="object-cover"
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <Package className="h-8 w-8 text-muted-foreground" />

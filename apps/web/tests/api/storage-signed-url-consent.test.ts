@@ -97,4 +97,22 @@ describe('POST /api/storage/signed-url — 분석 이미지 동의 경계', () =
     expect(mocks.hasActiveAccess).not.toHaveBeenCalled();
     expect(mocks.createSignedUrl).toHaveBeenCalledWith('user-1/photo.jpg', 86400);
   });
+
+  it('비분석 버킷 단건도 요청값과 무관하게 24시간을 절대 상한으로 둔다', async () => {
+    const response = await POST(
+      request({ bucket: 'inventory-images', path: 'user-1/photo.jpg', expiresIn: 604800 })
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.createSignedUrl).toHaveBeenCalledWith('user-1/photo.jpg', 86400);
+  });
+
+  it('비분석 버킷 일괄 서명도 24시간 절대 상한을 적용한다', async () => {
+    const response = await POST(
+      request({ bucket: 'inventory-images', paths: ['user-1/photo.jpg'], expiresIn: 604800 })
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.createSignedUrls).toHaveBeenCalledWith(['user-1/photo.jpg'], 86400);
+  });
 });

@@ -235,6 +235,8 @@ describe('제품함 후속 폐루프 v1 — 관찰 분기(미응답 질문 / 긍
       },
     });
     expect(b.observation).toContain('수분 앰플');
+    expect(b.observation).toContain('수분 앰플이 잘 안 맞는다고');
+    expect(b.observation).not.toContain('수분 앰플가');
     expect(b.observation).toContain('잘 안 맞는다고');
     expect(b.observation).toContain('다른 제품');
     expect(b.observation).toContain('3일 전'); // 근거 경과일

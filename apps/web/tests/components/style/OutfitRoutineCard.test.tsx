@@ -84,9 +84,7 @@ describe('OutfitRoutineCard', () => {
     expect(screen.getByText(/코디가 없습니다/)).toBeInTheDocument();
   });
 
-  // 원피스 슬롯 회귀: CLOTHING_CATEGORIES에 dress가 없어 원피스 코디가
-  // 라벨 'dress' + 폴백 이모지 '📦'로 새어나갔다 (조립기 슬롯과 1:1이어야 한다)
-  it('원피스 슬롯을 한국어 라벨로 표시한다 (dress 📦 누수 금지)', () => {
+  it('원피스 슬롯을 한국어 라벨과 기능 아이콘으로 표시한다', () => {
     const dressOutfit: OutfitItem[] = [
       { order: 1, category: 'dress', productName: '플로럴 원피스', color: '아이보리' },
       { order: 2, category: 'shoes', productName: '로퍼', color: '브라운' },
@@ -96,9 +94,19 @@ describe('OutfitRoutineCard', () => {
 
     expect(screen.getByText('원피스')).toBeInTheDocument();
     expect(screen.getByText('플로럴 원피스')).toBeInTheDocument();
-    expect(screen.getByText('👗')).toBeInTheDocument();
+    expect(screen.getByLabelText('원피스 이미지 없음')).toBeInTheDocument();
     expect(screen.queryByText('dress')).not.toBeInTheDocument();
-    expect(screen.queryByText('📦')).not.toBeInTheDocument();
+    expect(screen.queryByText('👗')).not.toBeInTheDocument();
+  });
+
+  it('그라데이션·이모지·인디고 하드코딩 대신 헤어라인과 시맨틱 토큰을 쓴다', () => {
+    render(<OutfitRoutineCard occasion="daily" items={dailyItems} matchRate={92} />);
+
+    const card = screen.getByTestId('outfit-routine-card');
+    expect(card.innerHTML).not.toContain('bg-gradient');
+    expect(card.innerHTML).not.toContain('indigo');
+    expect(card.textContent).not.toMatch(/[👕👖👗🧥👟👜📦]/u);
+    expect(card.querySelector('.border-b')).not.toBeNull();
   });
 
   it('shows add button in edit mode', () => {

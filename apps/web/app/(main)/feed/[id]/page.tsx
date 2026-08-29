@@ -354,7 +354,14 @@ export default function PostDetailPage() {
             <div className="mb-4 grid gap-2 grid-cols-2">
               {post.media_urls.map((url, i) => (
                 <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-muted">
-                  <Image src={url} alt="" fill className="object-cover" unoptimized />
+                  <Image
+                    src={url}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 50vw, 320px"
+                    className="object-cover"
+                    unoptimized
+                  />
                 </div>
               ))}
             </div>

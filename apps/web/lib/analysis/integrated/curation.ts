@@ -12,6 +12,7 @@
  */
 
 import { getBodyShapeLabel } from '@/lib/body';
+import { withSubjectParticle } from '@/lib/utils/korean';
 import { seasonKo, skinTypeKo } from './labels';
 import type {
   AxisResult,
@@ -223,7 +224,7 @@ function buildOutfitCuration(
   return {
     category: 'outfit',
     title,
-    reason: `체형 핏 포인트와 ${paletteDescription}이 함께 반영된 코디 제안이에요.`,
+    reason: `체형 핏 포인트와 ${withSubjectParticle(paletteDescription)} 함께 반영된 코디 제안이에요.`,
     href: buildClosetUrl({ body: bodyType, tone: toneQuery }, sessionId),
     cta: '코디 보러가기',
   };

@@ -3,6 +3,18 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { FeedCard } from '@/components/feed/FeedCard';
 import type { FeedPostWithAuthor } from '@/lib/feed/types';
 
+vi.mock('next/image', () => ({
+  default: ({
+    fill: _fill,
+    unoptimized: _unoptimized,
+    alt = '',
+    ...props
+  }: React.ComponentProps<'img'> & {
+    fill?: boolean;
+    unoptimized?: boolean;
+  }) => <img alt={alt} {...props} />,
+}));
+
 // useRouter 모킹
 vi.mock('next/navigation', () => ({
   useSearchParams: () => ({ get: vi.fn().mockReturnValue(null) }),
@@ -185,7 +197,10 @@ describe('FeedCard', () => {
       render(
         <FeedCard post={postWithImage} onLike={mockHandlers.onLike} onSave={mockHandlers.onSave} />
       );
-      expect(screen.getByAltText('이미지 1')).toBeInTheDocument();
+      expect(screen.getByAltText('이미지 1')).toHaveAttribute(
+        'sizes',
+        '(max-width: 768px) 100vw, 640px'
+      );
     });
 
     it('이미지 4개 초과 시 오버레이 표시', () => {
@@ -208,6 +223,9 @@ describe('FeedCard', () => {
         />
       );
       expect(screen.getByText('+2')).toBeInTheDocument();
+      for (const image of screen.getAllByAltText(/이미지/u)) {
+        expect(image).toHaveAttribute('sizes', '(max-width: 768px) 50vw, 320px');
+      }
     });
   });
 

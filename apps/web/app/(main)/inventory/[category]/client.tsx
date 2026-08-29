@@ -315,7 +315,7 @@ export function InventoryCategoryClient({
   const hasActiveFilters = searchInput || selectedSub.length > 0 || showFavorites;
 
   return (
-    <div className="container max-w-4xl py-4" data-testid="inventory-category-page">
+    <div className="container mx-auto max-w-4xl px-4 py-4" data-testid="inventory-category-page">
       {/* 헤더 */}
       <div className="flex items-center gap-3 mb-4">
         <Link href="/inventory">
@@ -521,6 +521,7 @@ export function InventoryCategoryClient({
                     src={uploadResult.processedUrl}
                     alt="Preview"
                     fill
+                    sizes="200px"
                     className="object-contain"
                     unoptimized
                   />

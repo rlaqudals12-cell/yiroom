@@ -205,7 +205,14 @@ export default function GalleryMultiAngleSkinUpload({
 
         {images.front ? (
           <div className="relative aspect-[3/4] max-w-[200px] mx-auto rounded-2xl overflow-hidden border-2 border-primary">
-            <Image src={images.front} alt="정면 사진" fill className="object-cover" unoptimized />
+            <Image
+              src={images.front}
+              alt="정면 사진"
+              fill
+              sizes="200px"
+              className="object-cover"
+              unoptimized
+            />
             <button
               onClick={() => handleRemoveImage('front')}
               className="absolute top-2 right-2 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
@@ -252,6 +259,7 @@ export default function GalleryMultiAngleSkinUpload({
                     src={images[angle]}
                     alt={`${ANGLE_LABELS[angle]} 사진`}
                     fill
+                    sizes="(max-width: 512px) 50vw, 240px"
                     className="object-cover"
                     unoptimized
                   />

@@ -715,10 +715,10 @@ export default async function IntegratedResultPage({
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] bg-background px-4 py-8"
+      className="min-h-[calc(100vh-80px)] bg-surface-ground"
       data-testid="integrated-result-page"
     >
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div className="mx-auto max-w-lg space-y-6 px-4 py-8 md:max-w-[880px]">
         {/* 헤더 — 에디토리얼 리스킨(2026-07-15): 다크 섬 해체, 공개 리포트 아이브로우 관례 통일 */}
         <header className="space-y-2 text-center">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">YIROOM REPORT</p>

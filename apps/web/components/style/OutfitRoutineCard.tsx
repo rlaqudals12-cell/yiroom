@@ -1,7 +1,20 @@
 'use client';
 
 import Image from 'next/image';
-import { Briefcase, Coffee, Heart, Plane, Plus, Edit2 } from 'lucide-react';
+import {
+  Briefcase,
+  Coffee,
+  Edit2,
+  Footprints,
+  Gem,
+  Heart,
+  Layers3,
+  Package,
+  Plane,
+  Plus,
+  Shirt,
+  type LucideIcon,
+} from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,38 +26,34 @@ import type { RoutineItem } from '@/types/hybrid';
 type Occasion = 'daily' | 'work' | 'date' | 'travel';
 
 // 상황별 정보
-const OCCASION_INFO: Record<Occasion, { label: string; icon: React.ReactNode; color: string }> = {
+const OCCASION_INFO: Record<Occasion, { label: string; icon: LucideIcon }> = {
   daily: {
     label: '데일리',
-    icon: <Coffee className="h-4 w-4" aria-hidden="true" />,
-    color: 'bg-green-500',
+    icon: Coffee,
   },
   work: {
     label: '출근',
-    icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
-    color: 'bg-blue-500',
+    icon: Briefcase,
   },
   date: {
     label: '데이트',
-    icon: <Heart className="h-4 w-4" aria-hidden="true" />,
-    color: 'bg-pink-500',
+    icon: Heart,
   },
   travel: {
     label: '여행',
-    icon: <Plane className="h-4 w-4" aria-hidden="true" />,
-    color: 'bg-amber-500',
+    icon: Plane,
   },
 };
 
 // 의류 카테고리 — 조립기(closetMatcher) 슬롯과 1:1로 맞춘다.
 // dress가 빠져 있으면 원피스 코디가 "dress 📦"로 표기된다(라벨 누수)
 const CLOTHING_CATEGORIES = [
-  { value: 'top', label: '상의', emoji: '👕' },
-  { value: 'bottom', label: '하의', emoji: '👖' },
-  { value: 'dress', label: '원피스', emoji: '👗' },
-  { value: 'outer', label: '아우터', emoji: '🧥' },
-  { value: 'shoes', label: '신발', emoji: '👟' },
-  { value: 'accessory', label: '액세서리', emoji: '👜' },
+  { value: 'top', label: '상의', icon: Shirt },
+  { value: 'bottom', label: '하의', icon: Layers3 },
+  { value: 'dress', label: '원피스', icon: Shirt },
+  { value: 'outer', label: '아우터', icon: Layers3 },
+  { value: 'shoes', label: '신발', icon: Footprints },
+  { value: 'accessory', label: '액세서리', icon: Gem },
 ];
 
 export interface OutfitItem extends RoutineItem {
@@ -89,11 +98,15 @@ export function OutfitRoutineCard({
   className,
 }: OutfitRoutineCardProps) {
   const occasionInfo = OCCASION_INFO[occasion];
+  const OccasionIcon = occasionInfo.icon;
 
   // 카테고리 라벨 가져오기
   const getCategoryInfo = (category: string) => {
     return (
-      CLOTHING_CATEGORIES.find((c) => c.value === category) || { label: category, emoji: '📦' }
+      CLOTHING_CATEGORIES.find((c) => c.value === category) || {
+        label: category,
+        icon: Package,
+      }
     );
   };
 
@@ -104,20 +117,17 @@ export function OutfitRoutineCard({
 
   return (
     <Card className={cn('overflow-hidden', className)} data-testid="outfit-routine-card">
-      <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 pb-3">
+      <CardHeader className="border-b border-border bg-card pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <div className={cn('p-1.5 rounded-lg text-white', occasionInfo.color)}>
-              {occasionInfo.icon}
+            <div className="rounded-lg bg-secondary p-1.5 text-foreground">
+              <OccasionIcon className="h-4 w-4" aria-hidden="true" />
             </div>
             {occasionInfo.label} 코디
           </CardTitle>
 
           {matchRate !== undefined && (
-            <Badge
-              variant="secondary"
-              className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
-            >
+            <Badge variant="outline" className="text-foreground">
               매칭 {matchRate}%
             </Badge>
           )}
@@ -136,7 +146,7 @@ export function OutfitRoutineCard({
               {colorPalette.map((color, idx) => (
                 <div key={idx} className="flex flex-col items-center gap-1" title={color.name}>
                   <div
-                    className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                    className="w-8 h-8 rounded-full border border-border"
                     style={{ backgroundColor: color.hex }}
                   />
                   <span className="text-xs text-muted-foreground">{color.name}</span>
@@ -149,16 +159,17 @@ export function OutfitRoutineCard({
         {/* 아이템 목록 */}
         {items.length > 0 ? (
           <div className="space-y-3">
-            {items
+            {[...items]
               .sort((a, b) => a.order - b.order)
               .map((item, index) => {
                 const categoryInfo = getCategoryInfo(item.category);
+                const CategoryIcon = categoryInfo.icon;
                 return (
                   <div
                     key={`${item.category}-${index}`}
                     className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl group"
                   >
-                    {/* 이미지 또는 이모지 */}
+                    {/* 이미지 또는 기능 아이콘 */}
                     {item.imageUrl ? (
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-background">
                         <Image
@@ -170,8 +181,11 @@ export function OutfitRoutineCard({
                         />
                       </div>
                     ) : (
-                      <div className="w-12 h-12 rounded-xl bg-background flex items-center justify-center text-2xl">
-                        {categoryInfo.emoji}
+                      <div
+                        className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-muted-foreground"
+                        aria-label={`${categoryInfo.label} 이미지 없음`}
+                      >
+                        <CategoryIcon className="h-5 w-5" aria-hidden="true" />
                       </div>
                     )}
 
@@ -238,7 +252,7 @@ export function OutfitRoutineCard({
             <ul className="space-y-1">
               {styleTips.map((tip, idx) => (
                 <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
-                  <span className="text-indigo-500">•</span>
+                  <span className="mt-2 h-px w-3 shrink-0 bg-border" aria-hidden="true" />
                   {tip}
                 </li>
               ))}

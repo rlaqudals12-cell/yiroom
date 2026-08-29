@@ -10,6 +10,7 @@
 
 import type { ShelfItem } from '@/lib/scan/product-shelf';
 import type { ProductCategory } from '@/types/skincare-routine';
+import { withSubjectParticle } from '@/lib/utils/korean';
 import { detectProductCategory } from './shelf-routine-sync';
 import { detectItemActives, ACTIVE_INGREDIENT_CATEGORIES } from './active-categories';
 
@@ -43,7 +44,7 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
 };
 
 function redundancyMessage(label: string, count: number): string {
-  return `비슷한 역할의 ${label}가 ${count}개 있어요 — 새로 사기 전에 참고해요`;
+  return `비슷한 역할의 ${withSubjectParticle(label)} ${count}개 있어요 — 새로 사기 전에 참고해요`;
 }
 
 /**

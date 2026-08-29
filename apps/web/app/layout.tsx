@@ -19,6 +19,7 @@ import { GamificationProvider } from '@/components/gamification';
 import { GenderProvider } from '@/components/providers/gender-provider';
 import { I18nProvider } from '@/components/providers/i18n-provider';
 import { WebVitalsProvider } from '@/components/providers/web-vitals-provider';
+import { pickClientMessages } from '@/lib/i18n/client-messages';
 import './globals.css';
 
 // Clerk 로컬라이제이션 맵
@@ -139,7 +140,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
-  const messages = await getMessages();
+  const messages = pickClientMessages(await getMessages());
   const clerkLocalization = clerkLocalizations[locale as keyof typeof clerkLocalizations] || koKR;
 
   // 하단 탭바는 로그인 사용자 전용 앱 셸이다. 5탭 목적지가 모두 로그인 게이트라

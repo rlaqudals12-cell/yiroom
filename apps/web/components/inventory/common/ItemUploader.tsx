@@ -238,6 +238,7 @@ export function ItemUploader({
               src={processedUrl || previewUrl}
               alt="Preview"
               fill
+              sizes="(max-width: 640px) 100vw, 448px"
               className="object-contain rounded-lg"
             />
 

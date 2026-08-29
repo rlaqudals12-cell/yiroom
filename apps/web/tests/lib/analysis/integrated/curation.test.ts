@@ -123,6 +123,8 @@ describe('composeCuration', () => {
     const outfit = r.items.find((i) => i.category === 'outfit');
     expect(outfit).toBeDefined();
     expect(outfit?.title).toContain('모래시계형');
+    expect(outfit?.reason).toContain('컬러 팔레트가 함께');
+    expect(outfit?.reason).not.toContain('컬러 팔레트이');
   });
 
   it('5축 성공 시 최대 3개로 제한', () => {

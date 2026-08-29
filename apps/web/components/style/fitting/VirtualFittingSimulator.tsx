@@ -124,6 +124,7 @@ export function VirtualFittingSimulator({
           src={userImageUrl}
           alt="사용자 이미지"
           fill
+          sizes="(max-width: 768px) 100vw, 640px"
           className="object-cover"
           priority
           unoptimized

@@ -35,6 +35,17 @@ describe('findRedundantProducts', () => {
     expect(tonerNote?.message).toContain('참고');
   });
 
+  it('동적 카테고리명은 받침에 맞는 주격 조사를 사용한다', () => {
+    const notes = findRedundantProducts([
+      makeShelf({ productName: '보습 크림' }),
+      makeShelf({ productName: '장벽 크림' }),
+      makeShelf({ productName: '진정 크림' }),
+    ]);
+
+    expect(notes.find((note) => note.category === '크림')?.message).toContain('크림이 3개');
+    expect(notes.find((note) => note.category === '크림')?.message).not.toContain('크림가');
+  });
+
   it('should 같은 제품 카테고리 2개 → 알림 없음 (임계 미만)', () => {
     const items = [
       makeShelf({ productName: '수분 토너' }),

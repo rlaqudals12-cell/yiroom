@@ -56,6 +56,15 @@ describe('IntegratedSessionPromptCard', () => {
     expect(screen.getByTestId('integrated-prompt-skeleton')).toBeInTheDocument();
   });
 
+  it('독립형 스켈레톤도 다크 섬 없이 시맨틱 지면 토큰을 쓴다', () => {
+    mockHookReturn.isLoading = true;
+    render(<IntegratedSessionPromptCard />);
+
+    const skeleton = screen.getByTestId('integrated-prompt-skeleton');
+    expect(skeleton).toHaveClass('border-border', 'bg-secondary/50');
+    expect(skeleton.className).not.toMatch(/zinc|bg-white/);
+  });
+
   it('세션 없으면 "5가지 한 번에 알아보기" CTA 표시', () => {
     render(<IntegratedSessionPromptCard />);
     expect(screen.getByTestId('integrated-prompt-cta')).toBeInTheDocument();
@@ -100,6 +109,18 @@ describe('IntegratedSessionPromptCard', () => {
       'href',
       '/analysis/integrated/result/7a3f1234-5678-4abc-def0-0123456789ab'
     );
+  });
+
+  it('기존 세션 링크는 하드코딩 핑크 대신 시맨틱 토큰을 쓴다', () => {
+    mockHookReturn.session = {
+      id: '7a3f1234-5678-4abc-def0-0123456789ab',
+      axes_completed: ['personal_color'],
+    };
+    render(<IntegratedSessionPromptCard />);
+
+    const link = screen.getByTestId('integrated-prompt-existing');
+    expect(link).toHaveClass('border-border', 'bg-card');
+    expect(link.className).not.toContain('pink');
   });
 
   it('에러 발생 시 세션 없는 경우처럼 안전하게 CTA 노출', () => {

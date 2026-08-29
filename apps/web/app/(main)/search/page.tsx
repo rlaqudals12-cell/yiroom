@@ -408,7 +408,7 @@ export default function SearchPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background" data-testid="search-page">
+    <div className="mx-auto min-h-screen w-full max-w-7xl bg-background" data-testid="search-page">
       {/* 페이지 제목 (스크린리더용) */}
       <h1 className="sr-only">통합 검색 - 뷰티, 성분</h1>
 

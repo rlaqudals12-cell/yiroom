@@ -19,7 +19,7 @@ export default async function FriendSearchPage() {
   }
 
   return (
-    <div className="container max-w-2xl py-6 space-y-6">
+    <div className="container mx-auto max-w-2xl space-y-6 px-4 py-6">
       {/* 헤더 */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -32,9 +32,7 @@ export default async function FriendSearchPage() {
             <UserPlus className="h-6 w-6" />
             친구 추가
           </h1>
-          <p className="text-sm text-muted-foreground">
-            이름으로 친구를 검색하세요
-          </p>
+          <p className="text-sm text-muted-foreground">이름으로 친구를 검색하세요</p>
         </div>
       </div>
 

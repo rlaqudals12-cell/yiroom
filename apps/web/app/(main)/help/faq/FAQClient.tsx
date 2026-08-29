@@ -47,7 +47,7 @@ export function FAQClient({ faqs }: FAQClientProps) {
   );
 
   return (
-    <div className="container max-w-2xl py-6 space-y-6">
+    <div className="container mx-auto max-w-2xl space-y-6 px-4 py-6">
       {/* 헤더 */}
       <div className="flex items-center gap-4">
         <Link href="/home">

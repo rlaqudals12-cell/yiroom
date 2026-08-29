@@ -171,7 +171,10 @@ export default function WeatherOutfitPage() {
   }, [loadWeatherFromLocation]);
 
   return (
-    <div data-testid="weather-outfit-page" className="container max-w-lg space-y-4 py-4">
+    <div
+      data-testid="weather-outfit-page"
+      className="container mx-auto max-w-lg space-y-4 px-4 py-4"
+    >
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">오늘의 코디</h1>

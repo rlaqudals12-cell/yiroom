@@ -81,6 +81,24 @@ function validFields(): Record<string, unknown> {
   };
 }
 
+async function expectErrorEnvelope(
+  response: Response,
+  status: number,
+  code: string
+): Promise<void> {
+  const body = await response.json();
+  expect(response.status).toBe(status);
+  expect(body).toMatchObject({
+    success: false,
+    error: {
+      code,
+      message: expect.any(String),
+      userMessage: expect.any(String),
+    },
+  });
+  expect(body.error.userMessage).toMatch(/[가-힣]/);
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockAuth.mockResolvedValue({ userId: 'user_123' });
@@ -111,7 +129,7 @@ describe('POST /api/inventory/upload', () => {
 
     const res = await POST(makePostRequest(validFields()));
 
-    expect(res.status).toBe(401);
+    await expectErrorEnvelope(res, 401, 'AUTH_ERROR');
     expect(mockCreateServiceRoleClient).not.toHaveBeenCalled();
   });
 
@@ -217,7 +235,7 @@ describe('POST /api/inventory/upload', () => {
 
     const res = await POST(makePostRequest(validFields()));
 
-    expect(res.status).toBe(500);
+    await expectErrorEnvelope(res, 500, 'STORAGE_ERROR');
   });
 });
 
@@ -231,7 +249,7 @@ describe('GET /api/inventory/upload', () => {
 
     const res = await GET(makeGetRequest({ category: 'closet', itemId: VALID_UUID }));
 
-    expect(res.status).toBe(401);
+    await expectErrorEnvelope(res, 401, 'AUTH_ERROR');
   });
 
   it('should return 400 when category or itemId is invalid', async () => {
@@ -252,6 +270,14 @@ describe('GET /api/inventory/upload', () => {
     );
     expect(body.signedUrl).toBe('https://cdn.example/signed');
   });
+
+  it('should return a Korean standard envelope when signed upload url creation fails', async () => {
+    mockCreateSignedUploadUrl.mockResolvedValue({ data: null, error: { message: 'boom' } });
+
+    const res = await GET(makeGetRequest({ category: 'closet', itemId: VALID_UUID }));
+
+    await expectErrorEnvelope(res, 500, 'STORAGE_ERROR');
+  });
 });
 
 // ============================================
@@ -264,7 +290,7 @@ describe('DELETE /api/inventory/upload', () => {
 
     const res = await DELETE(makeGetRequest({ category: 'closet', itemId: VALID_UUID }));
 
-    expect(res.status).toBe(401);
+    await expectErrorEnvelope(res, 401, 'AUTH_ERROR');
     expect(mockRemove).not.toHaveBeenCalled();
   });
 
@@ -288,6 +314,6 @@ describe('DELETE /api/inventory/upload', () => {
 
     const res = await DELETE(makeGetRequest({ category: 'closet', itemId: VALID_UUID }));
 
-    expect(res.status).toBe(500);
+    await expectErrorEnvelope(res, 500, 'STORAGE_ERROR');
   });
 });

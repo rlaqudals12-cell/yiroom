@@ -361,6 +361,11 @@ export default function PostDetailPage() {
                     src={url}
                     alt={`이미지 ${i + 1}`}
                     fill
+                    sizes={
+                      post.media_urls.length === 1
+                        ? '(max-width: 768px) 100vw, 640px'
+                        : '(max-width: 768px) 50vw, 320px'
+                    }
                     className="object-cover"
                     unoptimized
                   />

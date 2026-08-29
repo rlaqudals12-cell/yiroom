@@ -344,6 +344,7 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
                     src={previewUrl}
                     alt="Preview"
                     fill
+                    sizes="(max-width: 640px) 100vw, 448px"
                     className="object-contain rounded-lg"
                   />
                   {isProcessing && (
@@ -391,7 +392,13 @@ export function AddClothingDialog({ open, onOpenChange, onSave }: AddClothingDia
               {/* 미리보기 */}
               <div className="flex justify-center">
                 <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted">
-                  <Image src={previewUrl} alt="Preview" fill className="object-contain" />
+                  <Image
+                    src={previewUrl}
+                    alt="Preview"
+                    fill
+                    sizes="96px"
+                    className="object-contain"
+                  />
                   {/* AI 배지는 실제로 AI 결과를 적용했을 때만 — 폴백에 'AI' 배지를 붙이지 않는다 */}
                   {aiApplied && (
                     <div className="absolute top-1 right-1 flex items-center gap-0.5 px-1.5 py-0.5 bg-green-500 text-white text-[10px] rounded-full">

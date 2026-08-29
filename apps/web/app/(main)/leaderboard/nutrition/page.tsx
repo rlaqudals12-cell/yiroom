@@ -30,7 +30,7 @@ export default async function NutritionLeaderboardPage() {
   const myRanking = await getMyRanking(supabase, userId, 'weekly', 'nutrition');
 
   return (
-    <div className="container max-w-2xl py-6 space-y-6">
+    <div className="container mx-auto max-w-2xl space-y-6 px-4 py-6">
       {/* 헤더 */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -43,9 +43,7 @@ export default async function NutritionLeaderboardPage() {
             <Utensils className="h-6 w-6 text-green-500" />
             영양 리더보드
           </h1>
-          <p className="text-sm text-muted-foreground">
-            주간 식단 기록 경쟁
-          </p>
+          <p className="text-sm text-muted-foreground">주간 식단 기록 경쟁</p>
         </div>
       </div>
 
@@ -54,11 +52,7 @@ export default async function NutritionLeaderboardPage() {
 
       {/* 상위 3위 포디움 */}
       {rankings.length >= 3 && (
-        <LeaderboardPodium
-          rankings={rankings}
-          category="nutrition"
-          currentUserId={userId}
-        />
+        <LeaderboardPodium rankings={rankings} category="nutrition" currentUserId={userId} />
       )}
 
       {/* 전체 랭킹 */}

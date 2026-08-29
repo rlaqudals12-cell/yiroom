@@ -26,25 +26,34 @@ const uploadParamsSchema = z.object({
 });
 
 /** 400 검증 실패 — 에러 봉투 (클라이언트는 상태코드만 파싱하므로 형태 변경 안전) */
-function validationError(message: string): NextResponse {
+function apiError(
+  status: number,
+  code: string,
+  message: string,
+  userMessage: string
+): NextResponse {
   return NextResponse.json(
     {
       success: false,
       error: {
-        code: 'VALIDATION_ERROR',
+        code,
         message,
-        userMessage: '입력 정보를 확인해주세요.',
+        userMessage,
       },
     },
-    { status: 400 }
+    { status }
   );
+}
+
+function validationError(message: string): NextResponse {
+  return apiError(400, 'VALIDATION_ERROR', message, '입력 정보를 확인해주세요.');
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return apiError(401, 'AUTH_ERROR', 'User not authenticated', '로그인이 필요합니다.');
     }
 
     const formData = await request.formData();
@@ -91,7 +100,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (error) {
       console.error('[Upload] Storage error:', error);
-      return NextResponse.json({ error: '파일 업로드에 실패했습니다.' }, { status: 500 });
+      return apiError(
+        500,
+        'STORAGE_ERROR',
+        'Inventory image upload failed',
+        '사진을 업로드하지 못했어요. 잠시 후 다시 시도해주세요.'
+      );
     }
 
     // 스토리지 **경로**만 반환한다 (2026-08-16 보안 수리).
@@ -105,7 +119,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     console.error('[API] POST /api/inventory/upload error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return apiError(
+      500,
+      'INTERNAL_ERROR',
+      'Inventory upload failed unexpectedly',
+      '사진 업로드 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.'
+    );
   }
 }
 
@@ -116,7 +135,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return apiError(401, 'AUTH_ERROR', 'User not authenticated', '로그인이 필요합니다.');
     }
 
     const { searchParams } = new URL(request.url);
@@ -137,7 +156,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     if (error) {
       console.error('[Upload] Signed URL error:', error);
-      return NextResponse.json({ error: '서명된 URL 생성에 실패했습니다.' }, { status: 500 });
+      return apiError(
+        500,
+        'STORAGE_ERROR',
+        'Signed inventory upload URL creation failed',
+        '사진 업로드 준비에 실패했어요. 잠시 후 다시 시도해주세요.'
+      );
     }
 
     return NextResponse.json({
@@ -146,7 +170,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     console.error('[API] GET /api/inventory/upload error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return apiError(
+      500,
+      'INTERNAL_ERROR',
+      'Inventory signed upload URL failed unexpectedly',
+      '사진 업로드 준비 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.'
+    );
   }
 }
 
@@ -161,7 +190,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return apiError(401, 'AUTH_ERROR', 'User not authenticated', '로그인이 필요합니다.');
     }
 
     const { searchParams } = new URL(request.url);
@@ -182,12 +211,22 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
     if (error) {
       console.error('[Upload] Storage delete error:', error);
-      return NextResponse.json({ error: '파일 삭제에 실패했습니다.' }, { status: 500 });
+      return apiError(
+        500,
+        'STORAGE_ERROR',
+        'Inventory image cleanup failed',
+        '업로드한 사진을 정리하지 못했어요. 잠시 후 다시 시도해주세요.'
+      );
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[API] DELETE /api/inventory/upload error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return apiError(
+      500,
+      'INTERNAL_ERROR',
+      'Inventory image cleanup failed unexpectedly',
+      '사진 정리 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.'
+    );
   }
 }

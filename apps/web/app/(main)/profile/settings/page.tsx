@@ -862,7 +862,10 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background" data-testid="settings-page">
+    <div
+      className="mx-auto min-h-screen w-full max-w-7xl bg-background"
+      data-testid="settings-page"
+    >
       {/* 헤더 */}
       <header className="sticky top-0 z-40 bg-background border-b">
         <div className="flex items-center gap-3 px-4 py-3">

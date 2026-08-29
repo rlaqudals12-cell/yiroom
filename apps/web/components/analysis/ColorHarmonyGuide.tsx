@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { Palette } from 'lucide-react';
 import { complementary, analogous, triadic, tonOnTone } from '@/lib/color/harmony';
+import { getKoreanColorName } from '@/lib/utils/color-names';
 
 interface ColorHarmonyGuideProps {
   /** 기준 대표색 HEX (퍼스널컬러 베스트 컬러 첫 항목) */
@@ -14,14 +15,19 @@ interface ColorHarmonyGuideProps {
 
 /** 색상 스와치 한 줄 */
 function Swatch({ hex }: { hex: string }) {
+  const normalizedHex = hex.toUpperCase();
+  const colorName = getKoreanColorName(hex);
+
   return (
     <div className="flex flex-col items-center gap-1">
       <div
         className="h-10 w-10 rounded-lg border border-border shadow-sm"
         style={{ backgroundColor: hex }}
-        aria-label={hex}
+        role="img"
+        aria-label={`${colorName}, 색상값 ${normalizedHex}`}
       />
-      <span className="text-[10px] text-muted-foreground">{hex.toUpperCase()}</span>
+      <span className="text-xs text-foreground">{colorName}</span>
+      <span className="text-[10px] text-muted-foreground">{normalizedHex}</span>
     </div>
   );
 }

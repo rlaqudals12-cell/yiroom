@@ -234,6 +234,7 @@ export default function FoodResultPage() {
           src={`data:image/jpeg;base64,${analysisData.imageBase64}`}
           alt="촬영된 음식 사진"
           fill
+          sizes="(max-width: 768px) 100vw, 768px"
           className="object-cover"
         />
       </div>

@@ -165,7 +165,13 @@ export default function FoodCapturePage() {
         {/* 촬영된 사진 프리뷰 */}
         {previewImage && (
           <div className="relative aspect-square w-full max-w-xs mx-auto rounded-2xl overflow-hidden bg-muted">
-            <Image src={previewImage} alt="촬영된 음식 사진" fill className="object-cover" />
+            <Image
+              src={previewImage}
+              alt="촬영된 음식 사진"
+              fill
+              sizes="320px"
+              className="object-cover"
+            />
             {/* 로딩 오버레이 */}
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
               <div className="bg-card/90 rounded-full p-4">

@@ -37,7 +37,7 @@ export function IntegratedSessionPromptCard({
           'h-[72px] animate-pulse border',
           embedded
             ? 'rounded-xl border-border bg-secondary/50'
-            : 'rounded-2xl border-zinc-800 bg-white/5'
+            : 'rounded-2xl border-border bg-secondary/50'
         )}
       />
     );
@@ -70,19 +70,16 @@ export function IntegratedSessionPromptCard({
           'flex items-center gap-3 border transition-colors',
           embedded
             ? 'rounded-xl border-border bg-secondary/40 p-3 hover:bg-secondary'
-            : 'rounded-2xl border-pink-500/30 bg-card p-4 hover:border-pink-500/50'
+            : 'rounded-2xl border-border bg-card p-4 hover:bg-secondary/30'
         )}
       >
         <div
           className={cn(
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-            embedded ? 'bg-card' : 'bg-pink-500/20'
+            embedded ? 'bg-card' : 'bg-secondary'
           )}
         >
-          <Check
-            className={cn('h-5 w-5', embedded ? 'text-foreground/60' : 'text-pink-400')}
-            aria-hidden="true"
-          />
+          <Check className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0">
           {/* "카드"를 라벨에 명시 — 공유카드 존재를 이 링크가 알리지 않으면 유저가 모름(7/18 감사) */}
