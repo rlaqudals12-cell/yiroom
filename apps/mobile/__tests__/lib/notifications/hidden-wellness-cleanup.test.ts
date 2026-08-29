@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 jest.mock('expo-notifications', () => ({
   getAllScheduledNotificationsAsync: jest.fn(),
   cancelScheduledNotificationAsync: jest.fn().mockResolvedValue(undefined),
+  deleteNotificationChannelAsync: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('../../../lib/utils/logger', () => ({
   pushLogger: { warn: jest.fn() },
@@ -13,6 +14,7 @@ import { cleanupHiddenWellnessNotificationsOnce } from '../../../lib/notificatio
 
 const mockGetAllScheduled = Notifications.getAllScheduledNotificationsAsync as jest.Mock;
 const mockCancelScheduled = Notifications.cancelScheduledNotificationAsync as jest.Mock;
+const mockDeleteChannel = Notifications.deleteNotificationChannelAsync as jest.Mock;
 
 function scheduled(identifier: string, type: string): Notifications.NotificationRequest {
   return {
@@ -40,6 +42,12 @@ describe('앱 시작 시 레거시 웰니스 예약 알림 정리', () => {
 
     await expect(cleanupHiddenWellnessNotificationsOnce()).resolves.toBe(4);
 
+    expect(mockDeleteChannel.mock.calls.map(([channelId]) => channelId)).toEqual([
+      'workout',
+      'nutrition',
+      'social',
+    ]);
+
     expect(mockCancelScheduled.mock.calls.map(([id]) => id)).toEqual([
       'workout-id',
       'legacy-meal-id',
@@ -58,6 +66,7 @@ describe('앱 시작 시 레거시 웰니스 예약 알림 정리', () => {
 
     expect(mockGetAllScheduled).toHaveBeenCalledTimes(1);
     expect(mockCancelScheduled).toHaveBeenCalledTimes(1);
+    expect(mockDeleteChannel).toHaveBeenCalledTimes(6);
   });
 
   it('취소 실패 시 완료 처리하지 않고 다음 앱 시작에서 재시도한다', async () => {

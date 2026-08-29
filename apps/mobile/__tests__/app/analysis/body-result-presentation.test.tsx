@@ -22,7 +22,6 @@ jest.mock('expo-router', () => ({
     height: '165',
     weight: '55',
     imageUri: 'file:///body.jpg',
-    imageBase64: 'x'.repeat(200),
   }),
 }));
 
@@ -33,7 +32,9 @@ jest.mock('../../../lib/api/body', () => ({
   BodyApiError: class BodyApiError extends Error {},
 }));
 
-jest.mock('../../../lib/gemini', () => ({ imageToBase64: jest.fn() }));
+jest.mock('../../../lib/image/downscale', () => ({
+  downscaleToBase64: jest.fn().mockResolvedValue('x'.repeat(200)),
+}));
 jest.mock('../../../lib/monitoring/sentry', () => ({ captureError: jest.fn() }));
 jest.mock('../../../lib/analytics/tracker', () => ({ trackAnalysisResultView: jest.fn() }));
 

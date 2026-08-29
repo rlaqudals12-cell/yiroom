@@ -133,6 +133,10 @@ const REAL_COLUMNS: Record<string, Set<string>> = {
 
 // select 문자열 기록 + 테이블별 canned 응답
 const selectCalls: Record<string, string> = {};
+const fromCalls: Record<string, number> = {};
+const AXIS_TABLES = Object.keys(REAL_COLUMNS);
+let deferAxisQueries = false;
+const deferredAxisResolvers = new Map<string, () => void>();
 const responses: Record<string, { data: unknown; error: unknown }> = {
   personal_color_assessments: {
     data: {
@@ -202,10 +206,17 @@ const responses: Record<string, { data: unknown; error: unknown }> = {
     },
     error: null,
   },
+  integrated_analysis_sessions: { data: [], error: null },
 };
 
 function builderFor(table: string) {
   const resp = responses[table] ?? { data: null, error: null };
+  const terminal = () => {
+    if (!deferAxisQueries || !AXIS_TABLES.includes(table)) return Promise.resolve(resp);
+    return new Promise<typeof resp>((resolve) => {
+      deferredAxisResolvers.set(table, () => resolve(resp));
+    });
+  };
   // select→order→limit 체인, 종단은 maybeSingle(단건) 또는 await(피부 목록)
   const b: Record<string, unknown> = {
     select: (cols: string) => {
@@ -214,15 +225,21 @@ function builderFor(table: string) {
     },
     order: () => b,
     limit: () => b,
-    single: () => Promise.resolve(resp),
-    maybeSingle: () => Promise.resolve(resp),
+    in: () => Promise.resolve(resp),
+    single: terminal,
+    maybeSingle: terminal,
     then: (onFulfilled: (v: unknown) => unknown, onRejected?: (e: unknown) => unknown) =>
-      Promise.resolve(resp).then(onFulfilled, onRejected),
+      terminal().then(onFulfilled, onRejected),
   };
   return b;
 }
 
-const mockClient = { from: (t: string) => builderFor(t) };
+const mockClient = {
+  from: (t: string) => {
+    fromCalls[t] = (fromCalls[t] ?? 0) + 1;
+    return builderFor(t);
+  },
+};
 
 jest.mock('@clerk/clerk-expo', () => ({
   useUser: () => ({ user: { id: 'clerk_1' }, isLoaded: true }),
@@ -244,7 +261,7 @@ function columnsOf(select: string): string[] {
 describe('useUserAnalyses — prod 스키마 정합', () => {
   it('모든 select 절이 prod 실재 컬럼만 요청한다 (없는 컬럼 요청 금지)', async () => {
     renderHook(() => useUserAnalyses());
-    await waitFor(() => expect(Object.keys(selectCalls).length).toBe(5));
+    await waitFor(() => expect(AXIS_TABLES.every((table) => selectCalls[table])).toBe(true));
 
     for (const [table, real] of Object.entries(REAL_COLUMNS)) {
       const cols = columnsOf(selectCalls[table]);
@@ -258,7 +275,7 @@ describe('useUserAnalyses — prod 스키마 정합', () => {
 
   it('제거된 유령 컬럼을 더 이상 요청하지 않는다', async () => {
     renderHook(() => useUserAnalyses());
-    await waitFor(() => expect(Object.keys(selectCalls).length).toBe(5));
+    await waitFor(() => expect(AXIS_TABLES.every((table) => selectCalls[table])).toBe(true));
 
     expect(selectCalls.personal_color_assessments).not.toMatch(/\btone\b/);
     expect(selectCalls.personal_color_assessments).not.toContain('color_palette');
@@ -270,6 +287,30 @@ describe('useUserAnalyses — prod 스키마 정합', () => {
 });
 
 describe('useUserAnalyses — 점수 null 가드', () => {
+  it('5축 조회를 앞선 축의 응답을 기다리지 않고 동시에 시작한다', async () => {
+    const before = Object.fromEntries(AXIS_TABLES.map((table) => [table, fromCalls[table] ?? 0]));
+    deferAxisQueries = true;
+    deferredAxisResolvers.clear();
+
+    const { result } = renderHook(() => useUserAnalyses());
+
+    try {
+      await waitFor(() =>
+        expect(AXIS_TABLES.every((table) => (fromCalls[table] ?? 0) - before[table] === 1)).toBe(
+          true
+        )
+      );
+      expect(deferredAxisResolvers.size).toBe(AXIS_TABLES.length);
+      expect(result.current.isLoading).toBe(true);
+    } finally {
+      deferAxisQueries = false;
+      for (const resolve of deferredAxisResolvers.values()) resolve();
+      deferredAxisResolvers.clear();
+    }
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  });
+
   it('PC 재방문 상태에 서버 팔레트와 12톤을 hex 배열로 보존한다', async () => {
     const { result } = renderHook(() => useUserAnalyses());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -334,6 +375,54 @@ describe('useUserAnalyses — 점수 null 가드', () => {
       makeup: false,
     });
     expect(result.current.skinAnalysis?.usedFallback).toBe(false);
+  });
+
+  it('같은 통합 세션의 5축 출처를 세션 조회 한 번으로 보존한다', async () => {
+    const axisRows = [
+      responses.personal_color_assessments.data as Record<string, unknown>,
+      (responses.skin_analyses.data as Record<string, unknown>[])[0],
+      responses.body_analyses.data as Record<string, unknown>,
+      responses.hair_analyses.data as Record<string, unknown>,
+      responses.makeup_analyses.data as Record<string, unknown>,
+    ];
+    const previous = axisRows.map((row) => ({ ...row }));
+    const previousSessions = responses.integrated_analysis_sessions;
+    const beforeSessionQueries = fromCalls.integrated_analysis_sessions ?? 0;
+
+    try {
+      for (const row of axisRows) row.session_id = 'shared-session';
+      axisRows[0].image_analysis = {};
+      axisRows[1].recommendations = { primaryConcerns: ['redness'] };
+      axisRows[2].style_recommendations = {};
+      axisRows[3].recommendations = {};
+      axisRows[4].recommendations = {};
+      responses.integrated_analysis_sessions = {
+        data: [{ id: 'shared-session', used_fallback: ['skin', 'hair'] }],
+        error: null,
+      };
+
+      const { result } = renderHook(() => useUserAnalyses());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect((fromCalls.integrated_analysis_sessions ?? 0) - beforeSessionQueries).toBe(1);
+      expect(
+        Object.fromEntries(
+          result.current.analyses.map((analysis) => [analysis.type, analysis.usedFallback])
+        )
+      ).toMatchObject({
+        'personal-color': false,
+        skin: true,
+        body: false,
+        hair: true,
+        makeup: false,
+      });
+    } finally {
+      axisRows.forEach((row, index) => {
+        for (const key of Object.keys(row)) delete row[key];
+        Object.assign(row, previous[index]);
+      });
+      responses.integrated_analysis_sessions = previousSessions;
+    }
   });
 
   it('파생 BMI가 실재 height/weight에서 계산된다', async () => {

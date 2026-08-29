@@ -6,9 +6,13 @@
  * 일반 진입에서는 노출되지 않는지 검증(분석 강제 금지).
  */
 import React from 'react';
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 
 import { renderWithTheme } from '../../helpers/test-utils';
+
+const mockDownscaleToDataUrl = jest
+  .fn()
+  .mockResolvedValue('data:image/jpeg;base64,DOWNSCALED');
 
 // --- 공통 mock ---
 
@@ -16,6 +20,10 @@ jest.mock('expo-image-picker', () => ({
   requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
   launchImageLibraryAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
   MediaTypeOptions: { Images: 'Images' },
+}));
+
+jest.mock('@/lib/image/downscale', () => ({
+  downscaleToDataUrl: (...args: unknown[]) => mockDownscaleToDataUrl(...args),
 }));
 
 jest.mock('@/hooks/useUserAnalyses', () => ({
@@ -81,6 +89,7 @@ const mockUseLocalSearchParams = useLocalSearchParams as jest.Mock;
 describe('IntegratedAnalysisInputScreen — 가입=첫 미팅(ADR-114)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockDownscaleToDataUrl.mockResolvedValue('data:image/jpeg;base64,DOWNSCALED');
   });
 
   it('onboarding=1 진입 시 "나중에 할래요" 스킵 경로가 노출된다', () => {
@@ -128,5 +137,26 @@ describe('IntegratedAnalysisInputScreen — 가입=첫 미팅(ADR-114)', () => {
 
     expect(getByLabelText('키 (cm)').props.value).toBe('165');
     expect(getByLabelText('몸무게 (kg)')).toBeTruthy();
+  });
+
+  it('얼굴·전신 원본을 각각 1024px로 축소한 뒤 상태에 보관한다', async () => {
+    mockUseLocalSearchParams.mockReturnValue({});
+    const { launchImageLibraryAsync } = require('expo-image-picker');
+    launchImageLibraryAsync
+      .mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///face-original.jpg' }] })
+      .mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///body-original.jpg' }] });
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    fireEvent.press(screen.getAllByText('사진 선택')[0]);
+    await screen.findByLabelText('얼굴 사진 제거');
+    fireEvent.press(screen.getAllByText('사진 선택')[0]);
+    await screen.findByLabelText('전신 사진 제거');
+
+    await waitFor(() => expect(mockDownscaleToDataUrl).toHaveBeenCalledTimes(2));
+    expect(mockDownscaleToDataUrl).toHaveBeenNthCalledWith(1, 'file:///face-original.jpg', 1024);
+    expect(mockDownscaleToDataUrl).toHaveBeenNthCalledWith(2, 'file:///body-original.jpg', 1024);
+    expect(launchImageLibraryAsync).toHaveBeenCalledWith(
+      expect.not.objectContaining({ base64: true })
+    );
   });
 });

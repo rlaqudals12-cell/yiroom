@@ -83,6 +83,8 @@ describe('biometric consent withdrawal API client', () => {
 
     expect(error).toBeInstanceOf(BiometricConsentApiError);
     expect(error).toMatchObject({
+      message:
+        '생체정보 동의는 철회했지만 일부 이미지 파기가 끝나지 않았습니다. 잠시 후 다시 시도해주세요.',
       code: 'PARTIAL_PURGE_ERROR',
       status: 500,
       partialResult: {
@@ -92,6 +94,7 @@ describe('biometric consent withdrawal API client', () => {
         fullyPurged: false,
       },
     });
+    expect(JSON.stringify(error)).not.toContain('integrated-sessions');
   });
 
   it('성공 봉투의 데이터가 불완전하면 fail-closed 오류를 낸다', async () => {

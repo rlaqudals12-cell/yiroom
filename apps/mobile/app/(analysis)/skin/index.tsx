@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { Platform, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { GlassCard, GradientText, ScreenContainer } from '@/components/ui';
+import { GlassCard, ScreenContainer } from '@/components/ui';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { staggeredEntry } from '../../../lib/animations';
@@ -39,9 +39,7 @@ export default function SkinAnalysisScreen() {
             >
               <Text style={styles.iconText}>💧</Text>
             </View>
-            <GradientText variant="skin" fontSize={24} fontWeight="700">
-              AI 피부 분석
-            </GradientText>
+            <Text style={[styles.title, { color: colors.foreground }]}>AI 피부 분석</Text>
             <Text
               style={[styles.subtitle, { color: colors.mutedForeground, marginTop: spacing.smx }]}
             >

@@ -201,7 +201,6 @@ export function RecordsTab(): React.JSX.Element {
         >
           <SectionHeader
             title="기록"
-            gradient="brand"
             style={{ marginBottom: spacing.xs }}
             titleStyle={{
               color: colors.overlayForeground,
@@ -463,7 +462,6 @@ export function RecordsTab(): React.JSX.Element {
       <Animated.View entering={FadeInUp.delay(350).duration(TIMING.normal)}>
         <SectionHeader
           title="상세 기록"
-          gradient="brand"
           style={{ marginBottom: spacing.smx, marginTop: spacing.smx }}
         />
       </Animated.View>

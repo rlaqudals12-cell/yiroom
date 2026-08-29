@@ -2,6 +2,7 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 
 const mockCleanupHiddenWellnessNotificationsOnce = jest.fn().mockResolvedValue(0);
+const mockUseFonts = jest.fn((_fonts?: unknown): [boolean, Error | null] => [true, null]);
 
 jest.mock('../../global.css', () => ({}));
 
@@ -23,6 +24,7 @@ jest.mock('expo-router', () => {
 });
 
 jest.mock('expo-status-bar', () => ({ StatusBar: () => null }));
+jest.mock('expo-font', () => ({ useFonts: (...args: unknown[]) => mockUseFonts(...args) }));
 jest.mock('react-native-gesture-handler', () => {
   const { View } = require('react-native');
   return { GestureHandlerRootView: View };
@@ -67,6 +69,11 @@ jest.mock('../../lib/utils/logger', () => ({
 import RootLayout from '../../app/_layout';
 
 describe('앱 시작 유지보수', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseFonts.mockReturnValue([true, null]);
+  });
+
   it('루트 레이아웃이 마운트되면 레거시 웰니스 알림 정리를 시작한다', async () => {
     const { getByTestId } = render(<RootLayout />);
 
@@ -75,5 +82,20 @@ describe('앱 시작 유지보수', () => {
     await waitFor(() =>
       expect(mockCleanupHiddenWellnessNotificationsOnce).toHaveBeenCalledTimes(1)
     );
+  });
+
+  it('결과 세리프 폰트를 앱 루트에서 한 번 미리 로드한다', () => {
+    render(<RootLayout />);
+
+    expect(mockUseFonts).toHaveBeenCalledTimes(1);
+    expect(mockUseFonts.mock.calls[0][0]).toHaveProperty('NanumMyeongjo_700Bold');
+  });
+
+  it('폰트 로딩 중에는 시스템 글꼴 첫 프레임을 그리지 않는다', () => {
+    mockUseFonts.mockReturnValueOnce([false, null]);
+
+    const { toJSON } = render(<RootLayout />);
+
+    expect(toJSON()).toBeNull();
   });
 });

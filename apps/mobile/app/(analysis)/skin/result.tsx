@@ -29,7 +29,7 @@ import {
 } from '@/lib/analysis';
 import { StoredResultError } from '@/lib/analysis/stored-result-loader';
 import { requestSkinAnalysis, SkinApiError } from '@/lib/api/skin';
-import { imageToBase64 } from '@/lib/gemini';
+import { downscaleToBase64 } from '@/lib/image/downscale';
 import { captureError } from '@/lib/monitoring/sentry';
 import { SKIN_TYPE_DATA, type SkinMetrics, type SkinMetricsDelta } from '@/lib/skincare';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -62,9 +62,8 @@ const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주�
 export default function SkinResultScreen(): React.JSX.Element {
   const { getToken, userId } = useAuth();
   const supabase = useClerkSupabaseClient();
-  const { imageUri, imageBase64, historyId } = useLocalSearchParams<{
+  const { imageUri, historyId } = useLocalSearchParams<{
     imageUri?: string;
-    imageBase64?: string;
     historyId?: string;
   }>();
 
@@ -89,7 +88,7 @@ export default function SkinResultScreen(): React.JSX.Element {
     setAvailableMetrics(null);
 
     try {
-      const hasFreshImage = Boolean(imageBase64 || imageUri);
+      const hasFreshImage = Boolean(imageUri);
       if (!hasFreshImage) {
         const stored = await loadStoredAnalysisRecord(supabase, 'skin', historyId);
         const row = stored.row;
@@ -130,10 +129,7 @@ export default function SkinResultScreen(): React.JSX.Element {
         return;
       }
 
-      let base64Data = imageBase64;
-      if (!base64Data && imageUri) {
-        base64Data = await imageToBase64(imageUri);
-      }
+      const base64Data = imageUri ? await downscaleToBase64(imageUri, 1024) : '';
       if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
 
       const token = await getToken();
@@ -192,7 +188,7 @@ export default function SkinResultScreen(): React.JSX.Element {
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, historyId, imageBase64, imageUri, supabase, userId]);
+  }, [getToken, historyId, imageUri, supabase, userId]);
 
   // clerk-expo getToken 참조가 바뀌어도 화면 진입당 분석은 한 번만 실행한다.
   const hasStartedRef = useRef(false);

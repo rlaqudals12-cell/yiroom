@@ -50,6 +50,7 @@ import {
   type BodyQuestionnaire,
 } from '@/lib/api';
 import { toUserMessage } from '@/lib/api/error-text';
+import { downscaleToDataUrl } from '@/lib/image/downscale';
 import { getLastSubmission, rememberSubmission } from '@/lib/integrated/last-submission';
 import {
   clearPendingIntegratedRequest,
@@ -330,15 +331,13 @@ function IntegratedAnalysisForm(): React.JSX.Element {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.7,
-        base64: true,
         allowsEditing: true,
         aspect: isFace ? [1, 1] : [3, 4],
       });
-      if (result.canceled || !result.assets[0]?.base64) return;
+      if (result.canceled || !result.assets[0]?.uri) return;
 
       const asset = result.assets[0];
-      const mime = asset.mimeType ?? 'image/jpeg';
-      setter(`data:${mime};base64,${asset.base64}`);
+      setter(await downscaleToDataUrl(asset.uri, 1024));
       // 얼굴 사진을 새로 고르면 "이전 사진 사용" 표시를 해제(더 이상 복원본이 아님).
       if (isFace) setRestoredFromCache(false);
     } catch {

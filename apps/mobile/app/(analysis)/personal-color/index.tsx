@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { GlassCard, GradientText, ScreenContainer } from '@/components/ui';
+import { GlassCard, ScreenContainer } from '@/components/ui';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { staggeredEntry } from '../../../lib/animations';
@@ -133,9 +133,9 @@ export default function PersonalColorScreen() {
             >
               <Text style={{ fontSize: 22 }}>🎨</Text>
             </View>
-            <GradientText variant="personalColor" fontSize={22} fontWeight="700">
+            <Text style={[styles.questionText, { color: colors.foreground }]}>
               {question.question}
-            </GradientText>
+            </Text>
           </GlassCard>
         </Animated.View>
 

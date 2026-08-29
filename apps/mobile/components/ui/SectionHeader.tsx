@@ -3,11 +3,9 @@
  *
  * 제목 + 부제목(선택) + 우측 액션(선택) 헤더 패턴.
  * 홈/기록 탭의 섹션 구분에 사용.
- * gradient prop 사용 시 타이틀에 GradientText 적용.
  */
 import { Pressable, StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
 
-import { GradientText, type GradientTextVariant } from './GradientText';
 import { useTheme, spacing } from '../../lib/theme';
 
 interface SectionHeaderProps {
@@ -20,8 +18,6 @@ interface SectionHeaderProps {
   style?: ViewStyle;
   /** 타이틀 텍스트 커스텀 스타일 (히어로 헤더 등) */
   titleStyle?: TextStyle;
-  /** 그래디언트 텍스트 variant (지정 시 타이틀에 GradientText 사용) */
-  gradient?: GradientTextVariant;
   testID?: string;
 }
 
@@ -31,7 +27,6 @@ export function SectionHeader({
   action,
   style,
   titleStyle,
-  gradient,
   testID,
 }: SectionHeaderProps): React.JSX.Element {
   const { colors, brand, typography } = useTheme();
@@ -39,29 +34,19 @@ export function SectionHeader({
   return (
     <View testID={testID} style={[styles.container, style]} accessibilityRole="header">
       <View style={styles.textGroup}>
-        {gradient ? (
-          <GradientText
-            variant={gradient}
-            fontSize={(titleStyle?.fontSize as number) ?? typography.size.lg}
-            fontWeight={titleStyle?.fontWeight ?? typography.weight.bold}
-          >
-            {title}
-          </GradientText>
-        ) : (
-          <Text
-            style={[
-              {
-                color: colors.foreground,
-                fontSize: typography.size.lg,
-                fontWeight: typography.weight.bold,
-                letterSpacing: typography.letterSpacing.tight,
-              },
-              titleStyle,
-            ]}
-          >
-            {title}
-          </Text>
-        )}
+        <Text
+          style={[
+            {
+              color: colors.foreground,
+              fontSize: typography.size.lg,
+              fontWeight: typography.weight.bold,
+              letterSpacing: typography.letterSpacing.tight,
+            },
+            titleStyle,
+          ]}
+        >
+          {title}
+        </Text>
         {subtitle ? (
           <Text
             style={{

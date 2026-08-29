@@ -101,7 +101,6 @@ jest.mock('expo-router', () => ({
   router: mockRouter,
   useLocalSearchParams: jest.fn(() => ({
     imageUri: 'file:///test-image.jpg',
-    imageBase64: undefined,
   })),
 }));
 
@@ -119,8 +118,8 @@ jest.mock('../../../lib/api/posture', () => ({
   requestPostureAnalysis: jest.fn(() => Promise.resolve(mockPostureResult)),
 }));
 
-jest.mock('../../../lib/gemini', () => ({
-  imageToBase64: jest.fn(() => Promise.resolve('base64data')),
+jest.mock('../../../lib/image/downscale', () => ({
+  downscaleToBase64: jest.fn(() => Promise.resolve('base64data')),
 }));
 
 jest.mock('../../../lib/monitoring/sentry', () => ({

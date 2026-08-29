@@ -62,9 +62,9 @@ function PostureCameraContent() {
     if (!cameraRef.current || isCapturing) return;
     setIsCapturing(true);
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.8, base64: true });
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
       if (photo?.uri) {
-        navigateToResult(photo.uri, photo.base64);
+        navigateToResult(photo.uri);
       }
     } catch {
       Alert.alert('오류', '사진 촬영에 실패했습니다.');
@@ -79,17 +79,16 @@ function PostureCameraContent() {
       allowsEditing: true,
       aspect: [9, 16],
       quality: 0.8,
-      base64: true,
     });
     if (!result.canceled && result.assets[0]) {
-      navigateToResult(result.assets[0].uri, result.assets[0].base64);
+      navigateToResult(result.assets[0].uri);
     }
   }
 
-  function navigateToResult(imageUri: string, base64?: string | null) {
+  function navigateToResult(imageUri: string) {
     router.replace({
       pathname: '/(analysis)/posture/result',
-      params: { imageUri, imageBase64: base64 || '' },
+      params: { imageUri },
     });
   }
 

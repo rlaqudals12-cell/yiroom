@@ -32,7 +32,7 @@ import {
   requestMakeupAnalysis,
   type MakeupAnalysisApiResult,
 } from '@/lib/api/makeup';
-import { imageToBase64 } from '@/lib/gemini';
+import { downscaleToBase64 } from '@/lib/image/downscale';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { radii, spacing } from '@/lib/theme';
@@ -80,9 +80,8 @@ const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주�
 export default function MakeupResultScreen(): React.JSX.Element {
   const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
-  const { imageUri, imageBase64, historyId } = useLocalSearchParams<{
+  const { imageUri, historyId } = useLocalSearchParams<{
     imageUri?: string;
-    imageBase64?: string;
     historyId?: string;
   }>();
   const [isLoading, setIsLoading] = useState(true);
@@ -98,7 +97,7 @@ export default function MakeupResultScreen(): React.JSX.Element {
     setMeasured({ faceShape: true, eyeShape: true, lipShape: true });
 
     try {
-      const hasFreshImage = Boolean(imageBase64 || imageUri);
+      const hasFreshImage = Boolean(imageUri);
       if (!hasFreshImage) {
         const stored = await loadStoredAnalysisRecord(supabase, 'makeup', historyId);
         const row = stored.row;
@@ -144,8 +143,7 @@ export default function MakeupResultScreen(): React.JSX.Element {
         return;
       }
 
-      let base64Data = imageBase64;
-      if (!base64Data && imageUri) base64Data = await imageToBase64(imageUri);
+      const base64Data = imageUri ? await downscaleToBase64(imageUri, 1024) : '';
       if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
 
       const token = await getToken();
@@ -170,7 +168,7 @@ export default function MakeupResultScreen(): React.JSX.Element {
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, historyId, imageBase64, imageUri, supabase]);
+  }, [getToken, historyId, imageUri, supabase]);
 
   const hasStartedRef = useRef(false);
   useEffect(() => {

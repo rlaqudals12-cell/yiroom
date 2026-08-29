@@ -1,7 +1,7 @@
 /**
  * Posture 자세 분석 - 시작 화면
  *
- * V3: GlassCard + GradientText 히어로 + backgroundGradient + LinearGradient CTA
+ * V3: GlassCard + 단색 히어로 + backgroundGradient + LinearGradient CTA
  */
 import { FEATURE_FLAGS } from '@yiroom/shared';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,7 +11,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
-import { GlassCard, GradientText, ScreenContainer } from '../../../components/ui';
+import { GlassCard, ScreenContainer } from '../../../components/ui';
 import { TIMING } from '../../../lib/animations';
 
 const FEATURES = [
@@ -50,14 +50,7 @@ export default function PostureAnalysisScreen() {
           <GlassCard shadowSize="xl" glowColor={accent.base} style={{ ...styles.hero }}>
             <View style={styles.heroContent}>
               <Text style={styles.iconText}>🧍</Text>
-              <GradientText
-                variant="extended"
-                fontSize={24}
-                fontWeight="700"
-                colors={[GRADIENT_COLORS[0], GRADIENT_COLORS[1]]}
-              >
-                AI 자세 분석
-              </GradientText>
+              <Text style={[styles.title, { color: colors.foreground }]}>AI 자세 분석</Text>
               <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
                 AI가 자세를 분석하고{'\n'}맞춤 교정 운동을 추천해 드려요
               </Text>
@@ -148,6 +141,10 @@ const styles = StyleSheet.create({
   iconText: {
     fontSize: 32,
     marginBottom: spacing.smx,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: typography.weight.bold,
   },
   subtitle: {
     fontSize: typography.size.base,

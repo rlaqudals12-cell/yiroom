@@ -31,17 +31,24 @@ export default function MakeupCameraScreen() {
           카메라 권한이 필요해요
         </Text>
         <Text style={[styles.permissionText, { color: colors.mutedForeground }]}>
-          메이크업 분석을 위해 사진이 필요합니다.
+          메이크업 분석을 위해 얼굴 사진이 필요해요.
         </Text>
         <Pressable
           style={[styles.permissionButton, { backgroundColor: brand.primary }]}
           onPress={requestPermission}
+          accessibilityRole="button"
+          accessibilityLabel="카메라 권한 허용하기"
         >
           <Text style={[styles.permissionButtonText, { color: brand.primaryForeground }]}>
             권한 허용하기
           </Text>
         </Pressable>
-        <Pressable style={styles.galleryButton} onPress={pickFromGallery}>
+        <Pressable
+          style={styles.galleryButton}
+          onPress={pickFromGallery}
+          accessibilityRole="button"
+          accessibilityLabel="갤러리에서 사진 선택"
+        >
           <Text style={[styles.galleryButtonText, { color: brand.primary }]}>갤러리에서 선택</Text>
         </Pressable>
       </View>
@@ -52,12 +59,12 @@ export default function MakeupCameraScreen() {
     if (!cameraRef.current || isCapturing) return;
     setIsCapturing(true);
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.8, base64: true });
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
       if (photo?.uri) {
-        navigateToResult(photo.uri, photo.base64);
+        navigateToResult(photo.uri);
       }
     } catch {
-      Alert.alert('오류', '사진 촬영에 실패했습니다.');
+      Alert.alert('오류', '사진 촬영에 실패했어요.');
     } finally {
       setIsCapturing(false);
     }
@@ -69,17 +76,16 @@ export default function MakeupCameraScreen() {
       allowsEditing: true,
       aspect: [3, 4],
       quality: 0.8,
-      base64: true,
     });
     if (!result.canceled && result.assets[0]) {
-      navigateToResult(result.assets[0].uri, result.assets[0].base64);
+      navigateToResult(result.assets[0].uri);
     }
   }
 
-  function navigateToResult(imageUri: string, base64?: string | null) {
+  function navigateToResult(imageUri: string) {
     router.replace({
       pathname: '/(analysis)/makeup/result',
-      params: { imageUri, imageBase64: base64 || '' },
+      params: { imageUri },
     });
   }
 
@@ -97,7 +103,12 @@ export default function MakeupCameraScreen() {
           </Text>
         </View>
         <View style={styles.controls}>
-          <Pressable style={styles.sideButton} onPress={pickFromGallery}>
+          <Pressable
+            style={styles.sideButton}
+            onPress={pickFromGallery}
+            accessibilityRole="button"
+            accessibilityLabel="갤러리에서 사진 선택"
+          >
             <Text style={[styles.iconText, { color: colors.overlayForeground }]}>갤러리</Text>
           </Pressable>
           <Pressable
@@ -108,6 +119,9 @@ export default function MakeupCameraScreen() {
             ]}
             onPress={takePicture}
             disabled={isCapturing}
+            accessibilityRole="button"
+            accessibilityLabel="사진 촬영하기"
+            accessibilityState={{ disabled: isCapturing, busy: isCapturing }}
           >
             {isCapturing ? (
               <ActivityIndicator color={colors.overlayForeground} />
@@ -115,7 +129,12 @@ export default function MakeupCameraScreen() {
               <View style={[styles.captureInner, { backgroundColor: colors.overlayForeground }]} />
             )}
           </Pressable>
-          <Pressable style={styles.sideButton} onPress={toggleCameraFacing}>
+          <Pressable
+            style={styles.sideButton}
+            onPress={toggleCameraFacing}
+            accessibilityRole="button"
+            accessibilityLabel="카메라 전환"
+          >
             <Text style={[styles.iconText, { color: colors.overlayForeground }]}>전환</Text>
           </Pressable>
         </View>

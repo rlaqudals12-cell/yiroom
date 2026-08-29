@@ -34,17 +34,24 @@ export default function PersonalColorCameraScreen() {
           카메라 권한이 필요해요
         </Text>
         <Text style={[styles.permissionText, { color: colors.mutedForeground }]}>
-          퍼스널 컬러 진단을 위해 얼굴 사진이 필요합니다.
+          퍼스널 컬러 진단을 위해 얼굴 사진이 필요해요.
         </Text>
         <Pressable
           style={[styles.permissionButton, { backgroundColor: brand.primary }]}
           onPress={requestPermission}
+          accessibilityRole="button"
+          accessibilityLabel="카메라 권한 허용하기"
         >
           <Text style={[styles.permissionButtonText, { color: brand.primaryForeground }]}>
             권한 허용하기
           </Text>
         </Pressable>
-        <Pressable style={styles.galleryButton} onPress={pickFromGallery}>
+        <Pressable
+          style={styles.galleryButton}
+          onPress={pickFromGallery}
+          accessibilityRole="button"
+          accessibilityLabel="갤러리에서 사진 선택"
+        >
           <Text style={[styles.galleryButtonText, { color: brand.primary }]}>갤러리에서 선택</Text>
         </Pressable>
       </View>
@@ -59,11 +66,10 @@ export default function PersonalColorCameraScreen() {
     try {
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
-        base64: true,
       });
 
       if (photo?.uri) {
-        navigateToResult(photo.uri, photo.base64);
+        navigateToResult(photo.uri);
       }
     } catch {
       Alert.alert('오류', '사진 촬영에 실패했습니다.');
@@ -79,21 +85,19 @@ export default function PersonalColorCameraScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
-      base64: true,
     });
 
     if (!result.canceled && result.assets[0]) {
-      navigateToResult(result.assets[0].uri, result.assets[0].base64);
+      navigateToResult(result.assets[0].uri);
     }
   }
 
   // 결과 화면으로 이동
-  function navigateToResult(imageUri: string, base64?: string | null) {
+  function navigateToResult(imageUri: string) {
     router.replace({
       pathname: '/(analysis)/personal-color/result',
       params: {
         imageUri,
-        imageBase64: base64 || '',
         answers: answers || '{}',
       },
     });
@@ -117,7 +121,12 @@ export default function PersonalColorCameraScreen() {
 
         {/* 하단 컨트롤 */}
         <View style={styles.controls}>
-          <Pressable style={styles.galleryIconButton} onPress={pickFromGallery}>
+          <Pressable
+            style={styles.galleryIconButton}
+            onPress={pickFromGallery}
+            accessibilityRole="button"
+            accessibilityLabel="갤러리에서 사진 선택"
+          >
             <Text style={[styles.iconText, { color: colors.overlayForeground }]}>갤러리</Text>
           </Pressable>
 
@@ -129,6 +138,9 @@ export default function PersonalColorCameraScreen() {
             ]}
             onPress={takePicture}
             disabled={isCapturing}
+            accessibilityRole="button"
+            accessibilityLabel="사진 촬영하기"
+            accessibilityState={{ disabled: isCapturing, busy: isCapturing }}
           >
             {isCapturing ? (
               <ActivityIndicator color={colors.overlayForeground} />
@@ -137,7 +149,12 @@ export default function PersonalColorCameraScreen() {
             )}
           </Pressable>
 
-          <Pressable style={styles.flipButton} onPress={toggleCameraFacing}>
+          <Pressable
+            style={styles.flipButton}
+            onPress={toggleCameraFacing}
+            accessibilityRole="button"
+            accessibilityLabel="카메라 전환"
+          >
             <Text style={[styles.iconText, { color: colors.overlayForeground }]}>전환</Text>
           </Pressable>
         </View>

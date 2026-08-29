@@ -67,6 +67,8 @@ export interface StoredAnalysisRecord {
   usedFallback: boolean | undefined;
 }
 
+export type StoredFallbackSessionMap = ReadonlyMap<string, readonly string[] | undefined>;
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
 }
@@ -81,13 +83,51 @@ export function readStoredFallbackFlag(value: unknown): boolean | undefined {
 }
 
 /**
+ * 여러 축이 같은 통합 세션을 가리킬 때 세션 출처를 한 번에 조회한다.
+ * 조회 실패도 실제 분석으로 추정하지 않고 각 세션을 undefined로 유지한다.
+ */
+export async function loadStoredFallbackSessions(
+  supabase: SupabaseClient,
+  rows: readonly (Record<string, unknown> | null | undefined)[]
+): Promise<StoredFallbackSessionMap> {
+  const sessionIds = Array.from(
+    new Set(
+      rows
+        .map((row) => row?.session_id)
+        .filter((sessionId): sessionId is string => typeof sessionId === 'string')
+    )
+  );
+  const fallbackBySessionId = new Map<string, readonly string[] | undefined>(
+    sessionIds.map((sessionId) => [sessionId, undefined])
+  );
+  if (sessionIds.length === 0) return fallbackBySessionId;
+
+  const { data, error } = await supabase
+    .from('integrated_analysis_sessions')
+    .select('id, used_fallback')
+    .in('id', sessionIds);
+  if (error || !Array.isArray(data)) return fallbackBySessionId;
+
+  for (const candidate of data) {
+    const record = asRecord(candidate);
+    if (!record || typeof record.id !== 'string' || !Array.isArray(record.used_fallback)) continue;
+    fallbackBySessionId.set(
+      record.id,
+      record.used_fallback.filter((axis): axis is string => typeof axis === 'string')
+    );
+  }
+  return fallbackBySessionId;
+}
+
+/**
  * 축 행에 표식이 없고 통합 세션에서 만들어진 경우 세션의 used_fallback을 확인한다.
  * 조회 실패는 false로 간주하지 않고 unknown(undefined)을 유지한다.
  */
 export async function resolveStoredFallback(
   supabase: SupabaseClient,
   axis: StoredAnalysisAxis,
-  row: Record<string, unknown>
+  row: Record<string, unknown>,
+  fallbackBySessionId?: StoredFallbackSessionMap
 ): Promise<boolean | undefined> {
   const config = STORED_RESULT_CONFIG[axis];
   const inline = readStoredFallbackFlag(row[config.evidenceColumn]);
@@ -95,6 +135,10 @@ export async function resolveStoredFallback(
 
   const sessionId = typeof row.session_id === 'string' ? row.session_id : null;
   if (!sessionId) return undefined;
+
+  if (fallbackBySessionId) {
+    return fallbackBySessionId.get(sessionId)?.includes(config.sessionAxis);
+  }
 
   const { data, error } = await supabase
     .from('integrated_analysis_sessions')

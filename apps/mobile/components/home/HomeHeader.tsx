@@ -7,7 +7,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { getTimeGreeting } from '../../hooks/useTimeGreeting';
 import { TIMING } from '../../lib/animations';
 import { useTheme, typography, spacing } from '../../lib/theme';
-import { GradientBackground, GradientText } from '../ui';
+import { GradientBackground } from '../ui';
 
 interface HomeHeaderProps {
   userName: string;
@@ -87,14 +87,18 @@ export function HomeHeader({
         >
           {isLoaded ? userName : '...'}님
         </Text>
-        <GradientText
-          variant="extended"
-          fontSize={typography.size.xs}
-          fontWeight={typography.weight.medium}
-          style={styles.slogan}
+        <Text
+          style={[
+            styles.slogan,
+            {
+              color: colors.overlayForeground,
+              fontSize: typography.size.xs,
+              fontWeight: typography.weight.medium,
+            },
+          ]}
         >
           온전한 나를 찾는 여정, 이룸
-        </GradientText>
+        </Text>
       </GradientBackground>
     </Animated.View>
   );

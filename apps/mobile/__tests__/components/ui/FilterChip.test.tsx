@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
@@ -97,6 +98,15 @@ describe('FilterChip', () => {
       <FilterChip label="수분" selected />
     );
     expect(getByLabelText('수분 필터 선택됨')).toBeTruthy();
+  });
+
+  it('44pt 최소 높이와 확장된 터치 영역을 유지한다', () => {
+    const { getByLabelText } = renderWithTheme(<FilterChip label="수분" />);
+    const chip = getByLabelText('수분 필터');
+    const style = StyleSheet.flatten(chip.props.style);
+
+    expect(style.minHeight).toBe(44);
+    expect(chip.props.hitSlop).toBe(6);
   });
 });
 

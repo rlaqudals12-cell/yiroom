@@ -1,13 +1,13 @@
 /**
  * 분석 모듈 허브 화면
- * UX v3: GlassCard + GradientText 히어로 + backgroundGradient + coloredShadow + 모듈별 그라디언트 아이콘
+ * ADR-120: 단색 잉크 히어로 + 분석 모듈 목록
  */
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { GlassCard, GradientText, ScalePressable, ScreenContainer } from '@/components/ui';
+import { GlassCard, ScalePressable, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import { useTheme, typography, spacing, radii, coloredShadow } from '@/lib/theme';
 
@@ -96,14 +96,7 @@ export default function AnalysisHubScreen(): React.JSX.Element {
         <GlassCard shadowSize="xl" glowColor="#A855F7" style={styles.hero}>
           <View style={styles.heroContent}>
             <Text style={styles.heroEmoji}>🔬</Text>
-            <GradientText
-              variant="extended"
-              fontSize={24}
-              fontWeight="700"
-              style={styles.heroTitle}
-            >
-              AI 분석
-            </GradientText>
+            <Text style={[styles.heroTitle, { color: colors.foreground }]}>AI 분석</Text>
             <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
               원하는 분석을 선택해주세요
             </Text>
@@ -188,7 +181,11 @@ const styles = StyleSheet.create({
   hero: { marginBottom: spacing.lg },
   heroContent: { alignItems: 'center', padding: spacing.xl },
   heroEmoji: { fontSize: 40, marginBottom: spacing.sm },
-  heroTitle: { marginBottom: spacing.xs },
+  heroTitle: {
+    marginBottom: spacing.xs,
+    fontSize: typography.size['2xl'],
+    fontWeight: typography.weight.bold,
+  },
   heroSubtitle: { fontSize: typography.size.sm, textAlign: 'center', lineHeight: 20 },
   moduleList: { gap: spacing.smx - 2 },
   moduleCard: {

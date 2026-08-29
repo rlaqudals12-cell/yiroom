@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { GlassCard, GradientText, ScreenContainer } from '@/components/ui';
+import { GlassCard, ScreenContainer } from '@/components/ui';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { staggeredEntry } from '../../../lib/animations';
@@ -28,7 +28,6 @@ export default function BodyAnalysisScreen() {
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
 
   // 갤러리에서 이미지 선택
   const pickImage = async () => {
@@ -37,12 +36,10 @@ export default function BodyAnalysisScreen() {
       allowsEditing: true,
       aspect: [3, 4],
       quality: 0.8,
-      base64: true,
     });
 
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
-      setImageBase64(result.assets[0].base64 || null);
     }
   };
 
@@ -77,7 +74,6 @@ export default function BodyAnalysisScreen() {
         height: heightNum.toString(),
         weight: weightNum.toString(),
         imageUri,
-        imageBase64: imageBase64 || '',
       },
     });
   };
@@ -101,9 +97,7 @@ export default function BodyAnalysisScreen() {
             <View style={[styles.moduleIcon, { backgroundColor: `${accent.base}18` }]}>
               <Text style={{ fontSize: 28 }}>📐</Text>
             </View>
-            <GradientText variant="body" fontSize={24} fontWeight="700">
-              체형 분석
-            </GradientText>
+            <Text style={[styles.title, { color: colors.foreground }]}>체형 분석</Text>
             <Text
               style={[styles.subtitle, { color: colors.mutedForeground, marginTop: spacing.smx }]}
             >

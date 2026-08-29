@@ -336,11 +336,7 @@ export default function BeautyTab(): React.JSX.Element {
 
       {/* 분석 모듈 네비게이션 */}
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <SectionHeader
-          title="분석"
-          gradient="personalColor"
-          style={{ marginBottom: spacing.sm + 4 }}
-        />
+        <SectionHeader title="분석" style={{ marginBottom: spacing.sm + 4 }} />
       </Animated.View>
 
       <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>

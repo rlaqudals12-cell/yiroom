@@ -28,6 +28,7 @@ export { formatReportReading } from './report-readings';
 // 저장 결과 재방문 경계 — historyId 정확 조회 또는 최신 1건
 export {
   loadStoredAnalysisRecord,
+  loadStoredFallbackSessions,
   readStoredFallbackFlag,
   resolveStoredFallback,
   finiteNumber,

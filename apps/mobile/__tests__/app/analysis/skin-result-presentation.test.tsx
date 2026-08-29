@@ -18,7 +18,7 @@ jest.mock('expo-haptics', () => ({
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn() },
-  useLocalSearchParams: () => ({ imageUri: 'file:///skin.jpg', imageBase64: 'x'.repeat(200) }),
+  useLocalSearchParams: () => ({ imageUri: 'file:///skin.jpg' }),
 }));
 
 jest.mock('expo-font', () => ({ useFonts: jest.fn(() => [true, null]) }));
@@ -28,7 +28,9 @@ jest.mock('../../../lib/api/skin', () => ({
   SkinApiError: class SkinApiError extends Error {},
 }));
 
-jest.mock('../../../lib/gemini', () => ({ imageToBase64: jest.fn() }));
+jest.mock('../../../lib/image/downscale', () => ({
+  downscaleToBase64: jest.fn().mockResolvedValue('x'.repeat(200)),
+}));
 jest.mock('../../../lib/monitoring/sentry', () => ({ captureError: jest.fn() }));
 jest.mock('../../../lib/analytics/tracker', () => ({ trackAnalysisResultView: jest.fn() }));
 jest.mock('../../../lib/supabase', () => ({ useClerkSupabaseClient: () => ({}) }));

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import {
+  loadStoredFallbackSessions,
   loadStoredAnalysisRecord,
   readStoredFallbackFlag,
   resolveStoredFallback,
@@ -10,13 +11,15 @@ interface QueryTrace {
   table: string;
   columns?: string;
   eq?: [string, unknown];
+  in?: [string, unknown[]];
   order?: string;
   limit?: number;
 }
 
-function createClient(
-  responses: Record<string, { data: unknown; error: unknown }>
-): { client: SupabaseClient; traces: QueryTrace[] } {
+function createClient(responses: Record<string, { data: unknown; error: unknown }>): {
+  client: SupabaseClient;
+  traces: QueryTrace[];
+} {
   const traces: QueryTrace[] = [];
   const client = {
     from: (table: string) => {
@@ -30,6 +33,10 @@ function createClient(
         eq: (column: string, value: unknown) => {
           trace.eq = [column, value];
           return builder;
+        },
+        in: (column: string, values: unknown[]) => {
+          trace.in = [column, values];
+          return Promise.resolve(responses[table] ?? { data: null, error: null });
         },
         order: (column: string) => {
           trace.order = column;
@@ -142,6 +149,39 @@ describe('stored-result-loader', () => {
       table: 'integrated_analysis_sessions',
       eq: ['id', 'session-1'],
     });
+  });
+
+  it('여러 축의 중복 session_id를 한 번의 일괄 조회로 해석한다', async () => {
+    const { client, traces } = createClient({
+      integrated_analysis_sessions: {
+        data: [
+          { id: 'session-1', used_fallback: ['skin', 'hair'] },
+          { id: 'session-2', used_fallback: [] },
+        ],
+        error: null,
+      },
+    });
+
+    const fallbackBySession = await loadStoredFallbackSessions(client, [
+      { session_id: 'session-1' },
+      { session_id: 'session-1' },
+      { session_id: 'session-2' },
+    ]);
+
+    expect(traces).toHaveLength(1);
+    expect(traces[0]).toMatchObject({
+      table: 'integrated_analysis_sessions',
+      in: ['id', ['session-1', 'session-2']],
+    });
+    await expect(
+      resolveStoredFallback(
+        client,
+        'hair',
+        { recommendations: {}, session_id: 'session-1' },
+        fallbackBySession
+      )
+    ).resolves.toBe(true);
+    expect(traces).toHaveLength(1);
   });
 
   it('구 데이터의 출처 불명은 false로 덮지 않고 undefined로 유지한다', () => {

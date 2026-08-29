@@ -589,11 +589,7 @@ export default function HomeScreen(): React.JSX.Element {
       {/* 오늘의 요약 — W/N 연동 (ADR-098, Phase 2 보류 시 숨김) */}
       {FEATURE_FLAGS.WELLNESS_PHASE2 && (
         <Animated.View entering={FadeInUp.delay(400).duration(TIMING.normal)}>
-          <SectionHeader
-            title="오늘의 요약"
-            gradient="brand"
-            style={{ marginBottom: spacing.smx }}
-          />
+          <SectionHeader title="오늘의 요약" style={{ marginBottom: spacing.smx }} />
           <GlassCard shadowSize="md" style={{ marginBottom: spacing.lg }}>
             <View style={{ flexDirection: 'row', gap: spacing.smx }}>
               <Animated.View
@@ -640,11 +636,7 @@ export default function HomeScreen(): React.JSX.Element {
 
       {/* 모듈 카드 — 운동/영양은 ADR-098 기준 WELLNESS_PHASE2에 게이팅 */}
       <Animated.View entering={FadeInUp.delay(500).duration(TIMING.normal)}>
-        <SectionHeader
-          title="나의 여정"
-          gradient="extended"
-          style={{ marginBottom: spacing.smx }}
-        />
+        <SectionHeader title="나의 여정" style={{ marginBottom: spacing.smx }} />
       </Animated.View>
       <GlassCard shadowSize="md" style={{ gap: spacing.md, marginBottom: spacing.lg }}>
         {FEATURE_FLAGS.WELLNESS_PHASE2 && (

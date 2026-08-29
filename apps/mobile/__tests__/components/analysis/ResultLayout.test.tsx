@@ -59,12 +59,6 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-jest.mock('expo-font', () => ({
-  useFonts: jest.fn(() => [true, null]),
-}));
-
-const mockUseFonts = jest.requireMock('expo-font').useFonts as jest.Mock;
-
 // react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {
   const RN = require('react-native');
@@ -215,7 +209,6 @@ describe('ResultLayout 컴포넌트', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetToken.mockResolvedValue('clerk-token');
-    mockUseFonts.mockReturnValue([true, null]);
   });
 
   // --------------------------------------------------------
@@ -278,17 +271,6 @@ describe('ResultLayout 컴포넌트', () => {
       expect(style.fontWeight).toBeUndefined();
     });
 
-    it('폰트가 로딩 중이어도 결론을 숨기지 않고 시스템 글꼴로 표시해야 한다', () => {
-      mockUseFonts.mockReturnValue([false, null]);
-
-      const { getByTestId, getByText } = renderWithTheme(
-        <ResultLayout {...createDefaultProps({ verdict: '민감성 피부' })} />
-      );
-
-      expect(getByText('민감성 피부')).toBeTruthy();
-      const style = StyleSheet.flatten(getByTestId('analysis-result-layout-verdict').props.style);
-      expect(style.fontFamily).toBeUndefined();
-    });
   });
 
   describe('결과 조회 계측', () => {

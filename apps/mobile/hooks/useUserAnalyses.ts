@@ -6,7 +6,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { computeSkinTrend } from '@yiroom/shared';
 import { useState, useEffect, useCallback } from 'react';
 
-import { resolveStoredFallback } from '../lib/analysis';
+import { loadStoredFallbackSessions, resolveStoredFallback } from '../lib/analysis';
 import {
   normalizePersonalColorHexes,
   normalizePersonalColorSubtype,
@@ -134,20 +134,65 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
         // 왜 maybeSingle: 0행(미분석)은 정상 상태 — single은 0행을 에러로 취급.
         // prod엔 tone·color_palette 컬럼이 없음(실재: undertone·best_colors) → 과거 select는
         // 존재하지 않는 컬럼을 요청해 쿼리가 런타임 에러로 죽고 홈 집계에서 통째로 누락됐다.
-        const { data: pcData, error: pcError } = await supabase
-          .from('personal_color_assessments')
-          .select(
-            'id, season, undertone, season_subtype, best_colors, worst_colors, image_analysis, session_id, created_at'
-          )
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        const [pcResult, skinResult, bodyResult, hairResult, makeupResult] = await Promise.all([
+          supabase
+            .from('personal_color_assessments')
+            .select(
+              'id, season, undertone, season_subtype, best_colors, worst_colors, image_analysis, session_id, created_at'
+            )
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('skin_analyses')
+            .select('id, skin_type, overall_score, recommendations, session_id, created_at')
+            .order('created_at', { ascending: false })
+            .limit(2),
+          supabase
+            .from('body_analyses')
+            .select('id, body_type, height, weight, style_recommendations, session_id, created_at')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('hair_analyses')
+            .select(
+              'id, hair_type, overall_score, damage_level, concerns, recommendations, session_id, created_at'
+            )
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('makeup_analyses')
+            .select(
+              'id, undertone, overall_score, face_shape, recommendations, session_id, created_at'
+            )
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+        const { data: pcData, error: pcError } = pcResult;
+        const { data: skinRows, error: skinError } = skinResult;
+        const { data: bodyData, error: bodyError } = bodyResult;
+        const { data: hairData, error: hairError } = hairResult;
+        const { data: makeupData, error: makeupError } = makeupResult;
+
+        // 통합 분석 한 회차가 만든 여러 축은 같은 session_id를 공유한다. 한 번의 IN 조회로
+        // used_fallback 출처를 가져와 축별 반복 조회(N+1)를 막는다.
+        const fallbackBySessionId = await loadStoredFallbackSessions(supabase, [
+          pcData as Record<string, unknown> | null,
+          (skinRows?.[0] as Record<string, unknown> | undefined) ?? null,
+          bodyData as Record<string, unknown> | null,
+          hairData as Record<string, unknown> | null,
+          makeupData as Record<string, unknown> | null,
+        ]);
 
         if (pcData && !pcError) {
           const usedFallback = await resolveStoredFallback(
             supabase,
             'personal-color',
-            pcData as Record<string, unknown>
+            pcData as Record<string, unknown>,
+            fallbackBySessionId
           );
           const bestColors = normalizePersonalColorHexes(pcData.best_colors);
           const worstColors = normalizePersonalColorHexes(pcData.worst_colors);
@@ -181,18 +226,13 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
 
         // 피부 분석 결과 (직전 대비 추이 포함 — "오늘의 컨디션", ADR-109 Phase 3)
         // prod skin_analyses엔 concerns 컬럼이 없음 → 고민은 recommendations.primaryConcerns(jsonb)에서 추출.
-        const { data: skinRows, error: skinError } = await supabase
-          .from('skin_analyses')
-          .select('id, skin_type, overall_score, recommendations, session_id, created_at')
-          .order('created_at', { ascending: false })
-          .limit(2); // 추이(직전 대비)용 2건
-
         if (skinRows && skinRows.length > 0 && !skinError) {
           const latest = skinRows[0];
           const usedFallback = await resolveStoredFallback(
             supabase,
             'skin',
-            latest as Record<string, unknown>
+            latest as Record<string, unknown>,
+            fallbackBySessionId
           );
           const skin: SkinAnalysisResult = {
             id: latest.id,
@@ -225,18 +265,12 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
 
         // 체형 분석 결과
         // prod body_analyses엔 bmi 컬럼이 없음(실재: height·weight) → BMI는 두 값에서 파생.
-        const { data: bodyData, error: bodyError } = await supabase
-          .from('body_analyses')
-          .select('id, body_type, height, weight, style_recommendations, session_id, created_at')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
         if (bodyData && !bodyError) {
           const usedFallback = await resolveStoredFallback(
             supabase,
             'body',
-            bodyData as Record<string, unknown>
+            bodyData as Record<string, unknown>,
+            fallbackBySessionId
           );
           const body: BodyAnalysisResult = {
             id: bodyData.id,
@@ -259,20 +293,12 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
         }
 
         // 헤어 분석 결과 (select 컬럼은 모두 prod에 실재)
-        const { data: hairData, error: hairError } = await supabase
-          .from('hair_analyses')
-          .select(
-            'id, hair_type, overall_score, damage_level, concerns, recommendations, session_id, created_at'
-          )
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
         if (hairData && !hairError) {
           const usedFallback = await resolveStoredFallback(
             supabase,
             'hair',
-            hairData as Record<string, unknown>
+            hairData as Record<string, unknown>,
+            fallbackBySessionId
           );
           const hair: HairAnalysisResult = {
             id: hairData.id,
@@ -302,20 +328,12 @@ export function useUserAnalyses(): UseUserAnalysesReturn {
 
         // 메이크업 분석 결과
         // prod makeup_analyses엔 makeup_style·color_recommendations 컬럼이 없음(실재: undertone·face_shape·recommendations).
-        const { data: makeupData, error: makeupError } = await supabase
-          .from('makeup_analyses')
-          .select(
-            'id, undertone, overall_score, face_shape, recommendations, session_id, created_at'
-          )
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
         if (makeupData && !makeupError) {
           const usedFallback = await resolveStoredFallback(
             supabase,
             'makeup',
-            makeupData as Record<string, unknown>
+            makeupData as Record<string, unknown>,
+            fallbackBySessionId
           );
           const makeup: MakeupAnalysisResult = {
             id: makeupData.id,

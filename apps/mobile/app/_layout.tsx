@@ -3,6 +3,7 @@
  */
 import '../global.css';
 import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -17,6 +18,7 @@ import { initSentry, SentryErrorBoundary, sentryWrap } from '../lib/monitoring/s
 import { cleanupHiddenWellnessNotificationsOnce } from '../lib/notifications/hidden-wellness-cleanup';
 import { useNotificationResponse } from '../lib/notifications/useNotifications';
 import { ThemeProvider, useTheme, lightColors, typography, spacing } from '../lib/theme';
+import { resultSerifFonts } from '../lib/theme/fonts';
 import { appLogger } from '../lib/utils/logger';
 
 // Expo Go에서 expo-notifications 경고 억제 (SDK 53+ 제한)
@@ -116,6 +118,9 @@ function SentryFallback() {
 }
 
 function RootLayout() {
+  // 결과 첫 프레임부터 세리프가 고정되도록 앱 루트에서 한 번만 미리 로드한다.
+  const [fontsLoaded, fontError] = useFonts(resultSerifFonts);
+
   // Sentry 초기화
   useEffect(() => {
     initSentry();
@@ -124,6 +129,10 @@ function RootLayout() {
   // Clerk key가 없으면 경고 (개발 중에는 무시)
   if (!CLERK_PUBLISHABLE_KEY) {
     appLogger.warn('Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY');
+  }
+
+  if (!fontsLoaded && !fontError) {
+    return null;
   }
 
   return (

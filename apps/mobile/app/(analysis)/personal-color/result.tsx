@@ -44,7 +44,7 @@ import {
   requestPersonalColorAnalysis,
   type PersonalColorApiResult,
 } from '@/lib/api/personalColor';
-import { imageToBase64 } from '@/lib/gemini';
+import { downscaleToBase64 } from '@/lib/image/downscale';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 
@@ -57,9 +57,8 @@ const TONE_EXPLANATION: Record<PersonalColorReportSeasonInfo['tone'], string> = 
 export default function PersonalColorResultScreen(): React.JSX.Element {
   const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
-  const { imageUri, imageBase64, historyId } = useLocalSearchParams<{
+  const { imageUri, historyId } = useLocalSearchParams<{
     imageUri?: string;
-    imageBase64?: string;
     historyId?: string;
   }>();
   const [isLoading, setIsLoading] = useState(true);
@@ -75,7 +74,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
     setResult(null);
 
     try {
-      const hasFreshImage = Boolean(imageBase64 || imageUri);
+      const hasFreshImage = Boolean(imageUri);
       if (!hasFreshImage) {
         const stored = await loadStoredAnalysisRecord(supabase, 'personal-color', historyId);
         const row = stored.row;
@@ -104,8 +103,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
         return;
       }
 
-      let base64Data = imageBase64;
-      if (!base64Data && imageUri) base64Data = await imageToBase64(imageUri);
+      const base64Data = imageUri ? await downscaleToBase64(imageUri, 1024) : '';
       if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
 
       const token = await getToken();
@@ -139,7 +137,7 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, historyId, imageBase64, imageUri, supabase]);
+  }, [getToken, historyId, imageUri, supabase]);
 
   const hasStartedRef = useRef(false);
   useEffect(() => {

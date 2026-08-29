@@ -151,33 +151,39 @@ describe('BodyProfileCard', () => {
 
   it('BMI 값을 표시해야 한다', () => {
     const { getByText } = renderWithTheme(<BodyProfileCard {...defaultProps} />);
-    expect(getByText(/BMI 20.8/)).toBeTruthy();
+    expect(getByText('BMI')).toBeTruthy();
+    expect(getByText('20.8 · 정상')).toBeTruthy();
   });
 
-  it('키/몸무게 뱃지를 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(<BodyProfileCard {...defaultProps} />);
+  it('체형·키·몸무게·BMI를 진단 속성표로 표시하고 원형 게이지를 쓰지 않는다', () => {
+    const { getByText, getByTestId, queryByTestId } = renderWithTheme(
+      <BodyProfileCard {...defaultProps} testID="body-card" />
+    );
+
+    expect(getByTestId('body-card-attributes')).toBeTruthy();
     expect(getByText('170cm')).toBeTruthy();
     expect(getByText('60kg')).toBeTruthy();
+    expect(queryByTestId('body-card-gauge')).toBeNull();
   });
 
   it('BMI 라벨이 정상 범위를 표시해야 한다', () => {
     const { getByText } = renderWithTheme(<BodyProfileCard {...defaultProps} />);
-    expect(getByText('정상')).toBeTruthy();
+    expect(getByText('20.8 · 정상')).toBeTruthy();
   });
 
   it('BMI 라벨이 저체중을 표시해야 한다', () => {
     const { getByText } = renderWithTheme(<BodyProfileCard {...{ ...defaultProps, bmi: 17.5 }} />);
-    expect(getByText('저체중')).toBeTruthy();
+    expect(getByText('17.5 · 저체중')).toBeTruthy();
   });
 
   it('BMI 라벨이 과체중을 표시해야 한다', () => {
     const { getByText } = renderWithTheme(<BodyProfileCard {...{ ...defaultProps, bmi: 24.0 }} />);
-    expect(getByText('과체중')).toBeTruthy();
+    expect(getByText('24.0 · 과체중')).toBeTruthy();
   });
 
   it('BMI 라벨이 비만을 표시해야 한다', () => {
     const { getByText } = renderWithTheme(<BodyProfileCard {...{ ...defaultProps, bmi: 27.0 }} />);
-    expect(getByText('비만')).toBeTruthy();
+    expect(getByText('27.0 · 비만')).toBeTruthy();
   });
 
   it('알 수 없는 체형 타입은 그대로 표시해야 한다', () => {

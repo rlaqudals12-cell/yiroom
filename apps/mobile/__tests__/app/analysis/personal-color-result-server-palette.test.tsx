@@ -27,7 +27,6 @@ jest.mock('expo-router', () => ({
   },
   useLocalSearchParams: () => ({
     imageUri: 'file:///personal-color.jpg',
-    imageBase64: 'x'.repeat(200),
   }),
 }));
 
@@ -48,7 +47,9 @@ jest.mock('../../../lib/api/personalColor', () => ({
   PersonalColorApiError: class PersonalColorApiError extends Error {},
 }));
 
-jest.mock('../../../lib/gemini', () => ({ imageToBase64: jest.fn() }));
+jest.mock('../../../lib/image/downscale', () => ({
+  downscaleToBase64: jest.fn().mockResolvedValue('x'.repeat(200)),
+}));
 jest.mock('../../../lib/monitoring/sentry', () => ({ captureError: jest.fn() }));
 jest.mock('../../../lib/analytics/tracker', () => ({ trackAnalysisResultView: jest.fn() }));
 

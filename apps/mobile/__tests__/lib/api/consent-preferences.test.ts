@@ -88,10 +88,9 @@ describe('consent preferences API client', () => {
       )
     );
 
-    const error = await fetchConsentPreferences(
-      'expired-token',
-      'https://api.example.test'
-    ).catch((caught: unknown) => caught);
+    const error = await fetchConsentPreferences('expired-token', 'https://api.example.test').catch(
+      (caught: unknown) => caught
+    );
 
     expect(error).toBeInstanceOf(ConsentPreferencesApiError);
     expect(error).toMatchObject({
@@ -112,5 +111,33 @@ describe('consent preferences API client', () => {
     await expect(
       fetchConsentPreferences('clerk-token', 'https://api.example.test')
     ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
+  it('조회 중 네트워크 실패를 NETWORK_ERROR로 구분한다', async () => {
+    (global.fetch as jest.Mock).mockRejectedValue(new Error('offline'));
+
+    await expect(
+      fetchConsentPreferences('clerk-token', 'https://api.example.test')
+    ).rejects.toMatchObject({
+      code: 'NETWORK_ERROR',
+      status: 0,
+      message: '네트워크 연결을 확인해주세요.',
+    });
+  });
+
+  it('저장 중 네트워크 실패를 NETWORK_ERROR로 구분한다', async () => {
+    (global.fetch as jest.Mock).mockRejectedValue(new Error('offline'));
+
+    await expect(
+      updateConsentPreferences(
+        { analyticsConsent: false },
+        'clerk-token',
+        'https://api.example.test'
+      )
+    ).rejects.toMatchObject({
+      code: 'NETWORK_ERROR',
+      status: 0,
+      message: '네트워크 연결을 확인해주세요.',
+    });
   });
 });

@@ -1,7 +1,7 @@
 /**
  * H-1 헤어 분석 - 시작 화면
  *
- * V3: GlassCard + GradientText 히어로 + backgroundGradient + LinearGradient CTA
+ * ADR-120: 단색 잉크 히어로 + 분석 안내
  */
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -10,7 +10,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
-import { GlassCard, GradientText, ScreenContainer } from '../../../components/ui';
+import { GlassCard, ScreenContainer } from '../../../components/ui';
 import { TIMING } from '../../../lib/animations';
 
 const FEATURES = [
@@ -44,14 +44,7 @@ export default function HairAnalysisScreen() {
           <GlassCard shadowSize="xl" glowColor={accent.base} style={{ ...styles.hero }}>
             <View style={styles.heroContent}>
               <Text style={styles.iconText}>💇</Text>
-              <GradientText
-                variant="extended"
-                fontSize={24}
-                fontWeight="700"
-                colors={[GRADIENT_COLORS[0], GRADIENT_COLORS[1]]}
-              >
-                AI 헤어 분석
-              </GradientText>
+              <Text style={[styles.title, { color: colors.foreground }]}>AI 헤어 분석</Text>
               <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
                 모발 상태를 분석하고{'\n'}맞춤 케어 루틴을 추천해 드려요
               </Text>
@@ -142,6 +135,10 @@ const styles = StyleSheet.create({
   iconText: {
     fontSize: 32,
     marginBottom: spacing.smx,
+  },
+  title: {
+    fontSize: typography.size['2xl'],
+    fontWeight: typography.weight.bold,
   },
   subtitle: {
     fontSize: typography.size.base,

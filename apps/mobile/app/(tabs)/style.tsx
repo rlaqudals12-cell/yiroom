@@ -4,7 +4,7 @@
  */
 import { useRouter } from 'expo-router';
 import { Shirt, Ruler, ShoppingBag, Package, Wand2 } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { EmptyState } from '../../components/common/EmptyState';
@@ -47,7 +47,8 @@ export default function StyleTab(): React.JSX.Element {
     bodyType: (bodyAnalysis?.bodyType as BodyType3) ?? null,
   });
 
-  const outfitSuggestion = getOutfitSuggestion();
+  // 옷장 전체 매칭은 카드의 로컬 상태 변화마다 다시 스캔할 필요가 없다.
+  const outfitSuggestion = useMemo(() => getOutfitSuggestion(), [getOutfitSuggestion]);
 
   return (
     <ScreenContainer
@@ -110,7 +111,7 @@ export default function StyleTab(): React.JSX.Element {
 
       {/* 분석 */}
       <Animated.View entering={FadeInUp.delay(100).duration(TIMING.normal)}>
-        <SectionHeader title="분석" gradient="body" style={{ marginBottom: spacing.sm + 4 }} />
+        <SectionHeader title="분석" style={{ marginBottom: spacing.sm + 4 }} />
       </Animated.View>
 
       <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
@@ -130,7 +131,7 @@ export default function StyleTab(): React.JSX.Element {
 
       {/* 스타일링 */}
       <Animated.View entering={FadeInUp.delay(250).duration(TIMING.normal)}>
-        <SectionHeader title="스타일링" gradient="body" style={{ marginBottom: spacing.sm + 4 }} />
+        <SectionHeader title="스타일링" style={{ marginBottom: spacing.sm + 4 }} />
       </Animated.View>
 
       <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>

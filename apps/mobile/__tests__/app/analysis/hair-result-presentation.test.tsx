@@ -18,7 +18,7 @@ jest.mock('expo-haptics', () => ({
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn() },
-  useLocalSearchParams: () => ({ imageUri: 'file:///hair.jpg', imageBase64: 'x'.repeat(200) }),
+  useLocalSearchParams: () => ({ imageUri: 'file:///hair.jpg' }),
 }));
 
 jest.mock('expo-font', () => ({
@@ -30,7 +30,9 @@ jest.mock('../../../lib/api/hair', () => ({
   HairApiError: class HairApiError extends Error {},
 }));
 
-jest.mock('../../../lib/gemini', () => ({ imageToBase64: jest.fn() }));
+jest.mock('../../../lib/image/downscale', () => ({
+  downscaleToBase64: jest.fn().mockResolvedValue('x'.repeat(200)),
+}));
 jest.mock('../../../lib/monitoring/sentry', () => ({ captureError: jest.fn() }));
 jest.mock('../../../lib/analytics/tracker', () => ({ trackAnalysisResultView: jest.fn() }));
 

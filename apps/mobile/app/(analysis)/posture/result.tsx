@@ -19,7 +19,7 @@ import {
 } from '@/components/analysis';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import { requestPostureAnalysis, type PostureAnalysisApiResult } from '@/lib/api/posture';
-import { imageToBase64 } from '@/lib/gemini';
+import { downscaleToBase64 } from '@/lib/image/downscale';
 import { captureError } from '@/lib/monitoring/sentry';
 import { radii, shadows, spacing, typography } from '@/lib/theme';
 
@@ -43,9 +43,8 @@ export default function PostureResultScreen(): React.JSX.Element {
 
 function PostureResultContent(): React.JSX.Element {
   const { getToken } = useAuth();
-  const { imageUri, imageBase64 } = useLocalSearchParams<{
+  const { imageUri } = useLocalSearchParams<{
     imageUri: string;
-    imageBase64?: string;
   }>();
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<PostureAnalysisApiResult | null>(null);
@@ -57,8 +56,7 @@ function PostureResultContent(): React.JSX.Element {
     setIsLoading(true);
     setUsedFallback(false);
     try {
-      let base64Data = imageBase64;
-      if (!base64Data && imageUri) base64Data = await imageToBase64(imageUri);
+      const base64Data = imageUri ? await downscaleToBase64(imageUri, 1024) : '';
       if (!base64Data) throw new Error('이미지 데이터가 없습니다.');
 
       const token = await getToken();
@@ -77,7 +75,7 @@ function PostureResultContent(): React.JSX.Element {
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, imageBase64, imageUri]);
+  }, [getToken, imageUri]);
 
   useEffect(() => {
     void analyzePosture();

@@ -9,7 +9,7 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, StyleSheet, Text, View, Platform } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { useTheme, spacing } from '../../lib/theme';
@@ -30,10 +30,16 @@ export function isTabRouteHidden(options: HiddenAwareTabOptions): boolean {
   return options.href === null || options.tabBarButton != null;
 }
 
+/** 시스템 제스처 영역보다 최소 여백이 작아지지 않게 탭바 하단 여백을 계산한다. */
+export function getTabBarBottomPadding(bottomInset: number): number {
+  return Math.max(bottomInset, spacing.sm);
+}
+
 export function BrandTabBar({
   state,
   descriptors,
   navigation,
+  insets,
 }: BottomTabBarProps): React.JSX.Element {
   const { colors, isDark } = useTheme();
 
@@ -44,6 +50,7 @@ export function BrandTabBar({
         {
           backgroundColor: isDark ? colors.card : colors.card,
           borderTopColor: colors.border,
+          paddingBottom: getTabBarBottomPadding(insets.bottom),
         },
       ]}
       testID="brand-tab-bar"
@@ -172,10 +179,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: 6,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 8,
-    height: Platform.OS === 'ios' ? 84 : 60,
   },
   tabItem: {
+    // 고정 height 제거 후에도 터치 타깃 44pt(HIG)·48dp 접근성 하한을 지킨다
+    minHeight: 44,
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',

@@ -23,7 +23,7 @@ jest.mock('expo-router', () => ({
     push: (...args: unknown[]) => mockPush(...args),
     replace: (...args: unknown[]) => mockReplace(...args),
   },
-  useLocalSearchParams: () => ({ imageUri: 'file:///makeup.jpg', imageBase64: 'x'.repeat(200) }),
+  useLocalSearchParams: () => ({ imageUri: 'file:///makeup.jpg' }),
 }));
 
 jest.mock('expo-font', () => ({ useFonts: jest.fn(() => [true, null]) }));
@@ -33,7 +33,9 @@ jest.mock('../../../lib/api/makeup', () => ({
   MakeupApiError: class MakeupApiError extends Error {},
 }));
 
-jest.mock('../../../lib/gemini', () => ({ imageToBase64: jest.fn() }));
+jest.mock('../../../lib/image/downscale', () => ({
+  downscaleToBase64: jest.fn().mockResolvedValue('x'.repeat(200)),
+}));
 jest.mock('../../../lib/monitoring/sentry', () => ({ captureError: jest.fn() }));
 jest.mock('../../../lib/analytics/tracker', () => ({ trackAnalysisResultView: jest.fn() }));
 

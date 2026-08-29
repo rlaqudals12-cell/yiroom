@@ -72,6 +72,7 @@ export function FilterChip({
       onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
+      hitSlop={6}
       accessibilityRole="button"
       accessibilityState={{ selected }}
       accessibilityLabel={`${label} 필터${selected ? ' 선택됨' : ''}`}
@@ -99,6 +100,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
+    minHeight: 44,
   },
   label: {
     lineHeight: 20,
