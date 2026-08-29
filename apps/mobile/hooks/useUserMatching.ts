@@ -86,13 +86,14 @@ export function useUserMatching(): UseUserMatchingResult {
   const [nutritionGoal, setNutritionGoal] = useState<string | null>(null);
 
   // 사용자 분석 데이터 로드
+  const userId = user?.id ?? null;
   useEffect(() => {
     async function loadUserProfile(): Promise<void> {
       // useUser와 useAuth의 복원 시점은 같다고 보장되지 않는다. 세션 복원이 끝나기 전에
       // 홈 위젯이 웹 API를 호출하면 Clerk 미인증 리다이렉트가 발생할 수 있으므로 둘 다 기다린다.
       if (!isLoaded || !isAuthLoaded) return;
 
-      if (!user || !isSignedIn) {
+      if (!userId || !isSignedIn) {
         setIsLoading(false);
         return;
       }
@@ -121,7 +122,7 @@ export function useUserMatching(): UseUserMatchingResult {
           supabase
             .from('hair_analyses')
             .select('hair_type, scalp_type, concerns')
-            .eq('clerk_user_id', user.id)
+            .eq('clerk_user_id', userId)
             .order('created_at', { ascending: false })
             .limit(1)
             .single(),
@@ -130,7 +131,7 @@ export function useUserMatching(): UseUserMatchingResult {
           supabase
             .from('makeup_analyses')
             .select('undertone, face_shape')
-            .eq('clerk_user_id', user.id)
+            .eq('clerk_user_id', userId)
             .order('created_at', { ascending: false })
             .limit(1)
             .single(),
@@ -139,7 +140,7 @@ export function useUserMatching(): UseUserMatchingResult {
           supabase
             .from('workout_analyses')
             .select('goal, workout_type')
-            .eq('clerk_user_id', user.id)
+            .eq('clerk_user_id', userId)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle(),
@@ -148,7 +149,7 @@ export function useUserMatching(): UseUserMatchingResult {
           supabase
             .from('nutrition_settings')
             .select('goal')
-            .eq('clerk_user_id', user.id)
+            .eq('clerk_user_id', userId)
             .maybeSingle(),
         ]);
 
@@ -221,7 +222,10 @@ export function useUserMatching(): UseUserMatchingResult {
     }
 
     loadUserProfile();
-  }, [isLoaded, isAuthLoaded, isSignedIn, user, getToken, supabase]);
+    // getToken·user는 clerk-expo가 렌더마다 새 참조를 줄 수 있어(lib/supabase.ts:36 참조) 의존하면
+    // 재렌더→재조회→상태갱신→재렌더의 effect-storm(무한 getToken 429)이 된다 — 세션 상태 변화에만 재조회한다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, isAuthLoaded, isSignedIn, userId, supabase]);
 
   // 분석 완료 여부
   const hasAnalysis = useMemo(() => {
