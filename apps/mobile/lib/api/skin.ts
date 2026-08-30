@@ -36,6 +36,8 @@ export interface SkinAnalysisApiResult {
   dbSaveFailed: boolean;
   /** 방금 저장된 분석 row id — 이전 분석 대비 변화량 계산 시 자기 자신 제외용 */
   analysisId?: string;
+  /** 서버 분석 시각 — 미저장 결과 신고 식별자에만 사용 */
+  analyzedAt?: string;
 }
 
 export interface SkinAnalysisInput {
@@ -199,6 +201,7 @@ export async function requestSkinAnalysis(
     usedMock: obj.usedMock === true,
     dbSaveFailed: obj.dbSaveFailed === true,
     analysisId: typeof data.id === 'string' ? data.id : undefined,
+    analyzedAt: typeof result.analyzedAt === 'string' ? result.analyzedAt : undefined,
   };
   void trackAnalysisComplete(
     'skin',

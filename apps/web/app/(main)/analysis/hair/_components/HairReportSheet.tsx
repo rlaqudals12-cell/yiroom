@@ -22,6 +22,8 @@ export interface HairReportMetric {
 }
 
 export interface HairReportSheetProps {
+  /** 저장 결과 ID. 저장 실패 인라인 폴백은 축+분석시각의 결정적 식별자를 사용한다. */
+  reportTargetId?: string;
   hairTypeLabel: string;
   /** 자가입력 경로는 굵기 라벨이 비어있음 — 빈 값은 히어로·속성표에서 생략한다 */
   hairThicknessLabel?: string;
@@ -62,6 +64,7 @@ function scoreStatusText(value: number): string {
  * 원형 채점 게이지·신호등 게이지를 대체하는 진단지 문법 (ADR-120, 정본 = PC AnalysisResult).
  */
 export function HairReportSheet({
+  reportTargetId,
   hairTypeLabel,
   hairThicknessLabel,
   scalpTypeLabel,
@@ -141,6 +144,7 @@ export function HairReportSheet({
         {/* 푸터 신뢰 블록 — 진단서의 직인 */}
         <TrustFooter
           confidence={reliability ? RELIABILITY_CONFIDENCE[reliability] : null}
+          reportTargetId={reportTargetId}
           testId={testId ? `${testId}-trust` : undefined}
           className="mt-6"
         >

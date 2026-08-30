@@ -10,3 +10,4 @@ export { SectionHeader, type SectionHeaderProps } from './SectionHeader';
 export { AttrRow, RowTable, type AttrRowProps, type RowTableProps } from './RowTable';
 export { SpectrumRow, type SpectrumRowProps } from './SpectrumRow';
 export { TrustFooter, getConfidenceGrade, type TrustFooterProps } from './TrustFooter';
+export { AnalysisResultReportAction } from './AnalysisResultReportAction';

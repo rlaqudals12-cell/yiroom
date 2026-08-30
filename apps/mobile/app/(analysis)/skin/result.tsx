@@ -75,6 +75,7 @@ export default function SkinResultScreen(): React.JSX.Element {
   const [hasPreviousAnalysis, setHasPreviousAnalysis] = useState(false);
   const [usedFallback, setUsedFallback] = useState(false);
   const [dbSaveFailed, setDbSaveFailed] = useState(false);
+  const [reportTargetId, setReportTargetId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>(DEFAULT_ERROR_MESSAGE);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
@@ -83,6 +84,7 @@ export default function SkinResultScreen(): React.JSX.Element {
     setIsLoading(true);
     setUsedFallback(false);
     setDbSaveFailed(false);
+    setReportTargetId(null);
     setDelta(null);
     setHasPreviousAnalysis(false);
     setAvailableMetrics(null);
@@ -126,6 +128,9 @@ export default function SkinResultScreen(): React.JSX.Element {
         });
         setAvailableMetrics(available);
         setUsedFallback(stored.usedFallback === true);
+        setReportTargetId(
+          historyId ?? (typeof row.id === 'string' ? row.id : 'unsaved:skin:time-unavailable')
+        );
         return;
       }
 
@@ -140,6 +145,11 @@ export default function SkinResultScreen(): React.JSX.Element {
       const analysisResult = await requestSkinAnalysis({ imageBase64: base64Data }, token);
       setUsedFallback(analysisResult.usedMock);
       setDbSaveFailed(analysisResult.dbSaveFailed);
+      setReportTargetId(
+        analysisResult.dbSaveFailed
+          ? `unsaved:skin:${analysisResult.analyzedAt ?? 'time-unavailable'}`
+          : (analysisResult.analysisId ?? 'unsaved:skin:time-unavailable')
+      );
       setSkinType(analysisResult.skinType);
       setMetrics(analysisResult.metrics);
 
@@ -331,6 +341,7 @@ export default function SkinResultScreen(): React.JSX.Element {
         onSaveRetry={() => router.replace('/(analysis)/skin')}
         primaryActionText="피부 맞춤 제품 보기"
         retryPath="/(analysis)/skin"
+        reportTargetId={reportTargetId ?? 'unsaved:skin:time-unavailable'}
         saveFailed={dbSaveFailed}
         sections={sections}
         shareContent={

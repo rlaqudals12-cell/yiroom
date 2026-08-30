@@ -171,4 +171,14 @@ export const reportResultStyles = StyleSheet.create({
     fontSize: typography.size.sm,
     textDecorationLine: 'underline',
   },
+  reportButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  reportButtonText: {
+    color: REPORT_COLORS.mutedInk,
+    fontSize: typography.size.xs,
+    textDecorationLine: 'underline',
+  },
 });

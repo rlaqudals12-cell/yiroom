@@ -539,23 +539,22 @@ export default function BodyAnalysisResultPage() {
                       </RowTable>
                     </div>
                     {/* 신뢰 푸터 — 저장된 confidence·분석 시간이 있을 때만 (위장 수치 금지) */}
-                    {(confidence !== null || analyzedAt !== null) && (
-                      <TrustFooter
-                        confidence={confidence}
-                        testId="body-trust-footer"
-                        className="mt-6"
-                      >
-                        {analyzedAt && (
-                          <p>
-                            분석 시간:{' '}
-                            {new Date(analyzedAt).toLocaleString(getDateLocale(locale), {
-                              dateStyle: 'long',
-                              timeStyle: 'short',
-                            })}
-                          </p>
-                        )}
-                      </TrustFooter>
-                    )}
+                    <TrustFooter
+                      confidence={confidence}
+                      reportTargetId={analysisId}
+                      testId="body-trust-footer"
+                      className="mt-6"
+                    >
+                      {analyzedAt && (
+                        <p>
+                          분석 시간:{' '}
+                          {new Date(analyzedAt).toLocaleString(getDateLocale(locale), {
+                            dateStyle: 'long',
+                            timeStyle: 'short',
+                          })}
+                        </p>
+                      )}
+                    </TrustFooter>
                   </div>
                 </section>
 

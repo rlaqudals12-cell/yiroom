@@ -38,6 +38,7 @@ import { mapToClass } from '@/lib/utils/conditional-helpers';
 // 결론 먼저(ADR-111): 상단 액션 카드 + 접기 래퍼
 import { TopActionsCard, type TopAction } from '@/components/analysis/TopActionsCard';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
+import { AnalysisResultReportAction } from '@/components/analysis/report';
 
 // 체형 분석 근거 타입
 interface BodyAnalysisEvidence {
@@ -52,6 +53,8 @@ function isBodyType3(type: string): type is BodyType3 {
 
 interface AnalysisResultProps {
   result: BodyAnalysisResult;
+  /** 저장 결과 ID. 저장 실패 인라인 폴백은 축+분석시각의 결정적 식별자를 사용한다. */
+  reportTargetId?: string;
   onRetry: () => void;
   shareRef?: React.RefObject<HTMLDivElement | null>;
   evidence?: BodyAnalysisEvidence | null;
@@ -59,6 +62,7 @@ interface AnalysisResultProps {
 
 export default function AnalysisResult({
   result,
+  reportTargetId,
   onRetry,
   shareRef,
   evidence,
@@ -657,6 +661,12 @@ export default function AnalysisResult({
           분석 시간: {analyzedAt.toLocaleString(getDateLocale(locale))}
         </p>
       </FadeInUp>
+
+      {reportTargetId && (
+        <div className="flex justify-end">
+          <AnalysisResultReportAction targetId={reportTargetId} />
+        </div>
+      )}
 
       {/* 다시 분석하기 버튼 */}
       <FadeInUp delay={12}>

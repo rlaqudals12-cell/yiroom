@@ -17,7 +17,12 @@ import {
 
 import { useTheme } from '../../lib/theme';
 
-type ReportReason = 'spam' | 'harassment' | 'inappropriate_content' | 'misinformation' | 'other';
+export type ReportReason =
+  | 'spam'
+  | 'harassment'
+  | 'inappropriate_content'
+  | 'misinformation'
+  | 'other';
 
 const REPORT_REASONS: { key: ReportReason; label: string }[] = [
   { key: 'spam', label: '스팸/광고' },
@@ -32,6 +37,9 @@ export interface ReportModalProps {
   onClose: () => void;
   postId: string;
   onSubmit: (postId: string, reason: ReportReason, description?: string) => Promise<void>;
+  title?: string;
+  onSuccess?: () => void;
+  onError?: (error: unknown) => void;
 }
 
 export function ReportModal({
@@ -39,6 +47,9 @@ export function ReportModal({
   onClose,
   postId,
   onSubmit,
+  title = '게시물 신고',
+  onSuccess,
+  onError,
 }: ReportModalProps): React.JSX.Element | null {
   const { colors } = useTheme();
   const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
@@ -51,7 +62,11 @@ export function ReportModal({
     setIsSubmitting(true);
     try {
       await onSubmit(postId, selectedReason, description || undefined);
+      onSuccess?.();
       handleClose();
+    } catch (error) {
+      // 실패 시 모달을 닫지 않아 사용자가 앱 안에서 다시 시도할 수 있게 한다.
+      onError?.(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -73,7 +88,7 @@ export function ReportModal({
           {/* 헤더 */}
           <View className="flex-row items-center gap-2 mb-4">
             <Text className="text-lg font-bold" style={{ color: colors.foreground }}>
-              게시물 신고
+              {title}
             </Text>
           </View>
           <Text className="text-sm mb-4" style={{ color: colors.mutedForeground }}>
@@ -87,7 +102,10 @@ export function ReportModal({
                 <Pressable
                   key={key}
                   onPress={() => setSelectedReason(key)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: selectedReason === key }}
                   className="px-4 py-3 rounded-lg border"
+                  testID={`report-reason-${key}`}
                   style={{
                     borderColor: selectedReason === key ? colors.foreground : colors.border,
                     backgroundColor: selectedReason === key ? colors.accent : 'transparent',
@@ -115,6 +133,7 @@ export function ReportModal({
                 multiline
                 numberOfLines={3}
                 maxLength={500}
+                testID="report-description"
                 className="px-4 py-3 rounded-lg border text-sm mb-4"
                 style={{
                   borderColor: colors.border,
@@ -130,19 +149,24 @@ export function ReportModal({
           <View className="flex-row gap-3 mt-2">
             <Pressable
               onPress={handleClose}
+              accessibilityRole="button"
               className="flex-1 py-3 rounded-lg border items-center"
               style={{ borderColor: colors.border }}
+              testID="report-cancel"
             >
               <Text style={{ color: colors.foreground }}>취소</Text>
             </Pressable>
             <Pressable
               onPress={handleSubmit}
               disabled={!selectedReason || isSubmitting}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !selectedReason || isSubmitting }}
               className="flex-1 py-3 rounded-lg items-center"
               style={{
                 backgroundColor:
                   !selectedReason || isSubmitting ? colors.muted : colors.destructive,
               }}
+              testID="report-submit"
             >
               {isSubmitting ? (
                 <ActivityIndicator size="small" color="#fff" />

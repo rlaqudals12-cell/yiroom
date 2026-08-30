@@ -29,6 +29,7 @@ import {
 import { useBeautyTeamCoach, useCoach, type UseCoachResult } from '../../lib/coach/useCoach';
 import { useNetworkStatus } from '../../lib/offline';
 import { useTheme, typography, radii, spacing } from '../../lib/theme';
+import { ContentReportModal } from '../reporting';
 
 interface ChatInterfaceProps {
   initialSessionId?: string;
@@ -77,6 +78,7 @@ function ChatInterfaceContent({
 
   const [input, setInput] = useState(initialInput ?? '');
   const [activeCategory, setActiveCategory] = useState<VisibleQuestionCategory>('general');
+  const [reportTarget, setReportTarget] = useState<CoachMessage | null>(null);
   const flatListRef = useRef<FlatList>(null);
   const sessionLoaded = useRef(false);
 
@@ -163,6 +165,17 @@ function ChatInterfaceContent({
         >
           {item.content}
         </Text>
+        {!isUser ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="이 답변 신고"
+            onPress={() => setReportTarget(item)}
+            style={styles.reportMessageButton}
+            testID={`coach-message-report-${item.id}`}
+          >
+            <Text style={[styles.reportMessageText, { color: colors.mutedForeground }]}>신고</Text>
+          </Pressable>
+        ) : null}
       </View>
     );
   };
@@ -344,6 +357,15 @@ function ChatInterfaceContent({
           <Text style={[styles.sendButtonText, { color: brand.primaryForeground }]}>전송</Text>
         </Pressable>
       </View>
+
+      <ContentReportModal
+        contentExcerpt={reportTarget?.content}
+        onClose={() => setReportTarget(null)}
+        targetId={reportTarget?.id ?? 'coach-message-unavailable'}
+        targetType="coach_message"
+        title="AI 답변 신고"
+        visible={reportTarget !== null}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -437,6 +459,16 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 15,
     lineHeight: 22,
+  },
+  reportMessageButton: {
+    alignSelf: 'flex-start',
+    justifyContent: 'center',
+    marginTop: spacing.sm,
+    minHeight: 44,
+  },
+  reportMessageText: {
+    fontSize: typography.size.xs,
+    textDecorationLine: 'underline',
   },
   suggestedContainer: {
     paddingHorizontal: spacing.md,

@@ -293,7 +293,12 @@ export default function BodyAnalysisPage() {
                   </Link>
                 </Button>
               )}
-              <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />
+              <AnalysisResult
+                result={result}
+                reportTargetId={resultId ?? `body:${result.analyzedAt.toISOString()}`}
+                onRetry={handleRetry}
+                shareRef={shareRef}
+              />
             </>
           )}
         </div>

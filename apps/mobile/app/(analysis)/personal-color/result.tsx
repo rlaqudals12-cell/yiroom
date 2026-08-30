@@ -93,6 +93,8 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
           worstColors: normalizePersonalColorHexes(row.worst_colors),
           usedMock: stored.usedFallback === true,
           dbSaveFailed: false,
+          analysisId: typeof row.id === 'string' ? row.id : undefined,
+          analyzedAt: typeof row.created_at === 'string' ? row.created_at : undefined,
         };
         const usesStaticDiagnosisFallback =
           response.seasonSubtype === null ||
@@ -309,6 +311,11 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
         onSaveRetry={() => router.replace('/(analysis)/personal-color')}
         primaryActionText="내 색상에 맞는 제품 보기"
         retryPath="/(analysis)/personal-color"
+        reportTargetId={
+          historyId ??
+          (!result.dbSaveFailed ? result.analysisId : undefined) ??
+          `unsaved:personal-color:${result.analyzedAt ?? 'time-unavailable'}`
+        }
         saveFailed={result.dbSaveFailed}
         sections={sections}
         shareContent={

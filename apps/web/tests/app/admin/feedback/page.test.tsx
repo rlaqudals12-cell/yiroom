@@ -43,6 +43,16 @@ const mockFeedbacks = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: '4',
+    type: 'other',
+    title: '[AI 생성물 신고] 코치 메시지',
+    content:
+      '{"targetType":"coach_message","targetId":"message_123","reason":"inappropriate_content"}',
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
 // Mock global fetch
@@ -151,6 +161,27 @@ describe('AdminFeedbackPage', () => {
   });
 
   describe('피드백 목록', () => {
+    it('관리자 전용 API에서 전체 사용자 접수 목록을 불러온다', async () => {
+      render(<AdminFeedbackPage />);
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith('/api/admin/feedback');
+      });
+    });
+
+    it('type=other AI 생성물 신고 제목과 구조화된 내용을 확인할 수 있다', async () => {
+      render(<AdminFeedbackPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('[AI 생성물 신고] 코치 메시지')).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByText('[AI 생성물 신고] 코치 메시지'));
+
+      await waitFor(() => {
+        expect(screen.getByText(/"targetId":"message_123"/)).toBeInTheDocument();
+      });
+    });
+
     it('피드백 목록 영역 표시', async () => {
       render(<AdminFeedbackPage />);
 

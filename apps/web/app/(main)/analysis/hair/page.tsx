@@ -507,6 +507,7 @@ function AnalysisResultView({
 
       {/* 진단지 시트 — 원형 채점·신호등 게이지 대신 속성표 + 스펙트럼 (ADR-120) */}
       <HairReportSheet
+        reportTargetId={`hair:${result.analyzedAt.toISOString()}`}
         hairTypeLabel={result.hairTypeLabel}
         hairThicknessLabel={result.hairThicknessLabel}
         scalpTypeLabel={result.scalpTypeLabel}

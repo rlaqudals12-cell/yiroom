@@ -9,6 +9,15 @@ export { getApiBaseUrl, getWebHostLabel, DEFAULT_API_BASE_URL } from './base-url
 
 export { checkRateLimit, incrementRateLimit, getRateLimitInfo } from './rate-limit';
 
+// AI 생성 콘텐츠 신고 — 웹 저장 정본으로 접수하는 thin client
+export { submitContentReport, ContentReportApiError } from './reports';
+export type {
+  ContentReportReceipt,
+  ContentReportReason,
+  ContentReportTargetType,
+  SubmitContentReportInput,
+} from './reports';
+
 // 계정 즉시 삭제 HTTP 클라이언트 (DB·스토리지·Clerk 파기는 웹 API가 단일 소유)
 export { deleteAccount, AccountApiError } from './account';
 

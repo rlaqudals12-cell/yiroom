@@ -91,6 +91,8 @@ export default function BodyResultScreen(): React.JSX.Element {
           bmi,
           usedMock: stored.usedFallback === true,
           dbSaveFailed: false,
+          analysisId: typeof row.id === 'string' ? row.id : undefined,
+          analyzedAt: typeof row.created_at === 'string' ? row.created_at : undefined,
         });
         return;
       }
@@ -289,6 +291,11 @@ export default function BodyResultScreen(): React.JSX.Element {
         onSaveRetry={() => router.replace('/(analysis)/body')}
         primaryActionText="퍼스널 컬러로 내 색 찾기"
         retryPath="/(analysis)/body"
+        reportTargetId={
+          historyId ??
+          (!analysis.dbSaveFailed ? analysis.analysisId : undefined) ??
+          `unsaved:body:${analysis.analyzedAt ?? 'time-unavailable'}`
+        }
         saveFailed={analysis.dbSaveFailed}
         sections={sections}
         shareContent={

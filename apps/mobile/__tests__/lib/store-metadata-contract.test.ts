@@ -23,6 +23,7 @@ interface StoreMetadata {
       linkedToUser: boolean;
       usedForTracking: boolean;
       note?: string;
+      purposes?: string[];
     }[];
   };
   googlePlayDataSafety: {
@@ -56,10 +57,10 @@ interface AppConfig {
       infoPlist: {
         NSCameraUsageDescription: string;
         NSPhotoLibraryUsageDescription: string;
-        NSPhotoLibraryAddUsageDescription: string;
+        NSPhotoLibraryAddUsageDescription?: string;
       };
     };
-    plugins: (string | [string, Record<string, string>])[];
+    plugins: (string | [string, Record<string, string | boolean>])[];
   };
 }
 
@@ -143,6 +144,30 @@ describe('store metadata privacy contract', () => {
       linkedToUser: true,
       required: false,
       purposes: ['App functionality'],
+    });
+  });
+
+  it('Apple 라벨에 계정 연결 생체 민감정보와 사용자 ID를 신고한다', () => {
+    const metadata = readStoreMetadata();
+    const sensitiveInfo = metadata.privacyNutritionLabels.dataCollected.find(
+      (entry) => entry.type === 'Sensitive Info'
+    );
+    const userId = metadata.privacyNutritionLabels.dataCollected.find(
+      (entry) => entry.type === 'Identifiers'
+    );
+
+    expect(sensitiveInfo).toMatchObject({
+      items: ['Sensitive Info'],
+      linkedToUser: true,
+      usedForTracking: false,
+      purposes: ['App Functionality'],
+    });
+    expect(sensitiveInfo?.note).toContain('저장 동의가 꺼져 있으면 원본을 보관하지 않습니다');
+    expect(userId).toMatchObject({
+      items: ['User ID'],
+      linkedToUser: true,
+      usedForTracking: false,
+      purposes: ['App Functionality'],
     });
   });
 
@@ -237,17 +262,16 @@ describe('store metadata privacy contract', () => {
     const config = readAppConfig();
     const { infoPlist } = config.expo.ios;
     const expoCamera = config.expo.plugins.find(
-      (plugin): plugin is [string, Record<string, string>] =>
+      (plugin): plugin is [string, Record<string, string | boolean>] =>
         Array.isArray(plugin) && plugin[0] === 'expo-camera'
     );
     const expoImagePicker = config.expo.plugins.find(
-      (plugin): plugin is [string, Record<string, string>] =>
+      (plugin): plugin is [string, Record<string, string | boolean>] =>
         Array.isArray(plugin) && plugin[0] === 'expo-image-picker'
     );
     const permissionCopy = [
       infoPlist.NSCameraUsageDescription,
       infoPlist.NSPhotoLibraryUsageDescription,
-      infoPlist.NSPhotoLibraryAddUsageDescription,
       expoCamera?.[1].cameraPermission ?? '',
       expoImagePicker?.[1].photosPermission ?? '',
     ].join('\n');
@@ -258,7 +282,22 @@ describe('store metadata privacy contract', () => {
       /퍼스널컬러.*피부.*체형.*헤어.*메이크업.*AI 아바타/
     );
     expect(expoCamera?.[1].cameraPermission).toBe(infoPlist.NSCameraUsageDescription);
+    expect(expoCamera?.[1].microphonePermission).toBe(false);
     expect(expoImagePicker?.[1].photosPermission).toBe(infoPlist.NSPhotoLibraryUsageDescription);
+    expect(infoPlist).not.toHaveProperty('NSPhotoLibraryAddUsageDescription');
+  });
+
+  it('체크리스트가 스토어 정본과 개인정보 라벨 계약을 그대로 따른다', () => {
+    const checklist = readStoreChecklist();
+
+    expect(checklist).toContain('AI 퍼스널컬러·피부·스타일 분석');
+    expect(checklist).toContain('이룸 서버와 Google AI에 전송');
+    expect(checklist).toContain('Sensitive Info');
+    expect(checklist).toContain('Identifiers > User ID');
+    expect(checklist).toContain('저장 동의 OFF');
+    expect(checklist).not.toMatch(
+      /기기에만 저장|서버로 전송되지|850\+?|맞춤형 운동|스마트 영양|운동 세션|영양 대시보드/
+    );
   });
 
   it('별도 제출 산출물도 5축·만 14세·현행 URL 계약과 일치한다', () => {

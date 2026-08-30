@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { AnalysisResultReportAction } from './AnalysisResultReportAction';
 
 /** 신뢰도 등급 라벨 — 신뢰 블록의 근거 한 줄(근거 없는 숫자는 낚시로 보임) */
 export function getConfidenceGrade(confidence: number): string {
@@ -19,6 +20,8 @@ export interface TrustFooterProps {
   children?: React.ReactNode;
   testId?: string;
   className?: string;
+  /** 실제 저장 결과 ID. 저장되지 않은 데모/예시 표면은 생략해 신고 대상을 위장하지 않는다. */
+  reportTargetId?: string;
 }
 
 /**
@@ -34,6 +37,7 @@ export function TrustFooter({
   children,
   testId,
   className,
+  reportTargetId,
 }: TrustFooterProps): React.JSX.Element {
   return (
     <div
@@ -60,6 +64,11 @@ export function TrustFooter({
             {badge}
           </span>
         </p>
+      )}
+      {reportTargetId && (
+        <div className="flex justify-end pt-1">
+          <AnalysisResultReportAction targetId={reportTargetId} />
+        </div>
       )}
     </div>
   );

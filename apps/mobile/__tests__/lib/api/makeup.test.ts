@@ -98,6 +98,7 @@ describe('requestMakeupAnalysis', () => {
     expect(result.recommendations.lip).toBe('그라데이션 립을 연출하세요');
     expect(result.bestColors).toEqual(['#FF6B4A', '#FFAB91']);
     expect(result.usedMock).toBe(false);
+    expect(result.analysisId).toBe('row-1');
   });
 
   it('DB 저장 실패 플래그를 결과 화면까지 보존한다', async () => {

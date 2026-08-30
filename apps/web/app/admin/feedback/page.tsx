@@ -61,7 +61,9 @@ async function patchFeedback(
 // 피드백 API 호출 함수
 async function fetchFeedbacks(): Promise<Feedback[]> {
   try {
-    const res = await fetch('/api/feedback');
+    // 사용자용 API는 RLS상 관리자 본인 행만 반환한다. 관리자 전용 API를 통해서만
+    // 모든 사용자의 피드백과 AI 생성물 신고를 함께 불러온다.
+    const res = await fetch('/api/admin/feedback');
     if (!res.ok) {
       console.error('[AdminFeedback] API error:', res.status);
       return [];

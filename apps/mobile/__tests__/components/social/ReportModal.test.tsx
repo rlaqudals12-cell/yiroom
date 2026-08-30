@@ -220,6 +220,26 @@ describe('ReportModal', () => {
     });
   });
 
+  it('접수 실패 시 모달을 유지하고 같은 사유로 다시 제출할 수 있다', async () => {
+    const onError = jest.fn();
+    const submit = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('일시 오류'))
+      .mockResolvedValueOnce(undefined);
+    const screen = renderWithTheme(
+      <ReportModal {...defaultProps} onError={onError} onSubmit={submit} />
+    );
+
+    fireEvent.press(screen.getByTestId('report-reason-other'));
+    fireEvent.press(screen.getByTestId('report-submit'));
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('report-modal')).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('report-submit'));
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(2));
+    expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
+  });
+
   describe('취소', () => {
     it('취소 버튼을 누르면 onClose가 호출된다', () => {
       const { getByText } = renderWithTheme(

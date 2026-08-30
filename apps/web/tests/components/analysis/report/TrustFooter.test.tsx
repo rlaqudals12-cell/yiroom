@@ -7,10 +7,17 @@ import { TrustFooter, getConfidenceGrade } from '@/components/analysis/report';
 
 describe('TrustFooter', () => {
   it('신뢰도 라인과 등급 힌트를 렌더한다', () => {
-    render(<TrustFooter confidence={85} testId="trust" />);
+    render(<TrustFooter confidence={85} reportTargetId="skin-result-1" testId="trust" />);
 
     expect(screen.getByText('분석 신뢰도 85%')).toBeInTheDocument();
     expect(screen.getByText('높음 — 신뢰할 수 있는 결과예요')).toBeInTheDocument();
+    expect(screen.getByTestId('analysis-result-report-trigger')).toHaveTextContent('이 결과 신고');
+  });
+
+  it('실제 결과 ID가 없는 공개 예시에는 신고 진입점을 위장하지 않는다', () => {
+    render(<TrustFooter confidence={85} testId="trust" />);
+
+    expect(screen.queryByTestId('analysis-result-report-trigger')).not.toBeInTheDocument();
   });
 
   it('신뢰도가 0이면 신뢰도 라인을 렌더하지 않는다 (위장 수치 금지)', () => {

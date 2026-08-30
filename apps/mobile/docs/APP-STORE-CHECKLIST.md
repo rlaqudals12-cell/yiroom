@@ -1,260 +1,167 @@
-# 앱 스토어 제출 체크리스트
+# App Store 제출 체크리스트
 
-> 이룸 모바일 앱 스토어 제출 준비 가이드
+> 스토어 카피와 개인정보 답변의 정본은 `apps/mobile/store-metadata.json`입니다.
+> 이 문서는 제출 절차를 위한 읽기 쉬운 초안이며, 값이 다르면 JSON 정본을 먼저 갱신합니다.
 
-## 앱 정보
+## 1. 릴리스 정보
 
-### 기본 정보
+| 항목           | 값                             |
+| -------------- | ------------------------------ |
+| 앱 이름        | 이룸 - 온전한 나는?            |
+| 부제목         | AI 퍼스널컬러·피부·스타일 분석 |
+| 버전           | 1.0.0                          |
+| 기본 카테고리  | Health & Fitness               |
+| 보조 카테고리  | Lifestyle                      |
+| 최소 이용 연령 | 만 14세                        |
+| 번들 ID        | `com.yiroom.app`               |
 
-| 항목              | 한국어                  | 영어                          |
-| ----------------- | ----------------------- | ----------------------------- |
-| **앱 이름**       | 이룸 - AI 웰니스 플랫폼 | Yiroom - AI Wellness Platform |
-| **부제목**        | 온전한 나는?            | Know yourself, wholly         |
-| **카테고리**      | 건강 및 피트니스        | Health & Fitness              |
-| **보조 카테고리** | 라이프스타일            | Lifestyle                     |
+### 한국어 설명
 
-### 앱 설명 (4000자 이내)
+```text
+이룸은 만 14세 이상 사용자를 위한 AI 뷰티 분석 서비스입니다.
 
-```
-이룸과 함께 더 건강한 나를 만나보세요.
+• 퍼스널컬러 분석과 색상 가이드
+• 피부 상태 분석과 관리 가이드
+• 체형 분석과 스타일 가이드
+• 헤어 상태 분석과 관리 가이드
+• 메이크업 분석과 색상 가이드
+• 다섯 분석 결과를 모아 보는 통합 결과
 
-🎨 AI 퍼스널 컬러 분석
-사진 한 장으로 나만의 퍼스널 컬러를 진단받고,
-어울리는 메이크업과 패션 컬러를 추천받으세요.
-
-💪 맞춤형 운동 플랜
-체형과 목표에 맞는 운동 프로그램을 AI가 설계합니다.
-세트별 타이머와 휴식 알림으로 효과적인 운동을 도와드려요.
-
-🥗 스마트 영양 관리
-음식 사진을 찍으면 AI가 칼로리와 영양소를 분석합니다.
-물 섭취 트래킹과 스마트 알림으로 건강한 식습관을 만들어요.
-
-✨ 제품 추천
-분석 결과에 맞는 화장품, 영양제, 운동 기구를 추천받으세요.
-850+ 제품 DB에서 나에게 딱 맞는 제품을 찾아드립니다.
-
-📊 통합 리포트
-운동, 영양, 분석 결과를 한눈에 확인하세요.
-웰니스 스코어로 전체적인 건강 상태를 파악할 수 있습니다.
-
----
-
-주요 기능:
-• AI 퍼스널 컬러 분석
-• AI 피부 분석
-• AI 체형 분석
-• 맞춤 운동 플랜
-• 운동 타이머 및 세트 추적
-• AI 음식 인식
-• 칼로리 및 영양소 트래킹
-• 물 섭취 트래킹
-• 제품 추천
-• 홈 화면 위젯
-• 다크 모드 지원
-
----
-
-이룸은 여러분의 개인정보를 소중히 여깁니다.
-분석에 사용된 사진은 기기에만 저장되며,
-서버로 전송되지 않습니다.
+사진을 포함한 분석 정보는 암호화된 연결로 이룸 서버와 Google AI에 전송되어 처리됩니다. 분석 결과는 계정에 저장되며, 원본 분석 이미지는 사용자가 저장에 동의한 경우에만 최대 1년간 보관됩니다.
 ```
 
-### 키워드 (100자 이내)
+### 영어 설명
 
-```
-퍼스널컬러,피부분석,체형분석,운동,피트니스,칼로리,다이어트,영양,화장품추천,AI분석,웰니스,헬스
-```
+```text
+Yiroom is an AI beauty analysis service for users age 14 and older.
 
-### 프로모션 텍스트 (170자)
+• Personal color analysis and color guidance
+• Skin analysis and care guidance
+• Body analysis and style guidance
+• Hair analysis and care guidance
+• Makeup analysis and color guidance
+• An integrated view of all five analysis results
 
-```
-AI가 분석하는 나만의 웰니스 여정! 퍼스널 컬러, 피부, 체형을 분석하고 맞춤 운동과 영양 관리까지 한 번에.
-```
-
----
-
-## 스크린샷 가이드
-
-### 필수 디바이스
-
-| 디바이스       | 해상도       | 필수 |
-| -------------- | ------------ | ---- |
-| iPhone 6.9"    | 1320 x 2868  | ✅   |
-| iPhone 6.7"    | 1290 x 2796  | ✅   |
-| iPhone 6.5"    | 1284 x 2778  | ✅   |
-| iPhone 5.5"    | 1242 x 2208  | ✅   |
-| iPad 12.9"     | 2048 x 2732  | ✅   |
-| Android Phone  | 1080 x 1920+ | ✅   |
-| Android Tablet | 1200 x 1920+ | 권장 |
-
-### 스크린샷 구성 (6-10장)
-
-1. **홈 화면** - 오늘 할 일 및 요약
-2. **퍼스널 컬러 결과** - 분석 결과 화면
-3. **운동 세션** - 타이머 및 세트 추적
-4. **영양 대시보드** - 칼로리 및 영양소
-5. **AI 음식 인식** - 카메라 분석
-6. **제품 추천** - 맞춤 제품 리스트
-7. **위젯** - 홈 화면 위젯 (선택)
-8. **다크 모드** - 다크 테마 화면 (선택)
-
-### 스크린샷 제작 팁
-
-- 텍스트 오버레이: 한국어 + 영어 버전 각각 준비
-- 배경: 브랜드 컬러 (#2E5AFA) 그라데이션
-- 목업: 디바이스 프레임 사용 권장
-- 해상도: 각 디바이스별 정확한 해상도 준수
-
----
-
-## 앱 심사 정보
-
-### 연락처
-
-```
-이메일: <support-local>@<confirmed-domain> — 도메인 확정 후 주입
-전화번호: +82-2-xxxx-xxxx
+Analysis information, including photos, is sent over encrypted connections to Yiroom servers and Google AI for processing. Analysis results are saved to your account, while original analysis images are retained for up to one year only when you consent to image storage.
 ```
 
-### 심사용 계정 주입 절차
+### 검색·프로모션 문구
 
-- 심사 자격증명은 저장소·문서·스토어 메타데이터에 평문으로 저장하지 않습니다.
-- 수신 가능한 도메인을 먼저 확정한 뒤 `<local>+clerk_test@<confirmed-domain>` 형식의 Clerk 심사 계정을 생성합니다.
-- 프로덕션 AAB에서 로그인과 만 14세 연령 게이트를 확인한 후 Play Console의 **앱 액세스** 입력란에만 제출 시 직접 주입합니다.
-- 계정 값은 승인된 비밀번호 관리자에서 별도로 관리하며, 변경 시에도 이 문서를 수정하지 않습니다.
+- 한국어 키워드: `퍼스널컬러,피부분석,체형분석,헤어분석,메이크업,스타일,AI,뷰티`
+- 영어 키워드: `personalcolor,skinanalysis,bodytype,hairanalysis,makeup,style,AI,beauty`
+- 프로모션 텍스트: `AI로 나에게 맞는 뷰티 가이드를 확인해보세요.`
 
-### 심사 메모
+## 2. 제출 화면 범위
 
-```
-[한국어]
+스크린샷에는 현재 공개된 표면만 사용합니다.
+
+1. 홈 대시보드
+2. 퍼스널컬러 결과
+3. 피부 분석 결과
+4. 체형 분석 결과
+5. 헤어 분석 결과
+6. 메이크업 분석 결과
+7. 통합 분석 결과
+8. 뷰티 제품 탐색
+9. 내 옷장
+10. 설정
+
+| 디바이스     | 해상도      | 정본 수량 |
+| ------------ | ----------- | --------- |
+| iPhone 6.5형 | 1284 × 2778 | 10장      |
+| iPhone 5.5형 | 1242 × 2208 | 10장      |
+| iPad 12.9형  | 2048 × 2732 | 10장      |
+
+- [ ] 모든 캡처는 프로덕션과 같은 기능 플래그에서 만들었습니다.
+- [ ] 캡처의 결과·제품·계정 정보가 심사용 계정의 실제 데이터와 일치합니다.
+- [ ] 스크린샷과 설명에 현재 앱에서 도달할 수 없는 기능을 넣지 않았습니다.
+
+## 3. 심사 접근 정보
+
+자격증명은 저장소와 문서에 평문으로 남기지 않습니다.
+
+1. 수신 가능한 도메인을 확정합니다.
+2. `<local>+clerk_test@<confirmed-domain>` 형식의 심사 계정을 프로덕션 Clerk에 생성합니다.
+3. 초기화한 기기에서 비밀번호 로그인·추가 인증·만 14세 연령 게이트를 끝까지 재현합니다.
+4. 자격증명은 App Store Connect의 App Review Information에만 직접 입력합니다.
+5. 지원 연락처는 `<support-local>@<confirmed-domain>`을 실제 수신 확인한 뒤 입력합니다.
+
+### 심사 메모 초안
+
+```text
 이 앱은 만 14세 이상 사용자를 위한 AI 뷰티 분석 서비스입니다.
 카메라와 사진은 퍼스널컬러·피부·체형·헤어·메이크업 분석에 사용됩니다.
-분석 입력은 암호화된 연결로 이룸 서버와 유료 Google Gemini API에 전송되어 처리됩니다.
+분석 입력은 암호화된 연결로 이룸 서버와 Google AI에 전송되어 처리됩니다.
 분석 결과는 계정에 저장되고, 원본 이미지는 별도 저장 동의 시에만 최대 1년 보관됩니다.
-AI 코치 대화는 답변 생성과 대화 이어보기를 위해 계정에 연결해 서버에 저장됩니다.
-Google Play 선공개 앱은 기기 위치와 소셜 콘텐츠를 수집하지 않습니다.
-
-심사용 계정은 Play Console의 앱 액세스 입력란에서 제공합니다.
-
-[English]
-This is an AI beauty analysis service for users age 14 and older.
-Camera and photos are used for personal color, skin, body, hair, and makeup analysis.
-Analysis inputs are sent over encrypted connections to Yiroom servers and the paid Google Gemini API.
-Results are stored with the account; original images are retained for up to one year only with separate storage consent.
-AI coach messages are linked to the account and stored to generate responses and resume conversations.
-The Google Play early-release app does not collect device location or social content.
-
-Review credentials are provided only in the Play Console App access fields.
+저장 동의가 꺼져 있으면 원본 이미지를 보관하지 않습니다.
+AI 코치 대화는 답변 생성과 대화 이어보기를 위해 계정에 연결해 서버에 저장되며 앱에서 삭제할 수 있습니다.
 ```
 
----
+## 4. 권한 정합
 
-## 권한 설명
+### iOS 생성 설정
 
-### iOS (Info.plist)
+| 키                               | 사용 이유                             |
+| -------------------------------- | ------------------------------------- |
+| `NSCameraUsageDescription`       | 5축 분석 사진 촬영                    |
+| `NSPhotoLibraryUsageDescription` | 5축 분석과 AI 아바타용 기존 사진 선택 |
 
-| 권한                              | 실제 설명                                         |
-| --------------------------------- | ------------------------------------------------- |
-| NSCameraUsageDescription          | 퍼스널컬러·피부·체형·헤어·메이크업 분석 사진 촬영 |
-| NSPhotoLibraryUsageDescription    | 5축 분석과 AI 아바타 생성용 사진 선택             |
-| NSPhotoLibraryAddUsageDescription | 분석 결과와 AI 생성 이미지의 기기 저장            |
+다음 키는 앱에 해당 기능이 없어 생성 설정에 존재하면 안 됩니다.
 
-### Android (AndroidManifest.xml)
+- [ ] `NSMicrophoneUsageDescription` 없음
+- [ ] `NSPhotoLibraryAddUsageDescription` 없음
 
-| 권한   | 실제 설명                                         |
-| ------ | ------------------------------------------------- |
-| CAMERA | 퍼스널컬러·피부·체형·헤어·메이크업 분석 사진 촬영 |
+제출 빌드 직전 `npx expo config --type introspect`와 실제 Archive의 Info.plist를 모두 확인합니다.
 
-사진 선택은 시스템 사진 선택기를 사용하며 `READ_EXTERNAL_STORAGE`·`WRITE_EXTERNAL_STORAGE`를
-별도로 요청하지 않습니다.
+### Android
 
----
+- 요청 권한: `android.permission.CAMERA`
+- 차단 권한: `RECORD_AUDIO`, `SYSTEM_ALERT_WINDOW`, `WRITE_EXTERNAL_STORAGE`
+- 사진 선택은 시스템 선택기를 사용합니다.
 
-## 개인정보 처리
+## 5. Apple Privacy Nutrition Label 초안
 
-### 수집 데이터
+모든 항목의 Tracking 답변은 `No`입니다. 아래 목적은 App Store Connect에서 선택할 값입니다.
 
-| Google Play 데이터 유형 | 수집 여부 | 용도                                          |
-| ----------------------- | --------- | --------------------------------------------- |
-| 개인정보                | ✅        | 이메일·사용자 ID·생년월일, 계정 및 연령 확인  |
-| 건강 정보               | ✅ (선택) | 키·체중 및 체형 분석                          |
-| 사진 및 동영상          | ✅ (선택) | 5축 AI 분석·개인화                            |
-| 메시지                  | ✅ (선택) | AI 코치의 기타 인앱 메시지 답변·대화 이어보기 |
-| 앱 활동                 | ✅ (선택) | 분석 수집 동의 시 앱 상호작용 분석            |
-| 진단                    | ✅        | 크래시·오류 모니터링                          |
-| 위치                    | ❌        | 모바일 앱은 기기 위치 권한을 요청하지 않음    |
-| 소셜 콘텐츠             | ❌        | Google Play 선공개 앱에서 기능 비활성화       |
+| Data Type             | Item                         | Linked to You | Used for Tracking | Purpose                            | 조건·설명                                |
+| --------------------- | ---------------------------- | ------------- | ----------------- | ---------------------------------- | ---------------------------------------- |
+| Contact Info          | Email Address                | Yes           | No                | App Functionality                  | 계정 인증·관리                           |
+| Other Data            | Birth Date                   | Yes           | No                | App Functionality                  | 만 14세 이상 이용 자격 확인              |
+| Health & Fitness      | Health                       | Yes           | No                | App Functionality, Personalization | 사용자가 입력한 키·체중과 체형 분석 정보 |
+| User Content          | Photos or Videos             | Yes           | No                | App Functionality, Personalization | 분석을 위해 서버와 Google AI로 전송      |
+| User Content          | Other User Content           | Yes           | No                | App Functionality                  | AI 코치 대화 저장·이어보기·삭제          |
+| Sensitive Info        | Sensitive Info               | Yes           | No                | App Functionality                  | 얼굴·체형 분석 입력을 계정에 연결해 처리 |
+| Identifiers > User ID | User ID                      | Yes           | No                | App Functionality                  | 계정과 분석 결과 연결                    |
+| Usage Data            | Product Interaction          | Yes           | No                | Analytics, Personalization         | 분석 수집 동의가 켜진 경우만 전송        |
+| Diagnostics           | Crash Data, Performance Data | Yes           | No                | App Functionality                  | 오류·성능 모니터링                       |
 
-- **제3자 공유:** 없음. 앱 기능 제공을 위해 계약된 서비스 제공자가 이룸의 지시에 따라 처리하는
-  전송은 Google Play Data Safety에서 공유로 신고하지 않습니다.
-- **Google 처리 역할:** 유료 Gemini API의 활성 Cloud Billing 및 DPA 적용을 확인한 경우에만
-  서비스 제공자(수탁자)로 신고합니다. 안전 모니터링을 위한 제한 기간 처리는 Google 약관을 따릅니다.
-- [ ] 제출 직전 프로덕션 Gemini 프로젝트의 유료 결제·DPA 적용 상태를 확인했습니다.
+> 저장 동의 OFF: 분석 입력은 결과 생성을 위해 전송·처리되지만 원본 이미지는 보관하지 않습니다.
+> 저장 동의 ON: 원본 이미지는 최대 1년 보관하며, 동의 철회·삭제 요청·회원 탈퇴 시 먼저 파기합니다.
 
-### 개인정보 URL
+## 6. 처리자·URL
 
-```
-제출용 개인정보 처리방침: https://<confirmed-domain>/privacy
-제출용 이용약관: https://<confirmed-domain>/terms
-```
+- Google AI는 앱 기능 제공을 위한 서비스 제공자(수탁자)로 처리합니다.
+- 제출 전 프로덕션 프로젝트의 유료 Cloud Billing과 Data Processing Addendum 적용을 확인합니다.
+- 개인정보처리방침: `https://yiroom.vercel.app/privacy`
+- 지원: `https://yiroom.vercel.app/help`
+- 마케팅: `https://yiroom.vercel.app`
 
-도메인 소유·HTTPS·공개 접근을 확인한 뒤 Play Console에 주입합니다. 확정 전 검증용 경로는
-`https://yiroom.vercel.app/privacy`와 `https://yiroom.vercel.app/terms`입니다.
+- [ ] 세 URL을 비로그인 네트워크에서 열어 200 응답과 최종 콘텐츠를 확인했습니다.
+- [ ] 개인정보처리방침의 보유·삭제 조건이 위 라벨과 일치합니다.
 
----
+## 7. 제출 전 최종 확인
 
-## 제출 전 체크리스트
+### 앱 동작
 
-### 앱 품질
+- [ ] 새 기기에서 설치 → 가입 → 연령 확인 → 첫 분석 → 결과 → 재방문을 완료했습니다.
+- [ ] 카메라 거부·사진 선택 취소·오프라인·서버 오류 상태를 확인했습니다.
+- [ ] 계정 삭제와 이미지 저장 동의 철회가 앱 안에서 완료됩니다.
+- [ ] AI 생성 코치 메시지·분석 결과·AI 아바타를 앱 안에서 신고할 수 있습니다.
 
-- [ ] 모든 화면 테스트 완료
-- [ ] 크래시 없음 확인
-- [ ] 다크 모드 정상 동작
-- [ ] 접근성 테스트 완료
-- [ ] 다국어 (한/영) 확인
+### 제출 산출물
 
-### 콘텐츠
-
-- [ ] 앱 아이콘 (1024x1024 PNG)
-- [ ] 스플래시 화면
-- [ ] 스크린샷 준비 (모든 디바이스)
-- [ ] 앱 설명 작성 (한/영)
-- [ ] 키워드 최적화
-
-### 법적 요구사항
-
-- [ ] 개인정보 처리방침 URL
-- [ ] 이용약관 URL
-- [ ] GDPR 준수 (EU 대상 시)
-- [ ] 연령 등급 설정
-
-### 기술
-
-- [ ] 최신 버전 빌드
-- [ ] 프로덕션 환경변수 확인
-- [ ] 인증서/서명 확인
-- [ ] 앱 버전 증가
-
----
-
-## 제출 후
-
-### 심사 기간
-
-- **iOS**: 평균 24-48시간
-- **Android**: 평균 1-3일
-
-### 리젝 대응
-
-1. 리젝 사유 확인
-2. 해결 방안 문서화
-3. 수정 후 재제출
-4. 이의신청 (필요시)
-
-### 출시 후
-
-- [ ] 크래시 리포트 모니터링
-- [ ] 사용자 리뷰 확인
-- [ ] 앱 분석 대시보드 확인
-- [ ] 핫픽스 준비
+- [ ] 1024 × 1024 아이콘과 요구 해상도 스크린샷을 준비했습니다.
+- [ ] App Store Connect의 설명·키워드·버전이 `store-metadata.json`과 일치합니다.
+- [ ] Privacy Nutrition Label을 위 초안과 실제 프로덕션 흐름으로 다시 대조했습니다.
+- [ ] 심사 계정 자격증명을 App Review Information에만 입력했습니다.
+- [ ] 프로덕션 Archive의 Info.plist와 권한 요청 시점을 실기기에서 확인했습니다.

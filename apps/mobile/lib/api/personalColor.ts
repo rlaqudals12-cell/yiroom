@@ -38,6 +38,10 @@ export interface PersonalColorApiResult {
   usedMock: boolean;
   /** 분석은 반환됐지만 서버 기록 저장이 실패했는지 */
   dbSaveFailed: boolean;
+  /** 서버가 반환한 저장 row id (저장 실패면 합성 id일 수 있음) */
+  analysisId?: string;
+  /** 서버 분석 시각 — 미저장 결과 신고 식별자에만 사용 */
+  analyzedAt?: string;
 }
 
 export type PersonalColorSeasonSubtype = 'bright' | 'light' | 'true' | 'mute' | 'deep';
@@ -262,6 +266,8 @@ export async function requestPersonalColorAnalysis(
         : normalizePersonalColorHexes(data.worst_colors),
     usedMock: obj.usedMock === true,
     dbSaveFailed: obj.dbSaveFailed === true,
+    analysisId: typeof data.id === 'string' ? data.id : undefined,
+    analyzedAt: typeof result.analyzedAt === 'string' ? result.analyzedAt : undefined,
   };
   void trackAnalysisComplete(
     'personal-color',

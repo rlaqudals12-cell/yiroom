@@ -1,6 +1,6 @@
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
 import {
   REPORT_COLORS,
@@ -14,6 +14,7 @@ const mockGetToken = jest.fn().mockResolvedValue('token-1');
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockTrackAnalysisResultView = jest.fn();
+const mockSubmitContentReport = jest.fn().mockResolvedValue({ reportId: 'report-1' });
 
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: () => ({ getToken: mockGetToken, isSignedIn: true }),
@@ -32,6 +33,11 @@ jest.mock('expo-font', () => ({
 
 jest.mock('@/lib/analytics/tracker', () => ({
   trackAnalysisResultView: (...args: unknown[]) => mockTrackAnalysisResultView(...args),
+}));
+
+jest.mock('@/lib/api/reports', () => ({
+  submitContentReport: (...args: unknown[]) => mockSubmitContentReport(...args),
+  ContentReportApiError: class ContentReportApiError extends Error {},
 }));
 
 jest.mock('react-native-safe-area-context', () => {
@@ -57,6 +63,7 @@ function createLayout(overrides: Partial<React.ComponentProps<typeof ReportResul
       onPrimaryAction={jest.fn()}
       primaryActionText="헤어 제품 추천"
       retryPath="/(analysis)/hair"
+      reportTargetId="hair-row-1"
       sections={[
         {
           key: 'evidence',
@@ -132,5 +139,46 @@ describe('ReportResultLayout', () => {
     expect(mockPush).toHaveBeenNthCalledWith(2, '/(coach)');
     expect(mockReplace).toHaveBeenNthCalledWith(1, '/(tabs)');
     expect(mockReplace).toHaveBeenNthCalledWith(2, '/(analysis)/hair');
+  });
+
+  it('5축 공통 결과에서 실제 저장 ID로 신고를 앱 안에서 접수한다', async () => {
+    const screen = renderWithTheme(createLayout());
+
+    fireEvent.press(screen.getByTestId('hair-report-report'));
+    expect(screen.getByText('분석 결과 신고')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('report-reason-misinformation'));
+    fireEvent.press(screen.getByTestId('report-submit'));
+
+    await waitFor(() => {
+      expect(mockSubmitContentReport).toHaveBeenCalledWith(
+        {
+          targetType: 'analysis_result',
+          targetId: 'hair-row-1',
+          reason: 'misinformation',
+          contentExcerpt: '직모 · 가는 모발',
+        },
+        'token-1'
+      );
+    });
+  });
+
+  it('인증 토큰 조회 실패를 한국어로 정규화하고 신고 모달을 유지한다', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const screen = renderWithTheme(createLayout());
+    await waitFor(() => expect(mockTrackAnalysisResultView).toHaveBeenCalled());
+    mockGetToken.mockRejectedValueOnce(new Error('raw clerk failure'));
+
+    fireEvent.press(screen.getByTestId('hair-report-report'));
+    fireEvent.press(screen.getByTestId('report-reason-other'));
+    fireEvent.press(screen.getByTestId('report-submit'));
+
+    await waitFor(() => {
+      expect(alert).toHaveBeenCalledWith(
+        '신고 접수 실패',
+        '로그인 상태를 확인하지 못했어요. 잠시 후 다시 시도해주세요.'
+      );
+    });
+    expect(screen.getByTestId('report-modal')).toBeTruthy();
+    expect(mockSubmitContentReport).not.toHaveBeenCalled();
   });
 });

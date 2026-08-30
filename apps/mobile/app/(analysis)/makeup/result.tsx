@@ -139,6 +139,8 @@ export default function MakeupResultScreen(): React.JSX.Element {
           bestColors: collectStoredMakeupColors(recommendationData),
           usedMock: stored.usedFallback === true,
           dbSaveFailed: false,
+          analysisId: typeof row.id === 'string' ? row.id : undefined,
+          analyzedAt: typeof row.created_at === 'string' ? row.created_at : undefined,
         });
         return;
       }
@@ -304,6 +306,11 @@ export default function MakeupResultScreen(): React.JSX.Element {
         onSaveRetry={() => router.replace('/(analysis)/makeup')}
         primaryActionText="메이크업 제품 보기"
         retryPath="/(analysis)/makeup"
+        reportTargetId={
+          historyId ??
+          (!result.dbSaveFailed ? result.analysisId : undefined) ??
+          `unsaved:makeup:${result.analyzedAt ?? 'time-unavailable'}`
+        }
         saveFailed={result.dbSaveFailed}
         sections={sections}
         shareContent={

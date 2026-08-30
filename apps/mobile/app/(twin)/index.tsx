@@ -13,8 +13,8 @@
  */
 
 import { useAuth } from '@clerk/clerk-expo';
-import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 import { Sparkles, Upload, Check, RefreshCw, X, ShieldAlert, Flag } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -26,9 +26,9 @@ import {
   Image,
   ActivityIndicator,
   Alert,
-  Linking,
 } from 'react-native';
 
+import { ContentReportModal } from '@/components/reporting';
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import {
   generateTwin,
@@ -44,8 +44,6 @@ type Phase = 'intro' | 'upload' | 'generating' | 'review' | 'error';
 
 const BRAND = '#EC4899';
 const PURPLE = '#8B5CF6';
-// AI 생성물 인앱 신고 접수 채널(서버 신고 엔드포인트 부재 → support 메일, 앱 전역 동일)
-const SUPPORT_EMAIL = 'support@yiroom.app';
 
 export default function TwinStudioScreen(): React.JSX.Element {
   const { colors } = useTheme();
@@ -57,6 +55,7 @@ export default function TwinStudioScreen(): React.JSX.Element {
   const [twin, setTwin] = useState<TwinRecord | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const [reportVisible, setReportVisible] = useState(false);
 
   // 언마운트 후 setState 방지 가드 (생성/승인이 화면 이탈 후 완료될 수 있음)
   const mountedRef = useRef(true);
@@ -178,40 +177,6 @@ export default function TwinStudioScreen(): React.JSX.Element {
     await rejectCurrent();
     if (mountedRef.current) setBusy(false);
     router.back();
-  };
-
-  // 이 결과 신고 — 부적절/불쾌한 AI 생성 결과를 접수(Play AI 생성 콘텐츠 정책).
-  // 전용 서버 신고 엔드포인트가 없어 앱 공통 support 메일로 트윈 ID와 함께 접수한다.
-  const reportTwin = async (): Promise<void> => {
-    if (!twin) return;
-    const subject = 'AI 아바타 결과 신고';
-    const body = [
-      '아래 AI 생성 결과를 신고합니다.',
-      '',
-      `트윈 ID: ${twin.id}`,
-      '신고 사유(작성해 주세요): ',
-      '',
-      '— 이룸 앱에서 전송',
-    ].join('\n');
-    const url = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
-    try {
-      const canOpen = await Linking.canOpenURL(url);
-      if (!canOpen) {
-        Alert.alert(
-          '신고 접수',
-          `메일 앱을 열 수 없어요. ${SUPPORT_EMAIL} 으로 트윈 ID(${twin.id})와 함께 신고해 주세요.`
-        );
-        return;
-      }
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert(
-        '신고 접수',
-        `메일 앱을 열 수 없어요. ${SUPPORT_EMAIL} 으로 트윈 ID(${twin.id})와 함께 신고해 주세요.`
-      );
-    }
   };
 
   // ─────────────────────────────── 렌더 ───────────────────────────────
@@ -375,7 +340,7 @@ export default function TwinStudioScreen(): React.JSX.Element {
         {/* AI 생성물 인앱 신고 경로(Play 정책) — 부적절/불쾌한 결과 접수 */}
         <Pressable
           style={styles.reportRow}
-          onPress={reportTwin}
+          onPress={() => setReportVisible(true)}
           testID="twin-report-button"
           accessibilityRole="button"
           accessibilityLabel="이 결과 신고"
@@ -439,6 +404,13 @@ export default function TwinStudioScreen(): React.JSX.Element {
         </View>
         {renderPhase()}
       </ScrollView>
+      <ContentReportModal
+        onClose={() => setReportVisible(false)}
+        targetId={twin?.id ?? 'twin-result-unavailable'}
+        targetType="twin_result"
+        title="AI 아바타 결과 신고"
+        visible={reportVisible && twin !== null}
+      />
     </ScreenContainer>
   );
 }

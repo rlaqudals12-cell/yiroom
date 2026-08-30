@@ -482,6 +482,7 @@ export default function MakeupAnalysisResultPage() {
                   {/* 푸터 신뢰 블록 — 등급→% 매핑은 전문가 패널과 동일 (진단서의 직인) */}
                   <TrustFooter
                     confidence={RELIABILITY_CONFIDENCE[result.analysisReliability]}
+                    reportTargetId={analysisId}
                     testId="makeup-trust-footer"
                     className="mt-6"
                   >

@@ -372,6 +372,8 @@ interface AnalysisEvidence {
 
 interface AnalysisResultProps {
   result: PersonalColorResult;
+  /** 신고 운영 큐가 실제 저장 결과를 식별하는 ID (공개 데모는 미제공) */
+  reportTargetId?: string;
   evidence?: AnalysisEvidence | null;
   /** 퍼스널 대비 실측값(ADR-116) — 호스트가 저장값이 있을 때만 전달(없으면 행 미렌더) */
   contrastLevel?: 'low' | 'medium' | 'high' | null;
@@ -1231,6 +1233,7 @@ function HeroAnchor({
  */
 export default function AnalysisResult({
   result,
+  reportTargetId,
   evidence,
   contrastLevel,
   photoUrl,
@@ -1587,7 +1590,12 @@ export default function AnalysisResult({
 
             {/* 푸터 신뢰 블록 — 신뢰도(진단의 점수) + 분석 시간 (진단서의 직인).
                 구 "전체 사용자 중 N%" 줄은 출처 없는 자사 통계라 삭제(실집계 배선 전까지 미표시) */}
-            <TrustFooter confidence={confidence} testId="pc-trust-footer" className="mt-[3px]">
+            <TrustFooter
+              confidence={confidence}
+              reportTargetId={reportTargetId}
+              testId="pc-trust-footer"
+              className="mt-[3px]"
+            >
               {/* 초 단위는 발행 정보(콜로폰)에 과잉 — 분까지만 (재현성 직인 인상) */}
               <p>
                 분석 시간:{' '}

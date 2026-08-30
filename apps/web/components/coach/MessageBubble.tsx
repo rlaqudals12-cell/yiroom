@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { MessageCircle, User, Plus, Check } from 'lucide-react';
+import { ContentReportDialog } from '@/components/content-report';
 import { cn } from '@/lib/utils';
 import type { CoachMessage } from '@/lib/coach/client';
 
@@ -110,31 +111,42 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           </p>
         </div>
 
-        {/* 캡슐에 추가하기 버튼 */}
-        {showCapsuleAction && (
-          <button
-            onClick={handleAddToCapsule}
-            disabled={addedToCapsule || isAdding}
-            className={cn(
-              'flex items-center gap-1 mt-1.5 px-3 py-1 text-xs rounded-full transition-colors',
-              addedToCapsule
-                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
-                : 'bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/15'
+        {!isUser && (
+          <div className="mt-1.5 flex flex-wrap items-center gap-1">
+            {/* 캡슐에 추가하기 버튼 */}
+            {showCapsuleAction && (
+              <button
+                onClick={handleAddToCapsule}
+                disabled={addedToCapsule || isAdding}
+                className={cn(
+                  'flex items-center gap-1 rounded-full px-3 py-1 text-xs transition-colors',
+                  addedToCapsule
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
+                    : 'bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/15'
+                )}
+                data-testid="coach-add-to-capsule"
+              >
+                {addedToCapsule ? (
+                  <>
+                    <Check className="w-3 h-3" />
+                    캡슐에 추가됨
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-3 h-3" />
+                    {isAdding ? '추가 중...' : '캡슐에 추가하기'}
+                  </>
+                )}
+              </button>
             )}
-            data-testid="coach-add-to-capsule"
-          >
-            {addedToCapsule ? (
-              <>
-                <Check className="w-3 h-3" />
-                캡슐에 추가됨
-              </>
-            ) : (
-              <>
-                <Plus className="w-3 h-3" />
-                {isAdding ? '추가 중...' : '캡슐에 추가하기'}
-              </>
-            )}
-          </button>
+            <ContentReportDialog
+              targetType="coach_message"
+              targetId={message.id.slice(0, 128)}
+              contentExcerpt={message.content}
+              triggerLabel="신고"
+              testId="coach-message-report-trigger"
+            />
+          </div>
         )}
       </div>
     </div>

@@ -6,6 +6,9 @@ type ExpoPlugin = string | [string, PluginOptions];
 
 interface AppConfig {
   expo: {
+    ios: {
+      infoPlist: Record<string, string>;
+    };
     android: {
       blockedPermissions?: string[];
     };
@@ -47,9 +50,14 @@ describe('Android 최소 권한 계약', () => {
     );
   });
 
-  it('카메라와 이미지 선택 플러그인이 마이크 권한을 추가하지 않는다', () => {
+  it('카메라와 이미지 선택 플러그인이 iOS·Android 마이크 권한을 추가하지 않는다', () => {
     expect(pluginOptions(config, 'expo-camera')?.recordAudioAndroid).toBe(false);
+    expect(pluginOptions(config, 'expo-camera')?.microphonePermission).toBe(false);
     expect(pluginOptions(config, 'expo-image-picker')?.microphonePermission).toBe(false);
+  });
+
+  it('실제 저장 기능이 없는 사진 라이브러리 추가 권한을 선언하지 않는다', () => {
+    expect(config.expo.ios.infoPlist).not.toHaveProperty('NSPhotoLibraryAddUsageDescription');
   });
 });
 
@@ -83,9 +91,7 @@ describe('EAS 공개 런타임 구성 자리 계약', () => {
     expect(config.build.preview.env).not.toHaveProperty('EXPO_PUBLIC_SENTRY_DSN');
     expect(config.build.production.env).not.toHaveProperty('EXPO_PUBLIC_SENTRY_DSN');
     expect(config.build.production.env).not.toHaveProperty('EXPO_PUBLIC_YIROOM_API_URL');
-    expect(config.build.preview.env?._YIROOM_SENTRY_DSN_NOTE).toContain(
-      'EXPO_PUBLIC_SENTRY_DSN'
-    );
+    expect(config.build.preview.env?._YIROOM_SENTRY_DSN_NOTE).toContain('EXPO_PUBLIC_SENTRY_DSN');
     expect(config.build.production.env?._YIROOM_SENTRY_DSN_NOTE).toContain(
       'EXPO_PUBLIC_SENTRY_DSN'
     );

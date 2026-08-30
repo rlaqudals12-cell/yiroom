@@ -38,6 +38,7 @@ function successBody(overrides: Record<string, unknown> = {}) {
   return {
     success: true,
     usedMock: false,
+    data: { id: 'body-row-1' },
     result: {
       bodyType: 'S',
       bodyTypeLabel: '스트레이트',
@@ -47,6 +48,7 @@ function successBody(overrides: Record<string, unknown> = {}) {
       styleRecommendations: [{ item: '테일러드 재킷', reason: '골격의 직선을 살려요' }],
       insight: '핏이 살아있는 옷이 잘 어울려요.',
       bmi: 22.9,
+      analyzedAt: '2026-08-30T09:00:00.000Z',
       ...overrides,
     },
   };
@@ -79,6 +81,8 @@ describe('requestBodyAnalysis', () => {
     expect(result.avoidStyles).toEqual(['오버핏']);
     expect(result.bmi).toBe(22.9);
     expect(result.usedMock).toBe(false);
+    expect(result.analysisId).toBe('body-row-1');
+    expect(result.analyzedAt).toBe('2026-08-30T09:00:00.000Z');
   });
 
   it('요청 본문에 웹 계약(imageBase64 + userInput.height/weight)을 담는다', async () => {

@@ -1001,6 +1001,7 @@ export default function SkinAnalysisResultPage() {
                   {/* 본론: 고민 그리드(펼침) + 데일리 루틴(펼침) + 상세(접힘) */}
                   <AnalysisResult
                     result={result}
+                    reportTargetId={analysisId}
                     onRetry={handleNewAnalysis}
                     evidence={analysisEvidence}
                     skinType={skinType || undefined}

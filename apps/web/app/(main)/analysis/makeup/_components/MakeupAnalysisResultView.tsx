@@ -37,6 +37,7 @@ import {
 
 interface MakeupAnalysisResultViewProps {
   result: MakeupAnalysisResult;
+  reportTargetId?: string;
   onRetry: () => void;
 }
 
@@ -110,6 +111,7 @@ interface ReportSection {
 
 export function MakeupAnalysisResultView({
   result,
+  reportTargetId,
   onRetry,
 }: MakeupAnalysisResultViewProps): React.JSX.Element {
   // 콜로폰 분석 시간 표기 — 하드코딩 ko-KR 대신 사용자 로캘 (PC 진단지 표준)
@@ -470,6 +472,7 @@ export function MakeupAnalysisResultView({
           {/* 푸터 신뢰 블록 — 등급→% 매핑은 result/[id]와 동일 (진단서의 직인) */}
           <TrustFooter
             confidence={RELIABILITY_CONFIDENCE[result.analysisReliability]}
+            reportTargetId={reportTargetId}
             testId="makeup-trust-footer"
             className="mt-6"
           >

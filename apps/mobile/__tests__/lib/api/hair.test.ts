@@ -80,6 +80,7 @@ describe('requestHairAnalysis', () => {
     expect(result.scores).toEqual({ shine: 60, elasticity: 72, density: 55, scalpHealth: 65 });
     expect(result.careRoutine).toEqual(['미지근한 물로 샴푸하세요', '주 1-2회 헤어 마스크']);
     expect(result.usedMock).toBe(false);
+    expect(result.analysisId).toBe('row-1');
   });
 
   it('DB 저장 실패 플래그를 결과 화면까지 보존한다', async () => {

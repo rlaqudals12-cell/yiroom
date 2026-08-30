@@ -130,6 +130,8 @@ export default function HairResultScreen(): React.JSX.Element {
           recommendedStyles: normalizeStoredHairStyles(recommendations.styleRecommendations),
           usedMock: stored.usedFallback === true,
           dbSaveFailed: false,
+          analysisId: typeof row.id === 'string' ? row.id : undefined,
+          analyzedAt: typeof row.created_at === 'string' ? row.created_at : undefined,
         });
         return;
       }
@@ -317,6 +319,11 @@ export default function HairResultScreen(): React.JSX.Element {
         onSaveRetry={() => router.replace('/(analysis)/hair')}
         primaryActionText="헤어 제품 추천"
         retryPath="/(analysis)/hair"
+        reportTargetId={
+          historyId ??
+          (!result.dbSaveFailed ? result.analysisId : undefined) ??
+          `unsaved:hair:${result.analyzedAt ?? 'time-unavailable'}`
+        }
         saveFailed={result.dbSaveFailed}
         sections={sections}
         shareContent={

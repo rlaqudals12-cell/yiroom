@@ -657,7 +657,12 @@ export default function SkinAnalysisPage() {
           {step === 'loading' && <AnalysisLoading isApiComplete={isApiComplete} />}
 
           {step === 'result' && result && (
-            <AnalysisResult result={result} onRetry={handleRetry} shareRef={shareRef} />
+            <AnalysisResult
+              result={result}
+              reportTargetId={`skin:${result.analyzedAt.toISOString()}`}
+              onRetry={handleRetry}
+              shareRef={shareRef}
+            />
           )}
         </div>
       </div>

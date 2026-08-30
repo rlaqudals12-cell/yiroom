@@ -34,12 +34,13 @@ function successBody(overrides: Record<string, unknown> = {}) {
   return {
     success: true,
     usedMock: false,
-    data: { season: 'Spring' },
+    data: { id: 'pc-row-1', season: 'Spring' },
     result: {
       seasonType: 'spring',
       seasonLabel: '봄 웜톤',
       seasonDescription: '밝고 화사한 색이 잘 어울려요.',
       confidence: 88,
+      analyzedAt: '2026-08-30T09:00:00.000Z',
     },
     ...overrides,
   };
@@ -68,6 +69,8 @@ describe('requestPersonalColorAnalysis', () => {
     expect(result.confidence).toBeCloseTo(0.88);
     expect(result.description).toBe('밝고 화사한 색이 잘 어울려요.');
     expect(result.usedMock).toBe(false);
+    expect(result.analysisId).toBe('pc-row-1');
+    expect(result.analyzedAt).toBe('2026-08-30T09:00:00.000Z');
   });
 
   it('서버가 판정한 12톤과 객체형 베스트·워스트 팔레트를 응답 경계에서 보존한다', async () => {

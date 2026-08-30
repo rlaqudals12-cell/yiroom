@@ -62,6 +62,7 @@ export default function MakeupAnalysisPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [result, setResult] = useState<MakeupAnalysisResult | null>(null);
+  const [resultId, setResultId] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [storageNotice, setStorageNotice] = useState<string | null>(null);
@@ -178,6 +179,7 @@ export default function MakeupAnalysisPage() {
           ...data.result,
           analyzedAt: new Date(data.result.analyzedAt),
         });
+        setResultId(data.data?.id ?? `makeup:${new Date(data.result.analyzedAt).toISOString()}`);
 
         // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
         try {
@@ -263,6 +265,7 @@ export default function MakeupAnalysisPage() {
     setImageFile(null);
     setImagePreview(null);
     setResult(null);
+    setResultId(null);
     setStep('guide');
     setError(null);
     setStorageNotice(null);
@@ -457,8 +460,12 @@ export default function MakeupAnalysisPage() {
         )}
 
         {/* 결과 */}
-        {step === 'result' && result && (
-          <MakeupAnalysisResultView result={result} onRetry={handleRetry} />
+        {step === 'result' && result && resultId && (
+          <MakeupAnalysisResultView
+            result={result}
+            reportTargetId={resultId}
+            onRetry={handleRetry}
+          />
         )}
       </div>
     </div>

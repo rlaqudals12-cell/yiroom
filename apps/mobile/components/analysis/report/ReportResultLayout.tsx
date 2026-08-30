@@ -1,10 +1,11 @@
 import { useAuth } from '@clerk/clerk-expo';
 import { router } from 'expo-router';
 import { AlertTriangle, ChevronRight } from 'lucide-react-native';
-import { useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Image, Pressable, ScrollView, Text, View, type ImageStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ContentReportModal } from '@/components/reporting';
 import { trackAnalysisResultView, type MobileAnalysisType } from '@/lib/analytics/tracker';
 import { shadows } from '@/lib/theme';
 
@@ -42,6 +43,8 @@ export interface ReportResultLayoutProps {
   primaryActionText: string;
   onPrimaryAction: () => void;
   retryPath: string;
+  /** 저장된 분석 row id. 저장 실패 결과는 `unsaved:<axis>`로 명시한다. */
+  reportTargetId: string;
   testID?: string;
 }
 
@@ -106,12 +109,14 @@ export function ReportResultLayout({
   primaryActionText,
   onPrimaryAction,
   retryPath,
+  reportTargetId,
   testID = 'report-result-layout',
 }: ReportResultLayoutProps): React.JSX.Element {
   const { getToken, isSignedIn } = useAuth();
   const trackedResultTypeRef = useRef<MobileAnalysisType | null>(null);
   const analysisType = RESULT_ANALYSIS_TYPES[moduleKey];
   const nextAction = NEXT_ACTION_MAP[moduleKey];
+  const [reportVisible, setReportVisible] = useState(false);
 
   useEffect(() => {
     if (!isSignedIn || trackedResultTypeRef.current === analysisType) return;
@@ -290,8 +295,25 @@ export function ReportResultLayout({
           >
             <Text style={styles.retryButtonText}>다시 분석하기</Text>
           </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="이 결과 신고"
+            onPress={() => setReportVisible(true)}
+            style={styles.reportButton}
+            testID={`${testID}-report`}
+          >
+            <Text style={styles.reportButtonText}>이 결과 신고</Text>
+          </Pressable>
         </View>
       </ScrollView>
+      <ContentReportModal
+        contentExcerpt={verdict}
+        onClose={() => setReportVisible(false)}
+        targetId={reportTargetId}
+        targetType="analysis_result"
+        title="분석 결과 신고"
+        visible={reportVisible}
+      />
     </SafeAreaView>
   );
 }

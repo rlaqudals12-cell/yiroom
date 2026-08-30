@@ -486,6 +486,7 @@ export default function HairAnalysisResultPage() {
                 {/* 진단지 시트 — 원형 채점·신호등 게이지 대신 속성표 + 스펙트럼 (ADR-120) */}
                 {/* 결과 페이지 지표는 name 필드라 진단지 label로 어댑팅 (인라인 뷰와 필드명이 다름) */}
                 <HairReportSheet
+                  reportTargetId={analysisId}
                   hairTypeLabel={result.hairTypeLabel}
                   hairThicknessLabel={result.hairThicknessLabel}
                   scalpTypeLabel={result.scalpTypeLabel}

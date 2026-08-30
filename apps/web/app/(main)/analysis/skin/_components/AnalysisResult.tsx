@@ -75,6 +75,8 @@ interface SkinAnalysisEvidence {
 
 interface AnalysisResultProps {
   result: SkinAnalysisResult;
+  /** 저장 결과 ID. 저장 실패 인라인 폴백은 축+분석시각의 결정적 식별자를 사용한다. */
+  reportTargetId?: string;
   onRetry: () => void;
   shareRef?: React.RefObject<HTMLDivElement | null>;
   evidence?: SkinAnalysisEvidence | null;
@@ -105,6 +107,7 @@ const METRIC_TO_ZONE_MAP: Record<string, DetailedZoneId[]> = {
 
 export default function AnalysisResult({
   result,
+  reportTargetId,
   onRetry,
   shareRef,
   evidence,
@@ -928,7 +931,7 @@ export default function AnalysisResult({
       {/* 신뢰 푸터 — 진단서의 직인 (ADR-120). 피부는 저장된 신뢰도 수치가 없어
           위장 수치 없이 분석 시간만 정직하게 표기 */}
       <FadeInUp delay={8}>
-        <TrustFooter testId="skin-trust-footer">
+        <TrustFooter reportTargetId={reportTargetId} testId="skin-trust-footer">
           <p>
             분석 시간:{' '}
             {formatDateTime(analyzedAt, locale, { dateStyle: 'long', timeStyle: 'short' })}

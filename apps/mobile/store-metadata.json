@@ -133,6 +133,22 @@
         "note": "AI 코치 대화 내용"
       },
       {
+        "type": "Sensitive Info",
+        "items": ["Sensitive Info"],
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "purposes": ["App Functionality"],
+        "note": "얼굴·체형 분석 입력은 계정에 연결해 처리합니다. 이미지 저장 동의가 꺼져 있으면 원본을 보관하지 않습니다."
+      },
+      {
+        "type": "Identifiers",
+        "items": ["User ID"],
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "purposes": ["App Functionality"],
+        "note": "계정과 분석 결과를 연결하는 사용자 식별자"
+      },
+      {
         "type": "Usage Data",
         "items": ["Product Interaction"],
         "linkedToUser": true,

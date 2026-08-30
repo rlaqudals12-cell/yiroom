@@ -64,6 +64,17 @@ jest.mock('react-native/Libraries/Utilities/Platform', () => ({
 
 const mockSendMessage = jest.fn();
 const mockClearMessages = jest.fn();
+const mockGetToken = jest.fn().mockResolvedValue('token-1');
+const mockSubmitContentReport = jest.fn().mockResolvedValue({ reportId: 'report-1' });
+
+jest.mock('@clerk/clerk-expo', () => ({
+  useAuth: () => ({ getToken: mockGetToken, isSignedIn: true }),
+}));
+
+jest.mock('../../../lib/api/reports', () => ({
+  submitContentReport: (...args: unknown[]) => mockSubmitContentReport(...args),
+  ContentReportApiError: class ContentReportApiError extends Error {},
+}));
 
 // useCoach mock
 jest.mock('../../../lib/coach/useCoach', () => ({
@@ -513,6 +524,42 @@ describe('ChatInterface', () => {
       const { getByText } = renderWithTheme(<ChatInterface />);
       expect(getByText('오늘 운동 추천해줘')).toBeTruthy();
       expect(getByText('오늘은 가벼운 유산소 운동을 추천해요!')).toBeTruthy();
+    });
+
+    it('AI 답변만 메시지 단위로 신고하고 같은 앱에서 접수를 마친다', async () => {
+      (useBeautyTeamCoach as jest.Mock).mockReturnValue({
+        messages: [
+          createMessage({ id: 'user-1', role: 'user', content: '제 피부는 어떤가요?' }),
+          createMessage({ id: 'assistant-1', role: 'assistant', content: 'AI 답변 내용' }),
+        ],
+        isLoading: false,
+        error: null,
+        suggestedQuestions: [],
+        sessions: [],
+        currentSessionId: null,
+        sendMessage: mockSendMessage,
+        clearMessages: mockClearMessages,
+        loadSession: jest.fn(),
+        startNewSession: jest.fn(),
+      });
+
+      const screen = renderWithTheme(<ChatInterface surface="beauty-team" />);
+      expect(screen.queryByTestId('coach-message-report-user-1')).toBeNull();
+      fireEvent.press(screen.getByTestId('coach-message-report-assistant-1'));
+      fireEvent.press(screen.getByTestId('report-reason-misinformation'));
+      fireEvent.press(screen.getByTestId('report-submit'));
+
+      await waitFor(() => {
+        expect(mockSubmitContentReport).toHaveBeenCalledWith(
+          {
+            targetType: 'coach_message',
+            targetId: 'assistant-1',
+            reason: 'misinformation',
+            contentExcerpt: 'AI 답변 내용',
+          },
+          'token-1'
+        );
+      });
     });
 
     it('메시지가 있으면 빠른 질문 영역 대신 메시지 목록을 표시한다', () => {
