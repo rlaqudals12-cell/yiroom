@@ -180,6 +180,31 @@ describe('saveAgreement', () => {
     expect(body.marketingAgreed).toBe(false);
   });
 
+  it('제출 AbortSignal을 fetch에 전달하고 취소 오류를 구분한다', async () => {
+    const controller = new AbortController();
+    const fetchMock = jest.fn(
+      (_url: string, init: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () => reject(new Error('aborted')), {
+            once: true,
+          });
+        })
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const pending = saveAgreement({ gender: 'female' }, 'token', 'http://test', {
+      signal: controller.signal,
+    });
+    controller.abort();
+
+    await expect(pending).rejects.toMatchObject({
+      name: 'AgreementApiError',
+      status: 0,
+      code: 'REQUEST_ABORTED',
+    });
+    expect((fetchMock.mock.calls[0][1] as RequestInit).signal).toBe(controller.signal);
+  });
+
   it('서버 검증 실패(400)면 서버 메시지를 담은 AgreementApiError', async () => {
     global.fetch = mockFetch({
       ok: false,

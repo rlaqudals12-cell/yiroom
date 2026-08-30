@@ -7,10 +7,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -69,8 +66,10 @@ jest.mock('expo-image-picker', () => ({
 }));
 
 const mockRequiresLegacyAndroidGalleryFallback = jest.fn(() => false);
+const mockShouldBypassMediaLibraryPermissionGate = jest.fn(() => false);
 jest.mock('../../../lib/image/camera-fallback', () => ({
   requiresLegacyAndroidGalleryFallback: () => mockRequiresLegacyAndroidGalleryFallback(),
+  shouldBypassMediaLibraryPermissionGate: () => mockShouldBypassMediaLibraryPermissionGate(),
 }));
 
 // global fetch mock
@@ -111,9 +110,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -123,6 +120,7 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(false);
+    mockShouldBypassMediaLibraryPermissionGate.mockReturnValue(false);
   });
 
   describe('초기 렌더링', () => {
@@ -147,9 +145,7 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
       const { getByText } = renderWithTheme(<VirtualTryOnScreen />);
 
       // Assert
-      expect(
-        getByText(/정면 얼굴 사진을 업로드하면/)
-      ).toBeTruthy();
+      expect(getByText(/정면 얼굴 사진을 업로드하면/)).toBeTruthy();
     });
 
     it('"촬영" 버튼이 표시되어야 한다', () => {
@@ -367,6 +363,16 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
       });
     });
 
+    it('Android API 29~32에서는 권한 API를 호출하지 않고 갤러리를 연다', async () => {
+      mockShouldBypassMediaLibraryPermissionGate.mockReturnValue(true);
+      const { getByText } = renderWithTheme(<VirtualTryOnScreen />);
+
+      fireEvent.press(getByText('갤러리'));
+
+      await waitFor(() => expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledTimes(1));
+      expect(ImagePicker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
+    });
+
     it('촬영 버튼 클릭 시 카메라가 호출되어야 한다', async () => {
       // Arrange
       const { getByText } = renderWithTheme(<VirtualTryOnScreen />);
@@ -478,10 +484,7 @@ describe('VirtualTryOnScreen (가상 시착 스크린)', () => {
   describe('다크 모드', () => {
     it('다크 모드에서도 정상 렌더링되어야 한다', () => {
       // Arrange & Act
-      const { getByTestId, getByText } = renderWithTheme(
-        <VirtualTryOnScreen />,
-        true
-      );
+      const { getByTestId, getByText } = renderWithTheme(<VirtualTryOnScreen />, true);
 
       // Assert
       expect(getByTestId('virtual-try-on-screen')).toBeTruthy();

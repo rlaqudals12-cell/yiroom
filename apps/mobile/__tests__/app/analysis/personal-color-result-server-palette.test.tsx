@@ -98,6 +98,18 @@ const SERVER_RESULT = {
   worstColors: ['#654321'],
   usedMock: false,
   dbSaveFailed: false,
+  analysisEvidence: {
+    veinColor: 'blue',
+    skinUndertone: 'pink',
+    skinHairContrast: 'high',
+    eyeColor: 'dark_brown',
+    lipNaturalColor: 'pink',
+  },
+  imageQuality: {
+    lightingCondition: 'natural',
+    makeupDetected: false,
+    analysisReliability: 'high',
+  },
 };
 
 describe('퍼스널컬러 결과 서버 팔레트·진단지 배선', () => {
@@ -129,6 +141,17 @@ describe('퍼스널컬러 결과 서버 팔레트·진단지 배선', () => {
     expect(screen.queryByTestId('pc-warm-score')).toBeNull();
 
     fireEvent.press(
+      screen.getByTestId('analysis-personal-color-result-screen-section-basis-trigger')
+    );
+    expect(screen.getByTestId('pc-evidence-rows')).toBeTruthy();
+    expect(screen.getByText('혈관 색')).toBeTruthy();
+    expect(screen.getByText('파란색')).toBeTruthy();
+    expect(screen.getByText('명암 대비')).toBeTruthy();
+    expect(screen.getByText('높음')).toBeTruthy();
+    expect(screen.getByText('메이크업 감지')).toBeTruthy();
+    expect(screen.getByText('감지되지 않음')).toBeTruthy();
+
+    fireEvent.press(
       screen.getByTestId('analysis-personal-color-result-screen-section-avoid-colors-trigger')
     );
     expect(
@@ -154,6 +177,10 @@ describe('퍼스널컬러 결과 서버 팔레트·진단지 배선', () => {
       StyleSheet.flatten(screen.getByTestId('pc-best-colors-swatch-0').props.style).backgroundColor
     ).toBe('#FFB6C1');
     expect(screen.queryByText('분석 신뢰도 91%')).toBeNull();
+    fireEvent.press(
+      screen.getByTestId('analysis-personal-color-result-screen-section-basis-trigger')
+    );
+    expect(screen.queryByTestId('pc-evidence-rows')).toBeNull();
   });
 
   it('저장 실패 재시도와 기존 시즌 제품 CTA를 보존한다', async () => {

@@ -166,12 +166,14 @@ export async function fetchBirthdate(
  * @param birthDate YYYY-MM-DD
  * @param clerkToken Clerk JWT
  * @param baseUrl 웹 API base URL (미지정 시 getApiBaseUrl()이 env·프로덕션 웹 순으로 해석)
+ * @param options 통합분석 제출 취소 신호 등 요청 제어 옵션
  * @throws BirthdateApiError 검증(400)·연령제한(403)·네트워크·서버 오류 — message는 사용자 대면 한국어
  */
 export async function saveBirthdate(
   birthDate: string,
   clerkToken: string,
-  baseUrl?: string
+  baseUrl?: string,
+  options: { signal?: AbortSignal } = {}
 ): Promise<void> {
   const url = getApiBaseUrl(baseUrl);
 
@@ -185,8 +187,12 @@ export async function saveBirthdate(
         'x-yiroom-client': 'mobile',
       },
       body: JSON.stringify({ birthDate }),
+      signal: options.signal,
     });
   } catch {
+    if (options.signal?.aborted) {
+      throw new BirthdateApiError('생년월일 저장 요청을 취소했어요.', 0, 'REQUEST_ABORTED');
+    }
     throw new BirthdateApiError('네트워크 연결을 확인해주세요.', 0, 'NETWORK_ERROR');
   }
 

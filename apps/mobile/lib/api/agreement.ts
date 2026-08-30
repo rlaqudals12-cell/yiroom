@@ -161,12 +161,14 @@ export async function fetchAgreementStatus(
  * @param params gender(서버 필수) + marketingAgreed(선택)
  * @param clerkToken Clerk JWT
  * @param baseUrl 웹 API base URL (미지정 시 getApiBaseUrl()이 env·프로덕션 웹 순으로 해석)
+ * @param options 통합분석 제출 취소 신호 등 요청 제어 옵션
  * @throws AgreementApiError 검증(400)·네트워크·서버 오류 — message는 사용자 대면 한국어
  */
 export async function saveAgreement(
   params: { gender: AgreementGender; marketingAgreed?: boolean },
   clerkToken: string,
-  baseUrl?: string
+  baseUrl?: string,
+  options: { signal?: AbortSignal } = {}
 ): Promise<void> {
   const url = getApiBaseUrl(baseUrl);
 
@@ -187,8 +189,12 @@ export async function saveAgreement(
         marketingAgreed: params.marketingAgreed ?? false,
         gender: params.gender,
       }),
+      signal: options.signal,
     });
   } catch {
+    if (options.signal?.aborted) {
+      throw new AgreementApiError('동의 저장 요청을 취소했어요.', 0, 'REQUEST_ABORTED');
+    }
     throw new AgreementApiError('네트워크 연결을 확인해주세요.', 0, 'NETWORK_ERROR');
   }
 

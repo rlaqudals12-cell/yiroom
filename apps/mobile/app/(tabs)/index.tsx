@@ -33,6 +33,7 @@ import {
   SkeletonCard,
   SkeletonCircle,
   ScreenContainer,
+  ErrorState,
 } from '../../components/ui';
 import {
   useWorkoutData,
@@ -564,6 +565,18 @@ export default function HomeScreen(): React.JSX.Element {
           onCheckItem={daily.checkItem}
           testID="home-daily-capsule"
         />
+        {daily.error ? (
+          <ErrorState
+            message={daily.error.message}
+            onRetry={
+              daily.error.code === 'AUTH_ERROR'
+                ? () => router.push('/(auth)/sign-in' as never)
+                : daily.fetchToday
+            }
+            retryLabel={daily.error.code === 'AUTH_ERROR' ? '로그인하기' : '다시 시도'}
+            testID="home-daily-capsule-error"
+          />
+        ) : null}
       </Animated.View>
 
       {/* 내재화 위젯 — CA 4-status 세그먼트 바 */}

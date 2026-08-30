@@ -175,14 +175,10 @@ export function ImageUploadSection({
             전신 사진 <span className="text-muted-foreground">(선택)</span>
           </p>
         </div>
-        {/*
-          정직성: 전신 사진이 없으면 체형 축은 자가입력(키·몸무게)을 쓰지 않고
-          시드 기반 예시 결과로 채워진다 (lib/analysis/integrated/internal/axis-adapters.ts,
-          bodyFallback). 자가입력을 실제 추정에 쓰는 구현(b안)은 제품 결정 D-d 대기 중이므로,
-          그 전까지 문구가 구현을 앞서가지 않도록 한다.
-        */}
-        <p className="mb-3 text-xs text-muted-foreground">
-          전신 사진이 없으면 체형은 예시 결과로 대체돼요
+        {/* 사진·자가입력 유무에 따라 예시 또는 미분석으로 갈리는 서버 계약을 제출 전에 알린다. */}
+        <p className="mb-3 text-xs text-muted-foreground" data-testid="body-input-guidance">
+          전신 사진 없이 신체 정보만 입력하면 낮은 신뢰도의 예시 결과를 표시하고, 신체 정보도 없으면
+          체형 분석을 건너뛰어요
         </p>
         {bodyPreview ? (
           <div className="relative">

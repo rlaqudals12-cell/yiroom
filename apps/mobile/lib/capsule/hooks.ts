@@ -55,9 +55,20 @@ export function useDailyCapsule(): UseDailyCapsuleReturn {
     };
   }, []);
 
-  const getAuthToken = useCallback(async (): Promise<string> => {
-    const token = await getTokenRef.current({ template: 'supabase' });
-    return token ?? '';
+  const getAuthToken = useCallback(async (): Promise<string | null> => {
+    let token: string | null = null;
+    try {
+      token = await getTokenRef.current({ template: 'supabase' });
+    } catch {
+      // 템플릿이 구성되지 않은 Clerk 환경에서도 기본 세션 토큰은 별도로 시도한다.
+    }
+    if (token) return token;
+
+    try {
+      return (await getTokenRef.current()) ?? null;
+    } catch {
+      return null;
+    }
   }, []);
 
   const fetchToday = useCallback(async () => {
@@ -65,6 +76,12 @@ export function useDailyCapsule(): UseDailyCapsuleReturn {
     setError(null);
     try {
       const token = await getAuthToken();
+      if (!token) {
+        if (mountedRef.current) {
+          setError({ code: 'AUTH_ERROR', message: '로그인이 필요합니다.' });
+        }
+        return;
+      }
       const result = await apiGetTodayDaily(token);
       if (!mountedRef.current) return;
       if (result.error) {
@@ -86,6 +103,12 @@ export function useDailyCapsule(): UseDailyCapsuleReturn {
     setError(null);
     try {
       const token = await getAuthToken();
+      if (!token) {
+        if (mountedRef.current) {
+          setError({ code: 'AUTH_ERROR', message: '로그인이 필요합니다.' });
+        }
+        return;
+      }
       const result = await apiGenerateDaily(token);
       if (!mountedRef.current) return;
       if (result.error) {
@@ -116,6 +139,13 @@ export function useDailyCapsule(): UseDailyCapsuleReturn {
 
       try {
         const token = await getAuthToken();
+        if (!token) {
+          if (mountedRef.current) {
+            setCapsule(prevCapsule);
+            setError({ code: 'AUTH_ERROR', message: '로그인이 필요합니다.' });
+          }
+          return;
+        }
         const result = await apiCheckItem(capsule.id, itemId, isChecked, token);
         if (!mountedRef.current) return;
         if (result.error) {

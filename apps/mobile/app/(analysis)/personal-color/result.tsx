@@ -38,7 +38,9 @@ import {
 import { StoredResultError } from '@/lib/analysis/stored-result-loader';
 import {
   getPersonalColorSubtypeLabel,
+  normalizePersonalColorAnalysisEvidence,
   normalizePersonalColorHexes,
+  normalizePersonalColorImageQuality,
   normalizePersonalColorSubtype,
   PersonalColorApiError,
   requestPersonalColorAnalysis,
@@ -53,6 +55,38 @@ const TONE_EXPLANATION: Record<PersonalColorReportSeasonInfo['tone'], string> = 
   warm: '피부 아래에 노란 기운이 도는 타입으로, 금색 주얼리와 따뜻한 색조가 잘 어울려요.',
   cool: '피부 아래에 파란 기운이 도는 타입으로, 은색 주얼리와 시원한 색조가 잘 어울려요.',
 };
+const VEIN_LABELS = {
+  blue: '파란색',
+  purple: '보라색',
+  green: '녹색',
+  olive: '올리브색',
+  mixed: '혼합',
+  unknown: '확인 어려움',
+} as const;
+const UNDERTONE_LABELS = {
+  yellow: '노란 기',
+  pink: '핑크 기',
+  olive: '올리브',
+  neutral: '중립',
+} as const;
+const CONTRAST_LABELS = {
+  low: '낮음',
+  medium: '중간',
+  high: '높음',
+  very_high: '매우 높음',
+} as const;
+const EYE_LABELS = {
+  light_brown: '밝은 갈색',
+  brown: '갈색',
+  dark_brown: '진한 갈색',
+  black: '검정색',
+} as const;
+const LIP_LABELS = { coral: '코랄', pink: '핑크', neutral: '중립' } as const;
+const LIGHTING_LABELS = {
+  natural: '자연광',
+  artificial: '실내 조명',
+  mixed: '혼합 조명',
+} as const;
 
 export default function PersonalColorResultScreen(): React.JSX.Element {
   const { getToken } = useAuth();
@@ -95,6 +129,8 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
           dbSaveFailed: false,
           analysisId: typeof row.id === 'string' ? row.id : undefined,
           analyzedAt: typeof row.created_at === 'string' ? row.created_at : undefined,
+          analysisEvidence: normalizePersonalColorAnalysisEvidence(imageAnalysis.analysisEvidence),
+          imageQuality: normalizePersonalColorImageQuality(imageAnalysis.imageQuality),
         };
         const usesStaticDiagnosisFallback =
           response.seasonSubtype === null ||
@@ -186,6 +222,41 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
     worstColors: result.worstColors.length > 0 ? result.worstColors : fallbackSeason.worstColors,
   };
   const description = result.description || season.description;
+  const evidenceRows: { label: string; value: string }[] = [];
+  if (!usedFallback) {
+    const evidence = result.analysisEvidence;
+    const imageQuality = result.imageQuality;
+    if (evidence?.veinColor) {
+      evidenceRows.push({ label: '혈관 색', value: VEIN_LABELS[evidence.veinColor] });
+    }
+    if (evidence?.skinUndertone) {
+      evidenceRows.push({ label: '언더톤', value: UNDERTONE_LABELS[evidence.skinUndertone] });
+    }
+    if (evidence?.skinHairContrast) {
+      evidenceRows.push({
+        label: '명암 대비',
+        value: CONTRAST_LABELS[evidence.skinHairContrast],
+      });
+    }
+    if (evidence?.eyeColor) {
+      evidenceRows.push({ label: '눈동자', value: EYE_LABELS[evidence.eyeColor] });
+    }
+    if (evidence?.lipNaturalColor) {
+      evidenceRows.push({ label: '입술 자연색', value: LIP_LABELS[evidence.lipNaturalColor] });
+    }
+    if (imageQuality?.lightingCondition) {
+      evidenceRows.push({
+        label: '조명',
+        value: LIGHTING_LABELS[imageQuality.lightingCondition],
+      });
+    }
+    if (imageQuality?.makeupDetected !== undefined) {
+      evidenceRows.push({
+        label: '메이크업 감지',
+        value: imageQuality.makeupDetected ? '감지됨' : '감지되지 않음',
+      });
+    }
+  }
   const makeupRows = getPersonalColorMakeupRows(season.tone);
   const topActions = buildPersonalColorTopActions({
     bestColors: season.bestColors,
@@ -198,10 +269,22 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
       title: '판정 근거',
       summary: description,
       content: (
-        <ReportTextList
-          items={[description, TONE_EXPLANATION[season.tone]]}
-          testID="pc-basis-list"
-        />
+        <View style={styles.evidenceGroup}>
+          <ReportTextList
+            items={[description, TONE_EXPLANATION[season.tone]]}
+            testID="pc-basis-list"
+          />
+          {evidenceRows.length > 0 ? (
+            <>
+              <ReportDivider testID="pc-evidence-divider" />
+              <ReportRowTable testID="pc-evidence-rows">
+                {evidenceRows.map((row) => (
+                  <ReportAttrRow key={row.label} label={row.label} value={row.value} />
+                ))}
+              </ReportRowTable>
+            </>
+          ) : null}
+        </View>
       ),
     },
     {

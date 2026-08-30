@@ -45,13 +45,31 @@ jest.mock('@/hooks/useHasClosetItems', () => ({
 }));
 
 jest.mock('@/components/ui', () => {
-  const { View } = require('react-native');
+  const { Pressable, Text, View } = require('react-native');
   return {
     ScreenContainer: ({ children, testID }: { children: React.ReactNode; testID?: string }) => (
       <View testID={testID}>{children}</View>
     ),
     GlassCard: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
       <View {...props}>{children}</View>
+    ),
+    ErrorState: ({
+      message,
+      onRetry,
+      retryLabel,
+      testID,
+    }: {
+      message: string;
+      onRetry: () => void;
+      retryLabel: string;
+      testID?: string;
+    }) => (
+      <View testID={testID}>
+        <Text>{message}</Text>
+        <Pressable accessibilityRole="button" onPress={onRetry}>
+          <Text>{retryLabel}</Text>
+        </Pressable>
+      </View>
     ),
   };
 });
@@ -60,6 +78,7 @@ import IntegratedResultScreen from '../../../app/(analysis)/integrated/result/[s
 
 const mockUseLocalSearchParams = useLocalSearchParams as unknown as jest.Mock;
 const mockRouterReplace = router.replace as jest.Mock;
+const mockRouterPush = router.push as jest.Mock;
 
 function buildResult(usedFallback: AxisCode[]): IntegratedAnalysisResult {
   return {
@@ -102,6 +121,8 @@ describe('통합 결과 화면 — 축별 Mock 고지 배선', () => {
         result: initialResult,
         isLoading: false,
         error: null,
+        stale: false,
+        reload: jest.fn(),
       })
     );
   });
@@ -157,6 +178,21 @@ describe('통합 결과 화면 — 축별 Mock 고지 배선', () => {
     expect(screen.getByTestId('action-plan-items')).toBeTruthy();
   });
 
+  it('뷰티팀 질문은 기본 접힘이고 칩을 누르면 질문을 프리필해 물어보기로 이동한다', () => {
+    setPayload(buildResult([]));
+    const screen = renderWithTheme(<IntegratedResultScreen />);
+
+    expect(screen.getByTestId('beauty-team-ask-section')).toBeTruthy();
+    expect(screen.queryByTestId('beauty-team-question-0')).toBeNull();
+    fireEvent.press(screen.getByTestId('beauty-team-ask-section-trigger'));
+    fireEvent.press(screen.getByTestId('beauty-team-question-0'));
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      pathname: '/(tabs)/ask',
+      params: { q: '오늘 면접인데 뭐 입으면 좋을까요?' },
+    });
+  });
+
   it('partial 결과는 미완료 축만 다시 분석하는 경로를 보존한다', () => {
     const partial = {
       ...buildResult([]),
@@ -205,6 +241,8 @@ describe('통합 결과 화면 — 축별 Mock 고지 배선', () => {
       result: historyResult,
       isLoading: false,
       error: null,
+      stale: false,
+      reload: jest.fn(),
     });
 
     renderWithTheme(<IntegratedResultScreen />);
@@ -224,6 +262,55 @@ describe('통합 결과 화면 — 축별 Mock 고지 배선', () => {
     const { queryByTestId } = renderWithTheme(<IntegratedResultScreen />);
 
     expect(queryByTestId('axis-fallback-notice')).toBeNull();
+  });
+
+  it('조회 오류에서는 다시 시도가 reload만 호출하고 새 분석으로 교체하지 않는다', () => {
+    const reload = jest.fn();
+    mockUseLocalSearchParams.mockReturnValue({ sessionId: 'offline-session' });
+    mockUseIntegratedSession.mockReturnValue({
+      result: null,
+      isLoading: false,
+      error: new Error('offline'),
+      stale: false,
+      reload,
+    });
+    const screen = renderWithTheme(<IntegratedResultScreen />);
+
+    fireEvent.press(screen.getByRole('button', { name: '다시 시도' }));
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(mockRouterReplace).not.toHaveBeenCalled();
+  });
+
+  it('세션이 없을 때만 기존 다시 시작 문구를 유지한다', () => {
+    mockUseLocalSearchParams.mockReturnValue({ sessionId: 'missing-session' });
+    mockUseIntegratedSession.mockReturnValue({
+      result: null,
+      isLoading: false,
+      error: null,
+      stale: false,
+      reload: jest.fn(),
+    });
+    const screen = renderWithTheme(<IntegratedResultScreen />);
+
+    expect(screen.getByText('세션을 찾을 수 없어요.')).toBeTruthy();
+    expect(screen.getByText('다시 시작')).toBeTruthy();
+    expect(screen.queryByText('다시 시도')).toBeNull();
+  });
+
+  it('캐시 결과를 쓰면 오프라인 마지막 결과 배너를 노출한다', () => {
+    const cached = buildResult([]);
+    mockUseLocalSearchParams.mockReturnValue({ sessionId: cached.sessionId });
+    mockUseIntegratedSession.mockReturnValue({
+      result: cached,
+      isLoading: false,
+      error: new Error('offline'),
+      stale: true,
+      reload: jest.fn(),
+    });
+    const screen = renderWithTheme(<IntegratedResultScreen />);
+
+    expect(screen.getByTestId('integrated-stale-banner')).toBeTruthy();
+    expect(screen.getByText('오프라인 — 마지막 결과예요')).toBeTruthy();
   });
 
   it('고지는 verdict(나 프로필) 아래에 배치된다', () => {

@@ -7,6 +7,7 @@ import {
   REPORT_COLORS,
 } from '@/components/analysis/report';
 import type { AxisCode, PersonaProfile } from '@/lib/api';
+import { BEAUTY_TEAM_QUICK_QUESTIONS } from '@/lib/coach';
 import { getHorizonLabel, type ActionPlan } from '@/lib/integrated/action-plan';
 import type { CrossInsights } from '@/lib/integrated/cross-insights';
 import type { Curation } from '@/lib/integrated/curation';
@@ -20,6 +21,11 @@ export interface IntegratedResultSectionsProps {
   curation: Curation;
   axesCompleted: AxisCode[];
 }
+
+const BEAUTY_TEAM_FOLLOW_UP_QUESTIONS = [
+  ...BEAUTY_TEAM_QUICK_QUESTIONS.style,
+  ...BEAUTY_TEAM_QUICK_QUESTIONS.color,
+] as const;
 
 /** 통합 결과의 설명·추천·후속 이동은 결론 뒤 기본 접힘으로 모은다. */
 export function IntegratedResultSections({
@@ -121,6 +127,29 @@ export function IntegratedResultSections({
           </View>
         </ReportEvidenceDisclosure>
       ) : null}
+
+      <ReportEvidenceDisclosure
+        summary={BEAUTY_TEAM_FOLLOW_UP_QUESTIONS[0]}
+        testID="beauty-team-ask-section"
+        title="뷰티팀에게 물어보기"
+      >
+        <View style={styles.questions}>
+          {BEAUTY_TEAM_FOLLOW_UP_QUESTIONS.map((question, index) => (
+            <Pressable
+              accessibilityLabel={question}
+              accessibilityRole="button"
+              key={question}
+              onPress={() =>
+                router.push({ pathname: '/(tabs)/ask', params: { q: question } } as never)
+              }
+              style={styles.questionChip}
+              testID={`beauty-team-question-${index}`}
+            >
+              <Text style={styles.questionText}>{question}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </ReportEvidenceDisclosure>
     </View>
   );
 }
@@ -157,5 +186,20 @@ const styles = StyleSheet.create({
     color: REPORT_COLORS.ink,
     fontSize: typography.size.xs,
     textDecorationLine: 'underline',
+  },
+  questions: {
+    gap: spacing.smd,
+  },
+  questionChip: {
+    borderColor: REPORT_COLORS.rule,
+    borderRadius: radii.xl,
+    borderWidth: StyleSheet.hairlineWidth,
+    minHeight: 44,
+    justifyContent: 'center',
+    padding: spacing.md,
+  },
+  questionText: {
+    color: REPORT_COLORS.ink,
+    fontSize: typography.size.sm,
   },
 });

@@ -171,6 +171,13 @@ interface ApiSuccessResponse {
   result: unknown;
 }
 
+export const INTEGRATED_REQUEST_TIMEOUT_MS = 90_000;
+
+interface IntegratedRequestOptions {
+  signal?: AbortSignal;
+  timeoutMs?: number;
+}
+
 /**
  * 웹 API 에러 응답에서 사용자 메시지·코드를 추출한다.
  *
@@ -220,9 +227,25 @@ function extractApiError(json: unknown): { message?: string; code?: string } {
 export async function requestIntegratedAnalysis(
   input: IntegratedAnalysisInput,
   clerkToken: string,
-  baseUrl?: string
+  baseUrl?: string,
+  options: IntegratedRequestOptions = {}
 ): Promise<IntegratedAnalysisResponse> {
   const url = getApiBaseUrl(baseUrl);
+  const controller = new AbortController();
+  const timeoutMs = options.timeoutMs ?? INTEGRATED_REQUEST_TIMEOUT_MS;
+  let timedOut = false;
+
+  const relayAbort = (): void => controller.abort();
+  if (options.signal?.aborted) {
+    controller.abort();
+  } else {
+    options.signal?.addEventListener('abort', relayAbort, { once: true });
+  }
+
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
 
   let response: Response;
   try {
@@ -235,9 +258,27 @@ export async function requestIntegratedAnalysis(
         'x-yiroom-client': 'mobile',
       },
       body: JSON.stringify(input),
+      signal: controller.signal,
     });
-  } catch (networkError) {
+  } catch {
+    if (timedOut) {
+      throw new IntegratedApiError(
+        '응답이 지연되고 있어요. 진행 중인 분석은 잠시 후 다시 확인해주세요.',
+        0,
+        'REQUEST_TIMEOUT'
+      );
+    }
+    if (controller.signal.aborted) {
+      throw new IntegratedApiError(
+        '분석 요청을 취소했어요. 진행 중인 분석은 다시 확인할 수 있어요.',
+        0,
+        'REQUEST_ABORTED'
+      );
+    }
     throw new IntegratedApiError('네트워크 연결을 확인해주세요.', 0, 'NETWORK_ERROR');
+  } finally {
+    clearTimeout(timeoutId);
+    options.signal?.removeEventListener('abort', relayAbort);
   }
 
   // 왜: JSON 파싱 실패해도 안전한 기본값 반환하도록 처리

@@ -10,10 +10,22 @@ import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, Palette, Sparkles, Droplets, Eye } from 'lucide-react-native';
 import { useState, useCallback, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, Image, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Image,
+  ActivityIndicator,
+  Alert,
+  Linking,
+} from 'react-native';
 
 import { getApiBaseUrl } from '../../../lib/api/base-url';
-import { requiresLegacyAndroidGalleryFallback } from '../../../lib/image/camera-fallback';
+import {
+  requiresLegacyAndroidGalleryFallback,
+  shouldBypassMediaLibraryPermissionGate,
+} from '../../../lib/image/camera-fallback';
 import { useTheme, brand } from '../../../lib/theme';
 import {
   LIP_PRESETS,
@@ -93,20 +105,38 @@ export default function VirtualTryOnScreen(): React.JSX.Element {
   const presets = getPresets(category);
 
   const pickImage = useCallback(async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') return;
+    try {
+      if (!shouldBypassMediaLibraryPermissionGate()) {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (permission.status !== 'granted') {
+          Alert.alert(
+            '사진 권한이 필요해요',
+            permission.canAskAgain === false
+              ? '설정에서 사진 접근 권한을 허용해 주세요.'
+              : '앨범에서 사진을 고르려면 사진 접근 권한을 허용해 주세요.',
+            [
+              { text: '취소', style: 'cancel' },
+              { text: '설정 열기', onPress: () => void Linking.openSettings() },
+            ]
+          );
+          return;
+        }
+      }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [3, 4],
-      quality: 0.8,
-    });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [3, 4],
+        quality: 0.8,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
-      setResultUri(null);
-      setSelectedColor(null);
+      if (!result.canceled && result.assets[0]) {
+        setImageUri(result.assets[0].uri);
+        setResultUri(null);
+        setSelectedColor(null);
+      }
+    } catch {
+      Alert.alert('사진 불러오기 실패', '다른 사진을 선택해 주세요.');
     }
   }, []);
 

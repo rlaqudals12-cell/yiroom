@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IntegratedResultReport } from '@/components/analysis/integrated';
 import { REPORT_COLORS } from '@/components/analysis/report';
+import { ErrorState } from '@/components/ui';
 import { useHasClosetItems } from '@/hooks/useHasClosetItems';
 import { useIntegratedSession } from '@/hooks/useIntegratedSession';
 import { trackAnalysisResultView } from '@/lib/analytics/tracker';
@@ -32,7 +33,7 @@ export default function IntegratedResultScreen(): React.JSX.Element {
     }
   }, [payload]);
 
-  const { result, isLoading, error } = useIntegratedSession(
+  const { result, isLoading, error, stale, reload } = useIntegratedSession(
     typeof sessionId === 'string' ? sessionId : null,
     initialResult
   );
@@ -64,12 +65,32 @@ export default function IntegratedResultScreen(): React.JSX.Element {
   }
 
   if (!result) {
+    if (error) {
+      return (
+        <SafeAreaView style={styles.ground} testID="integrated-result-error">
+          <View style={styles.state}>
+            <ErrorState
+              message="결과를 불러오지 못했어요. 연결을 확인한 뒤 다시 시도해주세요."
+              onRetry={reload}
+              retryLabel="다시 시도"
+              testID="integrated-result-retry"
+            />
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => router.replace('/(analysis)/integrated' as never)}
+              testID="integrated-result-new-analysis"
+            >
+              <Text style={styles.secondaryLink}>새 분석 시작하기</Text>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      );
+    }
+
     return (
       <SafeAreaView style={styles.ground} testID="integrated-result-error">
         <View style={styles.state}>
-          <Text style={styles.stateTitle}>
-            {error ? '결과를 불러오지 못했어요.' : '세션을 찾을 수 없어요.'}
-          </Text>
+          <Text style={styles.stateTitle}>세션을 찾을 수 없어요.</Text>
           <Text style={styles.stateText}>새 분석을 시작해주세요.</Text>
           <Pressable
             accessibilityRole="button"
@@ -83,7 +104,7 @@ export default function IntegratedResultScreen(): React.JSX.Element {
     );
   }
 
-  return <IntegratedResultReport hasClosetItems={hasClosetItems} result={result} />;
+  return <IntegratedResultReport hasClosetItems={hasClosetItems} result={result} stale={stale} />;
 }
 
 const styles = StyleSheet.create({
@@ -121,5 +142,10 @@ const styles = StyleSheet.create({
     color: REPORT_COLORS.paper,
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
+  },
+  secondaryLink: {
+    color: REPORT_COLORS.mutedInk,
+    fontSize: typography.size.sm,
+    textDecorationLine: 'underline',
   },
 });

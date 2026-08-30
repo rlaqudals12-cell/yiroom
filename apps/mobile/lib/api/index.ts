@@ -27,6 +27,7 @@ export {
   createIntegratedClientRequestId,
   isIntegratedAnalysisResult,
   IntegratedApiError,
+  INTEGRATED_REQUEST_TIMEOUT_MS,
 } from './integrated';
 
 // 단독 축 분석 HTTP 클라이언트 (웹 API 재사용 — ADR-118 thin client)

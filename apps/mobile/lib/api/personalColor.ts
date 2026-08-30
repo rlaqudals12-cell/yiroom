@@ -13,9 +13,9 @@
  */
 import type { PersonalColorSeason } from '@yiroom/shared';
 
-import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
+import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 
 // ============================================
 // 1. 타입
@@ -42,9 +42,25 @@ export interface PersonalColorApiResult {
   analysisId?: string;
   /** 서버 분석 시각 — 미저장 결과 신고 식별자에만 사용 */
   analyzedAt?: string;
+  /** 사진에서 확인된 판정 근거. 서버 허용 목록 밖 값은 응답 경계에서 버린다. */
+  analysisEvidence?: PersonalColorAnalysisEvidence;
+  /** 촬영 조건. 서버 허용 목록 밖 값은 응답 경계에서 버린다. */
+  imageQuality?: PersonalColorImageQuality;
 }
 
 export type PersonalColorSeasonSubtype = 'bright' | 'light' | 'true' | 'mute' | 'deep';
+export interface PersonalColorAnalysisEvidence {
+  veinColor?: 'blue' | 'purple' | 'green' | 'olive' | 'mixed' | 'unknown';
+  skinUndertone?: 'yellow' | 'pink' | 'olive' | 'neutral';
+  skinHairContrast?: 'low' | 'medium' | 'high' | 'very_high';
+  eyeColor?: 'light_brown' | 'brown' | 'dark_brown' | 'black';
+  lipNaturalColor?: 'coral' | 'pink' | 'neutral';
+}
+export interface PersonalColorImageQuality {
+  lightingCondition?: 'natural' | 'artificial' | 'mixed';
+  makeupDetected?: boolean;
+  analysisReliability?: 'high' | 'medium' | 'low';
+}
 
 export interface PersonalColorAnalysisInput {
   imageBase64: string;
@@ -106,6 +122,13 @@ const VALID_SUBTYPES: readonly PersonalColorSeasonSubtype[] = [
   'deep',
 ];
 const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;
+const VALID_VEIN_COLORS = ['blue', 'purple', 'green', 'olive', 'mixed', 'unknown'] as const;
+const VALID_UNDERTONES = ['yellow', 'pink', 'olive', 'neutral'] as const;
+const VALID_CONTRASTS = ['low', 'medium', 'high', 'very_high'] as const;
+const VALID_EYE_COLORS = ['light_brown', 'brown', 'dark_brown', 'black'] as const;
+const VALID_LIP_COLORS = ['coral', 'pink', 'neutral'] as const;
+const VALID_LIGHTING = ['natural', 'artificial', 'mixed'] as const;
+const VALID_RELIABILITY = ['high', 'medium', 'low'] as const;
 
 const SUBTYPE_LABELS: Record<PersonalColorSeasonSubtype, string> = {
   bright: '브라이트',
@@ -150,6 +173,50 @@ export function normalizePersonalColorSubtype(value: unknown): PersonalColorSeas
   return VALID_SUBTYPES.includes(canonical as PersonalColorSeasonSubtype)
     ? (canonical as PersonalColorSeasonSubtype)
     : null;
+}
+
+function normalizeEnum<const T extends readonly string[]>(
+  value: unknown,
+  allowed: T
+): T[number] | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim().toLowerCase();
+  return allowed.includes(normalized) ? (normalized as T[number]) : undefined;
+}
+
+/** 서버 result와 DB image_analysis 양쪽의 판정 근거를 같은 허용 목록으로 정규화한다. */
+export function normalizePersonalColorAnalysisEvidence(
+  value: unknown
+): PersonalColorAnalysisEvidence | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const raw = value as Record<string, unknown>;
+  const normalized: PersonalColorAnalysisEvidence = {};
+  const veinColor = normalizeEnum(raw.veinColor, VALID_VEIN_COLORS);
+  const skinUndertone = normalizeEnum(raw.skinUndertone, VALID_UNDERTONES);
+  const skinHairContrast = normalizeEnum(raw.skinHairContrast, VALID_CONTRASTS);
+  const eyeColor = normalizeEnum(raw.eyeColor, VALID_EYE_COLORS);
+  const lipNaturalColor = normalizeEnum(raw.lipNaturalColor, VALID_LIP_COLORS);
+  if (veinColor) normalized.veinColor = veinColor;
+  if (skinUndertone) normalized.skinUndertone = skinUndertone;
+  if (skinHairContrast) normalized.skinHairContrast = skinHairContrast;
+  if (eyeColor) normalized.eyeColor = eyeColor;
+  if (lipNaturalColor) normalized.lipNaturalColor = lipNaturalColor;
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+}
+
+/** 촬영 품질 정보는 열거형·boolean만 보존해 임의 라벨 노출을 막는다. */
+export function normalizePersonalColorImageQuality(
+  value: unknown
+): PersonalColorImageQuality | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const raw = value as Record<string, unknown>;
+  const normalized: PersonalColorImageQuality = {};
+  const lightingCondition = normalizeEnum(raw.lightingCondition, VALID_LIGHTING);
+  const analysisReliability = normalizeEnum(raw.analysisReliability, VALID_RELIABILITY);
+  if (lightingCondition) normalized.lightingCondition = lightingCondition;
+  if (typeof raw.makeupDetected === 'boolean') normalized.makeupDetected = raw.makeupDetected;
+  if (analysisReliability) normalized.analysisReliability = analysisReliability;
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
 }
 
 export function getPersonalColorSubtypeLabel(subtype: PersonalColorSeasonSubtype): string {
@@ -250,6 +317,16 @@ export async function requestPersonalColorAnalysis(
     normalizePersonalColorSubtype(result.seasonSubtype) ??
     normalizePersonalColorSubtype(data.season_subtype) ??
     normalizePersonalColorSubtype(imageAnalysis.seasonSubtype);
+  const resultEvidence = normalizePersonalColorAnalysisEvidence(result.analysisEvidence);
+  const storedEvidence = normalizePersonalColorAnalysisEvidence(imageAnalysis.analysisEvidence);
+  const resultImageQuality = normalizePersonalColorImageQuality(result.imageQuality);
+  const storedImageQuality = normalizePersonalColorImageQuality(imageAnalysis.imageQuality);
+  const analysisEvidence =
+    resultEvidence || storedEvidence ? { ...storedEvidence, ...resultEvidence } : undefined;
+  const imageQuality =
+    resultImageQuality || storedImageQuality
+      ? { ...storedImageQuality, ...resultImageQuality }
+      : undefined;
 
   const analysis: PersonalColorApiResult = {
     season,
@@ -268,6 +345,8 @@ export async function requestPersonalColorAnalysis(
     dbSaveFailed: obj.dbSaveFailed === true,
     analysisId: typeof data.id === 'string' ? data.id : undefined,
     analyzedAt: typeof result.analyzedAt === 'string' ? result.analyzedAt : undefined,
+    analysisEvidence,
+    imageQuality,
   };
   void trackAnalysisComplete(
     'personal-color',

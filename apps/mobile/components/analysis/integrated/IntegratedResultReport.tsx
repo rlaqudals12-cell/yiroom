@@ -37,6 +37,7 @@ const AXIS_LABELS: Record<AxisCode, string> = {
 export interface IntegratedResultReportProps {
   result: IntegratedAnalysisResult;
   hasClosetItems?: boolean;
+  stale?: boolean;
 }
 
 function axisDataOrNull<T>(axis: AxisResult<T>): T | null {
@@ -47,6 +48,7 @@ function axisDataOrNull<T>(axis: AxisResult<T>): T | null {
 export function IntegratedResultReport({
   result,
   hasClosetItems,
+  stale = false,
 }: IntegratedResultReportProps): React.JSX.Element {
   const palette = extractPalette(result.axes.personalColor);
   const persona = result.persona;
@@ -60,6 +62,13 @@ export function IntegratedResultReport({
     <SafeAreaView edges={['top']} style={styles.ground} testID="integrated-result-screen">
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.sheet}>
+          {stale ? (
+            <View accessibilityRole="alert" style={styles.notice} testID="integrated-stale-banner">
+              <Text style={styles.noticeTitle}>오프라인 — 마지막 결과예요</Text>
+              <Text style={styles.noticeText}>연결되면 최신 결과를 다시 확인할 수 있어요.</Text>
+            </View>
+          ) : null}
+
           <View testID="persona-narrative-card">
             <ReportHero
               eyebrow="통합 분석 결과"

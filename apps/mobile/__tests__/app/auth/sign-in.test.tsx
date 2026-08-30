@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import { Alert } from 'react-native';
+import { Alert, Linking } from 'react-native';
 
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
@@ -235,6 +235,15 @@ describe('SignInScreen', () => {
       expect(mockPush).toHaveBeenCalledWith('/(auth)/sign-up');
     });
 
+    it('비밀번호 재설정 링크를 표시하고 재설정 화면으로 이동한다', () => {
+      const { getByTestId, getByText } = renderWithTheme(<SignInScreen />);
+
+      expect(getByText('비밀번호를 잊으셨나요?')).toBeTruthy();
+      fireEvent.press(getByTestId('signin-forgot-password-link'));
+
+      expect(mockPush).toHaveBeenCalledWith('/(auth)/forgot-password');
+    });
+
     it('이메일/비밀번호 미입력 시 알림을 표시한다', () => {
       const alertSpy = jest.spyOn(Alert, 'alert');
       const { getByTestId } = renderWithTheme(<SignInScreen />);
@@ -390,7 +399,8 @@ describe('SignInScreen', () => {
       await waitFor(() => {
         expect(alertSpy).toHaveBeenCalledWith(
           '추가 인증 필요',
-          '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.'
+          '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.',
+          expect.any(Array)
         );
       });
     });
@@ -413,9 +423,31 @@ describe('SignInScreen', () => {
         expect(mockPrepareFirstFactor).not.toHaveBeenCalled();
         expect(alertSpy).toHaveBeenCalledWith(
           '추가 인증 필요',
-          '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.'
+          '추가 인증이 필요한 계정이에요. 웹(yiroom.vercel.app)에서 로그인해주세요.',
+          expect.any(Array)
         );
       });
+    });
+
+    it('지원하지 않는 추가 인증에서 웹 로그인 버튼이 실제 로그인 URL을 연다', async () => {
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      const openUrlSpy = jest.spyOn(Linking, 'openURL').mockResolvedValueOnce(true);
+      mockSignInCreate.mockResolvedValueOnce({
+        status: 'needs_first_factor',
+        supportedFirstFactors: [{ strategy: 'reset_password_email_code' }],
+      });
+
+      const { getByTestId } = renderWithTheme(<SignInScreen />);
+      fireEvent.changeText(getByTestId('signin-email-input'), 'test@example.com');
+      fireEvent.changeText(getByTestId('signin-password-input'), 'password123');
+      fireEvent.press(getByTestId('signin-submit-button'));
+
+      await waitFor(() => expect(alertSpy).toHaveBeenCalled());
+      const buttons = alertSpy.mock.calls.at(-1)?.[2];
+      expect(buttons?.map((button) => button.text)).toEqual(['웹에서 로그인', '닫기']);
+      buttons?.[0]?.onPress?.();
+
+      expect(openUrlSpy).toHaveBeenCalledWith('https://yiroom.vercel.app/sign-in');
     });
   });
 

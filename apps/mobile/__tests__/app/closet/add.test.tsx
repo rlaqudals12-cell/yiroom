@@ -77,8 +77,10 @@ jest.mock('expo-image-picker', () => ({
 }));
 
 const mockRequiresLegacyAndroidGalleryFallback = jest.fn(() => false);
+const mockShouldBypassMediaLibraryPermissionGate = jest.fn(() => false);
 jest.mock('../../../lib/image/camera-fallback', () => ({
   requiresLegacyAndroidGalleryFallback: () => mockRequiresLegacyAndroidGalleryFallback(),
+  shouldBypassMediaLibraryPermissionGate: () => mockShouldBypassMediaLibraryPermissionGate(),
 }));
 
 jest.mock('../../../lib/animations', () => ({
@@ -187,6 +189,7 @@ describe('ClosetAddScreen 렌더링', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(false);
+    mockShouldBypassMediaLibraryPermissionGate.mockReturnValue(false);
   });
 
   it('화면이 testID "closet-add-screen"으로 렌더링된다', () => {
@@ -213,6 +216,7 @@ describe('ClosetAddScreen 구형 Android 카메라 폴백', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(false);
+    mockShouldBypassMediaLibraryPermissionGate.mockReturnValue(false);
   });
 
   it('Android 9 이하에서는 카메라를 열지 않고 앨범 선택을 안내한다', async () => {
@@ -240,6 +244,16 @@ describe('ClosetAddScreen 구형 Android 카메라 폴백', () => {
     });
 
     alertSpy.mockRestore();
+  });
+
+  it('Android API 29~32에서는 권한 API를 호출하지 않고 앨범을 연다', async () => {
+    mockShouldBypassMediaLibraryPermissionGate.mockReturnValue(true);
+    const { getByText } = renderWithTheme(<ClosetAddScreen />);
+
+    fireEvent.press(getByText('🖼️ 앨범'));
+
+    await waitFor(() => expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledTimes(1));
+    expect(ImagePicker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
   });
 });
 

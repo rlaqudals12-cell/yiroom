@@ -16,7 +16,7 @@
 
 import { useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
-import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import { SignedIn, SignedOut, SignUpButton } from '@clerk/nextjs';
 import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -182,11 +182,15 @@ export function LandingContent(): React.JSX.Element {
 
                 <div className="mt-8 flex flex-wrap items-center gap-4">
                   <SignedOut>
-                    <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
+                    <SignUpButton
+                      mode="modal"
+                      forceRedirectUrl="/analysis/integrated?onboarding=1"
+                      signInForceRedirectUrl="/analysis/integrated"
+                    >
                       <Button className={`h-12 px-7 text-sm md:h-13 md:text-base ${CTA_SOLID}`}>
                         {t('startFree')}
                       </Button>
-                    </SignInButton>
+                    </SignUpButton>
                   </SignedOut>
                   <SignedIn>
                     <Link href="/home">
@@ -291,7 +295,11 @@ export function LandingContent(): React.JSX.Element {
                 중간 CTA는 텍스트 링크로 강등해 위계를 지킨다(문구는 3곳 통일) */}
             <div className="mt-5 flex justify-center">
               <SignedOut>
-                <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
+                <SignUpButton
+                  mode="modal"
+                  forceRedirectUrl="/analysis/integrated?onboarding=1"
+                  signInForceRedirectUrl="/analysis/integrated"
+                >
                   <button
                     type="button"
                     className="flex items-center gap-1 text-sm font-medium text-[#C56A84] transition-colors hover:text-[#A85870]"
@@ -299,7 +307,7 @@ export function LandingContent(): React.JSX.Element {
                     {t('paletteCta')}
                     <ChevronRight className="h-4 w-4" />
                   </button>
-                </SignInButton>
+                </SignUpButton>
               </SignedOut>
               <SignedIn>
                 <Link
@@ -419,11 +427,15 @@ export function LandingContent(): React.JSX.Element {
               </p>
               <div className="mt-9">
                 <SignedOut>
-                  <SignInButton mode="modal" forceRedirectUrl="/analysis/integrated">
+                  <SignUpButton
+                    mode="modal"
+                    forceRedirectUrl="/analysis/integrated?onboarding=1"
+                    signInForceRedirectUrl="/analysis/integrated"
+                  >
                     <Button className={`h-13 px-9 text-base ${CTA_SOLID}`}>
                       {t('bottomCtaSignUp')}
                     </Button>
-                  </SignInButton>
+                  </SignUpButton>
                 </SignedOut>
                 <SignedIn>
                   <Link href="/analysis/integrated">

@@ -18,13 +18,17 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import { uploadInventoryImage, InventoryUploadError } from '@/lib/api';
-import { requiresLegacyAndroidGalleryFallback } from '@/lib/image/camera-fallback';
+import {
+  requiresLegacyAndroidGalleryFallback,
+  shouldBypassMediaLibraryPermissionGate,
+} from '@/lib/image/camera-fallback';
 import { downscaleToUri } from '@/lib/image/downscale';
 import {
   buildClosetMetadata,
@@ -122,22 +126,37 @@ export default function ClosetAddScreen() {
 
   // 이미지 선택
   const handleImagePick = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    try {
+      if (!shouldBypassMediaLibraryPermissionGate()) {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (status !== 'granted') {
-      Alert.alert('권한 필요', '사진 접근 권한이 필요합니다.');
-      return;
-    }
+        if (permission.status !== 'granted') {
+          Alert.alert(
+            '사진 권한이 필요해요',
+            permission.canAskAgain === false
+              ? '설정에서 사진 접근 권한을 허용해 주세요.'
+              : '앨범에서 사진을 고르려면 사진 접근 권한을 허용해 주세요.',
+            [
+              { text: '취소', style: 'cancel' },
+              { text: '설정 열기', onPress: () => void Linking.openSettings() },
+            ]
+          );
+          return;
+        }
+      }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [3, 4],
-      quality: 0.8,
-    });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [3, 4],
+        quality: 0.8,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      setFormData((prev) => ({ ...prev, imageUri: result.assets[0].uri }));
+      if (!result.canceled && result.assets[0]) {
+        setFormData((prev) => ({ ...prev, imageUri: result.assets[0].uri }));
+      }
+    } catch {
+      Alert.alert('사진 불러오기 실패', '다른 사진을 선택해 주세요.');
     }
   };
 

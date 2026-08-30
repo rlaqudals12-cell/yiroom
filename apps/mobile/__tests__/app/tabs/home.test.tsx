@@ -60,6 +60,16 @@ type MockUserAnalysesState = Omit<ReturnType<typeof createUserAnalysesState>, 'p
 };
 
 let mockUserAnalysesState: MockUserAnalysesState = createUserAnalysesState();
+let mockDailyCapsuleState = {
+  capsule: null,
+  isLoading: false,
+  isGenerating: false,
+  error: null as { code: string; message: string } | null,
+  completionRate: 0,
+  fetchToday: jest.fn(async () => undefined),
+  generate: jest.fn(async () => undefined),
+  checkItem: jest.fn(async () => undefined),
+};
 
 // 온보딩 완료 상태로 mock (홈 화면 렌더링 전제)
 jest.mock('../../../lib/onboarding', () => ({
@@ -210,17 +220,12 @@ jest.mock('../../../components/capsule/DailyCapsuleCard', () => {
 
 // 캡슐 hooks mock
 jest.mock('../../../lib/capsule/hooks', () => ({
-  useDailyCapsule: jest.fn(() => ({
-    capsule: null,
-    isLoading: false,
-    refresh: jest.fn(),
-    fetchToday: jest.fn(),
-  })),
+  useDailyCapsule: jest.fn(() => mockDailyCapsuleState),
 }));
 
 // UI 컴포넌트 mock
 jest.mock('../../../components/ui', () => {
-  const { View, Text } = require('react-native');
+  const { Pressable, View, Text } = require('react-native');
   return {
     GradientCard: ({
       children,
@@ -269,6 +274,24 @@ jest.mock('../../../components/ui', () => {
       testID?: string;
       [key: string]: unknown;
     }) => <View testID={testID}>{children}</View>,
+    ErrorState: ({
+      message,
+      onRetry,
+      retryLabel,
+      testID,
+    }: {
+      message: string;
+      onRetry: () => void;
+      retryLabel: string;
+      testID?: string;
+    }) => (
+      <View testID={testID}>
+        <Text>{message}</Text>
+        <Pressable accessibilityRole="button" onPress={onRetry}>
+          <Text>{retryLabel}</Text>
+        </Pressable>
+      </View>
+    ),
   };
 });
 
@@ -385,6 +408,16 @@ describe('HomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUserAnalysesState = createUserAnalysesState();
+    mockDailyCapsuleState = {
+      capsule: null,
+      isLoading: false,
+      isGenerating: false,
+      error: null,
+      completionRate: 0,
+      fetchToday: jest.fn(async () => undefined),
+      generate: jest.fn(async () => undefined),
+      checkItem: jest.fn(async () => undefined),
+    };
   });
 
   describe('기본 렌더링', () => {
@@ -439,6 +472,19 @@ describe('HomeScreen', () => {
     it('브리핑 섹션(HomeBriefing)이 마운트된다', () => {
       const { getByTestId } = renderWithTheme(<HomeScreen />);
       expect(getByTestId('home-briefing')).toBeTruthy();
+    });
+
+    it('캡슐 인증 오류는 사유와 로그인 CTA를 카드 바로 아래 노출한다', () => {
+      mockDailyCapsuleState = {
+        ...mockDailyCapsuleState,
+        error: { code: 'AUTH_ERROR', message: '로그인이 필요합니다.' },
+      };
+      const screen = renderWithTheme(<HomeScreen />);
+
+      expect(screen.getByTestId('home-daily-capsule-error')).toBeTruthy();
+      expect(screen.getByText('로그인이 필요합니다.')).toBeTruthy();
+      fireEvent.press(screen.getByRole('button', { name: '로그인하기' }));
+      expect(mockRouterPush).toHaveBeenCalledWith('/(auth)/sign-in');
     });
 
     it('히어로와 브리핑에 같은 서버 인사 소스를 전달한다', () => {

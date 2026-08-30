@@ -5,6 +5,7 @@
  */
 
 import { renderHook, waitFor } from '@testing-library/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Clerk mock
 jest.mock('@clerk/clerk-expo', () => ({
@@ -20,11 +21,10 @@ const mockMaybeSingle = jest.fn();
 const mockEq = jest.fn(() => ({ maybeSingle: mockMaybeSingle }));
 const mockSelect = jest.fn(() => ({ eq: mockEq }));
 const mockFrom = jest.fn(() => ({ select: mockSelect }));
+const mockSupabase = { from: mockFrom };
 
 jest.mock('@/lib/supabase', () => ({
-  useClerkSupabaseClient: () => ({
-    from: mockFrom,
-  }),
+  useClerkSupabaseClient: () => mockSupabase,
 }));
 
 import { useIntegratedSession } from '@/hooks/useIntegratedSession';
@@ -68,8 +68,9 @@ const initialResult: IntegratedAnalysisResult = {
 };
 
 describe('useIntegratedSession', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
+    await AsyncStorage.clear();
   });
 
   it('initialResult 있으면 네트워크 호출 생략하고 즉시 반환', async () => {
@@ -81,7 +82,14 @@ describe('useIntegratedSession', () => {
       expect(result.current.isLoading).toBe(false);
     });
     expect(result.current.result).toEqual(initialResult);
+    expect(result.current.stale).toBe(false);
     expect(mockFrom).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        `integrated-session:${initialResult.sessionId}`,
+        JSON.stringify(initialResult)
+      );
+    });
   });
 
   it('sessionId가 null이면 빈 결과 + 로딩 끝', async () => {
@@ -92,6 +100,25 @@ describe('useIntegratedSession', () => {
     });
     expect(result.current.result).toBeNull();
     expect(result.current.error).toBeNull();
+  });
+
+  it('조회 실패 시 sessionId 캐시를 stale 결과로 돌려준다', async () => {
+    const cachedResult = { ...initialResult, sessionId: 'cached-session' };
+    await AsyncStorage.setItem('integrated-session:cached-session', JSON.stringify(cachedResult));
+    jest.clearAllMocks();
+    mockMaybeSingle.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'Network request failed' },
+    });
+
+    const { result } = renderHook(() => useIntegratedSession('cached-session', null));
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.stale).toBe(true);
+    });
+    expect(result.current.result).toEqual(cachedResult);
+    expect(result.current.error?.message).toBe('Network request failed');
   });
 
   it('Supabase 조회 성공 → 세션 + 5축 결과 조합', async () => {

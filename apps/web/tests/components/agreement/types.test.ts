@@ -9,6 +9,7 @@ import {
   REQUIRED_AGREEMENT_IDS,
   CURRENT_TERMS_VERSION,
   CURRENT_PRIVACY_VERSION,
+  CURRENT_BIOMETRIC_VERSION,
   mapDbAgreementToFrontend,
 } from '@/components/agreement/types';
 
@@ -39,6 +40,9 @@ describe('AGREEMENT_ITEMS', () => {
     expect(biometric?.label).toBe('생체정보(얼굴·체형 이미지) 수집·이용 동의');
     expect(biometric?.required).toBe(true);
     expect(biometric?.detailUrl).toBe('/privacy');
+    expect(biometric?.description).toContain('기본 꺼짐');
+    expect(biometric?.description).toContain('1년');
+    expect(biometric?.description).not.toContain('탈퇴 시까지 보관');
   });
 
   it('마케팅 항목이 포함되어 있다', () => {
@@ -72,6 +76,10 @@ describe('버전 상수', () => {
 
   it('개인정보처리방침 버전이 정의되어 있다', () => {
     expect(CURRENT_PRIVACY_VERSION).toBe('1.0');
+  });
+
+  it('생체정보 동의 버전은 원본 저장 계약 변경분이다', () => {
+    expect(CURRENT_BIOMETRIC_VERSION).toBe('1.2');
   });
 });
 

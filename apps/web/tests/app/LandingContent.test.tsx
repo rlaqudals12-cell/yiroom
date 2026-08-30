@@ -24,7 +24,23 @@ vi.mock('@/lib/share/tone-palettes', async (importOriginal) => {
 vi.mock('@clerk/nextjs', () => ({
   SignedOut: ({ children }: { children: React.ReactNode }) => children,
   SignedIn: () => null,
-  SignInButton: ({ children }: { children: React.ReactNode }) => children,
+  SignUpButton: ({
+    children,
+    forceRedirectUrl,
+    signInForceRedirectUrl,
+  }: {
+    children: React.ReactNode;
+    forceRedirectUrl?: string;
+    signInForceRedirectUrl?: string;
+  }) => (
+    <div
+      data-testid="clerk-sign-up-button"
+      data-force-redirect-url={forceRedirectUrl}
+      data-sign-in-force-redirect-url={signInForceRedirectUrl}
+    >
+      {children}
+    </div>
+  ),
 }));
 
 import { LandingContent } from '@/app/LandingContent';
@@ -87,6 +103,18 @@ describe('LandingContent — 랜딩 구조', () => {
     const paletteCta = screen.getByRole('button', { name: /paletteCta/ });
     expect(paletteCta.className).not.toContain('bg-[#EC4899]');
     expect(paletteCta.className).toContain('text-[#C56A84]');
+  });
+
+  it('로그아웃 CTA 3곳은 가입 모달을 거쳐 온보딩으로 이동한다', () => {
+    render(<LandingContent />);
+
+    const signUpCtas = screen.getAllByTestId('clerk-sign-up-button');
+    expect(signUpCtas).toHaveLength(3);
+    signUpCtas.forEach((cta) => {
+      expect(cta).toHaveAttribute('data-force-redirect-url', '/analysis/integrated?onboarding=1');
+      // 가입 모달에서 기존 계정으로 전환한 사용자는 일반 분석 진입으로 보낸다.
+      expect(cta).toHaveAttribute('data-sign-in-force-redirect-url', '/analysis/integrated');
+    });
   });
 
   it('미리보기 스크롤러가 그림자 여유(py-6 -my-6)와 소형 뷰포트 축소를 갖는다', () => {

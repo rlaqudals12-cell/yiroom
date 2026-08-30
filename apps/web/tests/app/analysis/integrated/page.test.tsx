@@ -492,6 +492,9 @@ describe('IntegratedAnalysisInputPage — 사전 고지 문구', () => {
       '체형 분석은 이번에 건너뛰어요. 전신 사진 또는 신체 정보가 필요해요.'
     );
     expect(screen.getByTestId('body-skip-notice')).not.toHaveTextContent('예시');
+    expect(
+      screen.queryByText('전신 사진이 없으면 체형은 예시 결과로 대체돼요')
+    ).not.toBeInTheDocument();
   });
 
   it('전신 사진을 올리면 체형 스킵 고지가 사라진다', () => {

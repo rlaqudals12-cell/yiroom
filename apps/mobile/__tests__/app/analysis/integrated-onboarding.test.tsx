@@ -10,15 +10,15 @@ import { fireEvent, waitFor } from '@testing-library/react-native';
 
 import { renderWithTheme } from '../../helpers/test-utils';
 
-const mockDownscaleToDataUrl = jest
-  .fn()
-  .mockResolvedValue('data:image/jpeg;base64,DOWNSCALED');
+const mockDownscaleToDataUrl = jest.fn().mockResolvedValue('data:image/jpeg;base64,DOWNSCALED');
 
 // --- 공통 mock ---
 
 jest.mock('expo-image-picker', () => ({
   requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  requestCameraPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
   launchImageLibraryAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
+  launchCameraAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
   MediaTypeOptions: { Images: 'Images' },
 }));
 
@@ -118,6 +118,19 @@ describe('IntegratedAnalysisInputScreen — 가입=첫 미팅(ADR-114)', () => {
     expect(queryByTestId('onboarding-skip-button')).toBeNull();
   });
 
+  it('생체정보 동의 전에 원본 저장의 기본 OFF·보관·파기 조건을 알린다', async () => {
+    mockUseLocalSearchParams.mockReturnValue({});
+    const { fetchAgreementStatus } = require('@/lib/api');
+    fetchAgreementStatus.mockResolvedValueOnce({ hasAgreed: false });
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+
+    await screen.findByTestId('agreement-section');
+    expect(screen.getByText(/원본 사진 저장은 분석 화면에서 별도 선택\(기본 꺼짐\)/)).toBeTruthy();
+    expect(screen.getByText(/저장에 동의한 경우에만 1년 보관 후 자동 파기/)).toBeTruthy();
+    expect(screen.getByText(/동의 철회·회원 탈퇴 시 즉시 파기/)).toBeTruthy();
+  });
+
   it('전신 사진이 없으면 키 입력 결과도 예시이며 신뢰도가 낮다고 먼저 알린다', () => {
     mockUseLocalSearchParams.mockReturnValue({});
 
@@ -147,9 +160,9 @@ describe('IntegratedAnalysisInputScreen — 가입=첫 미팅(ADR-114)', () => {
       .mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///body-original.jpg' }] });
 
     const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
-    fireEvent.press(screen.getAllByText('사진 선택')[0]);
+    fireEvent.press(screen.getByTestId('face-library-button'));
     await screen.findByLabelText('얼굴 사진 제거');
-    fireEvent.press(screen.getAllByText('사진 선택')[0]);
+    fireEvent.press(screen.getByTestId('body-library-button'));
     await screen.findByLabelText('전신 사진 제거');
 
     await waitFor(() => expect(mockDownscaleToDataUrl).toHaveBeenCalledTimes(2));

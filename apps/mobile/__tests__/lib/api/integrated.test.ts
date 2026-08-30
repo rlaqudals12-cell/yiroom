@@ -222,6 +222,42 @@ describe('requestIntegratedAnalysis', () => {
     });
   });
 
+  it('멎은 응답은 상한 초과 시 abort되고 재시도 가능한 status 0 에러가 된다', async () => {
+    jest.useFakeTimers();
+    let requestSignal: AbortSignal | undefined;
+    global.fetch = jest.fn((_url: string, init?: RequestInit) => {
+      requestSignal = init?.signal ?? undefined;
+      return new Promise((_resolve, reject) => {
+        requestSignal?.addEventListener(
+          'abort',
+          () => {
+            const error = new Error('aborted');
+            error.name = 'AbortError';
+            reject(error);
+          },
+          { once: true }
+        );
+      });
+    }) as unknown as typeof fetch;
+
+    try {
+      const request = requestIntegratedAnalysis(validInput, 'token', 'http://test', {
+        timeoutMs: 100,
+      });
+      jest.advanceTimersByTime(100);
+
+      await expect(request).rejects.toMatchObject({
+        name: 'IntegratedApiError',
+        status: 0,
+        code: 'REQUEST_TIMEOUT',
+        message: expect.stringContaining('응답이 지연'),
+      });
+      expect(requestSignal?.aborted).toBe(true);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('base URL 미설정이면 CONFIG_ERROR 대신 프로덕션 웹으로 폴백한다', async () => {
     // 왜: 두 env 어느 것도 실제 빌드에 설정된 적이 없다. 설정 누락을 에러로 처리하던
     // 옛 계약은 EAS 빌드에서 분석을 전멸시켰다 — 이제는 프로덕션 웹으로 붙는다.

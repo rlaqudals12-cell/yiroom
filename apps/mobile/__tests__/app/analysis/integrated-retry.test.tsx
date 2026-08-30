@@ -7,7 +7,7 @@
  * 그 축만 재실행하는지 검증. 재시도 컨텍스트가 아니면 복원하지 않는지도 확인.
  */
 import React from 'react';
-import { fireEvent, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { renderWithTheme } from '../../helpers/test-utils';
@@ -18,6 +18,9 @@ const mockTrackAnalysisStart = jest.fn();
 const mockTrackAnalysisComplete = jest.fn();
 const mockGetToken = jest.fn().mockResolvedValue('mock_jwt_token');
 const mockPendingRefetch = jest.fn();
+const mockDownscaleToDataUrl = jest.fn().mockResolvedValue('data:image/jpeg;base64,DOWNSCALED');
+const mockRequiresLegacyAndroidGalleryFallback = jest.fn(() => false);
+const mockShouldBypassMediaLibraryPermissionGate = jest.fn(() => false);
 const mockUsePendingIntegratedSession: jest.Mock = jest.fn((requestId: string | null) => ({
   session: null,
   isLoading: false,
@@ -39,9 +42,24 @@ jest.mock('@/hooks/usePendingIntegratedSession', () => ({
 // --- 공통 mock ---
 
 jest.mock('expo-image-picker', () => ({
-  requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  requestMediaLibraryPermissionsAsync: jest
+    .fn()
+    .mockResolvedValue({ status: 'granted', canAskAgain: true }),
+  requestCameraPermissionsAsync: jest
+    .fn()
+    .mockResolvedValue({ status: 'granted', canAskAgain: true }),
   launchImageLibraryAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
+  launchCameraAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
   MediaTypeOptions: { Images: 'Images' },
+}));
+
+jest.mock('@/lib/image/camera-fallback', () => ({
+  requiresLegacyAndroidGalleryFallback: () => mockRequiresLegacyAndroidGalleryFallback(),
+  shouldBypassMediaLibraryPermissionGate: () => mockShouldBypassMediaLibraryPermissionGate(),
+}));
+
+jest.mock('@/lib/image/downscale', () => ({
+  downscaleToDataUrl: (...args: unknown[]) => mockDownscaleToDataUrl(...args),
 }));
 
 jest.mock('@/hooks/useUserAnalyses', () => ({
@@ -65,11 +83,14 @@ jest.mock('@/lib/api', () => ({
   createIntegratedClientRequestId: jest.fn(() => '11111111-2222-4333-8444-555555555555'),
   IntegratedApiError: class IntegratedApiError extends Error {
     status: number;
-    constructor(message: string, status: number) {
+    code: string | undefined;
+    constructor(message: string, status: number, code?: string) {
       super(message);
       this.status = status;
+      this.code = code;
     }
   },
+  INTEGRATED_REQUEST_TIMEOUT_MS: 90_000,
   // 게이트는 이미 충족된 것으로 응답해 생년월일·동의 섹션이 뜨지 않게 함(재시도 흐름에 집중).
   fetchBirthdate: jest.fn().mockResolvedValue({ birthDate: '2000-01-01', hasBirthDate: true }),
   saveBirthdate: jest.fn().mockResolvedValue(undefined),
@@ -94,6 +115,8 @@ jest.mock('@/components/ui', () => {
 });
 
 import { router, useLocalSearchParams } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { Alert, Linking } from 'react-native';
 import { requestIntegratedAnalysis } from '@/lib/api';
 
 import IntegratedAnalysisInputScreen from '../../../app/(analysis)/integrated/index';
@@ -128,6 +151,25 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
     });
     const { useAuth } = require('@clerk/clerk-expo');
     mockGetToken.mockResolvedValue('mock_jwt_token');
+    mockDownscaleToDataUrl.mockResolvedValue('data:image/jpeg;base64,DOWNSCALED');
+    mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(false);
+    mockShouldBypassMediaLibraryPermissionGate.mockReturnValue(false);
+    (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: 'granted',
+      canAskAgain: true,
+    });
+    (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: 'granted',
+      canAskAgain: true,
+    });
+    (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+      canceled: true,
+      assets: [],
+    });
+    (ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValue({
+      canceled: true,
+      assets: [],
+    });
     useAuth.mockImplementation(() => ({
       isLoaded: true,
       isSignedIn: true,
@@ -147,6 +189,11 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
       axesCompleted: ['hair', 'makeup'],
       usedFallback: [],
     });
+    const api = require('@/lib/api');
+    api.saveBirthdate.mockResolvedValue(undefined);
+    api.saveAgreement.mockResolvedValue(undefined);
+    api.evaluateBirthdateGate.mockReturnValue({ ok: true, needsSave: false });
+    api.evaluateAgreementGate.mockReturnValue({ ok: true, needsSave: false });
   });
 
   afterEach(() => {
@@ -420,5 +467,328 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
 
     await waitFor(() => expect(mockRequest).toHaveBeenCalledTimes(1));
     expect(createIntegratedClientRequestId).toHaveBeenCalledTimes(1);
+  });
+
+  it('얼굴 사진 찍기는 카메라를 열고 1024px 축소 결과를 폼에 채운다', async () => {
+    mockUseLocalSearchParams.mockReturnValue({});
+    (ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: 'file://face-camera.jpg' }],
+    });
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    fireEvent.press(screen.getByTestId('face-camera-button'));
+
+    await waitFor(() => expect(screen.getByLabelText('얼굴 사진 제거')).toBeTruthy());
+    expect(ImagePicker.launchCameraAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ aspect: [1, 1], quality: 0.7 })
+    );
+    expect(mockDownscaleToDataUrl).toHaveBeenCalledWith('file://face-camera.jpg', 1024);
+  });
+
+  it('카메라 권한 거부 시 앨범 대안으로 이어진다', async () => {
+    mockUseLocalSearchParams.mockReturnValue({});
+    (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValueOnce({
+      status: 'denied',
+      canAskAgain: false,
+    });
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+
+    try {
+      const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+      fireEvent.press(screen.getByTestId('face-camera-button'));
+
+      await waitFor(() => expect(alertSpy).toHaveBeenCalled());
+      expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
+      const albumAction = alertSpy.mock.calls[0]?.[2]?.find(
+        (action) => action.text === '앨범에서 고르기'
+      );
+      albumAction?.onPress?.();
+      await waitFor(() => expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledTimes(1));
+    } finally {
+      alertSpy.mockRestore();
+    }
+  });
+
+  it('레거시 Android 촬영은 실패할 카메라 대신 앨범 선택으로 이어진다', async () => {
+    mockUseLocalSearchParams.mockReturnValue({});
+    mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(true);
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+
+    try {
+      const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+      fireEvent.press(screen.getByTestId('body-camera-button'));
+
+      expect(ImagePicker.requestCameraPermissionsAsync).not.toHaveBeenCalled();
+      const albumAction = alertSpy.mock.calls[0]?.[2]?.find(
+        (action) => action.text === '앨범 열기'
+      );
+      albumAction?.onPress?.();
+      await waitFor(() => expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled());
+    } finally {
+      alertSpy.mockRestore();
+    }
+  });
+
+  it('영구 사진 권한 거부는 설정 열기 동선을 제공한다', async () => {
+    mockUseLocalSearchParams.mockReturnValue({});
+    (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValueOnce({
+      status: 'denied',
+      canAskAgain: false,
+    });
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const openSettingsSpy = jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
+
+    try {
+      const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+      fireEvent.press(screen.getByTestId('face-library-button'));
+
+      await waitFor(() => expect(alertSpy).toHaveBeenCalled());
+      expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled();
+      const settingsAction = alertSpy.mock.calls[0]?.[2]?.find(
+        (action) => action.text === '설정 열기'
+      );
+      settingsAction?.onPress?.();
+      expect(openSettingsSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      alertSpy.mockRestore();
+      openSettingsSpy.mockRestore();
+    }
+  });
+
+  it('Android API 29~32는 denied 응답이어도 시스템 앨범 선택기를 연다', async () => {
+    mockUseLocalSearchParams.mockReturnValue({});
+    mockShouldBypassMediaLibraryPermissionGate.mockReturnValue(true);
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    fireEvent.press(screen.getByTestId('face-library-button'));
+
+    await waitFor(() => expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledTimes(1));
+    expect(ImagePicker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
+  });
+
+  it('서버 이미지 품질 422 문구를 폼의 alert 표면에 그대로 노출한다', async () => {
+    const { IntegratedApiError } = require('@/lib/api');
+    rememberSubmission('data:image/jpeg;base64,FACE', null);
+    mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'skin' });
+    mockRequest.mockRejectedValueOnce(
+      new IntegratedApiError(
+        '이미지가 너무 어둡습니다. 밝은 곳에서 다시 촬영해주세요.',
+        422,
+        'IMAGE_QUALITY_ERROR'
+      )
+    );
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    await screen.findByTestId('restored-photo-notice');
+    await pressEnabledSubmit(screen.getByLabelText);
+
+    const errorSurface = await screen.findByTestId('integrated-submit-error');
+    expect(errorSurface.props.accessibilityRole).toBe('alert');
+    expect(
+      screen.getByText('이미지가 너무 어둡습니다. 밝은 곳에서 다시 촬영해주세요.')
+    ).toBeTruthy();
+  });
+
+  it('로딩 취소는 폼으로 돌아오고 pending 마커와 복구 배너를 유지한다', async () => {
+    const { IntegratedApiError } = require('@/lib/api');
+    rememberSubmission('data:image/jpeg;base64,FACE', null);
+    mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'skin' });
+    mockRequest.mockImplementationOnce(
+      (
+        _input: unknown,
+        _token: string,
+        _baseUrl: string | undefined,
+        options: { signal: AbortSignal }
+      ) =>
+        new Promise((_resolve, reject) => {
+          options.signal.addEventListener(
+            'abort',
+            () =>
+              reject(
+                new IntegratedApiError(
+                  '분석 요청을 취소했어요. 진행 중인 분석은 다시 확인할 수 있어요.',
+                  0,
+                  'REQUEST_ABORTED'
+                )
+              ),
+            { once: true }
+          );
+        })
+    );
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    await screen.findByTestId('restored-photo-notice');
+    await pressEnabledSubmit(screen.getByLabelText);
+    await screen.findByTestId('integrated-loading');
+    await waitFor(() => expect(mockRequest).toHaveBeenCalledTimes(1));
+    expect(mockRequest.mock.calls[0][3]?.signal).toBeDefined();
+
+    fireEvent.press(screen.getByTestId('integrated-cancel-button'));
+
+    await screen.findByText(
+      '분석 요청을 취소했어요. 진행 중인 요청은 아래에서 다시 확인할 수 있어요.'
+    );
+    expect(screen.queryByTestId('integrated-loading')).toBeNull();
+    expect(screen.getByTestId('pending-integrated-analysis')).toBeTruthy();
+    await expect(readPendingIntegratedRequest('test_user_123')).resolves.toBe(REQUEST_ID);
+  });
+
+  it.each(['birthdate', 'agreement'] as const)(
+    '신규 계정의 %s 저장이 pending이어도 취소 신호가 전달되고 즉시 다시 제출할 수 있다',
+    async (pendingStage) => {
+      const api = require('@/lib/api');
+      rememberSubmission('data:image/jpeg;base64,FACE', null);
+      mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'skin' });
+      api.evaluateBirthdateGate.mockReturnValue({
+        ok: true,
+        needsSave: true,
+        birthDate: '2000-01-01',
+      });
+      api.evaluateAgreementGate.mockReturnValue({
+        ok: true,
+        needsSave: true,
+        gender: 'female',
+      });
+
+      let pendingSignal: AbortSignal | undefined;
+      const pendingSave = pendingStage === 'birthdate' ? api.saveBirthdate : api.saveAgreement;
+      pendingSave.mockImplementationOnce(
+        (...args: Array<unknown>) =>
+          new Promise<void>((_resolve, reject) => {
+            const options = args[3] as { signal?: AbortSignal } | undefined;
+            pendingSignal = options?.signal;
+            options?.signal?.addEventListener('abort', () => reject(new Error('aborted')), {
+              once: true,
+            });
+          })
+      );
+
+      const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+      await screen.findByTestId('restored-photo-notice');
+      await pressEnabledSubmit(screen.getByLabelText);
+      await screen.findByTestId('integrated-loading');
+      await waitFor(() => expect(pendingSave).toHaveBeenCalledTimes(1));
+
+      expect(pendingSignal).toBeDefined();
+      if (pendingStage === 'agreement') {
+        expect(api.saveBirthdate.mock.calls[0][3]?.signal).toBe(pendingSignal);
+      }
+
+      fireEvent.press(screen.getByTestId('integrated-cancel-button'));
+
+      expect(pendingSignal?.aborted).toBe(true);
+      expect(screen.queryByTestId('integrated-loading')).toBeNull();
+      // 취소 시 동기 잠금도 함께 풀려, 이전 pending reject를 기다리지 않고 재제출된다.
+      fireEvent.press(screen.getByLabelText('내 정체성 알아보기'));
+      await waitFor(() => expect(mockRequest).toHaveBeenCalledTimes(1));
+    }
+  );
+
+  it('성공 응답 resolve 직후 취소하면 이전 제출이 marker를 지우거나 결과로 이동하지 않는다', async () => {
+    rememberSubmission('data:image/jpeg;base64,FACE', null);
+    mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'skin' });
+    let resolveRequest: (value: {
+      sessionId: string;
+      status: 'completed';
+      axesCompleted: string[];
+      usedFallback: string[];
+    }) => void = () => undefined;
+    mockRequest.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = resolve;
+        })
+    );
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    await screen.findByTestId('restored-photo-notice');
+    await pressEnabledSubmit(screen.getByLabelText);
+    await waitFor(() => expect(mockRequest).toHaveBeenCalledTimes(1));
+    await expect(readPendingIntegratedRequest('test_user_123')).resolves.toBe(REQUEST_ID);
+
+    await act(async () => {
+      resolveRequest({
+        sessionId: 'cancelled-after-resolve',
+        status: 'completed',
+        axesCompleted: ['skin'],
+        usedFallback: [],
+      });
+      // Promise continuation microtask보다 먼저 같은 턴에서 취소한다.
+      fireEvent.press(screen.getByTestId('integrated-cancel-button'));
+      await Promise.resolve();
+    });
+
+    expect(router.replace).not.toHaveBeenCalled();
+    await expect(readPendingIntegratedRequest('test_user_123')).resolves.toBe(REQUEST_ID);
+    expect(screen.queryByTestId('integrated-loading')).toBeNull();
+  });
+
+  it('getToken이 영구 pending이어도 취소 즉시 잠금을 풀고 새 제출을 허용한다', async () => {
+    rememberSubmission('data:image/jpeg;base64,FACE', null);
+    mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'skin' });
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    await screen.findByTestId('restored-photo-notice');
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText('내 정체성 알아보기').props.accessibilityState?.disabled
+      ).not.toBe(true)
+    );
+
+    let resolveOldToken: (token: string) => void = () => undefined;
+    mockGetToken.mockImplementationOnce(
+      () => new Promise<string>((resolve) => (resolveOldToken = resolve))
+    );
+    fireEvent.press(screen.getByLabelText('내 정체성 알아보기'));
+    await screen.findByTestId('integrated-loading');
+    fireEvent.press(screen.getByTestId('integrated-cancel-button'));
+
+    expect(screen.queryByTestId('integrated-loading')).toBeNull();
+    fireEvent.press(screen.getByLabelText('내 정체성 알아보기'));
+    await waitFor(() => expect(mockRequest).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveOldToken('late-old-token');
+      await Promise.resolve();
+    });
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it('getToken이 영구 pending이어도 제출 전체 90초 상한에서 종료된다', async () => {
+    rememberSubmission('data:image/jpeg;base64,FACE', null);
+    mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'skin' });
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    await screen.findByTestId('restored-photo-notice');
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText('내 정체성 알아보기').props.accessibilityState?.disabled
+      ).not.toBe(true)
+    );
+
+    mockGetToken.mockImplementationOnce(() => new Promise<string>(() => undefined));
+    jest.useFakeTimers();
+    try {
+      fireEvent.press(screen.getByLabelText('내 정체성 알아보기'));
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(screen.getByTestId('integrated-loading')).toBeTruthy();
+
+      await act(async () => {
+        jest.advanceTimersByTime(90_000);
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      expect(screen.queryByTestId('integrated-loading')).toBeNull();
+      expect(
+        screen.getByText('응답이 지연되고 있어요. 진행 중인 분석은 잠시 후 다시 확인해주세요.')
+      ).toBeTruthy();
+      expect(mockRequest).not.toHaveBeenCalled();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

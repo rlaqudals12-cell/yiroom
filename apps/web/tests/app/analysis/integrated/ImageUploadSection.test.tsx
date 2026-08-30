@@ -3,7 +3,7 @@
  *
  * 회귀 방지:
  * - 압축 실패가 조용히 통과되던 결함 → 실패 원인별 인라인 에러 노출
- * - 자가입력으로 체형을 "추정"해준다는 과약속 문구 (실제로는 예시 결과 대체)
+ * - 사진·자가입력 유무에 따라 예시/미분석으로 갈리는 체형 계약의 과약속 방지
  * - 처리 중 상태 고지 부재 (aria-busy·스피너)
  */
 
@@ -51,8 +51,13 @@ describe('ImageUploadSection', () => {
 
   it('전신 사진 안내는 자가입력 추정을 약속하지 않는다 (정직 문구)', () => {
     renderSection();
-    expect(screen.getByText('전신 사진이 없으면 체형은 예시 결과로 대체돼요')).toBeInTheDocument();
+    expect(screen.getByTestId('body-input-guidance')).toHaveTextContent(
+      '전신 사진 없이 신체 정보만 입력하면 낮은 신뢰도의 예시 결과를 표시하고, 신체 정보도 없으면 체형 분석을 건너뛰어요'
+    );
     expect(screen.queryByText(/자가입력으로 체형을 추정/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('전신 사진이 없으면 체형은 예시 결과로 대체돼요')
+    ).not.toBeInTheDocument();
   });
 
   it('압축 실패 사유(용량 초과 등)를 그대로 인라인 에러로 보여준다', async () => {

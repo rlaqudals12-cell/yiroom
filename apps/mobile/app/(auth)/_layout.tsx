@@ -33,6 +33,12 @@ export default function AuthLayout() {
         }}
       />
       <Stack.Screen
+        name="forgot-password"
+        options={{
+          title: '비밀번호 재설정',
+        }}
+      />
+      <Stack.Screen
         name="complete-profile"
         options={{
           title: '연령 확인',

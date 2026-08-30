@@ -26,6 +26,7 @@ import {
   Image,
   ActivityIndicator,
   Alert,
+  Linking,
 } from 'react-native';
 
 import { ContentReportModal } from '@/components/reporting';
@@ -37,6 +38,7 @@ import {
   TwinApiError,
   type TwinRecord,
 } from '@/lib/api/twin';
+import { shouldBypassMediaLibraryPermissionGate } from '@/lib/image/camera-fallback';
 import { downscaleToDataUrl } from '@/lib/image/downscale';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
@@ -67,9 +69,21 @@ export default function TwinStudioScreen(): React.JSX.Element {
 
   const pickImage = async (kind: 'face' | 'body'): Promise<void> => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('권한 필요', '사진 선택 권한이 필요해요.');
+      const bypassPermissionGate = shouldBypassMediaLibraryPermissionGate();
+      const permission = bypassPermissionGate
+        ? null
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permission && permission.status !== 'granted') {
+        Alert.alert(
+          '사진 권한이 필요해요',
+          permission.canAskAgain === false
+            ? '설정에서 사진 접근 권한을 허용해 주세요.'
+            : '앨범에서 사진을 고르려면 사진 접근 권한을 허용해 주세요.',
+          [
+            { text: '취소', style: 'cancel' },
+            { text: '설정 열기', onPress: () => void Linking.openSettings() },
+          ]
+        );
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({

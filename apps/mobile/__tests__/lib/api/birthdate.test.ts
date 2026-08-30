@@ -183,6 +183,31 @@ describe('saveBirthdate', () => {
     await expect(saveBirthdate('2000-06-15', 'token', 'http://test')).resolves.toBeUndefined();
   });
 
+  it('제출 AbortSignal을 fetch에 전달하고 취소 오류를 구분한다', async () => {
+    const controller = new AbortController();
+    const fetchMock = jest.fn(
+      (_url: string, init: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () => reject(new Error('aborted')), {
+            once: true,
+          });
+        })
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const pending = saveBirthdate('2000-06-15', 'token', 'http://test', {
+      signal: controller.signal,
+    });
+    controller.abort();
+
+    await expect(pending).rejects.toMatchObject({
+      name: 'BirthdateApiError',
+      status: 0,
+      code: 'REQUEST_ABORTED',
+    });
+    expect((fetchMock.mock.calls[0][1] as RequestInit).signal).toBe(controller.signal);
+  });
+
   it('만 14세 미만은 서버 403 message + isMinor 표면화', async () => {
     global.fetch = mockFetch({
       ok: false,

@@ -102,6 +102,54 @@ describe('requestPersonalColorAnalysis', () => {
     });
   });
 
+  it('result와 data.image_analysis의 판정 근거·촬영 조건을 합치고 미지 값은 버린다', async () => {
+    mockFetchOnce(200, {
+      ...successBody(),
+      data: {
+        id: 'pc-row-evidence',
+        season: 'Spring',
+        image_analysis: {
+          analysisEvidence: {
+            skinHairContrast: 'low',
+            eyeColor: 'brown',
+            lipNaturalColor: 'coral',
+          },
+          imageQuality: {
+            lightingCondition: 'natural',
+            analysisReliability: 'high',
+          },
+        },
+      },
+      result: {
+        ...successBody().result,
+        analysisEvidence: {
+          veinColor: 'blue',
+          skinUndertone: 'unverified-value',
+          unknownEvidence: 'fabricated',
+        },
+        imageQuality: {
+          makeupDetected: false,
+          analysisReliability: 'unverified-value',
+        },
+      },
+    });
+
+    const result = await requestPersonalColorAnalysis(VALID_INPUT, 'token-1', BASE_URL);
+
+    expect(result.analysisEvidence).toEqual({
+      veinColor: 'blue',
+      skinHairContrast: 'low',
+      eyeColor: 'brown',
+      lipNaturalColor: 'coral',
+    });
+    expect(result.imageQuality).toEqual({
+      lightingCondition: 'natural',
+      makeupDetected: false,
+      analysisReliability: 'high',
+    });
+    expect(result.analysisEvidence).not.toHaveProperty('unknownEvidence');
+  });
+
   it('data.season이 없으면 result.seasonType(소문자)를 정규화한다', async () => {
     mockFetchOnce(200, successBody({ data: {} }));
 

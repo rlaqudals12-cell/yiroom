@@ -10,9 +10,10 @@
  * @see docs/specs/SDD-MOBILE-INTEGRATED.md
  */
 
-import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-expo';
-import { useClerkSupabaseClient } from '@/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
+
 import type {
   AxisCode,
   IntegratedAnalysisResult,
@@ -20,12 +21,33 @@ import type {
   AxisData,
   PersonaProfile,
 } from '@/lib/api';
+import { useClerkSupabaseClient } from '@/lib/supabase';
 
 export interface UseIntegratedSessionResult {
   result: IntegratedAnalysisResult | null;
   isLoading: boolean;
   error: Error | null;
+  stale: boolean;
   reload: () => void;
+}
+
+const CACHE_PREFIX = 'integrated-session:';
+
+async function writeCache(sessionId: string, result: IntegratedAnalysisResult): Promise<void> {
+  try {
+    await AsyncStorage.setItem(`${CACHE_PREFIX}${sessionId}`, JSON.stringify(result));
+  } catch {
+    /* 스토리지 용량 초과 등 — 캐시는 베스트 에포트 */
+  }
+}
+
+async function readCache(sessionId: string): Promise<IntegratedAnalysisResult | null> {
+  try {
+    const raw = await AsyncStorage.getItem(`${CACHE_PREFIX}${sessionId}`);
+    return raw ? (JSON.parse(raw) as IntegratedAnalysisResult) : null;
+  } catch {
+    return null;
+  }
 }
 
 interface IntegratedSessionRow {
@@ -80,6 +102,7 @@ export function useIntegratedSession(
   const [result, setResult] = useState<IntegratedAnalysisResult | null>(initialResult);
   const [isLoading, setIsLoading] = useState<boolean>(initialResult === null && sessionId !== null);
   const [error, setError] = useState<Error | null>(null);
+  const [stale, setStale] = useState(false);
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
@@ -87,11 +110,15 @@ export function useIntegratedSession(
     if (initialResult !== null) {
       setResult(initialResult);
       setIsLoading(false);
+      setError(null);
+      setStale(false);
+      if (sessionId) void writeCache(sessionId, initialResult);
       return;
     }
     if (!sessionId) {
       setResult(null);
       setIsLoading(false);
+      setStale(false);
       return;
     }
     if (!isLoaded) return;
@@ -104,6 +131,7 @@ export function useIntegratedSession(
     let cancelled = false;
     setIsLoading(true);
     setError(null);
+    setStale(false);
 
     (async () => {
       try {
@@ -138,6 +166,11 @@ export function useIntegratedSession(
         ]);
 
         if (cancelled) return;
+
+        const axisError = [pcRes, skinRes, bodyRes, hairRes, makeupRes].find(
+          (response) => response.error
+        )?.error;
+        if (axisError) throw new Error(axisError.message);
 
         const assembled: IntegratedAnalysisResult = {
           sessionId: session.id,
@@ -178,11 +211,18 @@ export function useIntegratedSession(
           completedAt: session.completed_at ?? session.created_at,
         };
 
+        await writeCache(sessionId, assembled);
+        if (cancelled) return;
         setResult(assembled);
         setIsLoading(false);
       } catch (e) {
         if (cancelled) return;
-        setError(e instanceof Error ? e : new Error(String(e)));
+        const normalizedError = e instanceof Error ? e : new Error(String(e));
+        const cached = await readCache(sessionId);
+        if (cancelled) return;
+        setError(normalizedError);
+        setResult(cached);
+        setStale(cached !== null);
         setIsLoading(false);
       }
     })();
@@ -194,5 +234,5 @@ export function useIntegratedSession(
 
   const reload = (): void => setReloadToken((n) => n + 1);
 
-  return { result, isLoading, error, reload };
+  return { result, isLoading, error, stale, reload };
 }

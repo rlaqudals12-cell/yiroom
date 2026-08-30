@@ -20,6 +20,7 @@ import {
   Image,
   ActivityIndicator,
   TextInput,
+  Linking,
 } from 'react-native';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
@@ -34,6 +35,7 @@ import {
   requestIntegratedAnalysis,
   createIntegratedClientRequestId,
   IntegratedApiError,
+  INTEGRATED_REQUEST_TIMEOUT_MS,
   fetchBirthdate,
   saveBirthdate,
   evaluateBirthdateGate,
@@ -50,6 +52,10 @@ import {
   type BodyQuestionnaire,
 } from '@/lib/api';
 import { toUserMessage } from '@/lib/api/error-text';
+import {
+  requiresLegacyAndroidGalleryFallback,
+  shouldBypassMediaLibraryPermissionGate,
+} from '@/lib/image/camera-fallback';
 import { downscaleToDataUrl } from '@/lib/image/downscale';
 import { getLastSubmission, rememberSubmission } from '@/lib/integrated/last-submission';
 import {
@@ -91,6 +97,28 @@ const ALL_AXES = AXIS_OPTIONS.map((a) => a.code);
 
 // 웹과 동일하게 서버가 요청을 시작하지 않았음이 확정된 상태에서만 상관 ID를 폐기한다.
 const DEFINITIVE_REJECT_STATUSES = new Set([400, 401, 403, 404, 409, 422, 429]);
+
+function submissionAbortedError(): IntegratedApiError {
+  return new IntegratedApiError(
+    '분석 요청을 취소했어요. 진행 중인 분석은 다시 확인할 수 있어요.',
+    0,
+    'REQUEST_ABORTED'
+  );
+}
+
+/**
+ * signal을 직접 받지 않는 Clerk·AsyncStorage 작업도 제출 취소/상한에서 즉시 빠져나오게 한다.
+ * 원래 Promise가 나중에 끝나더라도 이 경합은 이미 종료되며, 호출부 active guard가 후속 부작용을 막는다.
+ */
+function withSubmissionAbort<T>(operation: Promise<T>, signal: AbortSignal): Promise<T> {
+  if (signal.aborted) return Promise.reject(submissionAbortedError());
+
+  return new Promise<T>((resolve, reject) => {
+    const abort = (): void => reject(submissionAbortedError());
+    signal.addEventListener('abort', abort, { once: true });
+    void operation.then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
+  });
+}
 
 function pendingRecoveryMessage(state: PendingIntegratedRecoveryState): string {
   switch (state) {
@@ -179,6 +207,8 @@ function IntegratedAnalysisForm(): React.JSX.Element {
   const navigatingSessionRef = useRef<string | null>(null);
   // disabled state 반영 전 연속 탭도 두 번째 요청을 시작하지 못하게 동기 잠금한다.
   const submissionLockRef = useRef(false);
+  const submissionAbortRef = useRef<AbortController | null>(null);
+  const userCancelledSubmissionRef = useRef(false);
   const pendingRecovery = usePendingIntegratedSession(
     isPendingRequestResolved && !isSubmitting && !pendingStorageError ? pendingRequestId : null
   );
@@ -321,12 +351,43 @@ function IntegratedAnalysisForm(): React.JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRetry]);
 
+  const setPickedImage = async (
+    uri: string,
+    setter: (v: string | null) => void,
+    isFace: boolean
+  ): Promise<void> => {
+    setter(await downscaleToDataUrl(uri, 1024));
+    // 얼굴 사진을 새로 고르면 "이전 사진 사용" 표시를 해제(더 이상 복원본이 아님).
+    if (isFace) setRestoredFromCache(false);
+  };
+
+  const showPermissionSettingsAlert = (
+    title: string,
+    message: string,
+    canAskAgain: boolean | undefined
+  ): void => {
+    Alert.alert(
+      title,
+      canAskAgain === false ? '설정에서 필요한 권한을 허용한 뒤 다시 시도해 주세요.' : message,
+      [
+        { text: '취소', style: 'cancel' },
+        { text: '설정 열기', onPress: () => void Linking.openSettings() },
+      ]
+    );
+  };
+
   const pickImage = async (setter: (v: string | null) => void, isFace: boolean) => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('권한 필요', '사진 선택 권한이 필요해요.');
-        return;
+      if (!shouldBypassMediaLibraryPermissionGate()) {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (permission.status !== 'granted') {
+          showPermissionSettingsAlert(
+            '사진 권한이 필요해요',
+            '앨범에서 사진을 고르려면 사진 접근 권한을 허용해 주세요.',
+            permission.canAskAgain
+          );
+          return;
+        }
       }
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -336,12 +397,51 @@ function IntegratedAnalysisForm(): React.JSX.Element {
       });
       if (result.canceled || !result.assets[0]?.uri) return;
 
-      const asset = result.assets[0];
-      setter(await downscaleToDataUrl(asset.uri, 1024));
-      // 얼굴 사진을 새로 고르면 "이전 사진 사용" 표시를 해제(더 이상 복원본이 아님).
-      if (isFace) setRestoredFromCache(false);
+      await setPickedImage(result.assets[0].uri, setter, isFace);
     } catch {
       Alert.alert('이미지 선택 실패', '다른 사진을 선택해주세요.');
+    }
+  };
+
+  const takePhoto = async (setter: (v: string | null) => void, isFace: boolean) => {
+    if (requiresLegacyAndroidGalleryFallback()) {
+      Alert.alert(
+        '앨범에서 선택해주세요',
+        'Android 9 이하에서는 이 화면에서 바로 촬영할 수 없어요. 카메라로 촬영한 뒤 앨범에서 선택해 주세요.',
+        [
+          { text: '취소', style: 'cancel' },
+          { text: '앨범 열기', onPress: () => void pickImage(setter, isFace) },
+        ]
+      );
+      return;
+    }
+
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (permission.status !== 'granted') {
+        Alert.alert(
+          '카메라 권한이 필요해요',
+          permission.canAskAgain === false
+            ? '카메라 권한이 꺼져 있어요. 지금은 앨범에서 사진을 골라주세요.'
+            : '카메라 권한을 허용하지 않아도 앨범에서 사진을 고를 수 있어요.',
+          [
+            { text: '취소', style: 'cancel' },
+            { text: '앨범에서 고르기', onPress: () => void pickImage(setter, isFace) },
+          ]
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: isFace ? [1, 1] : [3, 4],
+        quality: 0.7,
+      });
+      if (result.canceled || !result.assets[0]?.uri) return;
+
+      await setPickedImage(result.assets[0].uri, setter, isFace);
+    } catch {
+      Alert.alert('촬영 실패', '사진을 다시 찍어주세요.');
     }
   };
 
@@ -396,103 +496,156 @@ function IntegratedAnalysisForm(): React.JSX.Element {
     }
     if (submissionLockRef.current) return;
     submissionLockRef.current = true;
+    const submissionController = new AbortController();
+    submissionAbortRef.current = submissionController;
+    userCancelledSubmissionRef.current = false;
+    let submissionTimedOut = false;
+    // 선행 게이트 저장까지 포함한 제출 전체가 하나의 90초 예산을 공유한다.
+    const submissionTimeoutId = setTimeout(() => {
+      submissionTimedOut = true;
+      submissionController.abort();
+    }, INTEGRATED_REQUEST_TIMEOUT_MS);
+    const assertSubmissionActive = (): void => {
+      if (
+        submissionAbortRef.current !== submissionController ||
+        submissionController.signal.aborted
+      ) {
+        throw submissionAbortedError();
+      }
+    };
+    const clearPendingForActiveSubmission = async (): Promise<void> => {
+      assertSubmissionActive();
+      await clearPendingIntegratedRequest(userId).catch(() => undefined);
+      assertSubmissionActive();
+    };
 
     setError(null);
     setIsSubmitting(true);
 
     try {
-      const token = await getToken();
-      if (!token) {
-        setError('로그인 세션이 만료됐어요. 다시 로그인해주세요.');
-        setIsSubmitting(false);
-        return;
-      }
+      await withSubmissionAbort(
+        (async () => {
+          const token = await getToken();
+          assertSubmissionActive();
+          if (!token) {
+            setError('로그인 세션이 만료됐어요. 다시 로그인해주세요.');
+            setIsSubmitting(false);
+            return;
+          }
 
-      // 생년월일 최초 저장 (성인·유효값만 게이트를 통과). 서버가 만 14세 미만이면 403으로 거부.
-      if (birthdateGate.needsSave && birthdateGate.birthDate) {
-        await saveBirthdate(birthdateGate.birthDate, token);
-      }
+          // 생년월일 최초 저장 (성인·유효값만 게이트를 통과). 서버가 만 14세 미만이면 403으로 거부.
+          if (birthdateGate.needsSave && birthdateGate.birthDate) {
+            await saveBirthdate(birthdateGate.birthDate, token, undefined, {
+              signal: submissionController.signal,
+            });
+            assertSubmissionActive();
+          }
 
-      // 필수 동의 최초 저장 — 분석 라우트의 생체동의 게이트(403)를 통과시키는 선행 조건.
-      if (agreementGate.needsSave && agreementGate.gender) {
-        await saveAgreement(
-          { gender: agreementGate.gender, marketingAgreed: agreeMarketing },
-          token
-        );
-        setHasAgreed(true);
-      }
+          // 필수 동의 최초 저장 — 분석 라우트의 생체동의 게이트(403)를 통과시키는 선행 조건.
+          if (agreementGate.needsSave && agreementGate.gender) {
+            await saveAgreement(
+              { gender: agreementGate.gender, marketingAgreed: agreeMarketing },
+              token,
+              undefined,
+              { signal: submissionController.signal }
+            );
+            assertSubmissionActive();
+            setHasAgreed(true);
+          }
 
-      // 네트워크 전 ID를 디스크에 먼저 기록해야 remount·프로세스 재시작도 같은 세션을 찾는다.
-      // 저장소가 실패하면 복구 가능성만 포기하고 비영속 ID로 진행한다(제출 차단 금지).
-      let clientRequestId: string;
-      try {
-        clientRequestId = await getOrCreatePendingIntegratedRequest(
-          userId,
-          createIntegratedClientRequestId
-        );
-      } catch {
-        clientRequestId = createIntegratedClientRequestId();
-      }
-      setPendingRequestId(clientRequestId);
+          // 네트워크 전 ID를 디스크에 먼저 기록해야 remount·프로세스 재시작도 같은 세션을 찾는다.
+          // 저장소가 실패하면 복구 가능성만 포기하고 비영속 ID로 진행한다(제출 차단 금지).
+          let clientRequestId: string;
+          try {
+            clientRequestId = await getOrCreatePendingIntegratedRequest(
+              userId,
+              createIntegratedClientRequestId
+            );
+          } catch {
+            // 취소/상한 reject를 저장소 실패로 오인해 새 ID를 만들면 분석이 다시 시작된다.
+            assertSubmissionActive();
+            clientRequestId = createIntegratedClientRequestId();
+          }
+          assertSubmissionActive();
+          setPendingRequestId(clientRequestId);
 
-      const input: IntegratedAnalysisInput = {
-        faceImageBase64: faceImage,
-        bodyImageBase64: bodyImage ?? undefined,
-        clientRequestId,
-        questionnaire: {
-          skin: { selfReportedType: skinType, concerns: [] },
-          hair: { length: hairLength },
-          body,
-          imageStorageConsent,
-        },
-        options: { locale: 'ko', skipMakeup: false },
-        // 선택 재분석: 일부 축만 고르면 그 축만 재실행 (ADR-109 2A, 웹과 동일)
-        ...(isPartialUpdate ? { mode: 'update' as const, axes: selectedAxes } : {}),
-      };
+          const input: IntegratedAnalysisInput = {
+            faceImageBase64: faceImage,
+            bodyImageBase64: bodyImage ?? undefined,
+            clientRequestId,
+            questionnaire: {
+              skin: { selfReportedType: skinType, concerns: [] },
+              hair: { length: hairLength },
+              body,
+              imageStorageConsent,
+            },
+            options: { locale: 'ko', skipMakeup: false },
+            // 선택 재분석: 일부 축만 고르면 그 축만 재실행 (ADR-109 2A, 웹과 동일)
+            ...(isPartialUpdate ? { mode: 'update' as const, axes: selectedAxes } : {}),
+          };
 
-      // 재시도 재진입 시 사진 재선택을 없애기 위해 직전 제출 이미지를 인메모리로만 보관(디스크 금지).
-      rememberSubmission(faceImage, bodyImage ?? null);
+          // 재시도 재진입 시 사진 재선택을 없애기 위해 직전 제출 이미지를 인메모리로만 보관(디스크 금지).
+          rememberSubmission(faceImage, bodyImage ?? null);
 
-      void trackAnalysisStart('integrated', isPartialUpdate ? 'update' : 'full', token);
-      const result = await requestIntegratedAnalysis(input, token);
+          void trackAnalysisStart('integrated', isPartialUpdate ? 'update' : 'full', token);
+          const result = await requestIntegratedAnalysis(input, token, undefined, {
+            signal: submissionController.signal,
+          });
+          assertSubmissionActive();
 
-      // 멱등 재요청은 축 payload 없이 세션 요약만 준다. 완료/부분완료는 저장 결과 로더로,
-      // pending/failed는 복구 배너로 보내 axes 없는 객체의 결과 화면 주입을 막는다.
-      if (result.reused === true) {
-        if (result.status === 'pending' || result.status === 'failed') {
-          setIsSubmitting(false);
-          return;
-        }
+          // 멱등 재요청은 축 payload 없이 세션 요약만 준다. 완료/부분완료는 저장 결과 로더로,
+          // pending/failed는 복구 배너로 보내 axes 없는 객체의 결과 화면 주입을 막는다.
+          if (result.reused === true) {
+            if (result.status === 'pending' || result.status === 'failed') {
+              setIsSubmitting(false);
+              return;
+            }
 
-        navigatingSessionRef.current = result.sessionId;
-        await clearPendingIntegratedRequest(userId).catch(() => undefined);
-        setPendingRequestId(null);
-        router.replace(`/(analysis)/integrated/result/${result.sessionId}` as never);
-        return;
-      }
+            assertSubmissionActive();
+            await clearPendingForActiveSubmission();
+            assertSubmissionActive();
+            navigatingSessionRef.current = result.sessionId;
+            setPendingRequestId(null);
+            assertSubmissionActive();
+            router.replace(`/(analysis)/integrated/result/${result.sessionId}` as never);
+            return;
+          }
 
-      // 완전 결과 성공 — 다음 분석은 새 상관 ID를 사용한다.
-      await clearPendingIntegratedRequest(userId).catch(() => undefined);
-      setPendingRequestId(null);
-      void trackAnalysisComplete(
-        'integrated',
-        {
-          status: result.status,
-          axesCompletedCount: result.axesCompleted.length,
-          usedFallback: result.usedFallback.length > 0,
-        },
-        token
-      );
+          // 완전 결과 성공 — 다음 분석은 새 상관 ID를 사용한다.
+          await clearPendingForActiveSubmission();
+          assertSubmissionActive();
+          setPendingRequestId(null);
+          assertSubmissionActive();
+          void trackAnalysisComplete(
+            'integrated',
+            {
+              status: result.status,
+              axesCompletedCount: result.axesCompleted.length,
+              usedFallback: result.usedFallback.length > 0,
+            },
+            token
+          );
 
-      // 왜: v1 MVP는 POST 응답을 결과 화면에 직접 전달 (재방문 조회는 Phase D.2)
-      // Expo Router typed routes 회피를 위해 문자열 경로 + 캐스팅
-      router.replace(
-        `/(analysis)/integrated/result/${result.sessionId}?payload=${encodeURIComponent(JSON.stringify(result))}` as never
+          // 왜: v1 MVP는 POST 응답을 결과 화면에 직접 전달 (재방문 조회는 Phase D.2)
+          // Expo Router typed routes 회피를 위해 문자열 경로 + 캐스팅
+          assertSubmissionActive();
+          router.replace(
+            `/(analysis)/integrated/result/${result.sessionId}?payload=${encodeURIComponent(JSON.stringify(result))}` as never
+          );
+        })(),
+        submissionController.signal
       );
     } catch (e) {
+      // 취소 직후 새 제출이 시작됐으면 이전 요청의 늦은 reject가 새 화면 상태를 덮지 않는다.
+      if (submissionAbortRef.current !== submissionController) return;
       if (e instanceof IntegratedApiError && DEFINITIVE_REJECT_STATUSES.has(e.status)) {
-        await clearPendingIntegratedRequest(userId).catch(() => undefined);
-        setPendingRequestId(null);
+        try {
+          await withSubmissionAbort(clearPendingForActiveSubmission(), submissionController.signal);
+        } catch {
+          // 취소·상한은 아래 현재 제출 가드와 사용자 메시지 분기에서 처리한다.
+        }
+        if (submissionAbortRef.current !== submissionController) return;
+        if (!submissionController.signal.aborted) setPendingRequestId(null);
       }
       // 서버 에러 봉투의 userMessage(연령·생체동의 게이트 403 등)를 그대로 노출 — 일반 문구로 뭉개지 않는다.
       const message =
@@ -504,31 +657,38 @@ function IntegratedAnalysisForm(): React.JSX.Element {
               ? e.message
               : '분석 요청에 실패했어요.';
       // 최종 가드: 클라이언트가 이미 방어하지만, 비문자열·"[object Object]"가 새면 정직한 일반 문구로 대체.
-      setError(toUserMessage(message, '분석 요청에 실패했어요. 잠시 후 다시 시도해주세요.'));
+      setError(
+        userCancelledSubmissionRef.current
+          ? '분석 요청을 취소했어요. 진행 중인 요청은 아래에서 다시 확인할 수 있어요.'
+          : submissionTimedOut
+            ? '응답이 지연되고 있어요. 진행 중인 분석은 잠시 후 다시 확인해주세요.'
+            : toUserMessage(message, '분석 요청에 실패했어요. 잠시 후 다시 시도해주세요.')
+      );
       setIsSubmitting(false);
     } finally {
-      submissionLockRef.current = false;
+      clearTimeout(submissionTimeoutId);
+      if (submissionAbortRef.current === submissionController) {
+        submissionAbortRef.current = null;
+        submissionLockRef.current = false;
+      }
     }
   };
 
-  // 로딩 화면 (제출 중)
-  if (isSubmitting) {
-    return (
-      <ScreenContainer>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#EC4899" />
-          <Text style={[styles.loadingTitle, { color: colors.foreground }]}>5축 분석 중...</Text>
-          <Text style={[styles.loadingSubtitle, { color: colors.mutedForeground }]}>
-            예상 소요 약 10초
-          </Text>
-        </View>
-      </ScreenContainer>
-    );
-  }
+  const cancelSubmission = (): void => {
+    userCancelledSubmissionRef.current = true;
+    const controller = submissionAbortRef.current;
+    // state의 disabled 반영을 기다리지 않고 동기 잠금을 먼저 해제한다. 이전 요청 catch는
+    // controller identity 가드로 이후 제출의 상태를 덮지 못한다.
+    submissionAbortRef.current = null;
+    submissionLockRef.current = false;
+    controller?.abort();
+    setError('분석 요청을 취소했어요. 진행 중인 요청은 아래에서 다시 확인할 수 있어요.');
+    setIsSubmitting(false);
+  };
 
   return (
-    <ScreenContainer>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <ScreenContainer scrollable={false} contentPadding={0}>
+      <ScrollView style={styles.formScroll} contentContainerStyle={styles.scrollContent}>
         {/* 헤더 */}
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.foreground }]}>5축 통합 분석</Text>
@@ -651,12 +811,28 @@ function IntegratedAnalysisForm(): React.JSX.Element {
               </Pressable>
             </View>
           ) : (
-            <Pressable
-              onPress={() => pickImage(setFaceImage, true)}
-              style={[styles.uploadButton, { borderColor: colors.border }]}
-            >
-              <Text style={[styles.uploadButtonText, { color: colors.foreground }]}>사진 선택</Text>
-            </Pressable>
+            <View style={styles.uploadActions}>
+              <Pressable
+                accessibilityLabel="얼굴 사진 찍기"
+                onPress={() => void takePhoto(setFaceImage, true)}
+                style={[styles.uploadButton, { borderColor: colors.border }]}
+                testID="face-camera-button"
+              >
+                <Text style={[styles.uploadButtonText, { color: colors.foreground }]}>
+                  사진 찍기
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityLabel="얼굴 사진 앨범에서 고르기"
+                onPress={() => void pickImage(setFaceImage, true)}
+                style={[styles.uploadButton, { borderColor: colors.border }]}
+                testID="face-library-button"
+              >
+                <Text style={[styles.uploadButtonText, { color: colors.foreground }]}>
+                  앨범에서 고르기
+                </Text>
+              </Pressable>
+            </View>
           )}
         </GlassCard>
 
@@ -681,12 +857,28 @@ function IntegratedAnalysisForm(): React.JSX.Element {
               </Pressable>
             </View>
           ) : (
-            <Pressable
-              onPress={() => pickImage(setBodyImage, false)}
-              style={[styles.uploadButton, { borderColor: colors.border }]}
-            >
-              <Text style={[styles.uploadButtonText, { color: colors.foreground }]}>사진 선택</Text>
-            </Pressable>
+            <View style={styles.uploadActions}>
+              <Pressable
+                accessibilityLabel="전신 사진 찍기"
+                onPress={() => void takePhoto(setBodyImage, false)}
+                style={[styles.uploadButton, { borderColor: colors.border }]}
+                testID="body-camera-button"
+              >
+                <Text style={[styles.uploadButtonText, { color: colors.foreground }]}>
+                  사진 찍기
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityLabel="전신 사진 앨범에서 고르기"
+                onPress={() => void pickImage(setBodyImage, false)}
+                style={[styles.uploadButton, { borderColor: colors.border }]}
+                testID="body-library-button"
+              >
+                <Text style={[styles.uploadButtonText, { color: colors.foreground }]}>
+                  앨범에서 고르기
+                </Text>
+              </Pressable>
+            </View>
           )}
         </GlassCard>
 
@@ -860,7 +1052,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
               checked={agreeBiometric}
               onToggle={() => setAgreeBiometric((v) => !v)}
               label="[필수] 생체정보(얼굴·체형 이미지) 수집·이용 동의"
-              description="AI 분석을 위해 이미지가 미국 Google(Gemini)로 전송돼요. 언제든 철회할 수 있어요."
+              description="AI 뷰티 분석(피부·퍼스널컬러·체형·헤어·메이크업)을 위해 얼굴·체형 이미지를 수집·이용하며, 분석을 위해 미국의 Google(Gemini)로 전송됩니다. 원본 사진 저장은 분석 화면에서 별도 선택(기본 꺼짐)이며, 저장에 동의한 경우에만 1년 보관 후 자동 파기하고 동의 철회·회원 탈퇴 시 즉시 파기합니다. 분석 사진으로 만드는 드레이핑 공유 카드는 내 기기에서만 생성되며 서버에 저장되지 않습니다."
               onViewDetail={() => router.push('/privacy-policy' as never)}
               testID="consent-biometric"
             />
@@ -911,7 +1103,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
 
         {/* 에러 메시지 */}
         {error && (
-          <View style={styles.errorBox}>
+          <View accessibilityRole="alert" style={styles.errorBox} testID="integrated-submit-error">
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
@@ -951,6 +1143,27 @@ function IntegratedAnalysisForm(): React.JSX.Element {
           분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요.
         </Text>
       </ScrollView>
+      {isSubmitting && (
+        <View
+          accessibilityViewIsModal
+          style={[styles.loadingOverlay, { backgroundColor: colors.background }]}
+          testID="integrated-loading"
+        >
+          <ActivityIndicator size="large" color="#EC4899" />
+          <Text style={[styles.loadingTitle, { color: colors.foreground }]}>5축 분석 중...</Text>
+          <Text style={[styles.loadingSubtitle, { color: colors.mutedForeground }]}>
+            보통 1분 안팎이며, 연결 상태에 따라 더 걸릴 수 있어요.
+          </Text>
+          <Pressable
+            accessibilityLabel="분석 요청 취소"
+            onPress={cancelSubmission}
+            style={[styles.cancelButton, { borderColor: colors.border }]}
+            testID="integrated-cancel-button"
+          >
+            <Text style={[styles.cancelButtonText, { color: colors.foreground }]}>취소</Text>
+          </Pressable>
+        </View>
+      )}
     </ScreenContainer>
   );
 }
@@ -1064,6 +1277,9 @@ function NumberField({ label, value, onChange, min, max }: NumberFieldProps): Re
 // ============================================
 
 const styles = StyleSheet.create({
+  formScroll: {
+    flex: 1,
+  },
   scrollContent: {
     padding: spacing.lg,
     paddingBottom: spacing.xl * 2,
@@ -1150,7 +1366,12 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm,
   },
   removeButtonText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  uploadActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
   uploadButton: {
+    flex: 1,
     borderWidth: 2,
     borderStyle: 'dashed',
     borderRadius: radii.md,
@@ -1285,11 +1506,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.xl,
+  },
   loadingTitle: {
     fontSize: typography.size.xl,
     fontWeight: '700',
   },
   loadingSubtitle: {
     fontSize: typography.size.sm,
+    textAlign: 'center',
+    lineHeight: typography.size.sm * typography.lineHeight.normal,
+  },
+  cancelButton: {
+    minHeight: 44,
+    minWidth: 120,
+    borderWidth: 1,
+    borderRadius: radii.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.sm,
+  },
+  cancelButtonText: {
+    fontSize: typography.size.base,
+    fontWeight: '600',
   },
 });

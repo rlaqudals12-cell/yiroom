@@ -133,6 +133,42 @@ describe('useDailyCapsule', () => {
   });
 
   describe('fetchToday', () => {
+    it('템플릿·기본 토큰이 모두 없으면 익명 요청 없이 AUTH_ERROR를 설정한다', async () => {
+      mockStableGetToken.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+
+      const { result } = renderHook(() => useDailyCapsule());
+
+      await act(async () => {
+        await result.current.fetchToday();
+      });
+
+      expect(mockStableGetToken).toHaveBeenNthCalledWith(1, { template: 'supabase' });
+      expect(mockStableGetToken).toHaveBeenNthCalledWith(2);
+      expect(mockGetTodayDailyCapsule).not.toHaveBeenCalled();
+      expect(result.current.error).toEqual({
+        code: 'AUTH_ERROR',
+        message: '로그인이 필요합니다.',
+      });
+    });
+
+    it('템플릿 토큰 발급이 실패해도 기본 세션 토큰으로 조회한다', async () => {
+      mockStableGetToken
+        .mockRejectedValueOnce(new Error('template missing'))
+        .mockResolvedValueOnce('basic-session-token');
+      mockGetTodayDailyCapsule.mockResolvedValue({ data: mockCapsule, error: null });
+
+      const { result } = renderHook(() => useDailyCapsule());
+
+      await act(async () => {
+        await result.current.fetchToday();
+      });
+
+      expect(mockStableGetToken).toHaveBeenNthCalledWith(1, { template: 'supabase' });
+      expect(mockStableGetToken).toHaveBeenNthCalledWith(2);
+      expect(mockGetTodayDailyCapsule).toHaveBeenCalledWith('basic-session-token');
+      expect(result.current.error).toBeNull();
+    });
+
     it('fetchToday 호출 시 API를 호출하고 캡슐 상태를 설정해야 한다', async () => {
       mockGetTodayDailyCapsule.mockResolvedValue({ data: mockCapsule, error: null });
 

@@ -13,19 +13,20 @@ import {
   Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
+  Linking,
   Platform,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
-import { getWebHostLabel } from '@/lib/api/base-url';
+import { getApiBaseUrl, getWebHostLabel } from '@/lib/api/base-url';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
-  const { colors, typography } = useTheme();
+  const { colors } = useTheme();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,6 +38,24 @@ export default function SignInScreen() {
   const [verificationStage, setVerificationStage] = useState<'first' | 'second'>('first');
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // 앱에서 지원하지 않는 추가 인증 상태도 막다른 안내로 끝내지 않고
+  // 실제 웹 로그인 화면으로 이어지게 한다.
+  const showWebSignInAlert = () => {
+    Alert.alert(
+      '추가 인증 필요',
+      `추가 인증이 필요한 계정이에요. 웹(${getWebHostLabel()})에서 로그인해주세요.`,
+      [
+        {
+          text: '웹에서 로그인',
+          onPress: () => {
+            void Linking.openURL(`${getApiBaseUrl()}/sign-in`);
+          },
+        },
+        { text: '닫기' },
+      ]
+    );
+  };
 
   const handleSignIn = async () => {
     if (!isLoaded) return;
@@ -99,10 +118,7 @@ export default function SignInScreen() {
 
       // 4) needs_new_password 등 앱이 아직 지원하지 않는 상태.
       //    무반응(조용한 무시) 대신 정직하게 웹 로그인으로 안내한다.
-      Alert.alert(
-        '추가 인증 필요',
-        `추가 인증이 필요한 계정이에요. 웹(${getWebHostLabel()})에서 로그인해주세요.`
-      );
+      showWebSignInAlert();
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
       const errorMessage = clerkError.errors?.[0]?.message || '로그인에 실패했습니다.';
@@ -136,10 +152,7 @@ export default function SignInScreen() {
       }
 
       // 코드는 맞았지만 여전히 추가 인증이 남은 경우 — 정직하게 웹 로그인 안내
-      Alert.alert(
-        '추가 인증 필요',
-        `추가 인증이 필요한 계정이에요. 웹(${getWebHostLabel()})에서 로그인해주세요.`
-      );
+      showWebSignInAlert();
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
       const errorMessage = clerkError.errors?.[0]?.message || '인증에 실패했습니다.';
@@ -271,6 +284,14 @@ export default function SignInScreen() {
                 onChangeText={setPassword}
                 secureTextEntry
               />
+              <Pressable
+                testID="signin-forgot-password-link"
+                onPress={() => router.push('/(auth)/forgot-password')}
+              >
+                <Text style={[styles.linkText, styles.forgotPasswordLink]}>
+                  비밀번호를 잊으셨나요?
+                </Text>
+              </Pressable>
             </View>
           </GlassCard>
         </Animated.View>
@@ -370,5 +391,8 @@ const styles = StyleSheet.create({
     color: brand.primary,
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
+  },
+  forgotPasswordLink: {
+    alignSelf: 'flex-end',
   },
 });
