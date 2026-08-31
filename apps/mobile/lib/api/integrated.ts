@@ -20,6 +20,10 @@ import { getApiBaseUrl } from './base-url';
 
 export type AxisCode = 'personal_color' | 'skin' | 'body' | 'hair' | 'makeup';
 
+/** 분석 판정에는 쓰지 않고 액션·큐레이션 추천에만 쓰는 성별 taxonomy. */
+export const RECOMMENDATION_GENDERS = ['female', 'male', 'neutral'] as const;
+export type RecommendationGender = (typeof RECOMMENDATION_GENDERS)[number];
+
 export interface SkinQuestionnaire {
   selfReportedType: 'dry' | 'oily' | 'combination' | 'normal' | 'sensitive' | 'unknown';
   concerns?: string[];
@@ -49,6 +53,8 @@ export interface IntegratedAnalysisInput {
     body: BodyQuestionnaire;
     /** 이번 분석 원본 사진의 선택 저장 동의. 누락 시 서버에서 false로 처리한다. */
     imageStorageConsent?: boolean;
+    /** 추천 분기 전용 선택값. 사진 기반 판정에는 주입하지 않는다. */
+    gender?: RecommendationGender;
   };
   options?: {
     locale?: 'ko' | 'en' | 'ja' | 'zh';
@@ -108,6 +114,8 @@ export interface IntegratedAnalysisResult {
   };
   /** ADR-104 나 프로필. 성공 축 0개면 null */
   persona: PersonaProfile | null;
+  /** 액션·큐레이션 재조립용 성별. 미선택·구형 세션은 neutral이다. */
+  recommendationGender?: RecommendationGender;
   axesCompleted: AxisCode[];
   axesFailed: AxisCode[];
   usedFallback: AxisCode[];
@@ -329,5 +337,10 @@ export async function requestIntegratedAnalysis(
       'INVALID_RESPONSE'
     );
   }
-  return result;
+  // 서버 결과는 축 판정만 반환한다. 같은 요청의 선택 성별을 결과 payload에 보존해
+  // 직후 결과 화면도 저장 세션을 다시 읽지 않고 웹과 같은 추천 분기를 적용한다.
+  return {
+    ...result,
+    recommendationGender: input.questionnaire.gender ?? 'neutral',
+  };
 }

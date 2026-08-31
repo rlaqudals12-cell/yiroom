@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 import type { AnalysisModuleType } from './useAnalysisHistory';
 import type { VisibleAnalysisModule } from '../lib/analysis/visible-modules';
+import { getPersonalColorToneLabel } from '../lib/api/personalColor';
 import { useClerkSupabaseClient } from '../lib/supabase';
 import { analysisLogger } from '../lib/utils/logger';
 
@@ -31,8 +32,8 @@ interface ModuleCompareConfig {
 const MODULE_COMPARE_MAP: Record<AnalysisModuleType, ModuleCompareConfig> = {
   'personal-color': {
     table: 'personal_color_assessments',
-    columns: 'id, confidence, created_at',
-    metrics: [{ column: 'confidence', label: '정확도', higherIsBetter: true }],
+    columns: 'id, season, season_subtype, confidence, created_at',
+    metrics: [{ column: 'confidence', label: '신뢰도', higherIsBetter: true }],
     totalColumn: 'confidence',
   },
   skin: {
@@ -89,6 +90,8 @@ export interface AnalysisComparisonData {
   currentTotal?: number;
   previousDate?: Date;
   currentDate?: Date;
+  previousSummary?: string;
+  currentSummary?: string;
   isFirstAnalysis: boolean;
 }
 
@@ -170,6 +173,11 @@ export function useAnalysisComparison(
           metrics: [],
           isFirstAnalysis: true,
           currentDate: new Date(current.created_at as string),
+          ...(moduleType === 'personal-color'
+            ? {
+                currentSummary: getPersonalColorToneLabel(current.season, current.season_subtype),
+              }
+            : {}),
         });
         setIsLoading(false);
         return;
@@ -210,6 +218,12 @@ export function useAnalysisComparison(
         currentTotal,
         previousDate: new Date(previous.created_at as string),
         currentDate: new Date(current.created_at as string),
+        ...(moduleType === 'personal-color'
+          ? {
+              previousSummary: getPersonalColorToneLabel(previous.season, previous.season_subtype),
+              currentSummary: getPersonalColorToneLabel(current.season, current.season_subtype),
+            }
+          : {}),
         isFirstAnalysis: false,
       });
     } catch (err) {

@@ -191,4 +191,28 @@ describe('CompareScreen', () => {
     const { getByTestId } = renderWithTheme(<CompareScreen />);
     expect(getByTestId('comparison-card')).toBeTruthy();
   });
+
+  it('퍼스널컬러 비교에서 이전·현재 계절과 12톤 세부 표식을 같이 보여준다', () => {
+    mockSearchParams = { module: 'personal-color' };
+    const { useAnalysisComparison } = require('../../../hooks/useAnalysisComparison');
+    useAnalysisComparison.mockReturnValue({
+      data: {
+        title: '퍼스널 컬러 분석 비교',
+        metrics: [{ label: '신뢰도', previous: 0.82, current: 0.88 }],
+        previousSummary: '봄 웜톤 · 라이트',
+        currentSummary: '여름 쿨톤 · 뮤트',
+        isFirstAnalysis: false,
+        previousDate: new Date('2026-01-01'),
+        currentDate: new Date('2026-01-15'),
+      },
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    const screen = renderWithTheme(<CompareScreen />);
+
+    expect(screen.getByTestId('compare-previous-summary')).toHaveTextContent('봄 웜톤 · 라이트');
+    expect(screen.getByTestId('compare-current-summary')).toHaveTextContent('여름 쿨톤 · 뮤트');
+  });
 });

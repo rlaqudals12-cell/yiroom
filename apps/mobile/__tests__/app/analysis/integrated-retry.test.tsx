@@ -258,6 +258,19 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
     expect(queryByTestId('redirect')).toBeNull();
   });
 
+  it('기존 동의 계정도 추천용 성별 문진을 보고 저장값을 기본 선택으로 사용한다', async () => {
+    const api = require('@/lib/api');
+    api.fetchAgreementStatus.mockResolvedValueOnce({ hasAgreed: true, gender: 'male' });
+    mockUseLocalSearchParams.mockReturnValue({});
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+
+    const male = await screen.findByTestId('gender-male');
+    expect(screen.getByTestId('gender-section')).toBeTruthy();
+    await waitFor(() => expect(male.props.accessibilityState?.selected).toBe(true));
+    expect(screen.getByTestId('gender-neutral')).toBeTruthy();
+  });
+
   it('retryAxes로 진입하면 미완료 축만 선택된 채 축 선택 UI가 노출된다', async () => {
     mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'hair,makeup' });
 
@@ -290,8 +303,15 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
     rememberSubmission('data:image/jpeg;base64,FACE', null);
     mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'hair,makeup' });
 
-    const { findByTestId, getByLabelText } = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    const { findByTestId, getByLabelText, getByTestId, getByText } = renderWithTheme(
+      <IntegratedAnalysisInputScreen />
+    );
     await findByTestId('restored-photo-notice');
+    // 이미 약관에 동의한 재방문자에게도 추천용 성별 문진은 항상 보인다.
+    expect(getByTestId('gender-female')).toBeTruthy();
+    expect(getByTestId('gender-male')).toBeTruthy();
+    expect(getByText('맞춤 추천에만 쓰여요. 선택하지 않아도 분석할 수 있어요.')).toBeTruthy();
+    fireEvent.press(getByTestId('gender-neutral'));
 
     await pressEnabledSubmit(getByLabelText);
 
@@ -301,7 +321,7 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
       clientRequestId?: string;
       mode?: string;
       axes?: string[];
-      questionnaire?: { imageStorageConsent?: boolean };
+      questionnaire?: { imageStorageConsent?: boolean; gender?: string };
     };
     expect(input.mode).toBe('update');
     expect(input.axes).toEqual(['hair', 'makeup']);
@@ -309,6 +329,7 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
     expect(input.faceImageBase64).toBe('data:image/jpeg;base64,FACE');
     expect(input.clientRequestId).toBe('11111111-2222-4333-8444-555555555555');
     expect(input.questionnaire?.imageStorageConsent).toBe(false);
+    expect(input.questionnaire?.gender).toBe('neutral');
     expect(mockTrackAnalysisStart).toHaveBeenCalledTimes(1);
     expect(mockTrackAnalysisStart).toHaveBeenCalledWith('integrated', 'update', 'mock_jwt_token');
     expect(mockTrackAnalysisComplete).toHaveBeenCalledTimes(1);
@@ -773,9 +794,7 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
         await Promise.resolve();
       });
 
-      expect(
-        loadingView.getByText('거의 다 됐어요. 조금만 더 기다려주세요...')
-      ).toBeTruthy();
+      expect(loadingView.getByText('거의 다 됐어요. 조금만 더 기다려주세요...')).toBeTruthy();
 
       fireEvent.press(screen.getByTestId('integrated-cancel-button'));
       screen.unmount();

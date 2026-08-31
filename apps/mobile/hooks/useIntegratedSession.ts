@@ -14,12 +14,14 @@ import { useAuth } from '@clerk/clerk-expo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 
-import type {
-  AxisCode,
-  IntegratedAnalysisResult,
-  AxisResult,
-  AxisData,
-  PersonaProfile,
+import {
+  RECOMMENDATION_GENDERS,
+  type AxisCode,
+  type IntegratedAnalysisResult,
+  type AxisResult,
+  type AxisData,
+  type PersonaProfile,
+  type RecommendationGender,
 } from '@/lib/api';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 
@@ -58,8 +60,19 @@ interface IntegratedSessionRow {
   axes_failed: AxisCode[];
   used_fallback: AxisCode[];
   persona: PersonaProfile | null;
+  questionnaire?: Record<string, unknown> | null;
   created_at: string;
   completed_at: string | null;
+}
+
+/** 구형·손상 세션의 임의 문자열을 추천 분기로 흘리지 않고 중립으로 닫는다. */
+function readRecommendationGender(
+  questionnaire: Record<string, unknown> | null | undefined
+): RecommendationGender {
+  const value = questionnaire?.gender;
+  return typeof value === 'string' && RECOMMENDATION_GENDERS.includes(value as RecommendationGender)
+    ? (value as RecommendationGender)
+    : 'neutral';
 }
 
 /** DB 레코드를 AxisResult로 변환 */
@@ -204,6 +217,7 @@ export function useIntegratedSession(
             ),
           },
           persona: session.persona ?? null,
+          recommendationGender: readRecommendationGender(session.questionnaire),
           axesCompleted: session.axes_completed ?? [],
           axesFailed: session.axes_failed ?? [],
           usedFallback: session.used_fallback ?? [],

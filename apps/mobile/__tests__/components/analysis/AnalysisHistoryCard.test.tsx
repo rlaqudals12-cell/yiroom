@@ -17,13 +17,14 @@ describe('AnalysisHistoryCard', () => {
           id: 'pc-1',
           moduleType: 'personal-color',
           createdAt: new Date('2026-08-27T10:00:00.000Z'),
-          summary: '봄 웜톤',
+          summary: '봄 웜톤 · 브라이트',
           score: 0.91,
         }}
       />
     );
 
     expect(getByText('분석 신뢰도 91%')).toBeTruthy();
+    expect(getByText('봄 웜톤 · 브라이트')).toBeTruthy();
     expect(queryByText('0.91점')).toBeNull();
     expect(queryByText('91점')).toBeNull();
   });

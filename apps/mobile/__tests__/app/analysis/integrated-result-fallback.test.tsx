@@ -178,6 +178,18 @@ describe('통합 결과 화면 — 축별 Mock 고지 배선', () => {
     expect(screen.getByTestId('action-plan-items')).toBeTruthy();
   });
 
+  it('남성 결과 보고서는 립·베이스 대신 그루밍 행동과 큐레이션을 보여준다', () => {
+    const maleResult = { ...buildResult([]), recommendationGender: 'male' as const };
+    setPayload(maleResult);
+    const screen = renderWithTheme(<IntegratedResultScreen />);
+
+    expect(screen.getByText('눈썹 정리 + 톤 보정 선크림으로 인상 정돈')).toBeTruthy();
+    expect(screen.getByText('톤 보정 선크림 · 립밤')).toBeTruthy();
+    expect(screen.queryByTestId('curation-item-lip')).toBeNull();
+    expect(screen.queryByTestId('curation-item-base')).toBeNull();
+    expect(screen.queryByText(/코랄 계열 립틴트/)).toBeNull();
+  });
+
   it('뷰티팀 질문은 기본 접힘이고 칩을 누르면 질문을 프리필해 물어보기로 이동한다', () => {
     setPayload(buildResult([]));
     const screen = renderWithTheme(<IntegratedResultScreen />);

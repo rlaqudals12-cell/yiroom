@@ -37,6 +37,7 @@ const mockSessionRow = {
   axes_completed: ['personal_color', 'skin', 'body', 'hair', 'makeup'],
   axes_failed: [],
   used_fallback: [],
+  questionnaire: { gender: 'male' },
   created_at: '2026-04-24T10:00:00Z',
   completed_at: '2026-04-24T10:00:08Z',
 };
@@ -147,6 +148,7 @@ describe('useIntegratedSession', () => {
     }
     // skin은 DB 레코드 없음 → success: false
     expect(result.current.result?.axes.skin.success).toBe(false);
+    expect(result.current.result?.recommendationGender).toBe('male');
   });
 
   it('세션 존재 안 함 → result null', async () => {

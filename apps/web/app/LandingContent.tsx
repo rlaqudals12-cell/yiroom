@@ -263,6 +263,9 @@ export function LandingContent(): React.JSX.Element {
               </div>
             ))}
           </div>
+          <p className={`mt-1 text-center text-[13px] leading-snug ${MUTED}`}>
+            {t('maleRecommendationNote')}
+          </p>
 
           {/* [3] ★인터랙티브 팔레트 스트립 — 레어뷰티 Shade Finder 문법. 색이 유일한 컬러 소스 */}
           <section ref={observe} className="landing-reveal pt-12">

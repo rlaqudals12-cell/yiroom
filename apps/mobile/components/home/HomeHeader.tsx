@@ -24,10 +24,16 @@ function getHeaderGreeting(briefingGreeting: string | undefined, userName: strin
   }
 
   // 서버 인사는 "이름님, 좋은 아침이에요" 형식이므로 이름은 아래 제목에 한 번만 둔다.
-  const namePrefix = `${userName}님,`;
-  return briefingGreeting.startsWith(namePrefix)
-    ? briefingGreeting.slice(namePrefix.length).trim()
-    : briefingGreeting;
+  const normalizedUserName = userName.trim();
+  if (normalizedUserName) {
+    const namePrefix = `${normalizedUserName}님,`;
+    return briefingGreeting.startsWith(namePrefix)
+      ? briefingGreeting.slice(namePrefix.length).trim()
+      : briefingGreeting;
+  }
+
+  // 이름이 빈 계정에는 캐시된 서버 이름도 재노출하지 않고 시간 인사만 남긴다.
+  return briefingGreeting.replace(/^[^,]*님,\s*/, '');
 }
 
 export function HomeHeader({
@@ -37,6 +43,7 @@ export function HomeHeader({
   briefingGreeting,
 }: HomeHeaderProps): React.JSX.Element {
   const { colors, spacing, radii, typography, isDark, brand } = useTheme();
+  const normalizedUserName = userName.trim();
 
   return (
     <Animated.View
@@ -92,18 +99,20 @@ export function HomeHeader({
             >
               {getHeaderGreeting(briefingGreeting, userName)}
             </Text>
-            <Text
-              style={[
-                styles.userName,
-                {
-                  fontSize: typography.size['2xl'],
-                  color: colors.overlayForeground,
-                  letterSpacing: typography.letterSpacing.tighter,
-                },
-              ]}
-            >
-              {isLoaded ? userName : '...'}님
-            </Text>
+            {!isLoaded || normalizedUserName ? (
+              <Text
+                style={[
+                  styles.userName,
+                  {
+                    fontSize: typography.size['2xl'],
+                    color: colors.overlayForeground,
+                    letterSpacing: typography.letterSpacing.tighter,
+                  },
+                ]}
+              >
+                {isLoaded ? normalizedUserName : '...'}님
+              </Text>
+            ) : null}
             <Text
               style={[
                 styles.slogan,

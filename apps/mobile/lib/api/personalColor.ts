@@ -16,6 +16,7 @@ import type { PersonalColorSeason } from '@yiroom/shared';
 import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
 import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
+import { seasonKo } from '../integrated/labels';
 
 // ============================================
 // 1. 타입
@@ -221,6 +222,22 @@ export function normalizePersonalColorImageQuality(
 
 export function getPersonalColorSubtypeLabel(subtype: PersonalColorSeasonSubtype): string {
   return SUBTYPE_LABELS[subtype];
+}
+
+/** 이력·비교에서 계절만 노출하지 않도록 DB의 12톤 세부 표식을 같이 조립한다. */
+export function getPersonalColorToneLabel(season: unknown, subtype: unknown): string {
+  const normalizedSeason = toSeason(season);
+  const normalizedSubtype = normalizePersonalColorSubtype(subtype);
+  const seasonLabel =
+    normalizedSeason !== null
+      ? seasonKo(normalizedSeason)
+      : typeof season === 'string'
+        ? season
+        : '';
+
+  return normalizedSubtype
+    ? `${seasonLabel} · ${getPersonalColorSubtypeLabel(normalizedSubtype)}`
+    : seasonLabel;
 }
 
 /** 신뢰도 정규화: 서버는 0~100 스케일, 화면은 0~1을 기대 (×100로 표시) */

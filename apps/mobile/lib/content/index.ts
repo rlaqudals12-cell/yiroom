@@ -43,7 +43,8 @@ export function getGenderAdaptiveTerm(term: string, gender: GenderPreference): s
 // ─── 제품 카테고리 필터링 ────────────────────────────
 
 const EXCLUDED_CATEGORIES: Record<GenderPreference, string[]> = {
-  male: ['lipstick', 'blush', 'eyeshadow_palette', 'nail_polish'],
+  // 통합 큐레이션의 공개 category(lip/base)도 함께 막아 남성 그루밍 분기의 최종 가드로 쓴다.
+  male: ['lipstick', 'lip', 'base', 'makeup', 'blush', 'eyeshadow_palette', 'nail_polish'],
   female: ['tie', 'cufflinks', 'beard_oil'],
   neutral: [],
 };

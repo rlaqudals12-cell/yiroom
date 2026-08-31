@@ -102,6 +102,21 @@ describe('HomeHeader', () => {
     expect(queryByText('님')).toBeNull();
   });
 
+  it('로그인 계정에 이름이 없으면 "님" 제목을 숨기고 이름 생략형 인사만 표시한다', () => {
+    const { getByText, queryByText } = renderWithTheme(
+      <HomeHeader
+        userName=""
+        isLoaded={true}
+        isSignedIn={true}
+        briefingGreeting="님, 좋은 아침이에요"
+      />
+    );
+
+    expect(getByText('좋은 아침이에요')).toBeTruthy();
+    expect(queryByText('님')).toBeNull();
+    expect(queryByText('님, 좋은 아침이에요')).toBeNull();
+  });
+
   describe('브리핑과 단일 인사 소스', () => {
     it('브리핑이 아직 없으면 로컬 시간대의 자연스러운 인사를 표시한다', () => {
       jest.useFakeTimers();

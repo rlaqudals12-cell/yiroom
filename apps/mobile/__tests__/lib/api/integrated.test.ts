@@ -94,6 +94,33 @@ describe('requestIntegratedAnalysis', () => {
     expect(result.reused).not.toBe(true);
     if (result.reused === true) throw new Error('완전 결과 대신 재사용 요약이 반환됨');
     expect(result.axesCompleted).toHaveLength(5);
+    expect(result.recommendationGender).toBe('neutral');
+  });
+
+  it('선택한 남성 성별을 서버 questionnaire와 직후 결과 payload에 보존한다', async () => {
+    const fetchMock = mockFetch({
+      ok: true,
+      status: 200,
+      body: { success: true, result: mockSuccessResult },
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const result = await requestIntegratedAnalysis(
+      {
+        ...validInput,
+        questionnaire: { ...validInput.questionnaire, gender: 'male' },
+      },
+      'fake-token',
+      'http://test'
+    );
+
+    const requestBody = JSON.parse(
+      String((fetchMock.mock.calls[0][1] as RequestInit).body)
+    ) as IntegratedAnalysisInput;
+    expect(requestBody.questionnaire.gender).toBe('male');
+    expect(result.reused).not.toBe(true);
+    if (result.reused === true) throw new Error('완전 결과 대신 재사용 요약이 반환됨');
+    expect(result.recommendationGender).toBe('male');
   });
 
   it('멱등 재사용 응답은 축 payload 없는 세션 요약으로 구분한다', async () => {

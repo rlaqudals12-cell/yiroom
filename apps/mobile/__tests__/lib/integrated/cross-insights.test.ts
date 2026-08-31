@@ -59,6 +59,38 @@ const makeup: AxisResult<AxisData> = {
 };
 
 describe('composeCrossInsights (모바일) — 라벨 한국어화', () => {
+  it('남성은 립·베이스·쿠션·파우더 기반 메이크업 조합 근거를 받지 않는다', () => {
+    const { items } = composeCrossInsights(
+      {
+        ...allFailed(),
+        personalColor: pcWarm,
+        skin: skinOily,
+        makeup,
+      },
+      'male'
+    );
+    const copy = items.map((item) => `${item.title} ${item.body}`).join(' ');
+
+    expect(items.map((item) => item.id)).not.toEqual(
+      expect.arrayContaining(['pc_s', 'pc_m', 's_m'])
+    );
+    expect(copy).not.toMatch(/코랄|로즈|립|베이스|쿠션|파우더/);
+  });
+
+  it('미선택 neutral은 기존 PC×피부·PC×메이크업·피부×메이크업 근거를 유지한다', () => {
+    const { items } = composeCrossInsights(
+      {
+        ...allFailed(),
+        personalColor: pcWarm,
+        skin: skinOily,
+        makeup,
+      },
+      'neutral'
+    );
+
+    expect(items.map((item) => item.id)).toEqual(expect.arrayContaining(['pc_s', 'pc_m', 's_m']));
+  });
+
   it('PC×피부 body는 한글 undertone/skinType(웜톤/지성) — 원시 warm/oily 노출 금지', () => {
     const { items } = composeCrossInsights({
       ...allFailed(),

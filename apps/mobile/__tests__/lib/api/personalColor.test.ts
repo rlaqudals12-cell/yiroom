@@ -14,11 +14,26 @@ jest.mock('@/lib/analytics/tracker', () => ({
 }));
 
 import { DEFAULT_API_BASE_URL } from '@/lib/api/base-url';
-import { requestPersonalColorAnalysis, PersonalColorApiError } from '@/lib/api/personalColor';
+import {
+  getPersonalColorToneLabel,
+  requestPersonalColorAnalysis,
+  PersonalColorApiError,
+} from '@/lib/api/personalColor';
 
 const BASE_URL = 'https://example.test';
 
 const VALID_INPUT = { imageBase64: 'x'.repeat(200) };
+
+describe('getPersonalColorToneLabel', () => {
+  it('계절과 DB 12톤 세부 표식을 함께 표기한다', () => {
+    expect(getPersonalColorToneLabel('Spring', 'bright')).toBe('봄 웜톤 · 브라이트');
+    expect(getPersonalColorToneLabel('summer', 'muted')).toBe('여름 쿨톤 · 뮤트');
+  });
+
+  it('세부 표식이 없으면 실제 계절만 표기하고 임의 톤을 지어내지 않는다', () => {
+    expect(getPersonalColorToneLabel('Winter', null)).toBe('겨울 쿨톤');
+  });
+});
 
 function mockFetchOnce(status: number, json: unknown): jest.Mock {
   const mock = jest.fn().mockResolvedValue({

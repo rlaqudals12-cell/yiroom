@@ -336,6 +336,13 @@ function IntegratedAnalysisForm(): React.JSX.Element {
           birthdateResult.status === 'fulfilled' && birthdateResult.value.hasBirthDate
         );
         setHasAgreed(agreementResult.status === 'fulfilled' && agreementResult.value.hasAgreed);
+        if (agreementResult.status === 'fulfilled') {
+          const storedGender = agreementResult.value.gender;
+          if (storedGender) {
+            // 조회 중 사용자가 먼저 고른 값은 서버 기본값으로 덮어쓰지 않는다.
+            setGender((current) => current ?? storedGender);
+          }
+        }
       } catch {
         // 조회 실패 시 수집 쪽으로 안전하게 폴백 — 없으면 어차피 서버가 403이므로 입력을 받는다.
         if (active) {
@@ -523,7 +530,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
       return;
     }
 
-    // 생체정보 동의 게이트 — 필수 3종 미체크·성별 미선택이면 분석을 호출하지 않는다(서버도 403).
+    // 생체정보 동의 게이트 — 필수 3종만 강제한다. 성별은 추천 개인화용 선택값이다.
     const agreementGate = evaluateAgreementGate(
       hasAgreed,
       { terms: agreeTerms, privacy: agreePrivacy, biometric: agreeBiometric },
@@ -582,7 +589,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
           }
 
           // 필수 동의 최초 저장 — 분석 라우트의 생체동의 게이트(403)를 통과시키는 선행 조건.
-          if (agreementGate.needsSave && agreementGate.gender) {
+          if (agreementGate.needsSave) {
             await saveAgreement(
               { gender: agreementGate.gender, marketingAgreed: agreeMarketing },
               token,
@@ -618,6 +625,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
               hair: { length: hairLength },
               body,
               imageStorageConsent,
+              gender,
             },
             options: { locale: 'ko', skipMakeup: false },
             // 선택 재분석: 일부 축만 고르면 그 축만 재실행 (ADR-109 2A, 웹과 동일)
@@ -1130,44 +1138,51 @@ function IntegratedAnalysisForm(): React.JSX.Element {
               label="[선택] 마케팅 정보 수신 동의"
               testID="consent-marketing"
             />
-
-            {/* 성별 — 맞춤 분석에 필요 (서버 계약상 동의 저장 시 필수) */}
-            <Text style={[styles.genderLabel, { color: colors.foreground }]}>
-              성별 <Text style={styles.required}>*</Text>
-            </Text>
-            <View style={styles.chipGroup}>
-              {(
-                [
-                  { value: 'female', label: '여성' },
-                  { value: 'male', label: '남성' },
-                ] as Array<{ value: AgreementGender; label: string }>
-              ).map((opt) => {
-                const active = gender === opt.value;
-                return (
-                  <Pressable
-                    key={opt.value}
-                    onPress={() => setGender(opt.value)}
-                    testID={`gender-${opt.value}`}
-                    accessibilityLabel={`성별 ${opt.label} ${active ? '선택됨' : '선택 안 됨'}`}
-                    style={[
-                      styles.chip,
-                      {
-                        borderColor: active ? '#EC4899' : colors.border,
-                        backgroundColor: active ? 'rgba(236,72,153,0.15)' : 'transparent',
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[styles.chipText, { color: active ? '#EC4899' : colors.foreground }]}
-                    >
-                      {opt.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
           </GlassCard>
         )}
+
+        {/* 성별은 동의 여부와 무관하게 통합 문진에서 선택한다. 판정이 아닌 추천에만 사용. */}
+        <GlassCard style={styles.section} testID="gender-section">
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>맞춤 추천</Text>
+          <Text style={[styles.genderLabel, { color: colors.foreground }]}>성별 · 선택</Text>
+          <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
+            맞춤 추천에만 쓰여요. 선택하지 않아도 분석할 수 있어요.
+          </Text>
+          <View style={styles.chipGroup}>
+            {(
+              [
+                { value: 'female', label: '여성' },
+                { value: 'male', label: '남성' },
+                { value: 'neutral', label: '선택 안 함' },
+              ] as { value: AgreementGender; label: string }[]
+            ).map((opt) => {
+              const active = gender === opt.value;
+              return (
+                <Pressable
+                  key={opt.value}
+                  onPress={() => setGender(opt.value)}
+                  testID={`gender-${opt.value}`}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`성별 ${opt.label} ${active ? '선택됨' : '선택 안 됨'}`}
+                  style={[
+                    styles.chip,
+                    {
+                      borderColor: active ? '#EC4899' : colors.border,
+                      backgroundColor: active ? 'rgba(236,72,153,0.15)' : 'transparent',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[styles.chipText, { color: active ? '#EC4899' : colors.foreground }]}
+                  >
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </GlassCard>
 
         {/* 에러 메시지 */}
         {error && (

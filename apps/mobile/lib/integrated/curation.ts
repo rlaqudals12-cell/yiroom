@@ -10,7 +10,9 @@
  * @see apps/web/lib/analysis/integrated/curation.ts (원본)
  */
 
-import type { AxisData, IntegratedAnalysisResult } from '@/lib/api';
+import type { AxisData, IntegratedAnalysisResult, RecommendationGender } from '@/lib/api';
+import { filterCategoriesByGender } from '@/lib/content';
+
 // 소비자 눈높이 라벨 (원시 영문/코드 season·skinType·bodyType → 한국어) — 웹 정본 미러
 import { seasonKo, skinTypeKo, bodyTypeKo } from './labels';
 
@@ -76,6 +78,8 @@ function getBody(r: IntegratedAnalysisResult['axes']['body']): AxisData | null {
 // ============================================
 
 export interface ComposeCurationOptions {
+  /** 추천 전용 성별. 미선택은 neutral로 기존 중립 동작을 유지한다. */
+  gender?: RecommendationGender;
   /**
    * 사용자가 옷장에 아이템을 등록했는지 여부.
    * 왜: outfit 카드는 `/(closet)/recommend`로 보내는데, 옷장이 비면 빈 상태를 마주침.
@@ -93,7 +97,7 @@ export function composeCuration(
   const pc = getPC(axes.personalColor);
   const skin = getSkin(axes.skin);
   const body = getBody(axes.body);
-  const { hasClosetItems } = options;
+  const { hasClosetItems, gender = 'neutral' } = options;
 
   const items: CurationItem[] = [];
 
@@ -104,16 +108,26 @@ export function composeCuration(
     const tone = warm ? '코랄' : '로즈';
     const toneKey = warm ? 'warm' : 'cool';
 
-    items.push({
-      category: 'lip',
-      title: `${tone} 계열 립틴트`,
-      // 원시 season/undertone(spring·warm) 노출 금지 — seasonKo가 '봄 웜톤'까지 담음
-      reason: `${seasonKo(pc.season) || '당신의'} 혈색을 가장 자연스럽게 살려요.`,
-      href: buildBeautyPath('lip', { tone: toneKey }, sessionId),
-      cta: '립 보러가기',
-    });
+    if (gender === 'male') {
+      items.push({
+        category: 'skincare',
+        title: '톤 보정 선크림 · 립밤',
+        reason: `${seasonKo(pc.season) || '당신의'} 인상을 부담 없이 정돈해줘요.`,
+        href: buildBeautyPath('sunscreen', { tone: toneKey }, sessionId),
+        cta: '그루밍 보러가기',
+      });
+    } else {
+      items.push({
+        category: 'lip',
+        title: `${tone} 계열 립틴트`,
+        // 원시 season/undertone(spring·warm) 노출 금지 — seasonKo가 '봄 웜톤'까지 담음
+        reason: `${seasonKo(pc.season) || '당신의'} 혈색을 가장 자연스럽게 살려요.`,
+        href: buildBeautyPath('lip', { tone: toneKey }, sessionId),
+        cta: '립 보러가기',
+      });
+    }
 
-    if (skin) {
+    if (skin && gender !== 'male') {
       const skinType = String(skin.skinType ?? '').toLowerCase();
       let finish = 'satin';
       let label = '사틴';
@@ -205,5 +219,12 @@ export function composeCuration(
     }
   }
 
-  return { items: items.slice(0, 3) };
+  // 기존 성별 적응형 카테고리 정본을 마지막 방어선으로 실제 추천 경로에 배선한다.
+  const allowedCategories = new Set(
+    filterCategoriesByGender(
+      items.map((item) => item.category),
+      gender
+    )
+  );
+  return { items: items.filter((item) => allowedCategories.has(item.category)).slice(0, 3) };
 }

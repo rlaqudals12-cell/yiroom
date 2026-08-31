@@ -73,31 +73,59 @@ export default function CompareScreen(): React.JSX.Element {
         {data && data.previousDate && data.currentDate && (
           <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)}>
             <GlassCard shadowSize="md" style={{ ...styles.dateRange, marginBottom: spacing.md }}>
-              <View style={styles.dateItem}>
-                <Clock size={14} color={colors.mutedForeground} />
-                <Text
-                  style={{
-                    fontSize: typography.size.sm,
-                    color: colors.mutedForeground,
-                    marginLeft: spacing.xs,
-                  }}
-                >
-                  이전: {formatDate(data.previousDate)}
-                </Text>
+              <View style={styles.dateColumn}>
+                <View style={styles.dateItem}>
+                  <Clock size={14} color={colors.mutedForeground} />
+                  <Text
+                    style={{
+                      fontSize: typography.size.sm,
+                      color: colors.mutedForeground,
+                      marginLeft: spacing.xs,
+                    }}
+                  >
+                    이전: {formatDate(data.previousDate)}
+                  </Text>
+                </View>
+                {data.previousSummary ? (
+                  <Text
+                    style={{
+                      color: colors.foreground,
+                      fontSize: typography.size.xs,
+                      marginTop: spacing.xxs,
+                    }}
+                    testID="compare-previous-summary"
+                  >
+                    {data.previousSummary}
+                  </Text>
+                ) : null}
               </View>
               <ArrowLeftRight size={16} color={brand.primary} />
-              <View style={styles.dateItem}>
-                <Clock size={14} color={brand.primary} />
-                <Text
-                  style={{
-                    fontSize: typography.size.sm,
-                    color: colors.foreground,
-                    fontWeight: typography.weight.semibold,
-                    marginLeft: spacing.xs,
-                  }}
-                >
-                  현재: {formatDate(data.currentDate)}
-                </Text>
+              <View style={[styles.dateColumn, styles.currentDateColumn]}>
+                <View style={styles.dateItem}>
+                  <Clock size={14} color={brand.primary} />
+                  <Text
+                    style={{
+                      fontSize: typography.size.sm,
+                      color: colors.foreground,
+                      fontWeight: typography.weight.semibold,
+                      marginLeft: spacing.xs,
+                    }}
+                  >
+                    현재: {formatDate(data.currentDate)}
+                  </Text>
+                </View>
+                {data.currentSummary ? (
+                  <Text
+                    style={{
+                      color: colors.foreground,
+                      fontSize: typography.size.xs,
+                      marginTop: spacing.xxs,
+                    }}
+                    testID="compare-current-summary"
+                  >
+                    {data.currentSummary}
+                  </Text>
+                ) : null}
               </View>
             </GlassCard>
           </Animated.View>
@@ -203,6 +231,12 @@ const styles = StyleSheet.create({
   dateItem: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  dateColumn: {
+    flex: 1,
+  },
+  currentDateColumn: {
+    alignItems: 'flex-end',
   },
   actionButton: {
     flexDirection: 'row',

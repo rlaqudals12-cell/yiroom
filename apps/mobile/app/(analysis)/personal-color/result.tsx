@@ -404,6 +404,7 @@ function PersonalColorResultContent(): React.JSX.Element {
         onPrimaryAction={handleProductRecommendation}
         onSaveRetry={() => router.replace('/(analysis)/personal-color')}
         primaryActionText="내 색상에 맞는 제품 보기"
+        reproducibilityText="같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요."
         retryPath="/(analysis)/personal-color"
         reportTargetId={
           historyId ??

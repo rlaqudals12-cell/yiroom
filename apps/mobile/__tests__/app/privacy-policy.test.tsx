@@ -3,7 +3,7 @@
  *
  * 대상: app/privacy-policy.tsx
  * 목적: 웹 정본(2026-08-30 법적 감사) 동기화 문구 회귀 가드 —
- *       성별·생년월일 필수화, AI 코치 대화 서버 저장, 생체정보 보유기간,
+ *       생년월일 필수·성별 선택화, AI 코치 대화 서버 저장, 생체정보 보유기간,
  *       국외이전 고지, 허위 문구("익명 집계"·"서버 미저장") 부재 확인.
  */
 import React from 'react';
@@ -51,17 +51,17 @@ describe('PrivacyPolicyScreen (개인정보처리방침)', () => {
     expect(getByText(/2026년 8월 30일부터 적용됩니다/)).toBeTruthy();
   });
 
-  describe('수집 항목 (§2) — 성별·생년월일 필수화', () => {
-    it('필수 항목에 생년월일과 성별이 포함된다', () => {
-      const { getByText } = renderWithTheme(<PrivacyPolicyScreen />);
-      expect(getByText(/필수 항목:.*생년월일.*성별/)).toBeTruthy();
+  describe('수집 항목 (§2) — 생년월일 필수·성별 선택화', () => {
+    it('필수 항목에는 생년월일만, 선택 항목에는 추천 개인화용 성별이 포함된다', () => {
+      const { getByText, queryByText } = renderWithTheme(<PrivacyPolicyScreen />);
+      expect(getByText(/필수 항목:.*생년월일/)).toBeTruthy();
+      expect(queryByText(/필수 항목:.*성별/)).toBeNull();
+      expect(getByText(/선택 항목: 성별\(추천 개인화 목적\).*프로필 사진/)).toBeTruthy();
     });
 
-    it('선택 항목에 생년월일·성별이 없다 (구버전 허위 표기 제거)', () => {
-      const { getByText, queryByText } = renderWithTheme(<PrivacyPolicyScreen />);
-      expect(getByText('선택 항목: 프로필 사진, 키, 체중')).toBeTruthy();
+    it('선택 항목에 필수 연령 확인값인 생년월일은 없다', () => {
+      const { queryByText } = renderWithTheme(<PrivacyPolicyScreen />);
       expect(queryByText(/선택 항목:.*생년월일/)).toBeNull();
-      expect(queryByText(/선택 항목:.*성별/)).toBeNull();
     });
   });
 

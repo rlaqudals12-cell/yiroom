@@ -103,6 +103,10 @@ export const reportResultStyles = StyleSheet.create({
     fontSize: typography.size.xs,
     fontVariant: ['tabular-nums'],
   },
+  trustDetailText: {
+    lineHeight: 18,
+    marginTop: spacing.xs,
+  },
   followups: {
     backgroundColor: REPORT_COLORS.paper,
     borderColor: REPORT_COLORS.rule,

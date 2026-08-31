@@ -700,9 +700,10 @@
   "landing": {
     "promiseBanner": "Free forever · No ads · Neutral picks",
     "trust1": "Same photo, same verdict — reproducibility tested",
-    "trust2": "5-axis analysis (color · skin · body · hair · makeup)",
+    "trust2": "Saving original photos is optional — off by default",
     "trust3": "Core analysis is free, forever",
     "trust4": "Certified retailers only — no counterfeits",
+    "maleRecommendationNote": "For men, lip and base recommendations switch to grooming",
     "paletteTitle": "The 12-tone palette we diagnose with",
     "paletteNote": "Not decoration — the actual standard our verdicts use",
     "paletteCta": "Free Color Analysis",

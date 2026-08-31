@@ -11,6 +11,7 @@ import {
   VISIBLE_ANALYSIS_MODULES,
   type VisibleAnalysisModule,
 } from '../lib/analysis/visible-modules';
+import { getPersonalColorToneLabel } from '../lib/api/personalColor';
 import { useClerkSupabaseClient } from '../lib/supabase';
 import { analysisLogger } from '../lib/utils/logger';
 
@@ -47,12 +48,12 @@ interface TableConfig {
 const MODULE_TABLE_MAP: Record<AnalysisModuleType, TableConfig> = {
   'personal-color': {
     table: 'personal_color_assessments',
-    columns: 'id, season, confidence, created_at',
+    columns: 'id, season, season_subtype, confidence, created_at',
     toItem: (row) => ({
       id: row.id as string,
       moduleType: 'personal-color',
       createdAt: new Date(row.created_at as string),
-      summary: getSeasonLabel(row.season as string),
+      summary: getPersonalColorToneLabel(row.season, row.season_subtype),
       score: row.confidence as number | undefined,
     }),
   },
@@ -259,21 +260,6 @@ export function useAnalysisHistory(
   }, [isLoaded, fetchItems]);
 
   return { items, isLoading, error, hasMore, loadMore, refetch };
-}
-
-// 헬퍼 함수
-function getSeasonLabel(season: string): string {
-  const labels: Record<string, string> = {
-    Spring: '봄 웜톤',
-    Summer: '여름 쿨톤',
-    Autumn: '가을 웜톤',
-    Winter: '겨울 쿨톤',
-    spring: '봄 웜톤',
-    summer: '여름 쿨톤',
-    autumn: '가을 웜톤',
-    winter: '겨울 쿨톤',
-  };
-  return labels[season] || season;
 }
 
 function getSkinTypeLabel(skinType: string): string {

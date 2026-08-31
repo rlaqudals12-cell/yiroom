@@ -260,6 +260,42 @@ describe('i18n messages', () => {
       ja: '4軸',
       zh: '4个维度',
     };
+    const PRIVACY_TRUST_COPY: Record<string, string> = {
+      ko: '원본 사진 저장은 선택 — 기본은 꺼져 있어요',
+      en: 'Saving original photos is optional — off by default',
+      ja: '元の写真の保存は任意 — 初期設定はオフです',
+      zh: '原始照片存储可选 — 默认关闭',
+    };
+    const MALE_RECOMMENDATION_COPY: Record<string, string> = {
+      ko: '남성은 립·베이스 대신 그루밍 추천으로 바뀌어요',
+      en: 'For men, lip and base recommendations switch to grooming',
+      ja: '男性向けには、リップ・ベースの代わりにグルーミングを提案します',
+      zh: '男性会收到男士护理建议，而非唇妆、底妆推荐',
+    };
+
+    it.each(['ko', 'en', 'ja', 'zh'])(
+      '%s 신뢰 밴드는 원본 저장이 선택·기본 OFF임을 정확히 밝힌다',
+      (locale) => {
+        const messages = Object.fromEntries(locales()) as Record<
+          string,
+          Record<string, Record<string, string>>
+        >;
+        expect(messages[locale].landing.trust2).toBe(PRIVACY_TRUST_COPY[locale]);
+      }
+    );
+
+    it.each(['ko', 'en', 'ja', 'zh'])(
+      '%s 랜딩은 남성 추천이 그루밍으로 바뀐다는 기능 사실을 고지한다',
+      (locale) => {
+        const messages = Object.fromEntries(locales()) as Record<
+          string,
+          Record<string, Record<string, string>>
+        >;
+        expect(messages[locale].landing.maleRecommendationNote).toBe(
+          MALE_RECOMMENDATION_COPY[locale]
+        );
+      }
+    );
 
     it.each(['ko', 'en', 'ja', 'zh'])(
       '%s 히어로 제목이 셀카 한 장으로 체형까지 약속하지 않는다',

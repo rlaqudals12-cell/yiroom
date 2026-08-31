@@ -40,11 +40,27 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch agreement' }, { status: 500 });
     }
 
+    // 성별은 추천 개인화용 선택값이다. 조회 실패가 필수 동의 상태를 가리지 않게 한다.
+    const { data: userProfile, error: userProfileError } = await supabase
+      .from('users')
+      .select('gender')
+      .eq('clerk_user_id', userId)
+      .maybeSingle();
+    if (userProfileError) {
+      console.error('[Agreement API] User gender fetch error:', userProfileError);
+    }
+    const rawGender = userProfile?.gender;
+    const storedGender =
+      rawGender && ['male', 'female', 'neutral'].includes(rawGender)
+        ? (rawGender as 'male' | 'female' | 'neutral')
+        : undefined;
+
     // 동의 정보가 없거나 필수 동의(약관·개인정보·생체정보)가 false인 경우
     if (!data || !data.terms_agreed || !data.privacy_agreed || !data.biometric_agreed) {
       return NextResponse.json({
         hasAgreed: false,
         agreement: null,
+        ...(storedGender ? { gender: storedGender } : {}),
       });
     }
 
@@ -59,12 +75,14 @@ export async function GET() {
         agreement: mapDbAgreementToFrontend(data),
         requiresUpdate: true,
         reason: 'version_mismatch',
+        ...(storedGender ? { gender: storedGender } : {}),
       });
     }
 
     return NextResponse.json({
       hasAgreed: true,
       agreement: mapDbAgreementToFrontend(data),
+      ...(storedGender ? { gender: storedGender } : {}),
     });
   } catch (err) {
     console.error('[Agreement API] GET exception:', err);
@@ -94,7 +112,7 @@ export async function POST(request: NextRequest) {
       privacyAgreed: boolean;
       marketingAgreed: boolean;
       biometricAgreed: boolean;
-      gender?: 'male' | 'female';
+      gender?: 'male' | 'female' | 'neutral' | null;
     };
 
     // 필수 동의 검증 (약관·개인정보·생체정보)
@@ -113,11 +131,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 성별 검증
-    if (!gender || !['male', 'female'].includes(gender)) {
+    // 성별은 선택 항목이다. 전달된 경우에만 3값 taxonomy를 검증한다.
+    if (gender != null && !['male', 'female', 'neutral'].includes(gender)) {
       return NextResponse.json(
         {
-          error: '성별을 선택해주세요',
+          error: '성별 값을 확인해주세요',
         },
         { status: 400 }
       );
@@ -156,15 +174,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to save agreement' }, { status: 500 });
     }
 
-    // 성별 정보를 users 테이블에 저장
-    const { error: userError } = await supabase
-      .from('users')
-      .update({ gender })
-      .eq('clerk_user_id', userId);
+    // 전달된 선택값만 저장한다. 미선택은 기존 프로필 값을 덮어쓰지 않는다.
+    if (gender) {
+      const { error: userError } = await supabase
+        .from('users')
+        .update({ gender })
+        .eq('clerk_user_id', userId);
 
-    if (userError) {
-      console.error('[Agreement API] User gender update error:', userError);
-      // 성별 저장 실패해도 약관 동의는 성공으로 처리 (비동기 재시도 가능)
+      if (userError) {
+        console.error('[Agreement API] User gender update error:', userError);
+        // 성별 저장 실패해도 약관 동의는 성공으로 처리 (비동기 재시도 가능)
+      }
     }
 
     return NextResponse.json(

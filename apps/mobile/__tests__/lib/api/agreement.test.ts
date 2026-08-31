@@ -47,10 +47,9 @@ describe('evaluateAgreementGate', () => {
     if (!gate.ok) expect(gate.message).toContain('필수 약관');
   });
 
-  it('성별 미선택이면 안내 에러 (서버 400 재현)', () => {
+  it('성별 미선택이어도 필수 동의를 완료하면 저장 필요로 통과', () => {
     const gate = evaluateAgreementGate(false, ALL_CHECKED, undefined);
-    expect(gate.ok).toBe(false);
-    if (!gate.ok) expect(gate.message).toContain('성별');
+    expect(gate).toEqual({ ok: true, needsSave: true, gender: undefined });
   });
 
   it('필수 체크 + 성별 선택이면 저장 필요로 통과', () => {
@@ -72,10 +71,14 @@ describe('fetchAgreementStatus', () => {
   });
 
   it('필수 동의 완료면 hasAgreed=true', async () => {
-    global.fetch = mockFetch({ ok: true, status: 200, body: { hasAgreed: true, agreement: {} } });
+    global.fetch = mockFetch({
+      ok: true,
+      status: 200,
+      body: { hasAgreed: true, agreement: {}, gender: 'male' },
+    });
 
     const status = await fetchAgreementStatus('token', 'http://test');
-    expect(status).toEqual({ hasAgreed: true });
+    expect(status).toEqual({ hasAgreed: true, gender: 'male' });
   });
 
   it('미동의(또는 버전 불일치)면 hasAgreed=false', async () => {
@@ -178,6 +181,20 @@ describe('saveAgreement', () => {
       unknown
     >;
     expect(body.marketingAgreed).toBe(false);
+  });
+
+  it('성별 미선택이면 gender 필드 없이 필수 동의만 저장한다', async () => {
+    const fetchMock = mockFetch({ ok: true, status: 201, body: { success: true } });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await saveAgreement({}, 'token', 'http://test');
+
+    const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string) as Record<
+      string,
+      unknown
+    >;
+    expect(body.termsAgreed).toBe(true);
+    expect(body).not.toHaveProperty('gender');
   });
 
   it('제출 AbortSignal을 fetch에 전달하고 취소 오류를 구분한다', async () => {

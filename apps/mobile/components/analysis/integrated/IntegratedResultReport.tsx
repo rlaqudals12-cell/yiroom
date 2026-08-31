@@ -54,9 +54,13 @@ export function IntegratedResultReport({
   const persona = result.persona;
   const fallbackLabels = result.usedFallback.map((axis) => AXIS_LABELS[axis]).filter(Boolean);
   const failedLabels = result.axesFailed.map((axis) => AXIS_LABELS[axis]).filter(Boolean);
-  const actionPlan = composeActionPlan(result.axes);
-  const insights = composeCrossInsights(result.axes);
-  const curation = composeCuration(result.axes, result.sessionId, { hasClosetItems });
+  const recommendationGender = result.recommendationGender ?? 'neutral';
+  const actionPlan = composeActionPlan(result.axes, recommendationGender);
+  const insights = composeCrossInsights(result.axes, recommendationGender);
+  const curation = composeCuration(result.axes, result.sessionId, {
+    gender: recommendationGender,
+    hasClosetItems,
+  });
 
   return (
     <SafeAreaView edges={['top']} style={styles.ground} testID="integrated-result-screen">

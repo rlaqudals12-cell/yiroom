@@ -141,6 +141,11 @@ describe('퍼스널컬러 결과 서버 팔레트·진단지 배선', () => {
     ).toBe('#ABCDEF');
     expect(screen.queryByTestId('pc-best-colors-swatch-2')).toBeNull();
     expect(screen.getByText('분석 신뢰도 91%')).toBeTruthy();
+    expect(
+      screen.getByTestId('analysis-personal-color-result-screen-trust-reproducibility')
+    ).toHaveTextContent(
+      '같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요.'
+    );
     expect(screen.queryByText(/웜톤.*91|쿨톤.*9/)).toBeNull();
     expect(screen.queryByTestId('pc-warm-score')).toBeNull();
 

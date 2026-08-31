@@ -700,9 +700,10 @@
   "landing": {
     "promiseBanner": "永久免费 · 无广告 · 中立推荐",
     "trust1": "同一照片，同一结果 — 已验证可复现",
-    "trust2": "五维整合分析(色彩·皮肤·体型·发型·妆容)",
+    "trust2": "原始照片存储可选 — 默认关闭",
     "trust3": "核心分析永久免费",
     "trust4": "仅接入认证零售商 — 杜绝假货",
+    "maleRecommendationNote": "男性会收到男士护理建议，而非唇妆、底妆推荐",
     "paletteTitle": "诊断所用的12色调标准色板",
     "paletteNote": "不是装饰色，而是实际判定标准",
     "paletteCta": "免费色彩诊断",

@@ -45,4 +45,15 @@ describe('법무 페이지 RSC 계약', () => {
     expect(privacyContent).toMatch(/모바일 앱은 소셜 기능을 제공하지 않으며/);
     expect(privacyContent).toMatch(/service\s+provider \(processor\)/);
   });
+
+  it('성별을 필수가 아닌 추천 개인화용 선택 항목으로 고지한다', () => {
+    const privacyContent = readAppFile('privacy', 'PrivacyContent.tsx');
+
+    expect(privacyContent).toContain(
+      '<strong>선택 항목:</strong> 성별(추천 개인화 목적), 프로필 사진, 키, 체중'
+    );
+    expect(privacyContent).toContain('Gender (for personalized recommendations)');
+    expect(privacyContent).not.toContain('성별(맞춤 분석 목적)');
+    expect(privacyContent).not.toContain('gender (for personalized analysis)');
+  });
 });

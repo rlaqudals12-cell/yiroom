@@ -46,6 +46,34 @@ const hairOval: AxisResult<AxisData> = {
 };
 
 describe('composeActionPlan (모바일) — 라벨 한국어화', () => {
+  it('남성 PC 첫 행동은 코랄 립틴트 대신 그루밍으로 분기한다', () => {
+    const { items } = composeActionPlan({ ...allFailed(), personalColor: pcWarmSpring }, 'male');
+    const now = items.find((item) => item.horizon === 'now');
+
+    expect(now?.title).toContain('톤 보정 선크림');
+    expect(now?.title).not.toContain('코랄');
+    expect(now?.title).not.toContain('립틴트');
+  });
+
+  it('남성 메이크업 첫 행동은 베이스 추천 대신 눈썹·그루밍으로 분기한다', () => {
+    const makeup: AxisResult<AxisData> = {
+      success: true,
+      usedFallback: false,
+      data: { baseRecommendation: '코랄 베이스 메이크업' },
+    };
+    const { items } = composeActionPlan({ ...allFailed(), makeup }, 'male');
+    const now = items.find((item) => item.horizon === 'now');
+
+    expect(now?.title).toContain('눈썹 정리');
+    expect(now?.title).not.toContain('코랄');
+    expect(now?.title).not.toContain('메이크업 베이스');
+  });
+
+  it('미선택 neutral은 기존 코랄 립틴트 추천을 유지한다', () => {
+    const { items } = composeActionPlan({ ...allFailed(), personalColor: pcWarmSpring }, 'neutral');
+    expect(items.find((item) => item.horizon === 'now')?.title).toContain('코랄 계열 립틴트');
+  });
+
   it('PC now 액션 why는 "봄 웜톤" (원시 spring/warm 노출 금지)', () => {
     const { items } = composeActionPlan({ ...allFailed(), personalColor: pcWarmSpring });
     const now = items.find((i) => i.horizon === 'now');

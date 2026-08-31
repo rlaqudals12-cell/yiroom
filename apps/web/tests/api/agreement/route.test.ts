@@ -140,6 +140,30 @@ describe('/api/agreement', () => {
       expect(data.agreement.privacyAgreed).toBe(true);
     });
 
+    it('저장된 추천 성별이 있으면 선택값으로 함께 반환한다', async () => {
+      mockAuth.mockResolvedValue({ userId: 'user_test' });
+      mockMaybeSingle
+        .mockResolvedValueOnce({
+          data: {
+            terms_agreed: true,
+            privacy_agreed: true,
+            biometric_agreed: true,
+            terms_version: '1.0',
+            privacy_version: '1.0',
+            biometric_version: CURRENT_BIOMETRIC_VERSION,
+          },
+          error: null,
+        })
+        .mockResolvedValueOnce({ data: { gender: 'male' }, error: null });
+
+      const response = await GET();
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.hasAgreed).toBe(true);
+      expect(data.gender).toBe('male');
+    });
+
     it('약관 버전이 다르면 requiresUpdate: true를 반환한다', async () => {
       mockAuth.mockResolvedValue({ userId: 'user_test' });
       mockMaybeSingle.mockResolvedValue({
@@ -228,9 +252,22 @@ describe('/api/agreement', () => {
       expect(data.missingAgreements).toContain('privacy');
     });
 
-    // L-1-1: 성별 선택 필수 검증
-    it('성별이 누락되면 400을 반환한다', async () => {
+    it('성별이 누락돼도 필수 동의만 완료하면 201을 반환하고 프로필을 덮어쓰지 않는다', async () => {
       mockAuth.mockResolvedValue({ userId: 'user_test' });
+      mockSingle.mockResolvedValue({
+        data: {
+          id: 'uuid-new',
+          clerk_user_id: 'user_test',
+          terms_agreed: true,
+          privacy_agreed: true,
+          marketing_agreed: false,
+          biometric_agreed: true,
+          terms_version: '1.0',
+          privacy_version: '1.0',
+          biometric_version: CURRENT_BIOMETRIC_VERSION,
+        },
+        error: null,
+      });
 
       const request = new NextRequest('http://localhost/api/agreement', {
         method: 'POST',
@@ -246,8 +283,9 @@ describe('/api/agreement', () => {
       const response = await POST(request);
       const data = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(data.error).toBe('성별을 선택해주세요');
+      expect(response.status).toBe(201);
+      expect(data.success).toBe(true);
+      expect(mockFrom).not.toHaveBeenCalledWith('users');
     });
 
     it('성별이 유효하지 않으면 400을 반환한다', async () => {
@@ -268,10 +306,10 @@ describe('/api/agreement', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe('성별을 선택해주세요');
+      expect(data.error).toBe('성별 값을 확인해주세요');
     });
 
-    it('모든 필수 동의 시 201을 반환한다', async () => {
+    it('선택 안 함(neutral)과 모든 필수 동의 시 201을 반환한다', async () => {
       mockAuth.mockResolvedValue({ userId: 'user_test' });
       mockSingle.mockResolvedValue({
         data: {
@@ -299,7 +337,7 @@ describe('/api/agreement', () => {
           privacyAgreed: true,
           marketingAgreed: true,
           biometricAgreed: true,
-          gender: 'male',
+          gender: 'neutral',
         }),
       });
 
@@ -311,6 +349,7 @@ describe('/api/agreement', () => {
       expect(data.agreement.termsAgreed).toBe(true);
       expect(data.agreement.privacyAgreed).toBe(true);
       expect(data.agreement.marketingAgreed).toBe(true);
+      expect(mockUpdate).toHaveBeenCalledWith({ gender: 'neutral' });
     });
 
     it('DB 에러 시 500을 반환한다', async () => {

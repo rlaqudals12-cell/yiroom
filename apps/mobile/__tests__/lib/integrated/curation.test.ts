@@ -91,6 +91,35 @@ describe('composeCuration (모바일)', () => {
     expect(r.items[1].title).toContain('매트');
   });
 
+  it('남성 PC+피부는 립·베이스 대신 그루밍 1개만 반환한다', () => {
+    const r = composeCuration(
+      { ...allFailed(), personalColor: pcWarm, skin: skinOily },
+      SESSION_ID,
+      { gender: 'male' }
+    );
+
+    expect(r.items).toHaveLength(1);
+    expect(r.items[0]).toMatchObject({
+      category: 'skincare',
+      title: '톤 보정 선크림 · 립밤',
+      cta: '그루밍 보러가기',
+    });
+    expect(r.items[0].href).toContain('category=sunscreen');
+    expect(r.items.some((item) => item.category === 'lip' || item.category === 'base')).toBe(false);
+    expect(r.items.map((item) => item.title).join(' ')).not.toContain('립틴트');
+    expect(r.items.map((item) => item.title).join(' ')).not.toContain('코랄');
+  });
+
+  it('미선택 neutral은 기존 립·베이스 큐레이션을 유지한다', () => {
+    const r = composeCuration(
+      { ...allFailed(), personalColor: pcWarm, skin: skinOily },
+      SESSION_ID,
+      { gender: 'neutral' }
+    );
+
+    expect(r.items.map((item) => item.category)).toEqual(['lip', 'base']);
+  });
+
   it('체형 성공 → outfit 카드 포함 (기본 /(closet)/recommend)', () => {
     const r = composeCuration({ ...allFailed(), body: bodySuccess }, SESSION_ID);
     const outfit = r.items.find((i) => i.category === 'outfit');

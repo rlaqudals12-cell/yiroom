@@ -33,9 +33,11 @@ describe('content', () => {
 
   describe('filterCategoriesByGender', () => {
     it('남성에서 립스틱 제외', () => {
-      const categories = ['moisturizer', 'lipstick', 'sunscreen'];
+      const categories = ['moisturizer', 'lipstick', 'lip', 'base', 'sunscreen'];
       const filtered = filterCategoriesByGender(categories, 'male');
       expect(filtered).not.toContain('lipstick');
+      expect(filtered).not.toContain('lip');
+      expect(filtered).not.toContain('base');
       expect(filtered).toContain('moisturizer');
     });
 

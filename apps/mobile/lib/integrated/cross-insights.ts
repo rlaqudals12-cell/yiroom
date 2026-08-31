@@ -9,7 +9,8 @@
  * @see apps/web/lib/analysis/integrated/cross-insights.ts (원본)
  */
 
-import type { AxisData, IntegratedAnalysisResult } from '@/lib/api';
+import type { AxisData, IntegratedAnalysisResult, RecommendationGender } from '@/lib/api';
+
 // 소비자 눈높이 라벨 (원시 영문/코드 undertone·skinType·season·faceShape·bodyType → 한국어) — 웹 정본 미러
 import { seasonKo, undertoneKo, skinTypeKo, faceShapeKo, bodyTypeKo } from './labels';
 
@@ -156,7 +157,10 @@ function pcXbody(pc: { undertone: string; season: string }, body: { type: string
 // 조합기
 // ============================================
 
-export function composeCrossInsights(axes: IntegratedAnalysisResult['axes']): CrossInsights {
+export function composeCrossInsights(
+  axes: IntegratedAnalysisResult['axes'],
+  gender: RecommendationGender = 'neutral'
+): CrossInsights {
   const pc = getPC(axes.personalColor);
   const skin = getSkin(axes.skin);
   const body = getBody(axes.body);
@@ -165,10 +169,17 @@ export function composeCrossInsights(axes: IntegratedAnalysisResult['axes']): Cr
 
   const items: CrossInsight[] = [];
 
-  if (pc && skin) items.push({ id: 'pc_s', combo: '색 × 피부', ...pcXskin(pc, skin) });
-  if (pc && makeup) items.push({ id: 'pc_m', combo: '색 × 메이크업', ...pcXmakeup(pc) });
+  // 남성은 액션·큐레이션과 동일하게 립/베이스 조합 문구를 제외한다.
+  if (gender !== 'male' && pc && skin) {
+    items.push({ id: 'pc_s', combo: '색 × 피부', ...pcXskin(pc, skin) });
+  }
+  if (gender !== 'male' && pc && makeup) {
+    items.push({ id: 'pc_m', combo: '색 × 메이크업', ...pcXmakeup(pc) });
+  }
   if (body && hair) items.push({ id: 'c_h', combo: '체형 × 헤어', ...bodyXhair(body, hair) });
-  if (skin && makeup) items.push({ id: 's_m', combo: '피부 × 메이크업', ...skinXmakeup(skin) });
+  if (gender !== 'male' && skin && makeup) {
+    items.push({ id: 's_m', combo: '피부 × 메이크업', ...skinXmakeup(skin) });
+  }
   if (pc && body) items.push({ id: 'pc_c', combo: '색 × 체형', ...pcXbody(pc, body) });
 
   return { items };

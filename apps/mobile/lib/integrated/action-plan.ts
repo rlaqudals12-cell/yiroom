@@ -10,7 +10,8 @@
  * @see docs/adr/ADR-104-yiroom-launch-criteria.md §2.1
  */
 
-import type { AxisResult, AxisCode, AxisData, IntegratedAnalysisResult } from '@/lib/api';
+import type { AxisCode, AxisData, IntegratedAnalysisResult, RecommendationGender } from '@/lib/api';
+
 // 소비자 눈높이 라벨 (원시 영문/코드 season·tone·faceShape·bodyType → 한국어) — 웹 정본 미러
 import { seasonKo, toneKo, faceShapeKo, bodyTypeKo } from './labels';
 
@@ -29,16 +30,25 @@ export interface ActionPlan {
 
 const HORIZON_ORDER: ActionHorizon[] = ['now', 'this_week', 'this_month'];
 
-function pcActions(data: AxisData): ActionItem[] {
+function pcActions(data: AxisData, gender: RecommendationGender): ActionItem[] {
   const warm = String(data.undertone ?? '').toLowerCase() === 'warm';
+  const seasonLabel = seasonKo(data.season);
+  const now: ActionItem =
+    gender === 'male'
+      ? {
+          horizon: 'now',
+          axis: 'personal_color',
+          title: warm ? '톤 보정 선크림·립밤으로 혈색 살리기' : '톤 보정 선크림·립밤으로 화색 잡기',
+          why: `${seasonLabel}에 맞는 무겁지 않은 베이스가 인상을 정돈해줘요.`,
+        }
+      : {
+          horizon: 'now',
+          axis: 'personal_color',
+          title: warm ? '코랄 계열 립틴트 1개 써보기' : '로즈 계열 립틴트 1개 써보기',
+          why: `${seasonLabel}에 혈색이 가장 잘 살아나요.`,
+        };
   return [
-    {
-      horizon: 'now',
-      axis: 'personal_color',
-      title: warm ? '코랄 계열 립틴트 1개 써보기' : '로즈 계열 립틴트 1개 써보기',
-      // 원시 영문값(season='spring', undertone='warm') 노출 금지 — seasonKo가 '봄 웜톤'까지 담음
-      why: `${seasonKo(data.season)}에 혈색이 가장 잘 살아나요.`,
-    },
+    now,
     {
       horizon: 'this_week',
       axis: 'personal_color',
@@ -132,7 +142,17 @@ function hairActions(data: AxisData): ActionItem[] {
   ];
 }
 
-function makeupActions(data: AxisData): ActionItem[] {
+function makeupActions(data: AxisData, gender: RecommendationGender): ActionItem[] {
+  if (gender === 'male') {
+    return [
+      {
+        horizon: 'now',
+        axis: 'makeup',
+        title: '눈썹 정리 + 톤 보정 선크림으로 인상 정돈',
+        why: 'PC·피부 분석을 반영한 최소한의 그루밍이에요. 과하지 않아 부담 없어요.',
+      },
+    ];
+  }
   return [
     {
       horizon: 'now',
@@ -146,14 +166,17 @@ function makeupActions(data: AxisData): ActionItem[] {
 /**
  * 성공한 축별 후보 액션을 모은 뒤, 시점별 1개씩 선택.
  */
-export function composeActionPlan(axes: IntegratedAnalysisResult['axes']): ActionPlan {
+export function composeActionPlan(
+  axes: IntegratedAnalysisResult['axes'],
+  gender: RecommendationGender = 'neutral'
+): ActionPlan {
   const candidates: ActionItem[] = [];
 
-  if (axes.personalColor.success) candidates.push(...pcActions(axes.personalColor.data));
+  if (axes.personalColor.success) candidates.push(...pcActions(axes.personalColor.data, gender));
   if (axes.skin.success) candidates.push(...skinActions(axes.skin.data));
   if (axes.body.success) candidates.push(...bodyActions(axes.body.data));
   if (axes.hair.success) candidates.push(...hairActions(axes.hair.data));
-  if (axes.makeup.success) candidates.push(...makeupActions(axes.makeup.data));
+  if (axes.makeup.success) candidates.push(...makeupActions(axes.makeup.data, gender));
 
   const priorityByHorizon: Record<ActionHorizon, AxisCode[]> = {
     now: ['makeup', 'personal_color', 'skin', 'body', 'hair'],

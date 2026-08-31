@@ -117,6 +117,14 @@ describe('LandingContent — 랜딩 구조', () => {
     });
   });
 
+  it('5축 모듈 태그 아래에 남성 그루밍 분기 신호를 조용한 한 줄로 노출한다', () => {
+    render(<LandingContent />);
+
+    const note = screen.getByText('maleRecommendationNote');
+    expect(note.className).toContain('text-[13px]');
+    expect(note.className).toContain('text-center');
+  });
+
   it('미리보기 스크롤러가 그림자 여유(py-6 -my-6)와 소형 뷰포트 축소를 갖는다', () => {
     const { container } = render(<LandingContent />);
 

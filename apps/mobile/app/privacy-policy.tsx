@@ -2,7 +2,7 @@
  * 개인정보처리방침 네이티브 화면
  *
  * 정본 = 웹 apps/web/app/privacy/PrivacyContent.tsx (KoreanContent §1~§13).
- * 웹 법적 감사(2026-08-30) 반영: 성별·생년월일 필수화, 생체정보 보유기간(동의일로부터 1년),
+ * 웹 법적 감사 및 ADR-121 반영: 생년월일 필수·성별 선택화, 생체정보 보유기간(동의일로부터 1년),
  * AI 코치 대화 서버 저장, 국외이전(Google/미국·거부방법), 쿠키·자동수집, 위탁 현황,
  * 자동화된 결정, 안전성 확보조치, 아동 보호, 보호책임자 성명.
  * 영문 전문은 웹 개인정보처리방침 링크로 갈음.
@@ -172,10 +172,11 @@ function KoreanContent({ colors }: ContentProps) {
           회사는 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다:
         </Paragraph>
         <BulletItem colors={colors}>
-          필수 항목: 이메일 주소, 비밀번호, 닉네임, 생년월일(연령 확인 — 만 14세 이상 확인 목적),
-          성별(맞춤 분석 목적)
+          필수 항목: 이메일 주소, 비밀번호, 닉네임, 생년월일(연령 확인 — 만 14세 이상 확인 목적)
         </BulletItem>
-        <BulletItem colors={colors}>선택 항목: 프로필 사진, 키, 체중</BulletItem>
+        <BulletItem colors={colors}>
+          선택 항목: 성별(추천 개인화 목적), 프로필 사진, 키, 체중
+        </BulletItem>
         <BulletItem colors={colors}>
           서비스 이용 시 수집: 얼굴/체형/헤어 이미지, AI 코치 대화 내용
         </BulletItem>

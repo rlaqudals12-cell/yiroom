@@ -14,7 +14,7 @@
  *   서버 계약 (apps/web/app/api/agreement/route.ts):
  *     - GET  → { hasAgreed } (필수 3종 동의 + 버전 일치 시에만 true)
  *     - POST → termsAgreed·privacyAgreed·biometricAgreed 모두 true 필수(아니면 400),
- *               gender('male'|'female') 필수(400). marketingAgreed는 선택.
+ *               gender('male'|'female'|'neutral')·marketingAgreed는 선택.
  *
  * @see apps/web/app/api/agreement/route.ts
  * @see apps/web/lib/api/biometric-consent.ts (fail-closed 게이트)
@@ -32,9 +32,11 @@ import { toUserMessage } from './error-text';
 export interface AgreementStatus {
   /** 필수 동의(약관·개인정보·생체) 완료 + 버전 일치 여부 */
   hasAgreed: boolean;
+  /** 추천 개인화용 저장 성별. 없으면 사용자가 문진에서 선택하지 않은 상태다. */
+  gender?: AgreementGender;
 }
 
-export type AgreementGender = 'male' | 'female';
+export type AgreementGender = 'male' | 'female' | 'neutral';
 
 /** 동의 화면에서 사용자가 체크한 상태 */
 export interface AgreementChecks {
@@ -46,8 +48,8 @@ export interface AgreementChecks {
 /**
  * 제출 시점 동의 게이트 결과 (순수 함수 evaluateAgreementGate 반환값).
  * - ok:true + needsSave:false → 이미 서버에 동의돼 있어 추가 조치 불필요
- * - ok:true + needsSave:true  → 필수 체크·성별 완료 → 저장 후 분석 진행
- * - ok:false                  → 필수 미체크/성별 미선택 → message로 안내, 분석 호출 금지
+ * - ok:true + needsSave:true  → 필수 체크 완료 → 선택 성별과 함께 저장 후 분석 진행
+ * - ok:false                  → 필수 미체크 → message로 안내, 분석 호출 금지
  */
 export type AgreementGate =
   | { ok: true; needsSave: boolean; gender?: AgreementGender }
@@ -82,7 +84,7 @@ export class AgreementApiError extends Error {
  *
  * @param hasAgreed 서버에 이미 필수 동의가 저장돼 있으면 true
  * @param checks 사용자가 체크한 동의 상태
- * @param gender 선택한 성별 (서버 계약상 필수)
+ * @param gender 추천 개인화용 선택 성별
  */
 export function evaluateAgreementGate(
   hasAgreed: boolean,
@@ -97,9 +99,6 @@ export function evaluateAgreementGate(
       ok: false,
       message: '분석을 위해 필수 약관(이용약관·개인정보·생체정보)에 모두 동의해주세요.',
     };
-  }
-  if (gender !== 'male' && gender !== 'female') {
-    return { ok: false, message: '맞춤 분석을 위해 성별을 선택해주세요.' };
   }
   return { ok: true, needsSave: true, gender };
 }
@@ -136,7 +135,7 @@ export async function fetchAgreementStatus(
 
   // 웹 응답: { hasAgreed: boolean, agreement, requiresUpdate? } | { error }
   // error는 계약상 문자열이나, 예외 응답에선 객체일 수 있어 unknown으로 받는다.
-  let json: { hasAgreed?: boolean; error?: unknown } = {};
+  let json: { hasAgreed?: boolean; gender?: unknown; error?: unknown } = {};
   try {
     json = (await response.json()) as typeof json;
   } catch {
@@ -152,20 +151,24 @@ export async function fetchAgreementStatus(
     );
   }
 
-  return { hasAgreed: json.hasAgreed === true };
+  const gender =
+    json.gender === 'male' || json.gender === 'female' || json.gender === 'neutral'
+      ? json.gender
+      : undefined;
+  return { hasAgreed: json.hasAgreed === true, ...(gender ? { gender } : {}) };
 }
 
 /**
  * 필수 동의 저장 (upsert). UI에서 필수 3종 체크를 확인한 뒤에만 호출한다.
  *
- * @param params gender(서버 필수) + marketingAgreed(선택)
+ * @param params gender(추천 개인화용 선택) + marketingAgreed(선택)
  * @param clerkToken Clerk JWT
  * @param baseUrl 웹 API base URL (미지정 시 getApiBaseUrl()이 env·프로덕션 웹 순으로 해석)
  * @param options 통합분석 제출 취소 신호 등 요청 제어 옵션
  * @throws AgreementApiError 검증(400)·네트워크·서버 오류 — message는 사용자 대면 한국어
  */
 export async function saveAgreement(
-  params: { gender: AgreementGender; marketingAgreed?: boolean },
+  params: { gender?: AgreementGender; marketingAgreed?: boolean },
   clerkToken: string,
   baseUrl?: string,
   options: { signal?: AbortSignal } = {}
@@ -187,7 +190,7 @@ export async function saveAgreement(
         privacyAgreed: true,
         biometricAgreed: true,
         marketingAgreed: params.marketingAgreed ?? false,
-        gender: params.gender,
+        ...(params.gender ? { gender: params.gender } : {}),
       }),
       signal: options.signal,
     });

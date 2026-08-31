@@ -118,6 +118,15 @@ describe('ReportResultLayout', () => {
     expect(screen.getAllByText('예시 결과 · 낮은 신뢰도')).toHaveLength(2);
   });
 
+  it('검증된 축의 재현성 문구를 신뢰 영역에만 노출한다', () => {
+    const reproducibilityText =
+      '같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요.';
+    const screen = renderWithTheme(createLayout({ reproducibilityText }));
+
+    expect(screen.getByTestId('hair-report-trust-reproducibility')).toBeTruthy();
+    expect(screen.getByText(reproducibilityText)).toBeTruthy();
+  });
+
   it('결과 조회를 실제 분석 축으로 한 번 기록한다', async () => {
     renderWithTheme(createLayout());
 

@@ -88,10 +88,10 @@ function KoreanContent() {
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>
             <strong>필수 항목:</strong> 이메일 주소, 비밀번호, 닉네임, 생년월일(연령 확인 — 만 14세
-            이상 확인 목적), 성별(맞춤 분석 목적)
+            이상 확인 목적)
           </li>
           <li>
-            <strong>선택 항목:</strong> 프로필 사진, 키, 체중
+            <strong>선택 항목:</strong> 성별(추천 개인화 목적), 프로필 사진, 키, 체중
           </li>
           <li>
             <strong>서비스 이용 시 수집:</strong> 얼굴/체형/헤어 이미지, AI 코치 대화 내용
@@ -444,10 +444,11 @@ function EnglishContent() {
         <ul className="list-disc pl-6 mt-2 space-y-2">
           <li>
             <strong>Required:</strong> Email address, password, nickname, date of birth (for age
-            verification &mdash; 14 or older), gender (for personalized analysis)
+            verification &mdash; 14 or older)
           </li>
           <li>
-            <strong>Optional:</strong> Profile photo, height, weight
+            <strong>Optional:</strong> Gender (for personalized recommendations), profile photo,
+            height, weight
           </li>
           <li>
             <strong>Collected during service use:</strong> Face/body/hair images and AI coach

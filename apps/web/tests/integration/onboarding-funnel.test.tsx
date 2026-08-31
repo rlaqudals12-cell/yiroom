@@ -264,12 +264,17 @@ describe('기존 사용자 플로우 무영향', () => {
     });
 
     const { unmount } = render(<AgreementPage />);
-    fireEvent.click(screen.getByTestId('gender-male'));
+    expect(screen.getByTestId('gender-neutral')).toHaveTextContent('선택 안 함');
+    expect(screen.getByText('성별 · 선택')).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText('전체 동의 (선택 항목·마케팅 수신 포함)'));
     fireEvent.click(screen.getByTestId('agreement-submit'));
 
     await waitFor(() => expect(mockPush).toHaveBeenCalled());
     expect(mockPush.mock.calls[0][0]).toBe('/dashboard');
+    const requestBody = JSON.parse(
+      ((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1] as RequestInit).body as string
+    ) as Record<string, unknown>;
+    expect(requestBody).not.toHaveProperty('gender');
     unmount();
   });
 

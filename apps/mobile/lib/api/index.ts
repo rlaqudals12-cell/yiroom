@@ -28,6 +28,7 @@ export {
   isIntegratedAnalysisResult,
   IntegratedApiError,
   INTEGRATED_REQUEST_TIMEOUT_MS,
+  RECOMMENDATION_GENDERS,
 } from './integrated';
 
 // 단독 축 분석 HTTP 클라이언트 (웹 API 재사용 — ADR-118 thin client)
@@ -110,6 +111,7 @@ export type {
   SkinQuestionnaire,
   HairQuestionnaire,
   BodyQuestionnaire,
+  RecommendationGender,
 } from './integrated';
 
 // 아침 브리핑 HTTP 클라이언트 (웹 API 재사용) — ADR-118

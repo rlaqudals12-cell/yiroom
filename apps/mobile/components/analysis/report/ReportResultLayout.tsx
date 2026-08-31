@@ -37,6 +37,8 @@ export interface ReportResultLayoutProps {
   shareContent?: ReactNode;
   sections: ReportSection[];
   confidence?: number;
+  /** 실측으로 검증된 축에만 노출하는 동일 사진 재현성 안내. */
+  reproducibilityText?: string;
   usedFallback?: boolean;
   saveFailed?: boolean;
   onSaveRetry?: () => void;
@@ -103,6 +105,7 @@ export function ReportResultLayout({
   shareContent,
   sections,
   confidence,
+  reproducibilityText,
   usedFallback = false,
   saveFailed = false,
   onSaveRetry,
@@ -237,6 +240,14 @@ export function ReportResultLayout({
                   ? `분석 신뢰도 ${Math.round(confidence * 100)}%`
                   : 'AI 분석 결과'}
             </Text>
+            {reproducibilityText ? (
+              <Text
+                style={[styles.trustText, styles.trustDetailText]}
+                testID={`${testID}-trust-reproducibility`}
+              >
+                {reproducibilityText}
+              </Text>
+            ) : null}
           </View>
         </View>
 
