@@ -9,6 +9,10 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 
+jest.mock('../../../components/analysis/BiometricRouteGate', () => ({
+  BiometricResultRouteGate: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 // ── 네이티브/화면 의존성 mock ──────────────────────────────
 jest.mock('react-native-safe-area-context', () => {
   const { View } = require('react-native');

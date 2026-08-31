@@ -5,6 +5,10 @@ import { StyleSheet } from 'react-native';
 import PersonalColorResultScreen from '../../../app/(analysis)/personal-color/result';
 import { renderWithTheme } from '../../helpers/test-utils';
 
+jest.mock('../../../components/analysis/BiometricRouteGate', () => ({
+  BiometricResultRouteGate: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 const mockRequestPersonalColorAnalysis = jest.fn();
 const mockGetToken = jest.fn().mockResolvedValue('token-1');
 const mockPush = jest.fn();

@@ -17,6 +17,7 @@ import {
   ReportTextList,
   type ReportSection,
 } from '@/components/analysis';
+import { BiometricResultRouteGate } from '@/components/analysis/BiometricRouteGate';
 import { AxisResultShareSection } from '@/components/share';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import {
@@ -78,6 +79,16 @@ const RECOMMENDATION_LABELS: Record<keyof MakeupAnalysisApiResult['recommendatio
 const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주세요.';
 
 export default function MakeupResultScreen(): React.JSX.Element {
+  const { imageUri } = useLocalSearchParams<{ imageUri?: string }>();
+
+  return (
+    <BiometricResultRouteGate imageUri={imageUri}>
+      <MakeupResultContent />
+    </BiometricResultRouteGate>
+  );
+}
+
+function MakeupResultContent(): React.JSX.Element {
   const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
   const { imageUri, historyId } = useLocalSearchParams<{

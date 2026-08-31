@@ -2,7 +2,7 @@
  * 로그인 화면
  */
 import { useSignIn } from '@clerk/clerk-expo';
-import { useRouter } from 'expo-router';
+import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   View,
@@ -23,10 +23,24 @@ import { TIMING } from '@/lib/animations';
 import { getApiBaseUrl, getWebHostLabel } from '@/lib/api/base-url';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
+const ALLOWED_RETURN_TO_PREFIXES = ['/(analysis)', '/(scan)', '/(twin)'] as const;
+
+export function resolveSignInReturnTo(value: string | string[] | undefined): Href {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  if (!candidate) return '/(tabs)';
+
+  const isAllowed = ALLOWED_RETURN_TO_PREFIXES.some(
+    (prefix) => candidate === prefix || candidate.startsWith(`${prefix}/`)
+  );
+  return isAllowed ? (candidate as Href) : '/(tabs)';
+}
+
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
+  const { returnTo } = useLocalSearchParams<{ returnTo?: string | string[] }>();
   const { colors } = useTheme();
+  const postSignInDestination = resolveSignInReturnTo(returnTo);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -75,7 +89,7 @@ export default function SignInScreen() {
       // 1) 비밀번호만으로 인증 완료 — 바로 메인 탭 진입
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
-        router.replace('/(tabs)');
+        router.replace(postSignInDestination);
         return;
       }
 
@@ -147,7 +161,7 @@ export default function SignInScreen() {
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
-        router.replace('/(tabs)');
+        router.replace(postSignInDestination);
         return;
       }
 
@@ -239,6 +253,11 @@ export default function SignInScreen() {
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             온전한 나를 만나다
           </Text>
+          {returnTo ? (
+            <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+              분석을 시작하려면 로그인이 필요해요
+            </Text>
+          ) : null}
         </Animated.View>
 
         {/* 입력 필드 */}

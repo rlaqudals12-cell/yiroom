@@ -3,7 +3,7 @@
  */
 import { useAuth, useSignUp } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,8 @@ import { TIMING } from '@/lib/animations';
 import { BirthdateApiError, evaluateBirthdateGate, saveBirthdate } from '@/lib/api/birthdate';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
+const RESEND_COOLDOWN_SECONDS = 60;
+
 export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
   const { getToken, signOut } = useAuth();
@@ -37,6 +39,14 @@ export default function SignUpScreen() {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!pendingVerification || resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((current) => Math.max(0, current - 1)), 1000);
+    return () => clearTimeout(timer);
+  }, [pendingVerification, resendCooldown]);
 
   // 회원가입 처리
   const handleSignUp = async () => {
@@ -135,6 +145,31 @@ export default function SignUpScreen() {
     }
   };
 
+  const handleResendCode = async (): Promise<void> => {
+    if (!isLoaded || isLoading || resendCooldown > 0) return;
+
+    setIsLoading(true);
+    setResendNotice(null);
+    try {
+      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+      setResendNotice(`${email}로 새 코드를 보냈어요`);
+    } catch (error: unknown) {
+      const clerkError = error as { errors?: { message: string }[] };
+      const errorMessage = clerkError.errors?.[0]?.message || '인증 코드를 다시 보내지 못했어요.';
+      Alert.alert('인증 코드 재전송 실패', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleChangeEmail = (): void => {
+    setPendingVerification(false);
+    setCode('');
+    setResendCooldown(0);
+    setResendNotice(null);
+  };
+
   const handleSignIn = () => {
     router.push('/(auth)/sign-in');
   };
@@ -174,6 +209,51 @@ export default function SignUpScreen() {
                   keyboardType="number-pad"
                   maxLength={6}
                 />
+              </View>
+
+              {resendNotice && (
+                <Text
+                  accessibilityLiveRegion={'polite'}
+                  style={[styles.resendNotice, { color: colors.mutedForeground }]}
+                  testID={'signup-resend-code-notice'}
+                >
+                  {resendNotice}
+                </Text>
+              )}
+
+              <View style={styles.verificationActions}>
+                <Pressable
+                  accessibilityRole={'button'}
+                  accessibilityState={{ disabled: isLoading || resendCooldown > 0 }}
+                  disabled={isLoading || resendCooldown > 0}
+                  onPress={() => void handleResendCode()}
+                  style={[
+                    styles.verificationAction,
+                    (isLoading || resendCooldown > 0) && styles.buttonDisabled,
+                  ]}
+                  testID={'signup-resend-code-button'}
+                >
+                  <Text
+                    style={[
+                      styles.linkText,
+                      {
+                        color:
+                          isLoading || resendCooldown > 0 ? colors.mutedForeground : brand.primary,
+                      },
+                    ]}
+                  >
+                    {resendCooldown > 0 ? `${resendCooldown}초 후 다시 받기` : '코드 다시 받기'}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole={'button'}
+                  disabled={isLoading}
+                  onPress={handleChangeEmail}
+                  style={[styles.verificationAction, isLoading && styles.buttonDisabled]}
+                  testID={'signup-change-email-button'}
+                >
+                  <Text style={styles.linkText}>이메일 바꾸기</Text>
+                </Pressable>
               </View>
             </GlassCard>
           </Animated.View>
@@ -455,5 +535,22 @@ const styles = StyleSheet.create({
     color: brand.primary,
     fontSize: typography.size.sm,
     fontWeight: typography.weight.semibold,
+  },
+  resendNotice: {
+    fontSize: typography.size.sm,
+    marginTop: spacing.md,
+    textAlign: 'center',
+  },
+  verificationAction: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: spacing.sm,
+  },
+  verificationActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.sm,
   },
 });

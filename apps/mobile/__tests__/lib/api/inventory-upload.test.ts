@@ -10,6 +10,8 @@
 
 import {
   uploadInventoryImage,
+  recordInventoryItemUsage,
+  recordInventoryOutfitWear,
   createUploadItemId,
   InventoryUploadError,
 } from '@/lib/api/inventory-upload';
@@ -252,5 +254,38 @@ describe('createUploadItemId', () => {
 
   it('호출마다 다른 값을 만든다 (경로 충돌 방지)', () => {
     expect(createUploadItemId()).not.toBe(createUploadItemId());
+  });
+});
+
+describe('inventory wear actions', () => {
+  it('단품 착용 기록을 인증된 웹 API로 요청한다', async () => {
+    const fetchMock = jest.fn().mockResolvedValue(okResponse({ success: true }));
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await recordInventoryItemUsage('item/1', 'token-1', BASE);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BASE}/api/inventory/item%2F1`,
+      expect.objectContaining({
+        method: 'PATCH',
+        headers: expect.objectContaining({ Authorization: 'Bearer token-1' }),
+        body: JSON.stringify({ action: 'recordUsage' }),
+      })
+    );
+  });
+
+  it('코디 착용 기록을 연쇄 갱신 웹 API로 요청한다', async () => {
+    const fetchMock = jest.fn().mockResolvedValue(okResponse({ success: true }));
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await recordInventoryOutfitWear('outfit-1', 'token-1', BASE);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BASE}/api/inventory/outfits/outfit-1?action=recordWear`,
+      expect.objectContaining({
+        method: 'PUT',
+        headers: expect.objectContaining({ Authorization: 'Bearer token-1' }),
+      })
+    );
   });
 });

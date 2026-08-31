@@ -7,6 +7,7 @@ const mockFetchAgreementStatus = jest.fn();
 const mockFetchImageStorageConsent = jest.fn();
 const mockSaveImageStorageConsent = jest.fn();
 const mockRouterBack = jest.fn();
+const mockRouterReplace = jest.fn();
 
 let mockAuthState: {
   getToken: typeof mockGetToken;
@@ -33,7 +34,8 @@ jest.mock('expo-router', () => {
   return {
     Redirect: ({ href }: { href: string }) => <View accessibilityLabel={href} testID="redirect" />,
     Stack,
-    router: { back: mockRouterBack },
+    router: { back: mockRouterBack, replace: mockRouterReplace },
+    useSegments: () => ['(twin)', 'index'],
   };
 });
 
@@ -69,9 +71,15 @@ jest.mock('../../../components/ui', () => {
 });
 
 jest.mock('../../../lib/theme', () => ({
-  spacing: { md: 12, lg: 20 },
-  typography: { size: { sm: 14, xl: 20 }, lineHeight: { relaxed: 1.5 } },
+  radii: { xl: 16 },
+  spacing: { smx: 10, md: 12, lg: 20, mlg: 24 },
+  typography: {
+    size: { sm: 14, base: 16, xl: 20 },
+    lineHeight: { relaxed: 1.5 },
+    weight: { semibold: '600' },
+  },
   useTheme: () => ({
+    brand: { primary: '#ec4899', primaryForeground: '#ffffff' },
     colors: {
       background: '#fffaf5',
       destructive: '#b42318',
@@ -80,6 +88,9 @@ jest.mock('../../../lib/theme', () => ({
     },
   }),
 }));
+
+// 전역 expo-router mock과 이 파일의 로컬 mock이 같은 singleton을 쓰도록 명시한다.
+Object.assign(require('expo-router').router, { replace: mockRouterReplace });
 
 import TwinLayout from '../../../app/(twin)/_layout';
 
@@ -104,7 +115,10 @@ describe('AI 아바타 라우트 동의 게이트', () => {
 
     const screen = render(<TwinLayout />);
 
-    expect(screen.getByTestId('redirect').props.accessibilityLabel).toBe('/(auth)/sign-in');
+    expect(mockRouterReplace).toHaveBeenCalledWith({
+      pathname: '/(auth)/sign-in',
+      params: { returnTo: '/(twin)/index' },
+    });
     expect(screen.queryByTestId('twin-stack')).toBeNull();
     expect(mockFetchImageStorageConsent).not.toHaveBeenCalled();
   });
@@ -115,7 +129,7 @@ describe('AI 아바타 라우트 동의 게이트', () => {
     const screen = render(<TwinLayout />);
 
     await waitFor(() =>
-      expect(screen.getByTestId('redirect').props.accessibilityLabel).toBe('/(analysis)/integrated')
+      expect(mockRouterReplace).toHaveBeenCalledWith('/(analysis)/integrated')
     );
     expect(screen.queryByTestId('twin-stack')).toBeNull();
     expect(mockFetchImageStorageConsent).not.toHaveBeenCalled();

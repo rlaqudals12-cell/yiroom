@@ -25,6 +25,15 @@
 // types.ts는 순수 상수/타입만 담아 사이드이펙트가 없으므로 조립/카드 어디서 import 해도 안전.
 import { TWELVE_TONE_LABELS } from '@/lib/analysis/personal-color-v2/types';
 
+/** 통합 분석 사용자 약속 시간 — 홈·입력·로딩이 함께 쓰는 모바일 정본. */
+export const INTEGRATED_ANALYSIS_DURATION_LABEL = '최대 1분';
+
+/** 서버 상한에 맞춘 제출 직후 안내. 숫자 진행률이나 축 완료를 뜻하지 않는다. */
+export const INTEGRATED_LOADING_INITIAL_MESSAGE = `${INTEGRATED_ANALYSIS_DURATION_LABEL} 정도 걸려요. 앱을 닫지 말고 기다려주세요.`;
+
+/** 서버 상한에 가까워졌을 때의 정직한 지연 안내. */
+export const INTEGRATED_LOADING_SLOW_MESSAGE = '거의 다 됐어요. 조금만 더 기다려주세요...';
+
 /** 계절 원시값(spring/Spring 등) → 한국어 "봄 웜톤" */
 const SEASON_KO: Record<string, string> = {
   spring: '봄 웜톤',

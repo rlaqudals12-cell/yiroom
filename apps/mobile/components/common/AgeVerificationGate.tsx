@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { isAgeVerificationRequiredRoute, isMinor, parseBirthDate } from '@/lib/age-verification';
-import { fetchBirthdate } from '@/lib/api/birthdate';
+import { BirthdateApiError, fetchBirthdate } from '@/lib/api/birthdate';
 
 type GateStatus = 'idle' | 'checking' | 'verified';
 
@@ -34,10 +34,24 @@ function writeVerifiedCache(userId: string): void {
 // 상한 초과는 조회 실패와 동일하게 fail-closed(수집 화면 착지)로 처리한다.
 const BIRTHDATE_FETCH_TIMEOUT_MS = 8000;
 
+class BirthdateGateTimeoutError extends Error {
+  constructor() {
+    super('연령 확인 응답이 지연되고 있습니다.');
+    this.name = 'BirthdateGateTimeoutError';
+  }
+}
+
+function isBirthdateUnavailable(error: unknown): boolean {
+  return (
+    error instanceof BirthdateGateTimeoutError ||
+    (error instanceof BirthdateApiError && (error.status === 0 || error.code === 'NETWORK_ERROR'))
+  );
+}
+
 function withGateTimeout<T>(promise: Promise<T>): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(
-      () => reject(new Error('연령 확인 응답이 지연되고 있습니다.')),
+      () => reject(new BirthdateGateTimeoutError()),
       BIRTHDATE_FETCH_TIMEOUT_MS
     );
     promise.then(
@@ -131,9 +145,17 @@ export function AgeVerificationGate({
         writeVerifiedCache(userId);
         setVerifiedUserId(userId);
         setStatus('verified');
-      } catch {
+      } catch (error: unknown) {
         // 조회 실패를 통과로 취급하면 기존 계정이 연령 확인을 우회하므로 수집 화면으로 닫는다.
-        if (active) router.replace('/(auth)/complete-profile');
+        if (!active) return;
+        if (isBirthdateUnavailable(error)) {
+          router.replace({
+            pathname: '/(auth)/complete-profile',
+            params: { reason: 'unavailable' },
+          });
+          return;
+        }
+        router.replace('/(auth)/complete-profile');
       }
     })();
 

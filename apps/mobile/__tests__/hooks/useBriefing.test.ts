@@ -15,12 +15,18 @@ jest.mock('@/lib/api/briefing', () => ({
   fetchBriefing: (...args: unknown[]) => mockFetchBriefing(...args),
 }));
 
+let mockNetworkStatus: 'online' | 'offline' | 'unknown' = 'online';
+jest.mock('@/lib/offline', () => ({
+  useNetworkStatus: () => ({ status: mockNetworkStatus }),
+}));
+
 import { useAuth } from '@clerk/clerk-expo';
 
 import { useBriefing } from '../../hooks/useBriefing';
 
 describe('useBriefing — getToken 안정 패턴', () => {
   beforeEach(() => {
+    mockNetworkStatus = 'online';
     mockFetchBriefing.mockReset();
     mockFetchBriefing.mockResolvedValue({ data: { hasAnalyses: false }, stale: false });
     // 매 렌더 새 getToken 함수를 반환(참조 불안정 시뮬레이션)
@@ -42,5 +48,34 @@ describe('useBriefing — getToken 안정 패턴', () => {
     });
 
     expect(mockFetchBriefing).toHaveBeenCalledTimes(1);
+  });
+
+  it('오프라인 캐시 뒤 온라인 전환 시 한 번만 다시 받아 stale 상태를 해제한다', async () => {
+    mockNetworkStatus = 'offline';
+    mockFetchBriefing
+      .mockResolvedValueOnce({ data: { date: 'cached' }, stale: true })
+      .mockResolvedValueOnce({ data: { date: 'fresh' }, stale: false });
+
+    const { result, rerender } = renderHook(() => useBriefing());
+
+    await waitFor(() => {
+      expect(mockFetchBriefing).toHaveBeenCalledTimes(1);
+      expect(result.current.stale).toBe(true);
+    });
+
+    mockNetworkStatus = 'online';
+    rerender({});
+
+    await waitFor(() => {
+      expect(mockFetchBriefing).toHaveBeenCalledTimes(2);
+      expect(result.current.data).toEqual({ date: 'fresh' });
+      expect(result.current.stale).toBe(false);
+    });
+
+    rerender({});
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(mockFetchBriefing).toHaveBeenCalledTimes(2);
   });
 });

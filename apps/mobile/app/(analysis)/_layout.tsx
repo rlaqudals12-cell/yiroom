@@ -26,7 +26,7 @@ function analysisRouteParts(segments: readonly string[]): {
 export function requiresStandaloneAnalysisGate(segments: readonly string[]): boolean {
   const { module, screen } = analysisRouteParts(segments);
   if (!module || !STANDALONE_BIOMETRIC_AXES.has(module)) return false;
-  return screen === undefined || screen === 'index' || screen === 'camera' || screen === 'result';
+  return screen === undefined || screen === 'index' || screen === 'camera';
 }
 
 function isPostureRoute(segments: readonly string[]): boolean {

@@ -152,9 +152,7 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
   );
 }
 
-function fillEligibleAgeGate(
-  result: Pick<ReturnType<typeof renderWithTheme>, 'getByTestId'>
-) {
+function fillEligibleAgeGate(result: Pick<ReturnType<typeof renderWithTheme>, 'getByTestId'>) {
   fireEvent.changeText(result.getByTestId('signup-birthdate-input'), '2000-06-15');
   fireEvent.press(result.getByTestId('signup-age-confirmation'));
 }
@@ -335,10 +333,7 @@ describe('SignUpScreen', () => {
       fireEvent.changeText(result.getByTestId('signup-birthdate-input'), '2000-06-15');
       fireEvent.press(result.getByTestId('signup-submit-button'));
 
-      expect(alertSpy).toHaveBeenCalledWith(
-        '가입 연령 확인',
-        '만 14세 이상임을 확인해주세요.'
-      );
+      expect(alertSpy).toHaveBeenCalledWith('가입 연령 확인', '만 14세 이상임을 확인해주세요.');
       expect(mockSignUpCreate).not.toHaveBeenCalled();
     });
 
@@ -440,6 +435,48 @@ describe('SignUpScreen', () => {
     it('이메일 안내 문구를 표시한다', async () => {
       const { getByText } = await renderVerificationScreen();
       expect(getByText('test@example.com로 전송된 인증 코드를 입력해주세요')).toBeTruthy();
+    });
+
+    it('코드 다시 받기는 기존 Clerk 인증 호출을 재사용하고 새 전송 안내를 표시한다', async () => {
+      const result = await renderVerificationScreen();
+      mockPrepareEmailVerification.mockResolvedValueOnce({});
+
+      fireEvent.press(result.getByTestId('signup-resend-code-button'));
+
+      await waitFor(() => {
+        expect(mockPrepareEmailVerification).toHaveBeenCalledTimes(2);
+        expect(mockPrepareEmailVerification).toHaveBeenLastCalledWith({
+          strategy: 'email_code',
+        });
+        expect(result.getByText('test@example.com로 새 코드를 보냈어요')).toBeTruthy();
+      });
+    });
+
+    it('코드를 다시 보낸 뒤 60초 쿨다운 동안 재전송 버튼을 비활성화한다', async () => {
+      const result = await renderVerificationScreen();
+      mockPrepareEmailVerification.mockResolvedValueOnce({});
+
+      fireEvent.press(result.getByTestId('signup-resend-code-button'));
+
+      await waitFor(() => {
+        const resendButton = result.getByTestId('signup-resend-code-button');
+        expect(resendButton.props.accessibilityState).toEqual({ disabled: true });
+        expect(result.getByText('60초 후 다시 받기')).toBeTruthy();
+      });
+
+      fireEvent.press(result.getByTestId('signup-resend-code-button'));
+      expect(mockPrepareEmailVerification).toHaveBeenCalledTimes(2);
+    });
+
+    it('이메일 바꾸기는 가입 폼으로 돌아가 입력한 이메일을 유지한다', async () => {
+      const result = await renderVerificationScreen();
+
+      fireEvent.press(result.getByTestId('signup-change-email-button'));
+
+      await waitFor(() => {
+        expect(result.getByTestId('auth-signup-screen')).toBeTruthy();
+        expect(result.getByTestId('signup-email-input').props.value).toBe('test@example.com');
+      });
     });
 
     it('인증 코드 미입력 시 알림을 표시한다', async () => {

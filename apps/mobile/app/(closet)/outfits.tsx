@@ -77,6 +77,8 @@ export default function OutfitsScreen(): React.JSX.Element {
       const ok = await recordWear(outfit.id);
       if (ok) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } else {
+        Alert.alert('착용 기록 실패', '착용 기록을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
       }
     },
     [recordWear]
@@ -166,6 +168,7 @@ export default function OutfitsScreen(): React.JSX.Element {
               <Pressable
                 style={[styles.actionBtn, { backgroundColor: brand.primary }]}
                 onPress={() => handleRecordWear(outfit)}
+                testID={`outfit-record-wear-${outfit.id}`}
               >
                 <CheckCircle size={16} color={brand.primaryForeground} />
                 <Text style={[styles.actionBtnText, { color: brand.primaryForeground }]}>

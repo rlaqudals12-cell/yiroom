@@ -17,6 +17,7 @@ import {
   ReportTextList,
   type ReportSection,
 } from '@/components/analysis';
+import { BiometricResultRouteGate } from '@/components/analysis/BiometricRouteGate';
 import { BodyReportEvidence } from '@/components/analysis/body/BodyReportEvidence';
 import { AxisResultShareSection } from '@/components/share';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
@@ -38,6 +39,16 @@ const BMI_CAVEAT = 'BMI는 근육량에 따라 실제와 다를 수 있어요';
 const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주세요.';
 
 export default function BodyResultScreen(): React.JSX.Element {
+  const { imageUri } = useLocalSearchParams<{ imageUri?: string }>();
+
+  return (
+    <BiometricResultRouteGate imageUri={imageUri}>
+      <BodyResultContent />
+    </BiometricResultRouteGate>
+  );
+}
+
+function BodyResultContent(): React.JSX.Element {
   const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
   const { height, weight, imageUri, historyId } = useLocalSearchParams<{

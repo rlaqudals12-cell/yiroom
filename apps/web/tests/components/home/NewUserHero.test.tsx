@@ -63,6 +63,8 @@ describe('NewUserHero', () => {
     expect(integratedLinks[0]).toBe(screen.getByTestId('home-hero-integrated-cta'));
     expect(integratedLinks[0]).toHaveTextContent('내 정체성 5가지 알아보기');
     expect(integratedLinks[0]).toHaveTextContent('색 · 피부 · 체형 · 헤어 · 메이크업');
+    expect(integratedLinks[0]).toHaveTextContent('최대 1분');
+    expect(integratedLinks[0]).not.toHaveTextContent(/약 2분|10초/);
   });
 
   it.each(individualAnalyses)('%s 개별 분석 잉크 링크를 유지한다', (name, href) => {

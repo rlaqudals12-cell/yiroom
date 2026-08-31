@@ -5,7 +5,10 @@ const mockGetToken = jest.fn();
 const mockSignOut = jest.fn();
 const mockReplace = jest.fn();
 const mockSaveBirthdate = jest.fn();
+const mockFetchBirthdate = jest.fn();
 let mockIsSignedIn = true;
+let mockReason: string | undefined;
+let mockIsConnected = true;
 
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: () => ({
@@ -17,6 +20,7 @@ jest.mock('@clerk/clerk-expo', () => ({
 }));
 
 jest.mock('expo-router', () => ({
+  useLocalSearchParams: () => ({ reason: mockReason }),
   useRouter: () => ({ replace: mockReplace }),
 }));
 
@@ -24,9 +28,14 @@ jest.mock('@/lib/api/birthdate', () => {
   const actual = jest.requireActual('@/lib/api/birthdate');
   return {
     ...actual,
+    fetchBirthdate: (...args: unknown[]) => mockFetchBirthdate(...args),
     saveBirthdate: (...args: unknown[]) => mockSaveBirthdate(...args),
   };
 });
+
+jest.mock('@/lib/offline', () => ({
+  useNetworkStatus: () => ({ isConnected: mockIsConnected }),
+}));
 
 jest.mock('@/lib/theme', () => ({
   useTheme: () => ({
@@ -56,9 +65,12 @@ describe('CompleteProfileScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockIsSignedIn = true;
+    mockReason = undefined;
+    mockIsConnected = true;
     mockGetToken.mockResolvedValue('clerk-token');
     mockSignOut.mockResolvedValue(undefined);
     mockSaveBirthdate.mockResolvedValue(undefined);
+    mockFetchBirthdate.mockResolvedValue({ birthDate: null, hasBirthDate: false });
   });
 
   it('기존 계정의 생년월일을 서버 정본에 저장한 뒤 탭으로 보낸다', async () => {
@@ -111,6 +123,33 @@ describe('CompleteProfileScreen', () => {
     fireEvent.press(getByTestId('complete-profile-submit'));
 
     expect(getByTestId('complete-profile-error')).toBeTruthy();
+    expect(mockSaveBirthdate).not.toHaveBeenCalled();
+  });
+
+  it('연령 조회가 불가능한 오프라인 진입은 네트워크 안내와 다시 확인하기만 노출한다', () => {
+    mockReason = 'unavailable';
+    mockIsConnected = false;
+
+    const { getByText, getByTestId, queryByTestId } = render(<CompleteProfileScreen />);
+
+    expect(getByText('연령 확인 정보를 불러오지 못했어요')).toBeTruthy();
+    expect(getByText(/네트워크 연결을 확인한 뒤/)).toBeTruthy();
+    expect(getByTestId('complete-profile-recheck')).toBeTruthy();
+    expect(queryByTestId('complete-profile-submit')).toBeNull();
+  });
+
+  it('다시 확인해 저장된 성인 생년월일을 찾으면 재입력 없이 탭으로 복귀한다', async () => {
+    mockReason = 'unavailable';
+    mockIsConnected = false;
+    mockFetchBirthdate.mockResolvedValue({ birthDate: '2000-06-15', hasBirthDate: true });
+
+    const { getByTestId } = render(<CompleteProfileScreen />);
+    fireEvent.press(getByTestId('complete-profile-recheck'));
+
+    await waitFor(() => {
+      expect(mockFetchBirthdate).toHaveBeenCalledWith('clerk-token');
+      expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+    });
     expect(mockSaveBirthdate).not.toHaveBeenCalled();
   });
 });

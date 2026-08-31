@@ -94,6 +94,7 @@ jest.mock('@clerk/clerk-expo', () => ({
 // expo-router useRouter mock
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+let mockSearchParams: { returnTo?: string | string[] } = {};
 
 jest.mock('expo-router', () => ({
   router: {
@@ -108,7 +109,7 @@ jest.mock('expo-router', () => ({
     navigate: jest.fn(),
     canGoBack: jest.fn(() => true),
   })),
-  useLocalSearchParams: jest.fn(() => ({})),
+  useLocalSearchParams: jest.fn(() => mockSearchParams),
   useSegments: jest.fn(() => []),
   usePathname: jest.fn(() => '/'),
   Link: 'Link',
@@ -154,6 +155,7 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 describe('SignInScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSearchParams = {};
   });
 
   describe('기본 렌더링', () => {
@@ -272,6 +274,40 @@ describe('SignInScreen', () => {
         expect(mockSetActive).toHaveBeenCalledWith({ session: 'session_123' });
         expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
       });
+    });
+
+    it('허용된 앱 내부 returnTo가 있으면 로그인 사유를 알리고 원래 분석 경로로 복귀한다', async () => {
+      mockSearchParams = { returnTo: '/(analysis)/integrated' };
+      mockSignInCreate.mockResolvedValueOnce({
+        status: 'complete',
+        createdSessionId: 'session_return',
+      });
+
+      const { getByTestId, getByText } = renderWithTheme(<SignInScreen />);
+      expect(getByText('분석을 시작하려면 로그인이 필요해요')).toBeTruthy();
+
+      fireEvent.changeText(getByTestId('signin-email-input'), 'test@example.com');
+      fireEvent.changeText(getByTestId('signin-password-input'), 'password123');
+      fireEvent.press(getByTestId('signin-submit-button'));
+
+      await waitFor(() =>
+        expect(mockReplace).toHaveBeenCalledWith('/(analysis)/integrated')
+      );
+    });
+
+    it('외부 returnTo는 거부하고 기존 메인 탭으로 이동한다', async () => {
+      mockSearchParams = { returnTo: 'https://attacker.example/phishing' };
+      mockSignInCreate.mockResolvedValueOnce({
+        status: 'complete',
+        createdSessionId: 'session_external',
+      });
+
+      const { getByTestId } = renderWithTheme(<SignInScreen />);
+      fireEvent.changeText(getByTestId('signin-email-input'), 'test@example.com');
+      fireEvent.changeText(getByTestId('signin-password-input'), 'password123');
+      fireEvent.press(getByTestId('signin-submit-button'));
+
+      await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(tabs)'));
     });
 
     it('로그인 실패 시 에러 알림을 표시한다', async () => {

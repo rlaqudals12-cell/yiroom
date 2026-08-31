@@ -9,6 +9,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { fetchBriefing, type BriefingData } from '../lib/api/briefing';
+import { useNetworkStatus } from '../lib/offline';
 
 export interface UseBriefingResult {
   data: BriefingData | null;
@@ -21,6 +22,7 @@ export interface UseBriefingResult {
 
 export function useBriefing(): UseBriefingResult {
   const { getToken } = useAuth();
+  const { status: networkStatus } = useNetworkStatus();
   const [data, setData] = useState<BriefingData | null>(null);
   const [stale, setStale] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,8 +33,17 @@ export function useBriefing(): UseBriefingResult {
   // 최신 getToken을 ref로 잡아 이펙트 deps에서 제외한다(lib/capsule/hooks 관례와 정렬).
   const getTokenRef = useRef(getToken);
   getTokenRef.current = getToken;
+  const previousNetworkStatusRef = useRef(networkStatus);
 
   const refetch = useCallback(() => setReloadKey((k) => k + 1), []);
+
+  useEffect(() => {
+    const previousStatus = previousNetworkStatusRef.current;
+    previousNetworkStatusRef.current = networkStatus;
+    if (previousStatus === 'offline' && networkStatus === 'online') {
+      refetch();
+    }
+  }, [networkStatus, refetch]);
 
   useEffect(() => {
     let cancelled = false;

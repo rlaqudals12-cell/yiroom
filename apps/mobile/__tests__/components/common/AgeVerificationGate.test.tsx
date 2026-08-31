@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { act, render, waitFor } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 const mockReplace = jest.fn();
@@ -24,14 +24,19 @@ jest.mock('expo-router', () => ({
   useSegments: () => mockSegments,
 }));
 
-jest.mock('@/lib/api/birthdate', () => ({
-  fetchBirthdate: (...args: unknown[]) => mockFetchBirthdate(...args),
-}));
+jest.mock('@/lib/api/birthdate', () => {
+  const actual = jest.requireActual('@/lib/api/birthdate');
+  return {
+    ...actual,
+    fetchBirthdate: (...args: unknown[]) => mockFetchBirthdate(...args),
+  };
+});
 
 import {
   AgeVerificationGate,
   buildAgeVerificationPath,
 } from '@/components/common/AgeVerificationGate';
+import { BirthdateApiError } from '@/lib/api/birthdate';
 
 describe('AgeVerificationGate', () => {
   beforeEach(() => {
@@ -172,6 +177,51 @@ describe('AgeVerificationGate', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/(auth)/complete-profile');
     });
+  });
+
+  it('네트워크 전송 실패는 unavailable 사유와 함께 수집 화면으로 닫는다', async () => {
+    mockFetchBirthdate.mockRejectedValue(
+      new BirthdateApiError('네트워크 연결을 확인해주세요.', 0, 'NETWORK_ERROR')
+    );
+
+    render(
+      <AgeVerificationGate loadingColor={'#111111'}>
+        <Text>보호 화면</Text>
+      </AgeVerificationGate>
+    );
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith({
+        pathname: '/(auth)/complete-profile',
+        params: { reason: 'unavailable' },
+      });
+    });
+  });
+
+  it('연령 조회가 8초를 넘기면 unavailable 사유와 함께 수집 화면으로 닫는다', async () => {
+    jest.useFakeTimers();
+    mockFetchBirthdate.mockImplementation(() => new Promise(() => undefined));
+
+    try {
+      render(
+        <AgeVerificationGate loadingColor={'#111111'}>
+          <Text>보호 화면</Text>
+        </AgeVerificationGate>
+      );
+
+      await waitFor(() => expect(mockFetchBirthdate).toHaveBeenCalledTimes(1));
+      await act(async () => {
+        jest.advanceTimersByTime(8000);
+        await Promise.resolve();
+      });
+
+      expect(mockReplace).toHaveBeenCalledWith({
+        pathname: '/(auth)/complete-profile',
+        params: { reason: 'unavailable' },
+      });
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('연령 수집 auth 경로에서는 재검사 루프를 만들지 않는다', () => {

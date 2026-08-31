@@ -47,6 +47,7 @@ import {
 import { buildStoredResultDestination } from '../../lib/analysis';
 import { staggeredEntry, TIMING, usePulseGlow } from '../../lib/animations';
 import { useDailyCapsule } from '../../lib/capsule/hooks';
+import { INTEGRATED_ANALYSIS_DURATION_LABEL } from '../../lib/integrated/labels';
 import { useOnboardingCheck } from '../../lib/onboarding';
 import { getContextSuggestion } from '../../lib/recommendations/context-aware';
 import { useTheme } from '../../lib/theme';
@@ -55,7 +56,7 @@ import { useWidgetSync } from '../../lib/widgets';
 export default function HomeScreen(): React.JSX.Element {
   const { colors, brand, spacing, radii, typography, module: moduleColors } = useTheme();
   const router = useRouter();
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const briefingState = useBriefing();
 
   // 첫 진입 로딩 가드 — 가입=첫 미팅(통합분석)으로 이동하므로 온보딩 강제 진입은 없음(ADR-114).
@@ -133,7 +134,12 @@ export default function HomeScreen(): React.JSX.Element {
     });
   }, [workoutStreak, todaySummary, nutritionSettings, workoutLoading, nutritionLoading, syncAll]);
 
-  const userName = user?.firstName || user?.username || '사용자';
+  const userName = user?.firstName || user?.username || '';
+
+  const handleSignIn = (): void => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/(auth)/sign-in');
+  };
 
   // 오늘 할 일 — W/N 작업은 ADR-098 기준 WELLNESS_PHASE2에 게이팅
   const todayTasks = useMemo(() => {
@@ -175,7 +181,7 @@ export default function HomeScreen(): React.JSX.Element {
     if (!personalColor) {
       tasks.push({
         id: 'integrated-analysis',
-        label: '5축 통합 분석 (약 2분)',
+        label: `5축 통합 분석 (${INTEGRATED_ANALYSIS_DURATION_LABEL})`,
         completed: false,
         route: '/(analysis)/integrated',
       });
@@ -342,8 +348,45 @@ export default function HomeScreen(): React.JSX.Element {
       <HomeHeader
         userName={userName}
         isLoaded={isLoaded}
+        isSignedIn={Boolean(isSignedIn)}
         briefingGreeting={briefingState.data?.briefing.greeting}
       />
+
+      {isLoaded && !isSignedIn && (
+        <Pressable
+          style={({ pressed }) => ({
+            marginBottom: spacing.md,
+            opacity: pressed ? 0.85 : 1,
+          })}
+          onPress={handleSignIn}
+          accessibilityRole="button"
+          accessibilityLabel="로그인"
+          testID="home-sign-in-button"
+        >
+          <LinearGradient
+            colors={[brand.primary, '#7C3AED']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              minHeight: 44,
+              borderRadius: radii.full,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: spacing.lg,
+            }}
+          >
+            <Text
+              style={{
+                color: '#FFFFFF',
+                fontSize: typography.size.sm,
+                fontWeight: typography.weight.semibold,
+              }}
+            >
+              로그인
+            </Text>
+          </LinearGradient>
+        </Pressable>
+      )}
 
       {/* ADR-114/118: 전속 뷰티팀의 아침 메시지(브리핑 레터). 웹 /api/briefing 정본 재사용.
           신규 유저(분석 0건)면 스스로 숨겨 기존 첫 분석 유도가 노출된다. */}
@@ -415,7 +458,7 @@ export default function HomeScreen(): React.JSX.Element {
                   fontSize: typography.size.sm,
                 }}
               >
-                5축 한 번에 알아보기 (약 2분)
+                5축 한 번에 알아보기 ({INTEGRATED_ANALYSIS_DURATION_LABEL})
               </Text>
             </Pressable>
           </LinearGradient>

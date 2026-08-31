@@ -4,7 +4,7 @@
 
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Heart, Trash2, Edit2 } from 'lucide-react-native';
+import { CheckCircle, Heart, Trash2, Edit2 } from 'lucide-react-native';
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Image, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -30,10 +30,18 @@ export default function ItemDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { items, isLoading, toggleFavorite, deleteItem, refetch: refetchCloset } = useCloset();
+  const {
+    items,
+    isLoading,
+    toggleFavorite,
+    deleteItem,
+    recordUsage,
+    refetch: refetchCloset,
+  } = useCloset();
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
+  const [isRecordingUsage, setIsRecordingUsage] = useState(false);
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -51,6 +59,22 @@ export default function ItemDetailScreen() {
     if (!item) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await toggleFavorite(item.id);
+  };
+
+  const handleRecordUsage = async () => {
+    if (!item || isRecordingUsage) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsRecordingUsage(true);
+    try {
+      const success = await recordUsage(item.id);
+      if (!success) {
+        Alert.alert('착용 기록 실패', '착용 기록을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+        return;
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } finally {
+      setIsRecordingUsage(false);
+    }
   };
 
   const handleDelete = () => {
@@ -184,8 +208,24 @@ export default function ItemDetailScreen() {
 
           <View style={[styles.infoRow, { borderTopColor: colors.border }]}>
             <Text style={[styles.infoLabel, { color: colors.mutedForeground }]}>착용 횟수</Text>
-            <Text style={[styles.infoValue, { color: colors.foreground }]}>{item.useCount}회</Text>
+            <Text style={[styles.infoValue, { color: colors.foreground }]}>
+              {item.useCount === 0 ? '아직 착용 기록 없음' : `${item.useCount}회`}
+            </Text>
           </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="오늘 입었어요"
+            accessibilityState={{ disabled: isRecordingUsage }}
+            testID="closet-record-usage-button"
+            disabled={isRecordingUsage}
+            onPress={handleRecordUsage}
+            style={[styles.recordUsageButton, { borderColor: colors.border }]}
+          >
+            <CheckCircle size={18} color={colors.foreground} />
+            <Text style={[styles.recordUsageText, { color: colors.foreground }]}>
+              {isRecordingUsage ? '기록 중이에요' : '오늘 입었어요'}
+            </Text>
+          </Pressable>
         </GlassCard>
       </Animated.View>
 
@@ -356,6 +396,20 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
+  },
+  recordUsageButton: {
+    minHeight: 44,
+    marginTop: spacing.sm,
+    borderWidth: 1,
+    borderRadius: radii.xl,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+  },
+  recordUsageText: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
   },
   sectionTitle: {
     fontSize: 15,

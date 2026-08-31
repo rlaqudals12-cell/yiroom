@@ -16,6 +16,7 @@ import {
   ReportTextList,
   type ReportSection,
 } from '@/components/analysis';
+import { BiometricResultRouteGate } from '@/components/analysis/BiometricRouteGate';
 import {
   SkinResultShare,
   skinResultStyles as styles,
@@ -60,6 +61,16 @@ const INGREDIENT_DATA: Record<SkinType, { good: string[]; avoid: string[] }> = {
 const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주세요.';
 
 export default function SkinResultScreen(): React.JSX.Element {
+  const { imageUri } = useLocalSearchParams<{ imageUri?: string }>();
+
+  return (
+    <BiometricResultRouteGate imageUri={imageUri}>
+      <SkinResultContent />
+    </BiometricResultRouteGate>
+  );
+}
+
+function SkinResultContent(): React.JSX.Element {
   const { getToken, userId } = useAuth();
   const supabase = useClerkSupabaseClient();
   const { imageUri, historyId } = useLocalSearchParams<{

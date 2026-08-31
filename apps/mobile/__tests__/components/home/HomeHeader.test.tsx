@@ -59,26 +59,32 @@ describe('HomeHeader', () => {
   });
 
   it('사용자명을 렌더링해야 한다 (isLoaded=true)', () => {
-    const { getByText } = renderWithTheme(<HomeHeader userName="홍길동" isLoaded={true} />);
+    const { getByText } = renderWithTheme(
+      <HomeHeader userName="홍길동" isLoaded={true} isSignedIn={true} />
+    );
 
     expect(getByText('홍길동님')).toBeTruthy();
   });
 
   it('로딩 중일 때 "...님"을 표시해야 한다', () => {
-    const { getByText } = renderWithTheme(<HomeHeader userName="홍길동" isLoaded={false} />);
+    const { getByText } = renderWithTheme(
+      <HomeHeader userName="홍길동" isLoaded={false} isSignedIn={true} />
+    );
 
     expect(getByText('...님')).toBeTruthy();
   });
 
   it('testID="home-header"가 존재해야 한다', () => {
-    const { getByTestId } = renderWithTheme(<HomeHeader userName="테스트" isLoaded={true} />);
+    const { getByTestId } = renderWithTheme(
+      <HomeHeader userName="테스트" isLoaded={true} isSignedIn={true} />
+    );
 
     expect(getByTestId('home-header')).toBeTruthy();
   });
 
   it('다크 모드에서도 렌더링되어야 한다', () => {
     const { getByText, getByTestId } = renderWithTheme(
-      <HomeHeader userName="다크유저" isLoaded={true} />,
+      <HomeHeader userName="다크유저" isLoaded={true} isSignedIn={true} />,
       true
     );
 
@@ -86,11 +92,23 @@ describe('HomeHeader', () => {
     expect(getByText('다크유저님')).toBeTruthy();
   });
 
+  it('로그아웃 상태에서는 가짜 사용자명 없이 브랜드 한 줄만 표시한다', () => {
+    const { getByText, queryByText } = renderWithTheme(
+      <HomeHeader userName="" isLoaded={true} isSignedIn={false} />
+    );
+
+    expect(getByText('온전한 나를 찾는 여정, 이룸')).toBeTruthy();
+    expect(queryByText('사용자님')).toBeNull();
+    expect(queryByText('님')).toBeNull();
+  });
+
   describe('브리핑과 단일 인사 소스', () => {
     it('브리핑이 아직 없으면 로컬 시간대의 자연스러운 인사를 표시한다', () => {
       jest.useFakeTimers();
       jest.setSystemTime(new Date(2026, 7, 27, 7, 0, 0));
-      const { getByText } = renderWithTheme(<HomeHeader userName="새벽유저" isLoaded={true} />);
+      const { getByText } = renderWithTheme(
+        <HomeHeader userName="새벽유저" isLoaded={true} isSignedIn={true} />
+      );
 
       expect(getByText('좋은 아침이에요')).toBeTruthy();
     });
@@ -98,7 +116,9 @@ describe('HomeHeader', () => {
     it('오프라인 밤 시간에는 좋은 밤 인사를 표시한다', () => {
       jest.useFakeTimers();
       jest.setSystemTime(new Date(2026, 7, 27, 23, 0, 0));
-      const { getByText } = renderWithTheme(<HomeHeader userName="밤유저" isLoaded={true} />);
+      const { getByText } = renderWithTheme(
+        <HomeHeader userName="밤유저" isLoaded={true} isSignedIn={true} />
+      );
 
       expect(getByText('좋은 밤이에요')).toBeTruthy();
     });
@@ -107,7 +127,7 @@ describe('HomeHeader', () => {
       jest.useFakeTimers();
       jest.setSystemTime(new Date(2026, 7, 27, 15, 0, 0));
       const { getByText, queryByText } = renderWithTheme(
-        <HomeHeader userName="오후유저" isLoaded={true} />
+        <HomeHeader userName="오후유저" isLoaded={true} isSignedIn={true} />
       );
 
       expect(getByText('좋은 오후예요')).toBeTruthy();
@@ -116,7 +136,12 @@ describe('HomeHeader', () => {
 
     it('서버 브리핑의 아침 인사를 그대로 사용한다', () => {
       const { getByText } = renderWithTheme(
-        <HomeHeader userName="아침유저" isLoaded={true} briefingGreeting="좋은 아침이에요" />
+        <HomeHeader
+          userName="아침유저"
+          isLoaded={true}
+          isSignedIn={true}
+          briefingGreeting="좋은 아침이에요"
+        />
       );
 
       expect(getByText('좋은 아침이에요')).toBeTruthy();
@@ -124,7 +149,12 @@ describe('HomeHeader', () => {
 
     it('서버 브리핑의 오후 인사를 그대로 사용한다', () => {
       const { getByText } = renderWithTheme(
-        <HomeHeader userName="오후유저" isLoaded={true} briefingGreeting="좋은 오후예요" />
+        <HomeHeader
+          userName="오후유저"
+          isLoaded={true}
+          isSignedIn={true}
+          briefingGreeting="좋은 오후예요"
+        />
       );
 
       expect(getByText('좋은 오후예요')).toBeTruthy();
@@ -135,6 +165,7 @@ describe('HomeHeader', () => {
         <HomeHeader
           userName="저녁유저"
           isLoaded={true}
+          isSignedIn={true}
           briefingGreeting="저녁유저님, 좋은 저녁이에요"
         />
       );

@@ -9,7 +9,7 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import {
   Alert,
   Image,
   ActivityIndicator,
+  BackHandler,
   TextInput,
   Linking,
 } from 'react-native';
@@ -59,6 +60,11 @@ import {
 import { downscaleToDataUrl } from '@/lib/image/downscale';
 import { getLastSubmission, rememberSubmission } from '@/lib/integrated/last-submission';
 import {
+  INTEGRATED_ANALYSIS_DURATION_LABEL,
+  INTEGRATED_LOADING_INITIAL_MESSAGE,
+  INTEGRATED_LOADING_SLOW_MESSAGE,
+} from '@/lib/integrated/labels';
+import {
   clearPendingIntegratedRequest,
   getOrCreatePendingIntegratedRequest,
   readPendingIntegratedRequest,
@@ -94,6 +100,10 @@ const AXIS_OPTIONS: Array<{ code: AxisCode; label: string }> = [
   { code: 'makeup', label: '메이크업' },
 ];
 const ALL_AXES = AXIS_OPTIONS.map((a) => a.code);
+
+// 웹 IntegratedLoadingUI와 같은 순회/지연 전환 상수다. 강조는 진행률이 아닌 시각 효과다.
+const HIGHLIGHT_CYCLE_SEC = 3;
+const SLOW_WARNING_SEC = 45;
 
 // 웹과 동일하게 서버가 요청을 시작하지 않았음이 확정된 상태에서만 상관 ID를 폐기한다.
 const DEFINITIVE_REJECT_STATUSES = new Set([400, 401, 403, 404, 409, 422, 429]);
@@ -159,14 +169,21 @@ export default function IntegratedAnalysisInputScreen(): React.JSX.Element {
   }
 
   if (!isSignedIn) {
-    return <Redirect href="/(auth)/sign-in" />;
+    return (
+      <Redirect
+        href={{
+          pathname: '/(auth)/sign-in',
+          params: { returnTo: '/(analysis)/integrated' },
+        }}
+      />
+    );
   }
 
   return <IntegratedAnalysisForm />;
 }
 
 function IntegratedAnalysisForm(): React.JSX.Element {
-  const { colors } = useTheme();
+  const { colors, brand } = useTheme();
   const { getToken, userId } = useAuth();
 
   // 가입=첫 미팅(ADR-114): 가입 직후 진입 시 강제하지 않고 건너뛰기 경로 제공
@@ -196,6 +213,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
   // 회차별 원본 저장은 필수 생체 처리 동의와 분리한다. 기본값은 언제나 OFF다.
   const [imageStorageConsent, setImageStorageConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingElapsedSec, setLoadingElapsedSec] = useState(0);
   const [error, setError] = useState<string | null>(null);
   // 재시도 재진입 시 직전 제출 사진을 인메모리 캐시에서 복원했는지 여부 (UI 표시용).
   const [restoredFromCache, setRestoredFromCache] = useState(false);
@@ -209,9 +227,30 @@ function IntegratedAnalysisForm(): React.JSX.Element {
   const submissionLockRef = useRef(false);
   const submissionAbortRef = useRef<AbortController | null>(null);
   const userCancelledSubmissionRef = useRef(false);
+  const isMountedRef = useRef(true);
   const pendingRecovery = usePendingIntegratedSession(
     isPendingRequestResolved && !isSubmitting && !pendingStorageError ? pendingRequestId : null
   );
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isSubmitting) {
+      setLoadingElapsedSec(0);
+      return;
+    }
+
+    const startedAt = Date.now();
+    const interval = setInterval(() => {
+      setLoadingElapsedSec(Math.floor((Date.now() - startedAt) / 1000));
+    }, 500);
+    return () => clearInterval(interval);
+  }, [isSubmitting]);
 
   useEffect(() => {
     let active = true;
@@ -507,6 +546,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
     }, INTEGRATED_REQUEST_TIMEOUT_MS);
     const assertSubmissionActive = (): void => {
       if (
+        !isMountedRef.current ||
         submissionAbortRef.current !== submissionController ||
         submissionController.signal.aborted
       ) {
@@ -637,7 +677,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
       );
     } catch (e) {
       // 취소 직후 새 제출이 시작됐으면 이전 요청의 늦은 reject가 새 화면 상태를 덮지 않는다.
-      if (submissionAbortRef.current !== submissionController) return;
+      if (!isMountedRef.current || submissionAbortRef.current !== submissionController) return;
       if (e instanceof IntegratedApiError && DEFINITIVE_REJECT_STATUSES.has(e.status)) {
         try {
           await withSubmissionAbort(clearPendingForActiveSubmission(), submissionController.signal);
@@ -674,7 +714,7 @@ function IntegratedAnalysisForm(): React.JSX.Element {
     }
   };
 
-  const cancelSubmission = (): void => {
+  const cancelSubmission = useCallback((): void => {
     userCancelledSubmissionRef.current = true;
     const controller = submissionAbortRef.current;
     // state의 disabled 반영을 기다리지 않고 동기 잠금을 먼저 해제한다. 이전 요청 catch는
@@ -684,7 +724,34 @@ function IntegratedAnalysisForm(): React.JSX.Element {
     controller?.abort();
     setError('분석 요청을 취소했어요. 진행 중인 요청은 아래에서 다시 확인할 수 있어요.');
     setIsSubmitting(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isSubmitting) return;
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      Alert.alert(
+        '분석 화면에서 나갈까요?',
+        '분석은 서버에서 계속 진행돼요. 나가도 다시 들어오면 이어서 볼 수 있어요.',
+        [
+          { text: '계속 기다리기', style: 'cancel' },
+          {
+            text: '나가기',
+            onPress: () => {
+              cancelSubmission();
+              router.back();
+            },
+          },
+        ]
+      );
+      return true;
+    });
+
+    return () => subscription.remove();
+  }, [cancelSubmission, isSubmitting]);
+
+  const loadingHighlightIndex =
+    Math.floor(loadingElapsedSec / HIGHLIGHT_CYCLE_SEC) % AXIS_OPTIONS.length;
 
   return (
     <ScreenContainer scrollable={false} contentPadding={0}>
@@ -693,7 +760,8 @@ function IntegratedAnalysisForm(): React.JSX.Element {
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.foreground }]}>5축 통합 분석</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            셀카 한 장으로 색·피부·체형·헤어를 한 번에{'\n'}약 2분이면 완료돼요
+            셀카 한 장으로 색·피부·체형·헤어를 한 번에{'\n'}
+            {INTEGRATED_ANALYSIS_DURATION_LABEL}이면 완료돼요
           </Text>
         </View>
 
@@ -1150,9 +1218,38 @@ function IntegratedAnalysisForm(): React.JSX.Element {
           testID="integrated-loading"
         >
           <ActivityIndicator size="large" color="#EC4899" />
-          <Text style={[styles.loadingTitle, { color: colors.foreground }]}>5축 분석 중...</Text>
+          <Text style={[styles.loadingTitle, { color: colors.foreground }]}>
+            다섯 가지를 한 번에 분석하고 있어요
+          </Text>
+          <View style={styles.loadingAxes}>
+            {AXIS_OPTIONS.map((axis, index) => (
+              <View
+                key={axis.code}
+                style={[
+                  styles.loadingAxis,
+                  {
+                    borderColor: index === loadingHighlightIndex ? brand.primary : colors.border,
+                    backgroundColor:
+                      index === loadingHighlightIndex ? `${brand.primary}14` : colors.card,
+                  },
+                ]}
+                testID={`loading-axis-${axis.code}`}
+              >
+                <Text
+                  style={{
+                    color: index === loadingHighlightIndex ? brand.primary : colors.mutedForeground,
+                    fontSize: typography.size.xs,
+                  }}
+                >
+                  {axis.label}
+                </Text>
+              </View>
+            ))}
+          </View>
           <Text style={[styles.loadingSubtitle, { color: colors.mutedForeground }]}>
-            보통 1분 안팎이며, 연결 상태에 따라 더 걸릴 수 있어요.
+            {loadingElapsedSec > SLOW_WARNING_SEC
+              ? INTEGRATED_LOADING_SLOW_MESSAGE
+              : INTEGRATED_LOADING_INITIAL_MESSAGE}
           </Text>
           <Pressable
             accessibilityLabel="분석 요청 취소"
@@ -1522,6 +1619,18 @@ const styles = StyleSheet.create({
     fontSize: typography.size.sm,
     textAlign: 'center',
     lineHeight: typography.size.sm * typography.lineHeight.normal,
+  },
+  loadingAxes: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: spacing.xs,
+  },
+  loadingAxis: {
+    borderWidth: 1,
+    borderRadius: radii.full,
+    paddingHorizontal: spacing.smx,
+    paddingVertical: spacing.xs,
   },
   cancelButton: {
     minHeight: 44,

@@ -4,6 +4,10 @@ import React from 'react';
 import HairResultScreen from '../../../app/(analysis)/hair/result';
 import { renderWithTheme } from '../../helpers/test-utils';
 
+jest.mock('../../../components/analysis/BiometricRouteGate', () => ({
+  BiometricResultRouteGate: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 const mockRequestHairAnalysis = jest.fn();
 const mockGetToken = jest.fn().mockResolvedValue('token-1');
 

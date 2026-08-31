@@ -18,12 +18,14 @@ import {
   RecommendEmptyState,
   RecommendFloatingActions,
   RecommendLoadingState,
+  RecommendOccasionChips,
   RecommendSummaryCard,
 } from '@/components/closet/recommend/RecommendScreenParts';
 import { RecommendWeatherCard } from '@/components/closet/recommend/RecommendWeatherCard';
 import { useUserAnalyses } from '@/hooks/useUserAnalyses';
 
 import { ScreenContainer } from '../../components/ui';
+import type { Occasion } from '../../lib/inventory/types';
 import type { OutfitSuggestion } from '../../lib/inventory/useClosetMatcher';
 import { useClosetMatcher } from '../../lib/inventory/useClosetMatcher';
 import { useSavedOutfits } from '../../lib/inventory/useInventory';
@@ -63,10 +65,15 @@ export default function RecommendScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [occasion, setOccasion] = useState<Occasion | null>(null);
 
   const generateOutfit = useCallback(() => {
-    setOutfit(getOutfitSuggestion({ temp: effectiveTemp }));
-  }, [effectiveTemp, getOutfitSuggestion]);
+    setOutfit(
+      getOutfitSuggestion(
+        occasion === null ? { temp: effectiveTemp } : { temp: effectiveTemp, occasion }
+      )
+    );
+  }, [effectiveTemp, getOutfitSuggestion, occasion]);
 
   useEffect(() => {
     if (!isLoading && !weatherLoading && items.length > 0) generateOutfit();
@@ -127,7 +134,7 @@ export default function RecommendScreen() {
           .join(' · '),
         itemIds: outfitItemIds,
         collageImageUrl: null,
-        occasion: 'casual',
+        occasion: occasion ?? 'casual',
         season: getCurrentSeasons(),
         wearCount: 0,
         lastWornAt: null,
@@ -145,6 +152,7 @@ export default function RecommendScreen() {
     isSaving,
     outfit,
     outfitItemIds,
+    occasion,
     personalColor,
     router,
     saveOutfit,
@@ -181,6 +189,7 @@ export default function RecommendScreen() {
         hasDiagnosis={hasDiagnosis}
         onAnalyzePress={handleAnalyzePress}
       />
+      {outfit && <RecommendOccasionChips occasion={occasion} onChange={setOccasion} />}
       <RecommendOutfitSection
         outfit={outfit}
         noOutfitHint={noOutfitHint}

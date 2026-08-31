@@ -19,6 +19,7 @@ import {
   ReportTextList,
   type ReportSection,
 } from '@/components/analysis';
+import { BiometricResultRouteGate } from '@/components/analysis/BiometricRouteGate';
 import {
   PersonalColorResultShare,
   getPersonalColorMakeupRows,
@@ -89,6 +90,16 @@ const LIGHTING_LABELS = {
 } as const;
 
 export default function PersonalColorResultScreen(): React.JSX.Element {
+  const { imageUri } = useLocalSearchParams<{ imageUri?: string }>();
+
+  return (
+    <BiometricResultRouteGate imageUri={imageUri}>
+      <PersonalColorResultContent />
+    </BiometricResultRouteGate>
+  );
+}
+
+function PersonalColorResultContent(): React.JSX.Element {
   const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
   const { imageUri, historyId } = useLocalSearchParams<{

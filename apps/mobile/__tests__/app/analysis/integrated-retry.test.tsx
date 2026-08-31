@@ -7,7 +7,7 @@
  * 그 축만 재실행하는지 검증. 재시도 컨텍스트가 아니면 복원하지 않는지도 확인.
  */
 import React from 'react';
-import { act, fireEvent, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, waitFor, within } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { renderWithTheme } from '../../helpers/test-utils';
@@ -21,12 +21,32 @@ const mockPendingRefetch = jest.fn();
 const mockDownscaleToDataUrl = jest.fn().mockResolvedValue('data:image/jpeg;base64,DOWNSCALED');
 const mockRequiresLegacyAndroidGalleryFallback = jest.fn(() => false);
 const mockShouldBypassMediaLibraryPermissionGate = jest.fn(() => false);
+const mockRedirectHref = jest.fn();
 const mockUsePendingIntegratedSession: jest.Mock = jest.fn((requestId: string | null) => ({
   session: null,
   isLoading: false,
   error: null,
   recoveryState: requestId ? 'pending' : 'not_found',
   refetch: mockPendingRefetch,
+}));
+
+// 전역 Redirect mock은 객체형 href를 "[object Object]"로 평탄화한다. J-26의 returnTo를
+// 실제 객체 그대로 검증하기 위해 이 파일에서 필요한 expo-router 표면만 좁게 재현한다.
+jest.mock('expo-router', () => ({
+  router: {
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    navigate: jest.fn(),
+    canGoBack: jest.fn(() => true),
+  },
+  useLocalSearchParams: jest.fn(() => ({})),
+  Redirect: ({ href }: { href: unknown }) => {
+    const React = require('react');
+    const { View } = require('react-native');
+    mockRedirectHref(href);
+    return React.createElement(View, { testID: 'redirect' });
+  },
 }));
 
 jest.mock('@/lib/analytics/tracker', () => ({
@@ -116,7 +136,7 @@ jest.mock('@/components/ui', () => {
 
 import { router, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { Alert, Linking } from 'react-native';
+import { Alert, BackHandler, Linking } from 'react-native';
 import { requestIntegratedAnalysis } from '@/lib/api';
 
 import IntegratedAnalysisInputScreen from '../../../app/(analysis)/integrated/index';
@@ -211,7 +231,11 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
 
     const { getByTestId, queryByText } = renderWithTheme(<IntegratedAnalysisInputScreen />);
 
-    expect(getByTestId('redirect').props.accessibilityLabel).toBe('/(auth)/sign-in');
+    expect(getByTestId('redirect')).toBeTruthy();
+    expect(mockRedirectHref).toHaveBeenCalledWith({
+      pathname: '/(auth)/sign-in',
+      params: { returnTo: '/(analysis)/integrated' },
+    });
     expect(queryByText('5축 통합 분석')).toBeNull();
     expect(require('@/lib/api').fetchBirthdate).not.toHaveBeenCalled();
   });
@@ -632,6 +656,132 @@ describe('IntegratedAnalysisInputScreen — "다시 시도" 재진입 복구', (
     expect(screen.queryByTestId('integrated-loading')).toBeNull();
     expect(screen.getByTestId('pending-integrated-analysis')).toBeTruthy();
     await expect(readPendingIntegratedRequest('test_user_123')).resolves.toBe(REQUEST_ID);
+  });
+
+  it('화면을 떠난 뒤 도착한 성공 응답은 결과 이동이나 pending 마커 삭제를 일으키지 않는다', async () => {
+    rememberSubmission('data:image/jpeg;base64,FACE', null);
+    mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'skin' });
+    let resolveRequest: (value: {
+      sessionId: string;
+      status: 'completed';
+      axesCompleted: string[];
+      usedFallback: string[];
+    }) => void = () => undefined;
+    mockRequest.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = resolve;
+        })
+    );
+
+    const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+    await screen.findByTestId('restored-photo-notice');
+    await pressEnabledSubmit(screen.getByLabelText);
+    await waitFor(() => expect(mockRequest).toHaveBeenCalledTimes(1));
+    await expect(readPendingIntegratedRequest('test_user_123')).resolves.toBe(REQUEST_ID);
+
+    screen.unmount();
+    await act(async () => {
+      resolveRequest({
+        sessionId: 'late-success-after-unmount',
+        status: 'completed',
+        axesCompleted: ['skin'],
+        usedFallback: [],
+      });
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(router.replace).not.toHaveBeenCalled();
+    await expect(readPendingIntegratedRequest('test_user_123')).resolves.toBe(REQUEST_ID);
+  });
+
+  it('로딩 중 안드로이드 뒤로가기는 서버가 계속 진행된다는 확인창을 연다', async () => {
+    rememberSubmission('data:image/jpeg;base64,FACE', null);
+    mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'skin' });
+    mockRequest.mockImplementationOnce(() => new Promise(() => undefined));
+    let hardwareBackHandler: (() => boolean | null | undefined) | undefined;
+    const remove = jest.fn();
+    const backHandlerSpy = jest
+      .spyOn(BackHandler, 'addEventListener')
+      .mockImplementation((_eventName, handler) => {
+        hardwareBackHandler = handler;
+        return { remove };
+      });
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+
+    try {
+      const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+      await screen.findByTestId('restored-photo-notice');
+      await pressEnabledSubmit(screen.getByLabelText);
+      await screen.findByTestId('integrated-loading');
+      await waitFor(() => expect(hardwareBackHandler).toBeDefined());
+
+      expect(hardwareBackHandler?.()).toBe(true);
+      expect(alertSpy).toHaveBeenCalledWith(
+        '분석 화면에서 나갈까요?',
+        '분석은 서버에서 계속 진행돼요. 나가도 다시 들어오면 이어서 볼 수 있어요.',
+        expect.arrayContaining([
+          expect.objectContaining({ text: '계속 기다리기' }),
+          expect.objectContaining({ text: '나가기' }),
+        ])
+      );
+
+      const leaveAction = alertSpy.mock.calls[0]?.[2]?.find((action) => action.text === '나가기');
+      await act(async () => {
+        leaveAction?.onPress?.();
+        await Promise.resolve();
+      });
+
+      screen.unmount();
+      expect(remove).toHaveBeenCalledTimes(1);
+    } finally {
+      backHandlerSpy.mockRestore();
+      alertSpy.mockRestore();
+    }
+  });
+
+  it('로딩은 최대 1분 약속과 5축만 보여주고 45초 뒤 지연 안내로 바뀐다', async () => {
+    rememberSubmission('data:image/jpeg;base64,FACE', null);
+    mockUseLocalSearchParams.mockReturnValue({ retryAxes: 'skin' });
+    mockRequest.mockImplementationOnce(() => new Promise(() => undefined));
+    jest.useFakeTimers();
+
+    try {
+      const screen = renderWithTheme(<IntegratedAnalysisInputScreen />);
+      await screen.findByTestId('restored-photo-notice');
+      await pressEnabledSubmit(screen.getByLabelText);
+      const loading = await screen.findByTestId('integrated-loading');
+      const loadingView = within(loading);
+
+      // 헤더 문장은 줄바꿈과 보간 문자열이 별도 자식으로 렌더된다. 전체 렌더 트리에서
+      // 헤더와 로딩 안내가 같은 정본 라벨을 각각 한 번 쓰는지 확인한다.
+      expect(JSON.stringify(screen.toJSON()).match(/최대 1분/g)).toHaveLength(2);
+      expect(
+        loadingView.getByText('최대 1분 정도 걸려요. 앱을 닫지 말고 기다려주세요.')
+      ).toBeTruthy();
+      for (const label of ['퍼스널 컬러', '피부', '체형', '헤어', '메이크업']) {
+        expect(loadingView.getByText(label)).toBeTruthy();
+      }
+      expect(loadingView.queryByText(/✓/)).toBeNull();
+      expect(loadingView.queryByText(/%/)).toBeNull();
+      expect(loadingView.queryByText(/10초/)).toBeNull();
+      expect(loadingView.queryByText(/2분/)).toBeNull();
+
+      await act(async () => {
+        jest.advanceTimersByTime(46_000);
+        await Promise.resolve();
+      });
+
+      expect(
+        loadingView.getByText('거의 다 됐어요. 조금만 더 기다려주세요...')
+      ).toBeTruthy();
+
+      fireEvent.press(screen.getByTestId('integrated-cancel-button'));
+      screen.unmount();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it.each(['birthdate', 'agreement'] as const)(

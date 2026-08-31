@@ -71,6 +71,29 @@ export const styles = StyleSheet.create({
     fontSize: typography.size.sm,
     fontWeight: typography.weight.medium,
   },
+  occasionSection: {
+    marginBottom: spacing.md,
+  },
+  occasionLabel: {
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.semibold,
+    marginBottom: spacing.sm,
+  },
+  occasionRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  occasionChip: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.smx,
+    borderRadius: radii.full,
+    borderWidth: 1,
+  },
+  occasionChipText: {
+    fontSize: typography.size.xs,
+    fontWeight: typography.weight.medium,
+  },
   outfitSection: {
     marginBottom: spacing.md,
   },

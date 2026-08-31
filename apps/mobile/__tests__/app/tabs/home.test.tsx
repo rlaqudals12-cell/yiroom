@@ -9,6 +9,7 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { FEATURE_FLAGS } from '@yiroom/shared';
+import { useUser } from '@clerk/clerk-expo';
 
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
@@ -168,17 +169,25 @@ jest.mock('../../../components/home', () => {
   return {
     HomeHeader: ({
       userName,
+      isSignedIn,
       briefingGreeting,
     }: {
       userName: string;
+      isSignedIn: boolean;
       briefingGreeting?: string;
     }) => (
       <View testID="home-header">
-        <Text>{userName}</Text>
+        <Text>{isSignedIn ? `${userName}님` : '온전한 나를 찾는 여정, 이룸'}</Text>
         <Text testID="home-header-greeting-source">{briefingGreeting}</Text>
       </View>
     ),
-    HomeTodaySection: () => <View testID="home-today-section" />,
+    HomeTodaySection: ({ tasks }: { tasks: Array<{ id: string; label: string }> }) => (
+      <View testID="home-today-section">
+        {tasks.map((task) => (
+          <Text key={task.id}>{task.label}</Text>
+        ))}
+      </View>
+    ),
     HomeQuickActions: ({
       actions,
       onActionPress,
@@ -195,7 +204,9 @@ jest.mock('../../../components/home', () => {
             key={action.title}
             testID={`home-quick-action-${index}`}
             onPress={() => onActionPress(action.route)}
-          />
+          >
+            <Text>{action.title}</Text>
+          </Pressable>
         ))}
       </View>
     ),
@@ -407,6 +418,15 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 describe('HomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (useUser as jest.Mock).mockReturnValue({
+      user: {
+        id: 'test_user_123',
+        firstName: '테스트',
+        username: null,
+      },
+      isLoaded: true,
+      isSignedIn: true,
+    });
     mockUserAnalysesState = createUserAnalysesState();
     mockDailyCapsuleState = {
       capsule: null,
@@ -514,7 +534,31 @@ describe('HomeScreen', () => {
     it('사용자 이름을 HomeHeader에 전달한다', () => {
       const { getByText } = renderWithTheme(<HomeScreen />);
       // jest.setup.js에서 useUser mock의 firstName이 '테스트'
-      expect(getByText('테스트')).toBeTruthy();
+      expect(getByText('테스트님')).toBeTruthy();
+    });
+
+    it('로그아웃 홈은 가짜 사용자명을 숨기고 로그인 동선만 제공한다', () => {
+      (useUser as jest.Mock).mockReturnValue({
+        user: null,
+        isLoaded: true,
+        isSignedIn: false,
+      });
+
+      const screen = renderWithTheme(<HomeScreen />);
+
+      expect(screen.getByText('온전한 나를 찾는 여정, 이룸')).toBeTruthy();
+      expect(screen.queryByText('사용자님')).toBeNull();
+      fireEvent.press(screen.getByTestId('home-sign-in-button'));
+      expect(mockRouterPush).toHaveBeenCalledWith('/(auth)/sign-in');
+    });
+
+    it('통합 분석 홈 CTA는 최대 1분 약속만 사용한다', () => {
+      mockUserAnalysesState = { ...createUserAnalysesState(), personalColor: null };
+
+      const screen = renderWithTheme(<HomeScreen />);
+
+      expect(screen.getByText('5축 통합 분석 (최대 1분)')).toBeTruthy();
+      expect(screen.queryByText(/2분/)).toBeNull();
     });
   });
 

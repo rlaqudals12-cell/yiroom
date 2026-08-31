@@ -1,38 +1,45 @@
 import { useAuth } from '@clerk/clerk-expo';
-import { Redirect } from 'expo-router';
-import { useEffect, useState, type ReactNode } from 'react';
+import { router, useSegments } from 'expo-router';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
+import { AnalysisErrorState } from '@/components/analysis/AnalysisErrorState';
 import { fetchAgreementStatus } from '@/lib/api/agreement';
 import { fetchBirthdate } from '@/lib/api/birthdate';
+import { useTheme } from '@/lib/theme';
 
-type GateStatus = 'checking' | 'allowed' | 'needs-setup' | 'needs-auth';
+type GateStatus = 'checking' | 'allowed' | 'needs-setup' | 'needs-auth' | 'error';
 
 interface BiometricRouteGateProps {
   children: ReactNode;
   loadingColor: string;
   loadingTestID: string;
+  failurePresentation?: 'redirect' | 'retry';
 }
 
-/**
- * 사진 기반 기능의 공용 선제 게이트.
- *
- * 로그인·연령·생체정보 동의 중 하나라도 확인할 수 없으면 사진 입력 화면을 열지 않는다.
- * 통합 분석이 이미 제공하는 수집 플로우를 정본으로 재사용한다.
- */
+interface BiometricResultRouteGateProps {
+  children: ReactNode;
+  imageUri?: string | string[];
+}
+
+/** 로그인·연령·생체정보 동의를 사진 입력 전에 확인하는 공용 게이트. */
 export function BiometricRouteGate({
   children,
   loadingColor,
   loadingTestID,
+  failurePresentation = 'redirect',
 }: BiometricRouteGateProps): React.JSX.Element {
   const { getToken, isLoaded, isSignedIn, userId } = useAuth();
+  const segments = useSegments();
   const [status, setStatus] = useState<GateStatus>('checking');
+  const [retryCount, setRetryCount] = useState(0);
+  const redirectedToRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
 
     let active = true;
-    // 같은 레이아웃에서 계정만 전환되어도 이전 계정의 허용 상태를 재사용하지 않는다.
+    // 계정 전환 시 이전 계정의 허용 상태를 재사용하지 않는다.
     setStatus('checking');
     void (async () => {
       try {
@@ -49,43 +56,103 @@ export function BiometricRouteGate({
         ]);
         if (!active) return;
 
-        const isReady =
-          birthdate.status === 'fulfilled' &&
-          birthdate.value.hasBirthDate &&
-          agreement.status === 'fulfilled' &&
-          agreement.value.hasAgreed;
-        setStatus(isReady ? 'allowed' : 'needs-setup');
+        if (birthdate.status === 'rejected' || agreement.status === 'rejected') {
+          setStatus('error');
+          return;
+        }
+
+        setStatus(
+          birthdate.value.hasBirthDate && agreement.value.hasAgreed ? 'allowed' : 'needs-setup'
+        );
       } catch {
-        if (active) setStatus('needs-setup');
+        if (active) setStatus('error');
       }
     })();
 
     return () => {
       active = false;
     };
-    // Clerk의 getToken은 렌더마다 새 참조일 수 있다. 로그인 판정 후 계정당 한 번만 조회한다.
+    // Clerk getToken은 렌더마다 새 참조일 수 있어 명시적 상태만 의존한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn, userId]);
+  }, [isLoaded, isSignedIn, retryCount, userId]);
 
-  if (!isLoaded || (isSignedIn && status === 'checking')) {
+  const redirectTarget: 'sign-in' | 'integrated' | null =
+    !isLoaded || (isSignedIn && status === 'checking') || status === 'allowed'
+      ? null
+      : !isSignedIn || status === 'needs-auth'
+        ? 'sign-in'
+        : status === 'needs-setup' || (status === 'error' && failurePresentation === 'redirect')
+          ? 'integrated'
+          : null;
+
+  const returnTo = `/${segments.join('/')}`;
+
+  // Redirect 반복 렌더로 replace 루프가 생기지 않도록 이동은 한 번만 발행한다.
+  useEffect(() => {
+    if (!redirectTarget) return;
+    const redirectKey =
+      redirectTarget === 'sign-in' ? `${redirectTarget}:${returnTo}` : redirectTarget;
+    if (redirectedToRef.current === redirectKey) return;
+    redirectedToRef.current = redirectKey;
+    router.replace(
+      redirectTarget === 'sign-in'
+        ? { pathname: '/(auth)/sign-in', params: { returnTo } }
+        : '/(analysis)/integrated'
+    );
+  }, [redirectTarget, returnTo]);
+
+  const handleRetry = useCallback((): void => {
+    setStatus('checking');
+    setRetryCount((current) => current + 1);
+  }, []);
+
+  const loadingState = (
+    <View
+      accessibilityLabel="분석 이용 조건 확인 중"
+      style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}
+      testID={loadingTestID}
+    >
+      <ActivityIndicator color={loadingColor} />
+    </View>
+  );
+
+  if (!isLoaded || (isSignedIn && status === 'checking')) return loadingState;
+
+  if (status === 'error' && failurePresentation === 'retry') {
     return (
-      <View
-        accessibilityLabel="분석 이용 조건 확인 중"
-        style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}
-        testID={loadingTestID}
-      >
-        <ActivityIndicator color={loadingColor} />
-      </View>
+      <AnalysisErrorState
+        message="분석 이용 조건을 확인하지 못했어요. 연결을 확인한 뒤 다시 시도해 주세요."
+        onRetry={handleRetry}
+        retryText="다시 확인하기"
+        testID="biometric-route-gate-error"
+      />
     );
   }
 
-  if (!isSignedIn || status === 'needs-auth') {
-    return <Redirect href="/(auth)/sign-in" />;
-  }
-
-  if (status === 'needs-setup') {
-    return <Redirect href="/(analysis)/integrated" />;
-  }
+  if (redirectTarget) return loadingState;
 
   return <>{children}</>;
+}
+
+/** 저장 결과는 통과시키고, 새 사진 결과만 생체정보 사전 조건을 확인한다. */
+export function BiometricResultRouteGate({
+  children,
+  imageUri,
+}: BiometricResultRouteGateProps): React.JSX.Element {
+  if (!imageUri) return <>{children}</>;
+  return <FreshResultRouteGate>{children}</FreshResultRouteGate>;
+}
+
+function FreshResultRouteGate({ children }: { children: ReactNode }): React.JSX.Element {
+  const { colors } = useTheme();
+
+  return (
+    <BiometricRouteGate
+      failurePresentation="retry"
+      loadingColor={colors.foreground}
+      loadingTestID="result-analysis-gate-loading"
+    >
+      {children}
+    </BiometricRouteGate>
+  );
 }

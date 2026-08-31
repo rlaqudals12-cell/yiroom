@@ -42,6 +42,35 @@ export interface InventoryUploadOptions {
   baseUrl?: string;
 }
 
+export type InventoryClassifyCategory =
+  | 'outer'
+  | 'top'
+  | 'bottom'
+  | 'dress'
+  | 'shoes'
+  | 'bag'
+  | 'accessory';
+export type InventoryClassifySeason = 'spring' | 'summer' | 'autumn' | 'winter';
+
+export interface InventoryClassificationResult {
+  suggestedName?: string;
+  category?: InventoryClassifyCategory;
+  colors: string[];
+  seasons: InventoryClassifySeason[];
+  usedFallback: boolean;
+}
+
+const CLASSIFY_CATEGORIES = new Set<InventoryClassifyCategory>([
+  'outer',
+  'top',
+  'bottom',
+  'dress',
+  'shoes',
+  'bag',
+  'accessory',
+]);
+const CLASSIFY_SEASONS = new Set<InventoryClassifySeason>(['spring', 'summer', 'autumn', 'winter']);
+
 export class InventoryUploadError extends Error {
   public readonly status: number;
   public readonly code: string | undefined;
@@ -189,4 +218,154 @@ export async function uploadInventoryImage(
   }
 
   return storagePath;
+}
+
+/**
+ * 선택 직후 축소한 의류 사진을 웹 분류 API로 보내 폼 프리필 후보를 받는다.
+ * 인증·base URL은 이미지 업로드와 같은 모바일 thin-client 계약을 따른다.
+ */
+export async function classifyInventoryImage(
+  imageBase64: string,
+  clerkToken: string | null,
+  baseUrl?: string
+): Promise<InventoryClassificationResult> {
+  if (!clerkToken) {
+    throw new InventoryUploadError('로그인이 필요해요. 다시 로그인해주세요.', 401, 'AUTH_ERROR');
+  }
+  if (!imageBase64) {
+    throw new InventoryUploadError('분류할 사진이 없어요.', 0, 'VALIDATION_ERROR');
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${getApiBaseUrl(baseUrl)}/api/inventory/classify`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${clerkToken}`,
+        'Content-Type': 'application/json',
+        'x-yiroom-client': 'mobile',
+      },
+      body: JSON.stringify({ imageBase64 }),
+    });
+  } catch {
+    throw new InventoryUploadError('네트워크 연결을 확인해주세요.', 0, 'NETWORK_ERROR');
+  }
+
+  let json: unknown;
+  try {
+    json = await response.json();
+  } catch {
+    json = {};
+  }
+
+  if (!response.ok) {
+    const { message, code } = extractApiError(json);
+    throw new InventoryUploadError(
+      message || '자동 분류에 실패했어요. 직접 입력해주세요.',
+      response.status,
+      code
+    );
+  }
+
+  const raw = typeof json === 'object' && json !== null ? (json as Record<string, unknown>) : {};
+  const rawCategory = raw.category;
+  const category =
+    typeof rawCategory === 'string' &&
+    CLASSIFY_CATEGORIES.has(rawCategory as InventoryClassifyCategory)
+      ? (rawCategory as InventoryClassifyCategory)
+      : undefined;
+  const colors = Array.isArray(raw.colors)
+    ? raw.colors.filter((value): value is string => typeof value === 'string')
+    : [];
+  const seasons = Array.isArray(raw.seasons)
+    ? raw.seasons.filter(
+        (value): value is InventoryClassifySeason =>
+          typeof value === 'string' && CLASSIFY_SEASONS.has(value as InventoryClassifySeason)
+      )
+    : [];
+
+  return {
+    suggestedName: typeof raw.suggestedName === 'string' ? raw.suggestedName : undefined,
+    category,
+    colors,
+    seasons,
+    usedFallback: raw.usedFallback === true,
+  };
+}
+
+/**
+ * 옷장 쓰기 API를 Clerk 인증과 함께 호출한다.
+ * 업로드와 같은 웹 API 경유 규약을 공유해 모바일이 DB 갱신 규칙을 복제하지 않게 한다.
+ */
+async function runInventoryAction(
+  path: string,
+  method: 'PATCH' | 'PUT',
+  clerkToken: string | null,
+  body?: Record<string, unknown>,
+  baseUrl?: string
+): Promise<void> {
+  if (!clerkToken) {
+    throw new InventoryUploadError('로그인이 필요해요. 다시 로그인해 주세요.', 401, 'AUTH_ERROR');
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${getApiBaseUrl(baseUrl)}${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${clerkToken}`,
+        'Content-Type': 'application/json',
+        'x-yiroom-client': 'mobile',
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+  } catch {
+    throw new InventoryUploadError('네트워크 연결을 확인해 주세요.', 0, 'NETWORK_ERROR');
+  }
+
+  let json: unknown;
+  try {
+    json = await response.json();
+  } catch {
+    json = {};
+  }
+
+  if (!response.ok) {
+    const { message, code } = extractApiError(json);
+    throw new InventoryUploadError(
+      message || '착용 기록을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.',
+      response.status,
+      code
+    );
+  }
+}
+
+/** 한 벌의 착용 횟수와 마지막 착용 시점을 서버 정본으로 갱신한다. */
+export async function recordInventoryItemUsage(
+  itemId: string,
+  clerkToken: string | null,
+  baseUrl?: string
+): Promise<void> {
+  await runInventoryAction(
+    `/api/inventory/${encodeURIComponent(itemId)}`,
+    'PATCH',
+    clerkToken,
+    { action: 'recordUsage' },
+    baseUrl
+  );
+}
+
+/** 코디와 그 구성 아이템의 착용 횟수를 웹 repository에서 함께 갱신한다. */
+export async function recordInventoryOutfitWear(
+  outfitId: string,
+  clerkToken: string | null,
+  baseUrl?: string
+): Promise<void> {
+  await runInventoryAction(
+    `/api/inventory/outfits/${encodeURIComponent(outfitId)}?action=recordWear`,
+    'PUT',
+    clerkToken,
+    undefined,
+    baseUrl
+  );
 }

@@ -103,6 +103,7 @@ jest.mock('../../../lib/inventory', () => ({
 
 // 사진 업로드 경로 — 기기 로컬 URI가 저장되지 않는지 검증하기 위해 mock으로 가로챈다
 const mockUploadInventoryImage = jest.fn();
+const mockClassifyInventoryImage = jest.fn();
 jest.mock('../../../lib/api', () => {
   // 에러 클래스는 팩토리 안에서 정의한다 (모듈 본문 상수는 팩토리 실행 시점에 TDZ)
   class InventoryUploadError extends Error {
@@ -116,13 +117,16 @@ jest.mock('../../../lib/api', () => {
     }
   }
   return {
+    classifyInventoryImage: (...args: unknown[]) => mockClassifyInventoryImage(...args),
     uploadInventoryImage: (...args: unknown[]) => mockUploadInventoryImage(...args),
     InventoryUploadError,
   };
 });
 
 const mockDownscaleToUri = jest.fn();
+const mockDownscaleToDataUrl = jest.fn();
 jest.mock('../../../lib/image/downscale', () => ({
+  downscaleToDataUrl: (...args: unknown[]) => mockDownscaleToDataUrl(...args),
   downscaleToUri: (...args: unknown[]) => mockDownscaleToUri(...args),
 }));
 
@@ -202,8 +206,8 @@ describe('ClosetAddScreen 렌더링', () => {
 
     expect(getByText('기본 정보')).toBeTruthy();
     expect(getByText('카테고리 *')).toBeTruthy();
-    expect(getByText('색상 * (복수 선택)')).toBeTruthy();
-    expect(getByText('시즌 * (복수 선택)')).toBeTruthy();
+    expect(getByText('색상 (선택 · 복수 가능)')).toBeTruthy();
+    expect(getByText('시즌 (선택 · 복수 가능)')).toBeTruthy();
   });
 
   it('저장 버튼 "옷장에 추가"가 표시된다', () => {
@@ -257,6 +261,81 @@ describe('ClosetAddScreen 구형 Android 카메라 폴백', () => {
   });
 });
 
+describe('ClosetAddScreen 자동 분류', () => {
+  const LOCAL_URI = 'file:///cache/classify.jpg';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRequiresLegacyAndroidGalleryFallback.mockReturnValue(false);
+    mockShouldBypassMediaLibraryPermissionGate.mockReturnValue(false);
+    mockDownscaleToDataUrl.mockResolvedValue('data:image/jpeg;base64,CLASSIFY');
+    (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: LOCAL_URI }],
+    });
+  });
+
+  it('실제 분류 결과의 이름과 카테고리를 폼에 자동으로 채운다', async () => {
+    mockClassifyInventoryImage.mockResolvedValue({
+      suggestedName: '화이트 린넨 셔츠',
+      category: 'top',
+      colors: ['화이트'],
+      seasons: ['summer'],
+      usedFallback: false,
+    });
+    const screen = renderWithTheme(<ClosetAddScreen />);
+
+    fireEvent.press(screen.getByText('🖼️ 앨범'));
+
+    await waitFor(() =>
+      expect(screen.getByPlaceholderText('예: 화이트 셔츠').props.value).toBe('화이트 린넨 셔츠')
+    );
+    expect(screen.getByTestId('closet-category-top').props.accessibilityState.selected).toBe(true);
+    expect(mockDownscaleToDataUrl).toHaveBeenCalledWith(LOCAL_URI, 1024);
+    expect(mockClassifyInventoryImage).toHaveBeenCalledWith(
+      'data:image/jpeg;base64,CLASSIFY',
+      expect.any(String)
+    );
+  });
+
+  it.each([
+    [
+      '폴백',
+      () => Promise.resolve({ suggestedName: '가짜 이름', category: 'top', usedFallback: true }),
+    ],
+    ['네트워크 실패', () => Promise.reject(new Error('network'))],
+  ])('%s 결과는 채택하지 않고 직접 입력 안내를 남긴다', async (_label, response) => {
+    mockClassifyInventoryImage.mockImplementationOnce(response);
+    const screen = renderWithTheme(<ClosetAddScreen />);
+
+    fireEvent.press(screen.getByText('🖼️ 앨범'));
+
+    expect(await screen.findByTestId('closet-classify-error')).toBeTruthy();
+    expect(screen.getByText('자동 분류 실패 — 직접 입력해주세요.')).toBeTruthy();
+    expect(screen.getByPlaceholderText('예: 화이트 셔츠').props.value).toBe('');
+    expect(screen.getByTestId('closet-category-top').props.accessibilityState.selected).toBe(false);
+  });
+
+  it('색상과 시즌이 없어도 사진·이름·카테고리가 있으면 저장 버튼을 활성화한다', async () => {
+    mockClassifyInventoryImage.mockResolvedValue({
+      suggestedName: '기본 셔츠',
+      category: 'top',
+      colors: [],
+      seasons: [],
+      usedFallback: false,
+    });
+    const screen = renderWithTheme(<ClosetAddScreen />);
+
+    fireEvent.press(screen.getByText('🖼️ 앨범'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('closet-add-submit').props.accessibilityState?.disabled).not.toBe(
+        true
+      )
+    );
+  });
+});
+
 // -------------------------------------------------------------------
 // 사진 저장 경로 (기기 로컬 URI 유실 결함 회귀 방지)
 // -------------------------------------------------------------------
@@ -268,6 +347,12 @@ describe('ClosetAddScreen 사진 업로드', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockAddItem.mockResolvedValue({ id: 'new-item' });
+    mockClassifyInventoryImage.mockResolvedValue({
+      colors: [],
+      seasons: [],
+      usedFallback: true,
+    });
+    mockDownscaleToDataUrl.mockResolvedValue('data:image/jpeg;base64,CLASSIFY');
     mockDownscaleToUri.mockResolvedValue(SMALL_URI);
     (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
       canceled: false,

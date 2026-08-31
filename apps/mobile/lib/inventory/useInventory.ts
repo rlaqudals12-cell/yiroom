@@ -7,8 +7,6 @@ import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useClerkSupabaseClient } from '../supabase';
-import { trackOutfitSaved } from '../analytics/tracker';
 import { resolveClothingCategory } from './clothingCategory';
 import { resolveInventoryImageUrl, signInventoryImagePaths } from './image-url';
 import type {
@@ -19,6 +17,8 @@ import type {
   SavedOutfit,
   SavedOutfitRow,
 } from './types';
+import { trackOutfitSaved } from '../analytics/tracker';
+import { useClerkSupabaseClient } from '../supabase';
 import {
   INVENTORY_TABLE,
   SAVED_OUTFITS_TABLE,
@@ -26,6 +26,7 @@ import {
   rowToSavedOutfit,
   toClothingItems,
 } from './types';
+import { recordInventoryItemUsage, recordInventoryOutfitWear } from '../api/inventory-upload';
 import { closetLogger } from '../utils/logger';
 
 // ============================================================
@@ -46,10 +47,12 @@ interface UseInventoryResult {
   updateItem: (id: string, updates: Partial<InventoryItem>) => Promise<boolean>;
   deleteItem: (id: string) => Promise<boolean>;
   toggleFavorite: (id: string) => Promise<boolean>;
+  recordUsage: (id: string) => Promise<boolean>;
 }
 
 export function useInventory(category?: InventoryCategory): UseInventoryResult {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
 
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -226,6 +229,35 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
     [items, updateItem]
   );
 
+  const recordUsage = useCallback(
+    async (id: string): Promise<boolean> => {
+      const item = items.find((candidate) => candidate.id === id);
+      if (!item) return false;
+
+      try {
+        const token = await getToken();
+        await recordInventoryItemUsage(id, token);
+        const wornAt = new Date().toISOString();
+        setItems((previous) =>
+          previous.map((candidate) =>
+            candidate.id === id
+              ? {
+                  ...candidate,
+                  useCount: candidate.useCount + 1,
+                  lastUsedAt: wornAt,
+                }
+              : candidate
+          )
+        );
+        return true;
+      } catch (err) {
+        closetLogger.error(' recordUsage error:', err);
+        return false;
+      }
+    },
+    [getToken, items]
+  );
+
   return {
     items,
     isLoading,
@@ -236,6 +268,7 @@ export function useInventory(category?: InventoryCategory): UseInventoryResult {
     updateItem,
     deleteItem,
     toggleFavorite,
+    recordUsage,
   };
 }
 
@@ -433,21 +466,13 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
 
   const recordWear = useCallback(
     async (id: string): Promise<boolean> => {
-      if (!supabase) return false;
-
       try {
         const outfit = outfits.find((o) => o.id === id);
         if (!outfit) return false;
 
-        const { error: updateError } = await supabase
-          .from(SAVED_OUTFITS_TABLE)
-          .update({
-            wear_count: outfit.wearCount + 1,
-            last_worn_at: new Date().toISOString(),
-          })
-          .eq('id', id);
-
-        if (updateError) throw updateError;
+        const token = await getToken();
+        await recordInventoryOutfitWear(id, token);
+        const wornAt = new Date().toISOString();
 
         setOutfits((prev) =>
           prev.map((o) =>
@@ -455,7 +480,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
               ? {
                   ...o,
                   wearCount: o.wearCount + 1,
-                  lastWornAt: new Date().toISOString(),
+                  lastWornAt: wornAt,
                 }
               : o
           )
@@ -466,7 +491,7 @@ export function useSavedOutfits(): UseSavedOutfitsResult {
         return false;
       }
     },
-    [supabase, outfits]
+    [getToken, outfits]
   );
 
   const getOutfitById = useCallback(

@@ -67,8 +67,11 @@ describe('IntegratedSessionPromptCard', () => {
 
   it('세션 없으면 "5가지 한 번에 알아보기" CTA 표시', () => {
     render(<IntegratedSessionPromptCard />);
-    expect(screen.getByTestId('integrated-prompt-cta')).toBeInTheDocument();
+    const cta = screen.getByTestId('integrated-prompt-cta');
+    expect(cta).toBeInTheDocument();
     expect(screen.getByText(/내 정체성 5가지 한 번에 알아보기/)).toBeInTheDocument();
+    expect(cta).toHaveTextContent('최대 1분');
+    expect(cta).not.toHaveTextContent(/약 2분|10초/);
   });
 
   it('세션 없으면 CTA 링크가 /analysis/integrated로', () => {

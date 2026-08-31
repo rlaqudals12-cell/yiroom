@@ -16,6 +16,7 @@ import {
   ReportTextList,
   type ReportSection,
 } from '@/components/analysis';
+import { BiometricResultRouteGate } from '@/components/analysis/BiometricRouteGate';
 import { AxisResultShareSection } from '@/components/share';
 import { BadgeDrop, CelebrationEffect } from '@/components/ui';
 import {
@@ -57,6 +58,16 @@ const SCALP_LABELS: Record<HairAnalysisApiResult['scalpCondition'], string> = {
 const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요. 다시 시도해 주세요.';
 
 export default function HairResultScreen(): React.JSX.Element {
+  const { imageUri } = useLocalSearchParams<{ imageUri?: string }>();
+
+  return (
+    <BiometricResultRouteGate imageUri={imageUri}>
+      <HairResultContent />
+    </BiometricResultRouteGate>
+  );
+}
+
+function HairResultContent(): React.JSX.Element {
   const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
   const { imageUri, historyId } = useLocalSearchParams<{

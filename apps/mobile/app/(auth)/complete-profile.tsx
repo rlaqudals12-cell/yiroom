@@ -1,6 +1,6 @@
 /** 기존 계정의 최초 1회 생년월일 수집 화면. */
 import { useAuth } from '@clerk/clerk-expo';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -13,18 +13,29 @@ import {
   View,
 } from 'react-native';
 
-import { formatBirthdateInput } from '@/lib/age-verification';
-import { BirthdateApiError, evaluateBirthdateGate, saveBirthdate } from '@/lib/api/birthdate';
+import { formatBirthdateInput, isMinor, parseBirthDate } from '@/lib/age-verification';
+import {
+  BirthdateApiError,
+  evaluateBirthdateGate,
+  fetchBirthdate,
+  saveBirthdate,
+} from '@/lib/api/birthdate';
+import { useNetworkStatus } from '@/lib/offline';
 import { useTheme } from '@/lib/theme';
 
 export default function CompleteProfileScreen(): React.JSX.Element {
   const { getToken, isLoaded, isSignedIn, signOut } = useAuth();
   const router = useRouter();
+  const params = useLocalSearchParams<{ reason?: string | string[] }>();
+  const { isConnected } = useNetworkStatus();
   const { brand, colors, radii, typography } = useTheme();
   const [birthdate, setBirthdate] = useState('');
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const unavailableReason = Array.isArray(params.reason) ? params.reason[0] : params.reason;
+  const isUnavailable = unavailableReason === 'unavailable';
+  const shouldRecheck = isUnavailable && !isConnected;
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) router.replace('/(auth)/sign-in');
@@ -84,6 +95,49 @@ export default function CompleteProfileScreen(): React.JSX.Element {
     }
   };
 
+  const handleRecheck = async (): Promise<void> => {
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const token = await getToken();
+      if (!token) {
+        await signOut();
+        router.replace('/(auth)/sign-in');
+        return;
+      }
+
+      const storedBirthdate = await fetchBirthdate(token);
+      if (!storedBirthdate.hasBirthDate || !storedBirthdate.birthDate) {
+        setError('저장된 생년월일이 없어요. 네트워크 연결 후 직접 입력해주세요.');
+        return;
+      }
+
+      const parsedBirthdate = parseBirthDate(storedBirthdate.birthDate);
+      if (!parsedBirthdate) {
+        setError('저장된 생년월일을 확인할 수 없어요. 직접 입력해주세요.');
+        return;
+      }
+      if (isMinor(parsedBirthdate)) {
+        await moveToAgeRestricted();
+        return;
+      }
+
+      router.replace('/(tabs)');
+    } catch (fetchError) {
+      if (fetchError instanceof BirthdateApiError && fetchError.isMinor) {
+        await moveToAgeRestricted();
+        return;
+      }
+      setError(
+        fetchError instanceof Error
+          ? fetchError.message
+          : '연령 확인 정보를 불러오지 못했어요. 네트워크 연결을 확인해주세요.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -95,11 +149,12 @@ export default function CompleteProfileScreen(): React.JSX.Element {
         <Text
           style={[styles.title, { color: colors.foreground, fontSize: typography.size['2xl'] }]}
         >
-          생년월일을 입력해주세요
+          {isUnavailable ? '연령 확인 정보를 불러오지 못했어요' : '생년월일을 입력해주세요'}
         </Text>
         <Text style={[styles.description, { color: colors.mutedForeground }]}>
-          이룸은 만 14세 이상만 이용할 수 있어요. 입력한 생년월일은 연령 확인과 서비스 이용 자격
-          확인에 사용해요.
+          {isUnavailable
+            ? '네트워크 연결을 확인한 뒤 다시 확인해주세요. 저장된 성인 정보가 확인되면 바로 이어갈 수 있어요.'
+            : '이룸은 만 14세 이상만 이용할 수 있어요. 입력한 생년월일은 연령 확인과 서비스 이용 자격 확인에 사용해요.'}
         </Text>
 
         <Text style={[styles.label, { color: colors.foreground }]}>생년월일</Text>
@@ -165,13 +220,13 @@ export default function CompleteProfileScreen(): React.JSX.Element {
         <Pressable
           accessibilityRole="button"
           disabled={isSubmitting}
-          onPress={() => void handleSubmit()}
+          onPress={() => void (shouldRecheck ? handleRecheck() : handleSubmit())}
           style={[
             styles.submit,
             { backgroundColor: brand.primary, borderRadius: radii.full },
             isSubmitting && styles.disabled,
           ]}
-          testID="complete-profile-submit"
+          testID={shouldRecheck ? 'complete-profile-recheck' : 'complete-profile-submit'}
         >
           {isSubmitting ? (
             <ActivityIndicator color={brand.primaryForeground} />
@@ -183,7 +238,7 @@ export default function CompleteProfileScreen(): React.JSX.Element {
                 fontWeight: typography.weight.semibold,
               }}
             >
-              확인하고 시작하기
+              {shouldRecheck ? '다시 확인하기' : '확인하고 시작하기'}
             </Text>
           )}
         </Pressable>

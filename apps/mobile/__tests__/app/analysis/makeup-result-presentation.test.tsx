@@ -4,6 +4,10 @@ import React from 'react';
 import MakeupResultScreen from '../../../app/(analysis)/makeup/result';
 import { renderWithTheme } from '../../helpers/test-utils';
 
+jest.mock('../../../components/analysis/BiometricRouteGate', () => ({
+  BiometricResultRouteGate: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 const mockRequestMakeupAnalysis = jest.fn();
 const mockGetToken = jest.fn().mockResolvedValue('token-1');
 const mockPush = jest.fn();

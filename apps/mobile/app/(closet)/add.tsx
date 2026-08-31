@@ -24,12 +24,12 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
-import { uploadInventoryImage, InventoryUploadError } from '@/lib/api';
+import { classifyInventoryImage, uploadInventoryImage, InventoryUploadError } from '@/lib/api';
 import {
   requiresLegacyAndroidGalleryFallback,
   shouldBypassMediaLibraryPermissionGate,
 } from '@/lib/image/camera-fallback';
-import { downscaleToUri } from '@/lib/image/downscale';
+import { downscaleToDataUrl, downscaleToUri } from '@/lib/image/downscale';
 import {
   buildClosetMetadata,
   useCloset,
@@ -123,6 +123,47 @@ export default function ClosetAddScreen() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isClassifying, setIsClassifying] = useState(false);
+  const [classificationError, setClassificationError] = useState<string | null>(null);
+
+  const handleSelectedImage = async (imageUri: string): Promise<void> => {
+    setFormData((prev) => ({ ...prev, imageUri }));
+    setIsClassifying(true);
+    setClassificationError(null);
+
+    try {
+      const token = await getToken();
+      const imageBase64 = await downscaleToDataUrl(imageUri, 1024);
+      const classification = await classifyInventoryImage(imageBase64, token);
+
+      // 폴백은 실제 판정이 아니라 자리표시자다. 폼에 채택하지 않고 직접 입력만 안내한다.
+      if (classification.usedFallback) {
+        setClassificationError('자동 분류 실패 — 직접 입력해주세요.');
+        return;
+      }
+
+      const normalizedColors = classification.colors
+        .map((value) => {
+          const normalized = value.trim().toLowerCase();
+          return COLORS.find(
+            (option) => option.value === normalized || option.label === value.trim()
+          )?.value;
+        })
+        .filter((value): value is string => Boolean(value));
+
+      setFormData((prev) => ({
+        ...prev,
+        name: classification.suggestedName?.trim() || prev.name,
+        category: classification.category || prev.category,
+        colors: normalizedColors,
+        seasons: classification.seasons,
+      }));
+    } catch {
+      setClassificationError('자동 분류 실패 — 직접 입력해주세요.');
+    } finally {
+      setIsClassifying(false);
+    }
+  };
 
   // 이미지 선택
   const handleImagePick = async () => {
@@ -153,7 +194,7 @@ export default function ClosetAddScreen() {
       });
 
       if (!result.canceled && result.assets[0]) {
-        setFormData((prev) => ({ ...prev, imageUri: result.assets[0].uri }));
+        await handleSelectedImage(result.assets[0].uri);
       }
     } catch {
       Alert.alert('사진 불러오기 실패', '다른 사진을 선택해 주세요.');
@@ -188,7 +229,7 @@ export default function ClosetAddScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      setFormData((prev) => ({ ...prev, imageUri: result.assets[0].uri }));
+      await handleSelectedImage(result.assets[0].uri);
     }
   };
 
@@ -236,13 +277,7 @@ export default function ClosetAddScreen() {
 
   // 유효성 검증
   const isValid = () => {
-    return (
-      formData.imageUri &&
-      formData.name.trim() &&
-      formData.category &&
-      formData.colors.length > 0 &&
-      formData.seasons.length > 0
-    );
+    return Boolean(formData.imageUri && formData.name.trim() && formData.category);
   };
 
   // 저장
@@ -367,6 +402,20 @@ export default function ClosetAddScreen() {
                   </View>
                 </View>
               )}
+              {isClassifying ? (
+                <View style={styles.classificationStatus} testID="closet-classify-loading">
+                  <ActivityIndicator size="small" color={colors.foreground} />
+                  <Text style={styles.classificationText}>옷 정보를 자동 분류하고 있어요</Text>
+                </View>
+              ) : classificationError ? (
+                <View
+                  accessibilityRole="alert"
+                  style={styles.classificationStatus}
+                  testID="closet-classify-error"
+                >
+                  <Text style={styles.classificationErrorText}>{classificationError}</Text>
+                </View>
+              ) : null}
             </GlassCard>
           </Animated.View>
 
@@ -402,12 +451,14 @@ export default function ClosetAddScreen() {
               <View style={styles.optionGrid}>
                 {CATEGORIES.map((cat) => (
                   <Pressable
+                    accessibilityState={{ selected: formData.category === cat.value }}
                     key={cat.value}
                     onPress={() => selectCategory(cat.value)}
                     style={[
                       styles.optionButton,
                       formData.category === cat.value && styles.optionButtonSelected,
                     ]}
+                    testID={`closet-category-${cat.value}`}
                   >
                     <Text style={styles.optionIcon}>{cat.icon}</Text>
                     <Text
@@ -427,7 +478,7 @@ export default function ClosetAddScreen() {
           {/* 색상 */}
           <Animated.View entering={FadeInUp.delay(240).duration(TIMING.normal)}>
             <GlassCard shadowSize="md" style={{ ...styles.section }}>
-              <Text style={styles.sectionTitle}>색상 * (복수 선택)</Text>
+              <Text style={styles.sectionTitle}>색상 (선택 · 복수 가능)</Text>
               <View style={styles.colorGrid}>
                 {COLORS.map((color) => (
                   <Pressable
@@ -456,7 +507,7 @@ export default function ClosetAddScreen() {
           {/* 시즌 */}
           <Animated.View entering={FadeInUp.delay(320).duration(TIMING.normal)}>
             <GlassCard shadowSize="md" style={{ ...styles.section }}>
-              <Text style={styles.sectionTitle}>시즌 * (복수 선택)</Text>
+              <Text style={styles.sectionTitle}>시즌 (선택 · 복수 가능)</Text>
               <View style={styles.optionRow}>
                 {SEASONS.map((season) => (
                   <Pressable
@@ -540,6 +591,7 @@ export default function ClosetAddScreen() {
               (!isValid() || isSubmitting) && styles.submitButtonDisabled,
               pressed && { opacity: 0.8 },
             ]}
+            testID="closet-add-submit"
           >
             {isSubmitting ? (
               <ActivityIndicator size="small" color={colors.overlayForeground} />
@@ -621,6 +673,20 @@ function useStyles() {
     imageButtonText: {
       color: colors.foreground,
       fontWeight: typography.weight.medium,
+    },
+    classificationStatus: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginTop: spacing.smx,
+    },
+    classificationText: {
+      color: colors.mutedForeground,
+      fontSize: typography.size.sm,
+    },
+    classificationErrorText: {
+      color: colors.destructive,
+      fontSize: typography.size.sm,
     },
     section: {
       padding: spacing.mlg,

@@ -1,11 +1,17 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-type PluginOptions = Record<string, boolean | string>;
+import { darkColors, lightColors } from '@/lib/theme/tokens';
+
+type PluginOptionValue = boolean | string | Record<string, string>;
+type PluginOptions = Record<string, PluginOptionValue>;
 type ExpoPlugin = string | [string, PluginOptions];
 
 interface AppConfig {
   expo: {
+    splash: {
+      backgroundColor: string;
+    };
     ios: {
       infoPlist: Record<string, string>;
     };
@@ -36,6 +42,19 @@ function pluginOptions(config: AppConfig, name: string): PluginOptions | undefin
   );
   return plugin?.[1];
 }
+
+describe('콜드스타트 스플래시 지면 계약', () => {
+  const config = readJson<AppConfig>(join(MOBILE_ROOT, 'app.json'));
+
+  it('라이트 지면과 dark 변형이 각각 모바일 테마 토큰을 따른다', () => {
+    const options = pluginOptions(config, 'expo-splash-screen');
+    const dark = options?.dark as Record<string, string> | undefined;
+
+    expect(config.expo.splash.backgroundColor).toBe(lightColors.background);
+    expect(options?.backgroundColor).toBe(lightColors.background);
+    expect(dark?.backgroundColor).toBe(darkColors.background);
+  });
+});
 
 describe('Android 최소 권한 계약', () => {
   const config = readJson<AppConfig>(join(MOBILE_ROOT, 'app.json'));

@@ -4,11 +4,13 @@
  * 저장된 코디의 구성 아이템, 착용 기록, 계절/상황 정보를 확인한다.
  */
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, Pressable } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Pressable, Alert } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import { useSavedOutfits } from '@/lib/inventory/useInventory';
 import { useTheme } from '@/lib/theme';
 
 interface OutfitItem {
@@ -38,8 +40,23 @@ export default function OutfitDetailScreen(): React.ReactElement {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, brand, spacing, radii, typography, status, module: moduleColors } = useTheme();
+  const { recordWear } = useSavedOutfits();
+  const [isRecordingWear, setIsRecordingWear] = useState(false);
 
   const outfit = MOCK_OUTFIT;
+
+  const handleRecordWear = async () => {
+    if (!id || isRecordingWear) return;
+    setIsRecordingWear(true);
+    try {
+      const success = await recordWear(id);
+      if (!success) {
+        Alert.alert('착용 기록 실패', '착용 기록을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+      }
+    } finally {
+      setIsRecordingWear(false);
+    }
+  };
 
   return (
     <ScreenContainer testID="outfit-detail-screen" backgroundGradient="style" contentPadding={0}>
@@ -231,7 +248,10 @@ export default function OutfitDetailScreen(): React.ReactElement {
       >
         <Pressable
           accessibilityLabel="오늘 입었어요"
-          onPress={() => {}}
+          accessibilityState={{ disabled: isRecordingWear }}
+          disabled={isRecordingWear}
+          testID="outfit-detail-record-wear"
+          onPress={handleRecordWear}
           style={{
             flex: 1,
             backgroundColor: brand.primary,
@@ -247,7 +267,7 @@ export default function OutfitDetailScreen(): React.ReactElement {
               color: brand.primaryForeground,
             }}
           >
-            오늘 입었어요
+            {isRecordingWear ? '기록 중이에요' : '오늘 입었어요'}
           </Text>
         </Pressable>
         <Pressable

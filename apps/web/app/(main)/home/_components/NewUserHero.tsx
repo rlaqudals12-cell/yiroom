@@ -42,7 +42,7 @@ export default function NewUserHero(): React.ReactElement {
             <span className="text-base leading-snug">
               내 정체성 5가지 알아보기
               <span className="block text-xs font-normal text-white/80 mt-0.5">
-                색 · 피부 · 체형 · 헤어 · 메이크업 한 번에 · 약 2분
+                색 · 피부 · 체형 · 헤어 · 메이크업 한 번에 · 최대 1분
               </span>
             </span>
           </Link>

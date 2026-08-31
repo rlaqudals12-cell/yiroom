@@ -119,7 +119,7 @@ export function IntegratedSessionPromptCard({
       <div className={cn('min-w-0 flex-1', embedded ? 'text-foreground' : 'text-white')}>
         <p className="text-sm font-bold">내 정체성 5가지 한 번에 알아보기</p>
         <p className={cn('text-xs', embedded ? 'text-muted-foreground' : 'text-white/80')}>
-          색 · 피부 · 체형 · 헤어 · 메이크업 · 약 2분
+          색 · 피부 · 체형 · 헤어 · 메이크업 · 최대 1분
         </p>
       </div>
       <ChevronRight

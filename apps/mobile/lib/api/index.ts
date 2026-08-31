@@ -145,8 +145,18 @@ export type { TwinStatus, TwinRecord, TwinGenerateInput, TwinComposeOutput } fro
 export { fetchIngredientOcr, ScanOcrApiError } from './scan';
 
 // 인벤토리 이미지 업로드 HTTP 클라이언트 (웹 API 재사용) — 로컬 file:// 저장으로 인한 사진 유실 수리
-export { uploadInventoryImage, createUploadItemId, InventoryUploadError } from './inventory-upload';
+export {
+  classifyInventoryImage,
+  uploadInventoryImage,
+  recordInventoryItemUsage,
+  recordInventoryOutfitWear,
+  createUploadItemId,
+  InventoryUploadError,
+} from './inventory-upload';
 export type {
+  InventoryClassificationResult,
+  InventoryClassifyCategory,
+  InventoryClassifySeason,
   InventoryUploadOptions,
   InventoryUploadCategory,
   InventoryUploadType,

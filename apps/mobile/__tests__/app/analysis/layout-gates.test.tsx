@@ -1,9 +1,10 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockGetToken = jest.fn<Promise<string | null>, []>();
 const mockFetchBirthdate = jest.fn();
 const mockFetchAgreementStatus = jest.fn();
+const mockRouterReplace = jest.fn();
 
 let mockSegments: string[] = ['(analysis)', 'integrated'];
 let mockAuthState: {
@@ -46,8 +47,22 @@ jest.mock('expo-router', () => {
     Redirect: ({ href }: { href: string }) => (
       <View accessibilityLabel={href} testID="analysis-gate-redirect" />
     ),
+    router: { replace: (...args: unknown[]) => mockRouterReplace(...args) },
     Stack,
     useSegments: () => mockSegments,
+  };
+});
+
+jest.mock('../../../components/analysis/AnalysisErrorState', () => {
+  const ReactModule = require('react');
+  const { Pressable, View } = require('react-native');
+  return {
+    AnalysisErrorState: ({ onRetry, testID }: { onRetry?: () => void; testID: string }) =>
+      ReactModule.createElement(
+        View,
+        { testID },
+        ReactModule.createElement(Pressable, { onPress: onRetry, testID: `${testID}-retry` })
+      ),
   };
 });
 
@@ -68,6 +83,7 @@ jest.mock('../../../lib/theme', () => ({
 }));
 
 import AnalysisLayout, { requiresStandaloneAnalysisGate } from '../../../app/(analysis)/_layout';
+import { BiometricResultRouteGate } from '../../../components/analysis/BiometricRouteGate';
 
 describe('분석 레이아웃 선제 게이트', () => {
   beforeEach(() => {
@@ -85,11 +101,11 @@ describe('분석 레이아웃 선제 게이트', () => {
   });
 
   it.each(['personal-color', 'skin', 'body', 'hair', 'makeup'])(
-    '%s의 입력·카메라·결과 화면만 선제 게이트한다',
+    '%s의 입력·카메라 화면만 레이아웃에서 선제 게이트한다',
     (axis) => {
       expect(requiresStandaloneAnalysisGate(['(analysis)', axis])).toBe(true);
       expect(requiresStandaloneAnalysisGate(['(analysis)', axis, 'camera'])).toBe(true);
-      expect(requiresStandaloneAnalysisGate(['(analysis)', axis, 'result'])).toBe(true);
+      expect(requiresStandaloneAnalysisGate(['(analysis)', axis, 'result'])).toBe(false);
       expect(requiresStandaloneAnalysisGate(['(analysis)', axis, 'history'])).toBe(false);
     }
   );
@@ -137,9 +153,10 @@ describe('분석 레이아웃 선제 게이트', () => {
 
     const screen = render(<AnalysisLayout />);
 
-    expect(screen.getByTestId('analysis-gate-redirect').props.accessibilityLabel).toBe(
-      '/(auth)/sign-in'
-    );
+    expect(mockRouterReplace).toHaveBeenCalledWith({
+      pathname: '/(auth)/sign-in',
+      params: { returnTo: '/(analysis)/skin/camera' },
+    });
     expect(screen.queryByTestId('analysis-stack')).toBeNull();
     expect(mockFetchBirthdate).not.toHaveBeenCalled();
   });
@@ -157,11 +174,9 @@ describe('분석 레이아웃 선제 게이트', () => {
       const screen = render(<AnalysisLayout />);
       expect(screen.getByTestId('standalone-analysis-gate-loading')).toBeTruthy();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('analysis-gate-redirect').props.accessibilityLabel).toBe(
-          '/(analysis)/integrated'
-        );
-      });
+      await waitFor(() =>
+        expect(mockRouterReplace).toHaveBeenCalledWith('/(analysis)/integrated')
+      );
       expect(mockFetchBirthdate).toHaveBeenCalledWith('clerk-token');
       expect(mockFetchAgreementStatus).toHaveBeenCalledWith('clerk-token');
       expect(screen.queryByTestId('analysis-stack')).toBeNull();
@@ -174,7 +189,7 @@ describe('분석 레이아웃 선제 게이트', () => {
     const screen = render(<AnalysisLayout />);
 
     await waitFor(() => expect(screen.getByTestId('analysis-stack')).toBeTruthy());
-    expect(screen.queryByTestId('analysis-gate-redirect')).toBeNull();
+    expect(mockRouterReplace).not.toHaveBeenCalled();
   });
 
   it('로그인 계정이 바뀌면 이전 계정의 허용 상태를 재사용하지 않고 다시 확인한다', async () => {
@@ -197,12 +212,45 @@ describe('분석 레이아웃 선제 게이트', () => {
 
     const screen = render(<AnalysisLayout />);
 
-    await waitFor(() => {
-      expect(screen.getByTestId('analysis-gate-redirect').props.accessibilityLabel).toBe(
-        '/(analysis)/integrated'
-      );
-    });
+    await waitFor(() =>
+      expect(mockRouterReplace).toHaveBeenCalledWith('/(analysis)/integrated')
+    );
     expect(screen.queryByTestId('analysis-stack')).toBeNull();
+  });
+
+  it('같은 게이트 상태가 다시 렌더되어도 이동은 한 번만 발행한다', () => {
+    mockSegments = ['(analysis)', 'skin', 'camera'];
+    mockAuthState = {
+      getToken: mockGetToken,
+      isLoaded: true,
+      isSignedIn: false,
+      userId: null,
+    };
+
+    const screen = render(<AnalysisLayout />);
+    expect(mockRouterReplace).toHaveBeenCalledTimes(1);
+
+    screen.rerender(<AnalysisLayout />);
+    expect(mockRouterReplace).toHaveBeenCalledTimes(1);
+  });
+
+  it('새 사진 결과의 게이트 조회 실패는 이동하지 않고 오류와 재시도를 제공한다', async () => {
+    mockFetchBirthdate.mockRejectedValueOnce(new Error('network'));
+
+    const screen = render(
+      <BiometricResultRouteGate imageUri="file:///fresh.jpg">
+        <React.Fragment />
+      </BiometricResultRouteGate>
+    );
+
+    await waitFor(() => expect(screen.getByTestId('biometric-route-gate-error')).toBeTruthy());
+    expect(mockRouterReplace).not.toHaveBeenCalled();
+
+    mockFetchBirthdate.mockResolvedValue({ hasBirthDate: true });
+    fireEvent.press(screen.getByTestId('biometric-route-gate-error-retry'));
+
+    await waitFor(() => expect(screen.queryByTestId('biometric-route-gate-error')).toBeNull());
+    expect(mockFetchBirthdate).toHaveBeenCalledTimes(2);
   });
 
   it.each(['index', 'camera', 'result', 'history'])(

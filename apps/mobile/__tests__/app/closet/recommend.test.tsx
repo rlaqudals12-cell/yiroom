@@ -640,4 +640,43 @@ describe('RecommendScreen 코디 저장 기능', () => {
       expect(getByTestId('closet-summary-basis').props.children).toBe('퍼스널컬러·체형 기준이에요');
     });
   });
+
+  describe('상황(TPO) 추천', () => {
+    it('칩을 선택하면 해당 occasion으로 다시 추천하고 렌더된 코디를 바꾼다', async () => {
+      const formalOutfit = {
+        ...mockOutfit,
+        top: {
+          ...mockOutfit.top,
+          item: { ...mockOutfit.top.item, id: 'formal-top', name: '포멀 재킷' },
+        },
+      };
+      mockGetOutfitSuggestion.mockImplementation(
+        (options: { temp: number | null; occasion?: string }) =>
+          options.occasion === 'formal' ? formalOutfit : mockOutfit
+      );
+
+      const screen = renderWithTheme(<RecommendScreen />);
+      await waitFor(() => expect(screen.getByTestId('occasion-chips')).toBeTruthy());
+
+      fireEvent.press(screen.getByTestId('occasion-chip-formal'));
+
+      await waitFor(() => {
+        expect(mockGetOutfitSuggestion).toHaveBeenCalledWith({ temp: 15, occasion: 'formal' });
+        expect(screen.getByText('포멀 재킷')).toBeTruthy();
+      });
+    });
+
+    it('미선택 전체 상태는 occasion 없이 기존 추천 인자를 유지한다', async () => {
+      renderWithTheme(<RecommendScreen />);
+
+      await waitFor(() => {
+        expect(mockGetOutfitSuggestion).toHaveBeenCalledWith({ temp: 15 });
+      });
+      expect(
+        mockGetOutfitSuggestion.mock.calls.every(
+          ([options]) => !Object.prototype.hasOwnProperty.call(options, 'occasion')
+        )
+      ).toBe(true);
+    });
+  });
 });

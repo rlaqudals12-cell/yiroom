@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 const mockTrackOutfitSaved = jest.fn();
+const mockRecordInventoryOutfitWear = jest.fn();
 const mockGetToken = jest.fn().mockResolvedValue('clerk-token');
 const mockInsert = jest.fn();
 const mockSingle = jest.fn();
@@ -31,6 +32,11 @@ jest.mock('@/lib/supabase', () => ({
 
 jest.mock('@/lib/analytics/tracker', () => ({
   trackOutfitSaved: (...args: unknown[]) => mockTrackOutfitSaved(...args),
+}));
+
+jest.mock('@/lib/api/inventory-upload', () => ({
+  recordInventoryItemUsage: jest.fn(),
+  recordInventoryOutfitWear: (...args: unknown[]) => mockRecordInventoryOutfitWear(...args),
 }));
 
 jest.mock('@/lib/utils/logger', () => ({
@@ -74,6 +80,7 @@ describe('useSavedOutfits analytics', () => {
     mockBuilder.order.mockResolvedValue({ data: [], error: null });
     mockSingle.mockResolvedValue({ data: savedRow, error: null });
     mockGetToken.mockResolvedValue('clerk-token');
+    mockRecordInventoryOutfitWear.mockResolvedValue(undefined);
   });
 
   it('DB 저장 성공 뒤에만 출처와 아이템 수를 한 번 기록한다', async () => {
@@ -102,5 +109,31 @@ describe('useSavedOutfits analytics', () => {
     });
 
     expect(mockTrackOutfitSaved).not.toHaveBeenCalled();
+  });
+
+  it('코디 착용 기록은 Clerk 토큰을 실어 웹 API를 경유한 뒤 화면 수치를 갱신한다', async () => {
+    mockBuilder.order.mockResolvedValue({ data: [savedRow], error: null });
+    const { result } = renderHook(() => useSavedOutfits());
+    await waitFor(() => expect(result.current.outfits).toHaveLength(1));
+
+    await act(async () => {
+      await expect(result.current.recordWear('outfit-1')).resolves.toBe(true);
+    });
+
+    expect(mockRecordInventoryOutfitWear).toHaveBeenCalledWith('outfit-1', 'clerk-token');
+    expect(result.current.outfits[0]).toMatchObject({ wearCount: 1 });
+  });
+
+  it('코디 착용 API가 실패하면 성공으로 표시하거나 수치를 올리지 않는다', async () => {
+    mockBuilder.order.mockResolvedValue({ data: [savedRow], error: null });
+    mockRecordInventoryOutfitWear.mockRejectedValue(new Error('request failed'));
+    const { result } = renderHook(() => useSavedOutfits());
+    await waitFor(() => expect(result.current.outfits).toHaveLength(1));
+
+    await act(async () => {
+      await expect(result.current.recordWear('outfit-1')).resolves.toBe(false);
+    });
+
+    expect(result.current.outfits[0]).toMatchObject({ wearCount: 0 });
   });
 });

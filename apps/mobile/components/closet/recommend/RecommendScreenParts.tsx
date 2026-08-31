@@ -1,14 +1,71 @@
 import { RefreshCw } from 'lucide-react-native';
 import React from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GlassCard, ScreenContainer, SuccessCheckmark } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
+import { OCCASION_LABELS, type Occasion } from '@/lib/inventory/types';
 import type { RecommendationSummary } from '@/lib/inventory/useClosetMatcher';
 import { useTheme } from '@/lib/theme';
 
 import { styles } from './recommend.styles';
+
+interface RecommendOccasionChipsProps {
+  occasion: Occasion | null;
+  onChange: (occasion: Occasion | null) => void;
+}
+
+/** 웹 코디 추천과 같은 전체+5개 TPO 선택. 추천 계산은 기존 매처가 전담한다. */
+export function RecommendOccasionChips({ occasion, onChange }: RecommendOccasionChipsProps) {
+  const { colors, module: moduleTheme } = useTheme();
+  const options: { value: Occasion | null; label: string }[] = [
+    { value: null, label: '전체' },
+    ...(Object.entries(OCCASION_LABELS) as [Occasion, string][]).map(([value, label]) => ({
+      value,
+      label,
+    })),
+  ];
+
+  return (
+    <View style={styles.occasionSection} testID="occasion-chips">
+      <Text style={[styles.occasionLabel, { color: colors.foreground }]}>상황</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={styles.occasionRow}>
+          {options.map((option) => {
+            const selected = occasion === option.value;
+            const testValue = option.value ?? 'all';
+            return (
+              <Pressable
+                key={testValue}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                testID={`occasion-chip-${testValue}`}
+                onPress={() => onChange(option.value)}
+                style={[
+                  styles.occasionChip,
+                  {
+                    backgroundColor: selected ? moduleTheme.body.dark : colors.card,
+                    borderColor: selected ? moduleTheme.body.dark : colors.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.occasionChipText,
+                    { color: selected ? colors.overlayForeground : colors.foreground },
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
 
 export function RecommendLoadingState() {
   const { colors, module: moduleTheme } = useTheme();

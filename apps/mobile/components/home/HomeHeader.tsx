@@ -12,6 +12,7 @@ import { GradientBackground } from '../ui';
 interface HomeHeaderProps {
   userName: string;
   isLoaded: boolean;
+  isSignedIn: boolean;
   /** 서버 브리핑과 동일한 인사 문장 — 없으면 로컬 시간 인사로 안전하게 폴백한다. */
   briefingGreeting?: string;
 }
@@ -32,6 +33,7 @@ function getHeaderGreeting(briefingGreeting: string | undefined, userName: strin
 export function HomeHeader({
   userName,
   isLoaded,
+  isSignedIn,
   briefingGreeting,
 }: HomeHeaderProps): React.JSX.Element {
   const { colors, spacing, radii, typography, isDark, brand } = useTheme();
@@ -67,38 +69,55 @@ export function HomeHeader({
           paddingVertical: spacing.xl,
         }}
       >
-        <Text
-          style={[
-            styles.greeting,
-            { fontSize: typography.size.sm, color: `${colors.overlayForeground}D9` },
-          ]}
-        >
-          {getHeaderGreeting(briefingGreeting, userName)}
-        </Text>
-        <Text
-          style={[
-            styles.userName,
-            {
-              fontSize: typography.size['2xl'],
-              color: colors.overlayForeground,
-              letterSpacing: typography.letterSpacing.tighter,
-            },
-          ]}
-        >
-          {isLoaded ? userName : '...'}님
-        </Text>
-        <Text
-          style={[
-            styles.slogan,
-            {
-              color: colors.overlayForeground,
-              fontSize: typography.size.xs,
-              fontWeight: typography.weight.medium,
-            },
-          ]}
-        >
-          온전한 나를 찾는 여정, 이룸
-        </Text>
+        {isLoaded && !isSignedIn ? (
+          <Text
+            style={[
+              styles.userName,
+              {
+                fontSize: typography.size.lg,
+                color: colors.overlayForeground,
+                letterSpacing: typography.letterSpacing.tighter,
+              },
+            ]}
+          >
+            온전한 나를 찾는 여정, 이룸
+          </Text>
+        ) : (
+          <>
+            <Text
+              style={[
+                styles.greeting,
+                { fontSize: typography.size.sm, color: `${colors.overlayForeground}D9` },
+              ]}
+            >
+              {getHeaderGreeting(briefingGreeting, userName)}
+            </Text>
+            <Text
+              style={[
+                styles.userName,
+                {
+                  fontSize: typography.size['2xl'],
+                  color: colors.overlayForeground,
+                  letterSpacing: typography.letterSpacing.tighter,
+                },
+              ]}
+            >
+              {isLoaded ? userName : '...'}님
+            </Text>
+            <Text
+              style={[
+                styles.slogan,
+                {
+                  color: colors.overlayForeground,
+                  fontSize: typography.size.xs,
+                  fontWeight: typography.weight.medium,
+                },
+              ]}
+            >
+              온전한 나를 찾는 여정, 이룸
+            </Text>
+          </>
+        )}
       </GradientBackground>
     </Animated.View>
   );
