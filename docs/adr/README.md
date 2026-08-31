@@ -184,7 +184,7 @@ Architecture Decision Records는 프로젝트에서 내린 중요한 아키텍�
 | [ADR-118](./ADR-118-mobile-parity-thin-client.md)                 | 모바일 패리티 공유 방식 — 웹 API 정본 + thin client(shared 승격 보류), 온디바이스는 카메라 분석 한정                              | accepted | 2026-07-10 |
 | [ADR-119](./ADR-119-legal-compliance-gates.md)                    | 법적 컴플라이언스 게이트 — 생체동의(BIPA) 가입 단일관문+서버 fail-closed·연령·위치·파기 통일·고지 단일소스·AI 라벨 서버 번인      | accepted | 2026-07-12 |
 | [ADR-120](./ADR-120-editorial-share-design-system.md)             | 에디토리얼 공유·랜딩 디자인 시스템 — 무점수 진단지 리포트·얼굴 이원화(밴드 기각)·크림 고정 지면·인물사진 배제·캡처 규약           | accepted | 2026-07-18 |
-| [ADR-121](./ADR-121-prelaunch-product-decisions.md)               | 프리런치 제품 결정 6건 — 소셜 로그인 시점·성별 축별 차등·남성 신호 조건·신뢰 문구 선행수리·미성년 간주조항 교체·문진 고민 기각    | proposed | 2026-08-31 |
+| [ADR-121](./ADR-121-prelaunch-product-decisions.md)               | 프리런치 제품 결정 6건 — 소셜 로그인 시점·성별 축별 차등·남성 신호 조건·신뢰 문구 선행수리·미성년 간주조항 교체·문진 고민 기각    | accepted | 2026-08-31 |
 
 ## ADR 카테고리
 
