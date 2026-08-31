@@ -49,7 +49,7 @@ const TERMS_KO = [
     id: 'minors',
     title: '제5조 (미성년자의 이용)',
     content: `① 서비스는 만 14세 이상인 자만 이용할 수 있으며, 만 14세 미만의 아동은 서비스 가입 및 이용이 제한됩니다.
-② 만 14세 이상 만 19세 미만의 미성년자가 서비스를 이용하고자 하는 경우, 법정대리인(부모 등)의 동의를 받아야 하며, 이용자는 가입 시 이에 동의한 것으로 봅니다.
+② 만 14세 이상 미성년자는 법정대리인의 동의를 받아 서비스를 이용해야 합니다.
 ③ 회사는 이용자가 만 14세 미만임을 확인한 경우 해당 계정의 이용을 제한하거나 관련 정보를 지체 없이 파기할 수 있습니다.
 ④ 미성년자가 법정대리인의 동의 없이 서비스를 이용하여 발생한 결과에 대한 책임은 해당 이용자 및 그 법정대리인에게 있습니다.`,
   },
@@ -178,7 +178,7 @@ The Company may refuse registration in the following cases:
     id: 'minors',
     title: '5. Minors',
     content: `The Service is available only to individuals aged 14 or older. Children under the age of 14 are prohibited from registering for or using the Service.
-Minors aged 14 to 18 must obtain the consent of a legal guardian (e.g., a parent) to use the Service, and are deemed to have obtained such consent upon registration.
+Minors aged 14 or older must obtain the consent of a legal guardian before using the Service.
 If the Company confirms that a User is under the age of 14, it may restrict the account and promptly destroy the related information.
 The User and their legal guardian are responsible for any consequences arising from a minor using the Service without guardian consent.`,
   },

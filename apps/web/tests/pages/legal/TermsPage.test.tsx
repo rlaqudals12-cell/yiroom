@@ -27,6 +27,12 @@ describe('TermsPage', () => {
 
     expect(screen.getByRole('heading', { name: /Terms of Service/ })).toBeInTheDocument();
     expect(screen.getByTestId('terms-page')).toHaveAttribute('lang', 'en');
+    expect(
+      screen.getByText(
+        /Minors aged 14 or older must obtain the consent of a legal guardian before using the Service/
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/deemed to have obtained such consent upon registration/)).toBeNull();
   });
 
   it('renders the page with correct test id', () => {
@@ -73,7 +79,10 @@ describe('TermsPage', () => {
     expect(
       screen.getByText(/만 14세 미만의 아동은 서비스 가입 및 이용이 제한/i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/법정대리인\(부모 등\)의 동의를 받아야/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/만 14세 이상 미성년자는 법정대리인의 동의를 받아 서비스를 이용해야/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/가입 시 이에 동의한 것으로 봅니다/)).toBeNull();
 
     // 손해배상·책임제한: 무료 서비스 특성 + 고의·중과실 예외
     expect(

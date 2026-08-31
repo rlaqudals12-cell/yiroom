@@ -14,8 +14,8 @@ interface LightingGuideProps {
 }
 
 export default function LightingGuide({ onContinue, onGallery }: LightingGuideProps) {
-  // 기본값: 체크됨 (드레이핑 기능 활성화)
-  const [consentToSaveImage, setConsentToSaveImage] = useState(true);
+  // 원본 이미지 저장은 선택 동의이므로 사용자가 직접 켜기 전까지 저장하지 않는다.
+  const [consentToSaveImage, setConsentToSaveImage] = useState(false);
 
   // 사용자 프로필에서 성별 정보 가져오기
   const { profile, updateGender, isLoading: isProfileLoading } = useUserProfile();
@@ -189,7 +189,7 @@ export default function LightingGuide({ onContinue, onGallery }: LightingGuidePr
               </span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              분석 이미지를 30일간 저장하여 다양한 색상을 얼굴에 비교해볼 수 있어요.
+              분석 이미지를 1년간 저장하여 다양한 색상을 얼굴에 비교해볼 수 있어요.
               <br />
               <span className="text-primary/80">미동의 시 드레이핑 기능을 사용할 수 없습니다.</span>
             </p>

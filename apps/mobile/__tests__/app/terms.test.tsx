@@ -74,9 +74,12 @@ describe('TermsScreen (이용약관)', () => {
     });
 
     it('만 14세 연령 기준과 법정대리인 동의가 명시된다', () => {
-      const { getByText } = renderWithTheme(<TermsScreen />);
+      const { getByText, queryByText } = renderWithTheme(<TermsScreen />);
       expect(getByText(/만 14세 이상인 자만 이용할 수 있으며/)).toBeTruthy();
-      expect(getByText(/법정대리인\(부모 등\)의 동의/)).toBeTruthy();
+      expect(
+        getByText(/만 14세 이상 미성년자는 법정대리인의 동의를 받아 서비스를 이용해야/)
+      ).toBeTruthy();
+      expect(queryByText(/가입 시 이에 동의한 것으로 봅니다/)).toBeNull();
     });
 
     it('서비스 종료 시 최소 30일 전 사전 고지가 명시된다', () => {
@@ -126,7 +129,7 @@ describe('TermsScreen (이용약관)', () => {
 
   describe('언어 토글 (영어)', () => {
     it('English 버튼을 누르면 영문 약관이 표시된다', () => {
-      const { getByText } = renderWithTheme(<TermsScreen />);
+      const { getByText, queryByText } = renderWithTheme(<TermsScreen />);
       fireEvent.press(getByText('English'));
 
       expect(getByText(/Effective: July 12, 2026/)).toBeTruthy();
@@ -135,6 +138,12 @@ describe('TermsScreen (이용약관)', () => {
       expect(getByText('10. User Content and Moderation')).toBeTruthy();
       expect(getByText('14. Limitation of Liability')).toBeTruthy();
       expect(getByText('15. Governing Law')).toBeTruthy();
+      expect(
+        getByText(
+          /Minors aged 14 or older must obtain the consent of a legal guardian before using the Service/
+        )
+      ).toBeTruthy();
+      expect(queryByText(/deemed to have obtained such consent upon registration/)).toBeNull();
     });
 
     it('영문 약관에도 미제공 서비스(workout/nutrition/social)가 없다', () => {
