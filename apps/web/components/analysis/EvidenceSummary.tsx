@@ -33,12 +33,9 @@ const UNDERTONE_LABELS: Record<string, { label: string; isCool: boolean }> = {
 export function PersonalColorEvidenceSummary({
   veinColor,
   skinUndertone,
-  tone,
   className,
 }: PersonalColorEvidenceSummaryProps) {
-  const isCool = tone === 'cool';
-
-  // 표시할 근거가 없으면 기본 톤 정보만 표시
+  // 표시할 근거가 없으면 결론에서 근거를 역산하지 않고 부재를 그대로 알린다.
   const showVein = veinColor && veinColor !== 'mixed' && veinColor !== 'unknown';
   const showUndertone = skinUndertone && skinUndertone !== 'neutral';
 
@@ -51,8 +48,7 @@ export function PersonalColorEvidenceSummary({
         )}
       >
         <Info className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-        {/* 근거 데이터가 없는 건 — "분석됐어요"는 하지 않은 판정을 주장하므로 상태 서술로만 */}
-        <span className="text-muted-foreground">{isCool ? '쿨톤' : '웜톤'} 계열이에요</span>
+        <span className="text-muted-foreground">사진에서 확인된 세부 판정 근거가 없어요</span>
       </div>
     );
   }

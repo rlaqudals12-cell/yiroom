@@ -282,6 +282,24 @@ describe('POST /api/analyze/personal-color', () => {
 
       expect(response.status).toBe(400);
     });
+
+    it('자가보고 값이 허용 목록 밖이면 분석하지 않고 400을 반환한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: MOCK_BASE64,
+          selfReport: {
+            skinAppearance: 'fabricated',
+            veinAppearance: 'cool',
+            jewelryPreference: 'neutral',
+            sunReaction: 'warm',
+            whitePreference: 'cool',
+          },
+        })
+      );
+
+      expect(response.status).toBe(400);
+      expect(analyzePersonalColor).not.toHaveBeenCalled();
+    });
   });
 
   describe('Mock 분석', () => {
@@ -302,20 +320,41 @@ describe('POST /api/analyze/personal-color', () => {
       expect(generateMockPersonalColorResult).toHaveBeenCalled();
     });
 
-    it('문진 응답과 함께 분석이 가능하다', async () => {
+    it('자가보고 문진을 Gemini 참고 입력과 저장 레코드까지 보존한다', async () => {
+      const selfReport = {
+        skinAppearance: 'warm',
+        veinAppearance: 'cool',
+        jewelryPreference: 'neutral',
+        sunReaction: 'warm',
+        whitePreference: 'cool',
+      } as const;
+      vi.mocked(analyzePersonalColor).mockResolvedValue(mockPersonalColorResult);
       mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
 
       const response = await POST(
         createMockPostRequest({
           imageBase64: MOCK_BASE64,
-          questionnaireAnswers: { q1: 'warm', q2: 'gold' },
-          useMock: true,
+          selfReport,
         })
       );
       const json = await response.json();
 
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
+      expect(analyzePersonalColor).toHaveBeenCalledWith(
+        expect.objectContaining({
+          frontImageBase64: MOCK_BASE64,
+          selfReport,
+        }),
+        undefined,
+        'ko',
+        buildFallbackSeed('user_test123', 'personal-color', MOCK_BASE64)
+      );
+      const insertPayload = vi
+        .mocked(mockSupabase.insert)
+        .mock.calls.map(([payload]) => payload as Record<string, unknown>)
+        .find((payload) => 'questionnaire_answers' in payload);
+      expect(insertPayload?.questionnaire_answers).toEqual(selfReport);
     });
   });
 
@@ -415,6 +454,44 @@ describe('POST /api/analyze/personal-color', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(false);
+    });
+
+    it('AI가 관찰 근거를 주지 않으면 결론에서 혈관색을 역산해 채우지 않는다', async () => {
+      vi.mocked(analyzePersonalColor).mockResolvedValue(mockPersonalColorResult);
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(createMockPostRequest({ imageBase64: MOCK_BASE64 }));
+      const json = await response.json();
+      const insertPayload = vi
+        .mocked(mockSupabase.insert)
+        .mock.calls.map(([payload]) => payload as Record<string, unknown>)
+        .find((payload) => 'image_analysis' in payload);
+      const imageAnalysis = insertPayload?.image_analysis as Record<string, unknown> | undefined;
+
+      expect(response.status).toBe(200);
+      expect(json.usedMock).toBe(false);
+      expect(json.result.analysisEvidence).toBeUndefined();
+      expect(imageAnalysis?.analysisEvidence).toBeNull();
+    });
+
+    it('관찰된 대비 근거가 없으면 winter 결론을 summer로 강등하지 않는다', async () => {
+      vi.mocked(analyzePersonalColor).mockResolvedValue({
+        ...mockPersonalColorResult,
+        seasonType: 'winter',
+        seasonLabel: '겨울 쿨톤',
+        tone: 'cool',
+        depth: 'deep',
+        analysisEvidence: undefined,
+      });
+      mockSupabase.single.mockResolvedValue({ data: mockDbResult, error: null });
+
+      const response = await POST(createMockPostRequest({ imageBase64: MOCK_BASE64 }));
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.result.seasonType).toBe('winter');
+      expect(json.result.seasonLabel).toBe('겨울 쿨톤');
+      expect(json.result.analysisEvidence).toBeUndefined();
     });
 
     it('AI 분석 실패 시 Mock Fallback으로 결과를 반환한다', async () => {

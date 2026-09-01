@@ -33,6 +33,11 @@ interface IngredientAnalysisSectionProps {
   className?: string;
 }
 
+interface ProductSafetyResult {
+  alerts: Array<{ ingredient: string; reason: string; action: 'BLOCK' | 'WARN' | 'INFORM' }>;
+  disclaimer: string;
+}
+
 /**
  * 성분 분석 섹션 (메인 컨테이너)
  * - EWG 등급 분포 차트
@@ -57,9 +62,32 @@ export function IngredientAnalysisSection({
   const [isLoading, setIsLoading] = useState(!preloadedIngredients);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [safetyResult, setSafetyResult] = useState<ProductSafetyResult | null>(null);
 
   // 데이터 로드
   useEffect(() => {
+    setSafetyResult(null);
+    async function loadSafetyResult(loadedIngredients: CosmeticIngredient[]) {
+      const ingredientNames = loadedIngredients
+        .map((ingredient) => ingredient.nameInci || ingredient.nameEn || ingredient.nameKo)
+        .filter(Boolean);
+      if (ingredientNames.length === 0) return;
+      try {
+        const response = await fetch('/api/safety/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId, ingredients: ingredientNames }),
+        });
+        const json = (await response.json()) as {
+          success?: boolean;
+          data?: ProductSafetyResult;
+        };
+        if (response.ok && json.success && json.data) setSafetyResult(json.data);
+      } catch {
+        // 검사 실패를 안전 판정으로 위장하지 않는다. 기존 성분 정보만 표시한다.
+      }
+    }
+
     async function loadData() {
       if (preloadedIngredients) {
         // 분석 결과만 로드
@@ -72,6 +100,7 @@ export function IngredientAnalysisSection({
         analyzeIngredientsWithAI(preloadedIngredients)
           .then(setAiSummary)
           .finally(() => setIsAiLoading(false));
+        void loadSafetyResult(preloadedIngredients);
         return;
       }
 
@@ -86,6 +115,7 @@ export function IngredientAnalysisSection({
         setIngredients(ingredientsData);
         setAnalysis(analysisData);
         setFunctionCounts(functionsData);
+        void loadSafetyResult(ingredientsData);
 
         // AI 분석 비동기 실행 (성분 데이터 로드 후)
         if (ingredientsData.length > 0) {
@@ -193,6 +223,24 @@ export function IngredientAnalysisSection({
 
       {/* AI 성분 분석 요약 */}
       <AIIngredientSummary summary={aiSummary} isLoading={isAiLoading} />
+
+      {safetyResult && safetyResult.alerts.length > 0 && (
+        <section
+          className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950"
+          data-testid="personal-safety-warning"
+          aria-label="내 안전 정보에 따른 성분 주의"
+        >
+          <h4 className="font-medium">내 안전 정보와 함께 확인해주세요</h4>
+          <ul className="mt-2 space-y-2 text-sm">
+            {safetyResult.alerts.map((alert, index) => (
+              <li key={`${alert.ingredient}-${index}`}>
+                <span className="font-medium">{alert.ingredient}</span> — {alert.reason}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs opacity-80">{safetyResult.disclaimer}</p>
+        </section>
+      )}
 
       {/* 주의 성분 알림 */}
       {analysis && (

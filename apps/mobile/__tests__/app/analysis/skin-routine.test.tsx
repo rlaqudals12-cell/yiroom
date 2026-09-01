@@ -198,6 +198,17 @@ describe('SkincareRoutineScreen (thin client)', () => {
     expect(getByTestId('routine-care-phase')).toBeTruthy();
   });
 
+  it('서버가 실제 제한을 적용한 경우 안전 안내를 표시한다', () => {
+    mockHook.data = {
+      ...fullData,
+      safetyNotice: '임신·수유 중 주의가 필요한 성분 제품과 레티노이드 일정을 제외했어요.',
+    };
+    const { getByTestId, getByText } = renderWithTheme(<SkincareRoutineScreen />);
+
+    expect(getByTestId('routine-safety-notice')).toBeTruthy();
+    expect(getByText(/주의가 필요한 성분 제품과 레티노이드 일정/)).toBeTruthy();
+  });
+
   // ── 스텝 제품 (ADR-117 shelf-우선 + 빈 슬롯 구매 연결) ──────────────────
 
   it('보유 제품이 있는 스텝은 "내 ○○"만 보여주고 구매 칩을 띄우지 않는다', () => {

@@ -30,8 +30,9 @@ vi.mock('@/hooks/useScoreTrend', () => ({
 
 const mockSupabaseSelect = vi.fn();
 const mockSupabaseFrom = vi.fn(() => ({ select: mockSupabaseSelect }));
+const mockSupabaseClient = { from: mockSupabaseFrom };
 vi.mock('@/lib/supabase/clerk-client', () => ({
-  useClerkSupabaseClient: () => ({ from: mockSupabaseFrom }),
+  useClerkSupabaseClient: () => mockSupabaseClient,
 }));
 
 vi.mock('next/image', () => ({
@@ -185,6 +186,31 @@ describe('MakeupAnalysisResultPage — 미측정 항목', () => {
     await waitFor(() => {
       expect(screen.getByTestId('mock-data-notice')).toBeInTheDocument();
     });
+    expect(screen.queryByText(/분석 신뢰도 \d+%/)).not.toBeInTheDocument();
+  });
+
+  it('DB 조회 실패 뒤 세션 캐시를 복원해도 Mock 고지를 보존한다', async () => {
+    mockSupabaseSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: null, error: { message: 'offline' } }),
+      }),
+    });
+    sessionStorage.setItem(
+      `makeup-result-${mockParams.id}`,
+      JSON.stringify({
+        dbData: {
+          ...integratedRow,
+          recommendations: { ...integratedRow.recommendations, usedMock: true },
+        },
+      })
+    );
+
+    render(<MakeupAnalysisResultPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('mock-data-notice')).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/분석 신뢰도 \d+%/)).not.toBeInTheDocument();
   });
 
   it('단독 분석 행(measured 미표기)은 기존대로 전 항목을 표시한다', async () => {

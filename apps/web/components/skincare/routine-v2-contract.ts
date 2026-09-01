@@ -93,18 +93,21 @@ interface SkincareRoutineV2Contract {
     date: Date,
     ownedActives: Set<string>,
     sensitivityScore: number,
-    carePhase: CarePhase
+    carePhase: CarePhase,
+    safety?: { retinoidAllowed: boolean }
   ) => EveningCycle;
   composeWeeklyCycle: (
     ownedActives: Set<string>,
     sensitivityScore: number,
-    carePhase: CarePhase
+    carePhase: CarePhase,
+    safety?: { retinoidAllowed: boolean }
   ) => WeeklyCycle;
   getCycleChange: (
     date: Date,
     ownedActives: Set<string>,
     sensitivityScore: number,
-    carePhase: CarePhase
+    carePhase: CarePhase,
+    safety?: { retinoidAllowed: boolean }
   ) => CycleChange | null;
   deriveCarePhase: (scores: Record<string, number>, userGoals: SkinGoalId[]) => CarePhase;
   detectOwnedActives: (shelfItems: ShelfItem[]) => Set<string>;
@@ -131,7 +134,8 @@ export function getEveningCycle(
   date: Date,
   ownedActives: Set<string>,
   sensitivityScore: number,
-  carePhase: CarePhaseId
+  carePhase: CarePhaseId,
+  safety?: { retinoidAllowed: boolean }
 ): EveningCycle {
   // 폴백은 빈 문구 — UI가 label 유무로 노출을 게이팅하므로 지어낸 카피가 없다.
   return (
@@ -139,7 +143,8 @@ export function getEveningCycle(
       date,
       ownedActives,
       sensitivityScore,
-      toCarePhaseObject(carePhase)
+      toCarePhaseObject(carePhase),
+      safety
     ) ?? {
       focus: 'recovery',
       label: '',
@@ -151,10 +156,16 @@ export function getEveningCycle(
 export function composeWeeklyCycle(
   ownedActives: Set<string>,
   sensitivityScore: number,
-  carePhase: CarePhaseId
+  carePhase: CarePhaseId,
+  safety?: { retinoidAllowed: boolean }
 ): WeeklyCycle {
   return (
-    engine.composeWeeklyCycle?.(ownedActives, sensitivityScore, toCarePhaseObject(carePhase)) ?? {
+    engine.composeWeeklyCycle?.(
+      ownedActives,
+      sensitivityScore,
+      toCarePhaseObject(carePhase),
+      safety
+    ) ?? {
       days: [],
     }
   );
@@ -165,11 +176,17 @@ export function getCycleChange(
   date: Date,
   ownedActives: Set<string>,
   sensitivityScore: number,
-  carePhase: CarePhaseId
+  carePhase: CarePhaseId,
+  safety?: { retinoidAllowed: boolean }
 ): CycleChange | null {
   return (
-    engine.getCycleChange?.(date, ownedActives, sensitivityScore, toCarePhaseObject(carePhase)) ??
-    null
+    engine.getCycleChange?.(
+      date,
+      ownedActives,
+      sensitivityScore,
+      toCarePhaseObject(carePhase),
+      safety
+    ) ?? null
   );
 }
 

@@ -63,6 +63,7 @@ export default function MakeupAnalysisPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [result, setResult] = useState<MakeupAnalysisResult | null>(null);
   const [resultId, setResultId] = useState<string | null>(null);
+  const [usedMock, setUsedMock] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [storageNotice, setStorageNotice] = useState<string | null>(null);
@@ -180,6 +181,7 @@ export default function MakeupAnalysisPage() {
           analyzedAt: new Date(data.result.analyzedAt),
         });
         setResultId(data.data?.id ?? `makeup:${new Date(data.result.analyzedAt).toISOString()}`);
+        setUsedMock(data.usedMock === true);
 
         // sessionStorage 캐시 (결과 페이지 DB 조회 실패 시 복원용)
         try {
@@ -266,6 +268,7 @@ export default function MakeupAnalysisPage() {
     setImagePreview(null);
     setResult(null);
     setResultId(null);
+    setUsedMock(false);
     setStep('guide');
     setError(null);
     setStorageNotice(null);
@@ -464,6 +467,7 @@ export default function MakeupAnalysisPage() {
           <MakeupAnalysisResultView
             result={result}
             reportTargetId={resultId}
+            usedMock={usedMock}
             onRetry={handleRetry}
           />
         )}

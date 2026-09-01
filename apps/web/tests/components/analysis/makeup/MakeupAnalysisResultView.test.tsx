@@ -35,6 +35,22 @@ describe('MakeupAnalysisResultView', () => {
     vi.restoreAllMocks();
   });
 
+  describe('폴백 정직성 고지', () => {
+    it('폴백 결과에는 샘플 고지를 표시하고 신뢰도 퍼센트를 숨긴다', () => {
+      render(<MakeupAnalysisResultView result={result} usedMock onRetry={() => {}} />);
+
+      expect(screen.getByTestId('mock-data-notice')).toBeInTheDocument();
+      expect(screen.queryByText(/분석 신뢰도 \d+%/)).not.toBeInTheDocument();
+    });
+
+    it('실분석 결과에는 기존 신뢰도 표기를 유지한다', () => {
+      render(<MakeupAnalysisResultView result={result} usedMock={false} onRetry={() => {}} />);
+
+      expect(screen.queryByTestId('mock-data-notice')).not.toBeInTheDocument();
+      expect(screen.getByText(/분석 신뢰도 \d+%/)).toBeInTheDocument();
+    });
+  });
+
   describe('얼굴 도식 마커 위치', () => {
     it('아이섀도는 눈, 립은 입술 위치에 배치된다 (아이섀도가 립보다 위)', () => {
       render(<MakeupAnalysisResultView result={result} onRetry={() => {}} />);

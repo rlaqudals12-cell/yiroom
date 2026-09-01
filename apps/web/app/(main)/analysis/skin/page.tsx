@@ -28,11 +28,12 @@ import { PhotoReuseSelector } from '@/components/analysis/skin/PhotoReuseSelecto
 import { checkPhotoReuseEligibility, type PhotoReuseEligibility } from '@/lib/analysis';
 import { invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
 import { isImageConsentActive } from '@/lib/consent/version-check';
+import { SkinSafetyScreening } from '@/components/analysis/skin/SkinSafetyScreening';
 
 // 새 플로우: 조명가이드 → 모드선택 → 사진촬영 → AI분석 → 결과
 // 또는: 기존 피부 타입 입력 → 결과
 type CaptureMode = 'select' | 'camera' | 'gallery';
-type AnalysisStep = 'guide' | 'mode-select' | 'camera' | 'upload' | 'loading' | 'result';
+type AnalysisStep = 'safety' | 'guide' | 'mode-select' | 'camera' | 'upload' | 'loading' | 'result';
 
 function getPhotoReuseStorageReason(
   reason: PhotoReuseEligibility['reason']
@@ -72,7 +73,7 @@ export default function SkinAnalysisPage() {
   const forceNew = searchParams.get('forceNew') === 'true';
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
-  const [step, setStep] = useState<AnalysisStep>('guide');
+  const [step, setStep] = useState<AnalysisStep>('safety');
   const [captureMode, setCaptureMode] = useState<CaptureMode>('select');
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -482,6 +483,8 @@ export default function SkinAnalysisPage() {
   const subtitle = useMemo(() => {
     if (error) return t('error.analysisError');
     switch (step) {
+      case 'safety':
+        return '루틴과 제품 추천 전 안전 상태를 확인해주세요';
       case 'guide':
         return t('skin.subtitle.guide');
       case 'mode-select':
@@ -549,6 +552,8 @@ export default function SkinAnalysisPage() {
           )}
 
           {/* Step별 컴포넌트 렌더링 */}
+          {step === 'safety' && <SkinSafetyScreening onComplete={() => setStep('guide')} />}
+
           {step === 'guide' && (
             <LightingGuide onContinue={handleGuideComplete} onGallery={handleSelectGalleryMode} />
           )}

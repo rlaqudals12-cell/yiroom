@@ -111,6 +111,21 @@ function RoutineContent({ data, stale }: { data: DailyRoutineData; stale: boolea
         </View>
       )}
 
+      {data.safetyNotice ? (
+        <View
+          style={[
+            styles.safetyNotice,
+            { backgroundColor: colors.muted, borderColor: colors.border },
+          ]}
+          testID="routine-safety-notice"
+          accessibilityRole="alert"
+        >
+          <Text style={[styles.safetyNoticeText, { color: colors.foreground }]}>
+            {data.safetyNotice}
+          </Text>
+        </View>
+      ) : null}
+
       {/* 헤더 */}
       <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.header}>
         <Text style={[styles.title, { color: colors.foreground }]}>오늘의 스킨케어 루틴</Text>
@@ -406,6 +421,16 @@ const styles = StyleSheet.create({
   },
   staleText: {
     fontSize: typography.size.xs,
+  },
+  safetyNotice: {
+    borderWidth: 1,
+    borderRadius: radii.lg,
+    padding: spacing.smx,
+    marginBottom: spacing.md,
+  },
+  safetyNoticeText: {
+    fontSize: typography.size.sm,
+    lineHeight: 20,
   },
   header: {
     marginBottom: spacing.md,

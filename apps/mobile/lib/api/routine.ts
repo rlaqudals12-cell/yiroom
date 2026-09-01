@@ -116,6 +116,8 @@ export interface DailyRoutineData {
   evening?: RoutineStepData[];
   eveningFocus?: EveningFocusData;
   weeklyCycle?: WeeklyCycleDay[];
+  /** 서버 안전 프로필로 실제 제한이 적용됐을 때만 오는 일반 참고 안내 */
+  safetyNotice?: string;
 }
 
 /** fetchDailyRoutine 결과 — stale=true면 오프라인 캐시(마지막 루틴) */

@@ -52,7 +52,13 @@ export type { CarePhase } from './care-phase';
 
 // 스킨 사이클링 (주간 야간 주기 + 어제 대비 변화 — G4 일변화 체감)
 export { composeWeeklyCycle, getEveningCycle, getCycleChange, CYCLE_LABELS } from './cycling';
-export type { CyclingFocus, EveningCycle, WeeklyCycle, CycleChange } from './cycling';
+export type {
+  CyclingFocus,
+  EveningCycle,
+  WeeklyCycle,
+  CycleChange,
+  CyclingSafety,
+} from './cycling';
 
 // 교체 제안 (적합도 낮은 보유 제품 → 다 쓴 뒤 대안 — G4 폐루프 v1 일부)
 export { suggestRoutineReplacements, REPLACEMENT_COMPAT_THRESHOLD } from './routine-replacement';

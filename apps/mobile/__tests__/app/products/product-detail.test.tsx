@@ -66,6 +66,16 @@ jest.mock('../../../lib/products/repositories/cosmetic', () => ({
     (mockGetCosmeticProductById as jest.Mock)(...args),
 }));
 
+const mockGetProductIngredients = jest.fn();
+jest.mock('../../../lib/products/repositories/ingredients', () => ({
+  getProductIngredients: (...args: unknown[]) => mockGetProductIngredients(...args),
+}));
+
+const mockCheckProductSafety = jest.fn();
+jest.mock('../../../lib/api/safety', () => ({
+  checkProductSafety: (...args: unknown[]) => mockCheckProductSafety(...args),
+}));
+
 // 리뷰 쿼리용 supabase mock (리뷰 0건 반환)
 jest.mock('../../../lib/supabase', () => ({
   useClerkSupabaseClient: () => ({
@@ -126,6 +136,12 @@ describe('ProductDetailScreen — 정직성 (Mock 폴백 재발 방지)', () => 
     jest.clearAllMocks();
     useLocalSearchParams.mockReturnValue({ id: REAL_PRODUCT.id });
     mockGetToken.mockResolvedValue('jwt-token');
+    mockGetProductIngredients.mockResolvedValue([]);
+    mockCheckProductSafety.mockResolvedValue({
+      productId: REAL_PRODUCT.id,
+      alerts: [],
+      disclaimer: '일반 참고 정보예요.',
+    });
     mockIsInWishlist.mockResolvedValue(false);
     mockAddToWishlist.mockResolvedValue(true);
     mockRemoveFromWishlist.mockResolvedValue(true);
@@ -176,6 +192,35 @@ describe('ProductDetailScreen — 정직성 (Mock 폴백 재발 방지)', () => 
     // matchScore 하드코딩 제거 — 매칭 게이지가 지어낸 85%로 뜨면 안 된다
     expect(queryByText('85%')).toBeNull();
     expect(queryByText('나와의 매칭')).toBeNull();
+  });
+
+  it('전체 성분표가 있을 때 웹 안전 검사를 호출하고 개인 경고를 표시한다', async () => {
+    mockGetCosmeticProductById.mockResolvedValue(REAL_PRODUCT);
+    mockGetProductIngredients.mockResolvedValue([
+      { nameKo: '레티놀', nameEn: 'Retinol', nameInci: 'retinol' },
+      { nameKo: '글리세린', nameInci: 'glycerin' },
+    ]);
+    mockCheckProductSafety.mockResolvedValue({
+      productId: REAL_PRODUCT.id,
+      alerts: [
+        {
+          type: 'CONTRAINDICATION',
+          ingredient: 'retinol',
+          reason: '임신 중 레티노이드 사용은 주의가 필요해요.',
+          action: 'WARN',
+        },
+      ],
+      disclaimer: '일반 참고 정보예요.',
+    });
+
+    const { getByTestId, getByText } = renderWithTheme(<ProductDetailScreen />);
+
+    await waitFor(() => expect(getByTestId('personal-safety-warning')).toBeTruthy());
+    expect(mockCheckProductSafety).toHaveBeenCalledWith(
+      { productId: REAL_PRODUCT.id, ingredients: ['retinol', 'glycerin'] },
+      'jwt-token'
+    );
+    expect(getByText(/임신 중 레티노이드 사용은 주의가 필요해요/)).toBeTruthy();
   });
 
   it('찜 버튼은 인증 API가 성공한 뒤에만 선택 상태를 바꾼다', async () => {

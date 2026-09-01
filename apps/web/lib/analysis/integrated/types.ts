@@ -326,6 +326,7 @@ export interface MakeupAxisData {
   baseRecommendation: string;
   lipPalette?: string[];
   eyeshadowPalette?: string[];
+  blushPalette?: string[];
   tutorialSteps?: string[];
   [key: string]: unknown;
 }

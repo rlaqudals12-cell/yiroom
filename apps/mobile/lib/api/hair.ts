@@ -138,6 +138,19 @@ function toStringArray(value: unknown): string[] {
   return value.filter((v): v is string => typeof v === 'string');
 }
 
+function toRecommendedStyleNames(value: unknown): string[] {
+  if (typeof value !== 'object' || value === null) return [];
+  const styles = (value as Record<string, unknown>).recommendedStyles;
+  if (!Array.isArray(styles)) return [];
+
+  return styles.flatMap((style) => {
+    if (typeof style === 'string') return [style];
+    if (typeof style !== 'object' || style === null) return [];
+    const name = (style as Record<string, unknown>).name;
+    return typeof name === 'string' && name.trim().length > 0 ? [name.trim()] : [];
+  });
+}
+
 // ============================================
 // 4. HTTP 클라이언트
 // ============================================
@@ -222,7 +235,7 @@ export async function requestHairAnalysis(
     },
     mainConcerns: toConcernLabels(result.concerns),
     careRoutine: toStringArray(result.careTips),
-    recommendedStyles: [],
+    recommendedStyles: toRecommendedStyleNames(result.hairStyleRecommendations),
     usedMock: obj.usedMock === true,
     dbSaveFailed: obj.dbSaveFailed === true,
     analysisId: typeof data.id === 'string' ? data.id : undefined,

@@ -31,6 +31,7 @@ jest.mock('expo-router', () => ({
   },
   useLocalSearchParams: () => ({
     imageUri: 'file:///personal-color.jpg',
+    answers: JSON.stringify({ 0: 'warm', 1: 'cool', 2: 'neutral', 3: 'warm', 4: 'cool' }),
   }),
 }));
 
@@ -48,6 +49,13 @@ jest.mock('../../../lib/api/personalColor', () => ({
   requestPersonalColorAnalysis: (...args: unknown[]) => mockRequestPersonalColorAnalysis(...args),
   getPersonalColorSubtypeLabel: (value: string) =>
     ({ bright: '브라이트', light: '라이트', true: '트루', mute: '뮤트', deep: '딥' })[value],
+  parsePersonalColorSelfReport: () => ({
+    skinAppearance: 'warm',
+    veinAppearance: 'cool',
+    jewelryPreference: 'neutral',
+    sunReaction: 'warm',
+    whitePreference: 'cool',
+  }),
   PersonalColorApiError: class PersonalColorApiError extends Error {},
 }));
 
@@ -148,6 +156,19 @@ describe('퍼스널컬러 결과 서버 팔레트·진단지 배선', () => {
     );
     expect(screen.queryByText(/웜톤.*91|쿨톤.*9/)).toBeNull();
     expect(screen.queryByTestId('pc-warm-score')).toBeNull();
+    expect(mockRequestPersonalColorAnalysis).toHaveBeenCalledWith(
+      {
+        imageBase64: 'x'.repeat(200),
+        selfReport: {
+          skinAppearance: 'warm',
+          veinAppearance: 'cool',
+          jewelryPreference: 'neutral',
+          sunReaction: 'warm',
+          whitePreference: 'cool',
+        },
+      },
+      'token-1'
+    );
 
     fireEvent.press(
       screen.getByTestId('analysis-personal-color-result-screen-section-basis-trigger')

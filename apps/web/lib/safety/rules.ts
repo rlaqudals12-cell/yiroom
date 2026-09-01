@@ -117,6 +117,13 @@ export const CONTRAINDICATION_RULES: ContraindicationRule[] = [
     reason: '임신 중 하이드로퀴논 사용은 권장되지 않아요.',
     level: 2,
   },
+  // 이소트레티노인 복용 관련 — 같은 비타민 A 계열 성분의 병용은 처방 의료인 확인이 먼저다.
+  {
+    condition: 'isotretinoin',
+    ingredients: ['retinol', 'retinal', 'retinoic acid', 'tretinoin', 'adapalene'],
+    reason: '이소트레티노인 복용 중 레티노이드 제품 병용 전 처방 의료인과 상의해주세요.',
+    level: 2,
+  },
   // 아토피
   {
     condition: 'atopy',

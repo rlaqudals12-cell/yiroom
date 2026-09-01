@@ -18,6 +18,7 @@ const BARRIER_PHASE: CarePhase = {
   label: '장벽 회복 단계',
   message: '지금은 장벽 회복이 먼저예요',
 };
+const RETINOID_ALLOWED = { retinoidAllowed: true } as const;
 
 function actives(...cats: ActiveCategory[]): Set<ActiveCategory> {
   return new Set(cats);
@@ -36,7 +37,7 @@ describe('composeWeeklyCycle', () => {
 
   it('should 레티노이드+산 보유 (비민감) → 레티3·각질2·회복2', () => {
     const owned = actives('retinoid', 'exfoliantBHA');
-    const { days } = composeWeeklyCycle(owned, 80, GOAL_PHASE);
+    const { days } = composeWeeklyCycle(owned, 80, GOAL_PHASE, RETINOID_ALLOWED);
     expect(countFocus(days, 'retinoid')).toBe(3);
     expect(countFocus(days, 'exfoliation')).toBe(2);
     expect(countFocus(days, 'recovery')).toBe(2);
@@ -44,7 +45,7 @@ describe('composeWeeklyCycle', () => {
 
   it('should 민감(<40) → 활성 일수 축소 (레티2·각질1·회복4)', () => {
     const owned = actives('retinoid', 'exfoliantAHA');
-    const { days } = composeWeeklyCycle(owned, 30, GOAL_PHASE);
+    const { days } = composeWeeklyCycle(owned, 30, GOAL_PHASE, RETINOID_ALLOWED);
     expect(countFocus(days, 'retinoid')).toBe(2);
     expect(countFocus(days, 'exfoliation')).toBe(1);
     expect(countFocus(days, 'recovery')).toBe(4);
@@ -52,7 +53,7 @@ describe('composeWeeklyCycle', () => {
 
   it('should 레티노이드의 날과 각질의 날은 절대 같은 요일 아님', () => {
     const owned = actives('retinoid', 'exfoliantAHA', 'exfoliantBHA');
-    const { days } = composeWeeklyCycle(owned, 80, GOAL_PHASE);
+    const { days } = composeWeeklyCycle(owned, 80, GOAL_PHASE, RETINOID_ALLOWED);
     const retDows = days.filter((d) => d.focus === 'retinoid').map((d) => d.dow);
     const exfDows = days.filter((d) => d.focus === 'exfoliation').map((d) => d.dow);
     expect(retDows.some((d) => exfDows.includes(d))).toBe(false);
@@ -66,7 +67,7 @@ describe('composeWeeklyCycle', () => {
   });
 
   it('should 레티노이드만 보유 → 각질의 날 0', () => {
-    const { days } = composeWeeklyCycle(actives('retinoid'), 80, GOAL_PHASE);
+    const { days } = composeWeeklyCycle(actives('retinoid'), 80, GOAL_PHASE, RETINOID_ALLOWED);
     expect(countFocus(days, 'retinoid')).toBe(3);
     expect(countFocus(days, 'exfoliation')).toBe(0);
   });
@@ -75,6 +76,20 @@ describe('composeWeeklyCycle', () => {
     const owned = actives('retinoid', 'exfoliantAHA');
     const { days } = composeWeeklyCycle(owned, 80, BARRIER_PHASE);
     expect(countFocus(days, 'recovery')).toBe(7);
+  });
+
+  it('should 안전 게이트가 잠기면 레티노이드 보유해도 레티노이드 날짜 0', () => {
+    const owned = actives('retinoid', 'exfoliantAHA');
+    const { days } = composeWeeklyCycle(owned, 80, GOAL_PHASE, {
+      retinoidAllowed: false,
+    });
+    expect(countFocus(days, 'retinoid')).toBe(0);
+    expect(countFocus(days, 'exfoliation')).toBe(2);
+  });
+
+  it('should 안전 인자가 누락돼도 레티노이드 날짜를 fail-closed로 잠근다', () => {
+    const { days } = composeWeeklyCycle(actives('retinoid'), 80, GOAL_PHASE);
+    expect(countFocus(days, 'retinoid')).toBe(0);
   });
 
   it('should 결정론적 (같은 입력 → 같은 출력)', () => {
@@ -90,7 +105,7 @@ describe('getEveningCycle', () => {
     const owned = actives('retinoid');
     // dow 1(월) = 레티노이드 슬롯
     const monday = new Date('2026-07-13T20:00:00'); // 월요일
-    const cycle = getEveningCycle(monday, owned, 80, GOAL_PHASE);
+    const cycle = getEveningCycle(monday, owned, 80, GOAL_PHASE, RETINOID_ALLOWED);
     expect(cycle.focus).toBe('retinoid');
     expect(cycle.label).toBe(CYCLE_LABELS.retinoid);
     expect(cycle.reason).toContain('문헌');
@@ -98,6 +113,17 @@ describe('getEveningCycle', () => {
 
   it('should 활성 미보유 → 회복의 날', () => {
     const cycle = getEveningCycle(new Date('2026-07-13T20:00:00'), new Set(), 80, GOAL_PHASE);
+    expect(cycle.focus).toBe('recovery');
+  });
+
+  it('should 안전 게이트가 잠긴 레티노이드 요일은 회복의 날', () => {
+    const cycle = getEveningCycle(
+      new Date('2026-07-13T20:00:00'),
+      actives('retinoid'),
+      80,
+      GOAL_PHASE,
+      { retinoidAllowed: false }
+    );
     expect(cycle.focus).toBe('recovery');
   });
 
@@ -116,7 +142,7 @@ describe('getCycleChange (G4 일변화 체감)', () => {
   it('should 어제와 포커스가 다르면 변화 반환 (어제 라벨 명시)', () => {
     const owned = actives('retinoid'); // 월(dow1)=레티노이드, 일(dow0)=회복
     const monday = new Date('2026-07-13T20:00:00'); // 월요일 (어제=일요일=회복)
-    const change = getCycleChange(monday, owned, 80, GOAL_PHASE);
+    const change = getCycleChange(monday, owned, 80, GOAL_PHASE, RETINOID_ALLOWED);
     expect(change).not.toBeNull();
     expect(change?.today).toBe('retinoid');
     expect(change?.yesterday).toBe('recovery');

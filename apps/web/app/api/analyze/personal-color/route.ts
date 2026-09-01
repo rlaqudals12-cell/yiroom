@@ -44,6 +44,16 @@ const FALLBACK_CONFIDENCE = 45;
 
 // Base64 이미지 검증
 const base64ImageSchema = z.string().min(100, '이미지 데이터가 너무 짧아요');
+const selfReportValueSchema = z.enum(['warm', 'cool', 'neutral']);
+const personalColorSelfReportSchema = z
+  .object({
+    skinAppearance: selfReportValueSchema,
+    veinAppearance: selfReportValueSchema,
+    jewelryPreference: selfReportValueSchema,
+    sunReaction: selfReportValueSchema,
+    whitePreference: selfReportValueSchema,
+  })
+  .strict();
 
 // 입력 스키마
 const personalColorSchema = z.object({
@@ -54,6 +64,8 @@ const personalColorSchema = z.object({
   rightImageBase64: base64ImageSchema.optional(),
   useMock: z.boolean().optional().default(false),
   saveImage: z.boolean().optional().default(false),
+  // 모바일 5문항 자가보고. 사진 관찰이 정본이며 Gemini에는 참고 정보로만 전달한다.
+  selfReport: personalColorSelfReportSchema.optional(),
   // 퍼스널 대비 실측값 (ADR-116) — 클라이언트가 피부·모발 L* 격차를 측정해 전달.
   // ⚠️ 클라이언트 산출값을 신뢰한다: 이 값은 결과 표시용 힌트(코디 대비 카피 등)이지
   //    권한/과금 등 보안 자산이 아니므로 수용 가능. v2에서 서버 픽셀 재검증 여지(SDD 후속).
@@ -119,6 +131,7 @@ export async function POST(req: NextRequest) {
       useMock,
       saveImage,
       contrastLevel,
+      selfReport,
     } = parsed.data;
 
     // 이미지 입력 검증: 다각도 또는 단일 이미지 필요
@@ -143,6 +156,7 @@ export async function POST(req: NextRequest) {
       leftImageBase64,
       rightImageBase64,
       wristImageBase64,
+      ...(selfReport ? { selfReport } : {}),
     };
 
     // 폴백 Mock 시드 — 같은 사용자·같은 얼굴 사진이면 폴백 시즌도 항상 같아야 한다(재현성 계약).
@@ -213,20 +227,9 @@ export async function POST(req: NextRequest) {
         // 4번째 인자 = 폴백 시드: gemini 내부 Mock 경로(FORCE_MOCK_AI·키 부재)도 같은 시드를 쓴다
         aiResult = await analyzePersonalColor(analysisInput, undefined, 'ko', fallbackSeed);
 
-        // AI 결과에 analysisEvidence/imageQuality가 없으면 기본값 제공
-        const isCool = aiResult.tone === 'cool';
+        // AI가 관찰 근거를 주지 않았다면 그대로 미관찰 상태로 둔다.
+        // 왜: 최종 tone에서 혈관색·피부빛을 역산하면 관찰하지 않은 값을 진단 근거처럼 저장하게 된다.
         const reliability = determineReliability(hasMultiAngle, !!wristImageBase64);
-
-        if (!aiResult.analysisEvidence) {
-          aiResult.analysisEvidence = {
-            veinColor: isCool ? 'blue' : 'green',
-            veinScore: isCool ? 70 : 30,
-            skinUndertone: isCool ? 'pink' : 'yellow',
-            skinHairContrast: 'medium',
-            eyeColor: 'brown',
-            lipNaturalColor: isCool ? 'pink' : 'coral',
-          };
-        }
 
         if (!aiResult.imageQuality) {
           aiResult.imageQuality = {
@@ -279,9 +282,10 @@ export async function POST(req: NextRequest) {
         if (aiResult.tone === 'cool') {
           const contrast = aiResult.analysisEvidence?.skinHairContrast;
           const isVeryHighContrast = contrast === 'very_high';
+          const hasObservedContrast = contrast !== undefined;
 
           if (
-            (aiResult.seasonType === 'winter' && !isVeryHighContrast) ||
+            (aiResult.seasonType === 'winter' && hasObservedContrast && !isVeryHighContrast) ||
             aiResult.seasonType === 'autumn' ||
             aiResult.seasonType === 'spring'
           ) {
@@ -424,7 +428,7 @@ export async function POST(req: NextRequest) {
         .from('personal_color_assessments')
         .insert({
           clerk_user_id: userId,
-          questionnaire_answers: {},
+          questionnaire_answers: selfReport ?? {},
           face_image_url: faceImageUrl,
           season: season,
           undertone: undertone,
@@ -582,6 +586,7 @@ export async function POST(req: NextRequest) {
             winter: result.seasonType === 'winter' ? result.confidence : 0,
           },
           face_image_url: null,
+          questionnaire_answers: selfReport ?? {},
           created_at: now,
         },
         result: {

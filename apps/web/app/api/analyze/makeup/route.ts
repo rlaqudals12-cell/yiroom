@@ -6,6 +6,7 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
 import { generateMockMakeupAnalysisResult, type MakeupConcernId } from '@/lib/analysis/makeup';
 import { analyzeMakeup } from '@/lib/gemini';
+import { isGeminiAvailable } from '@/lib/gemini/client';
 import { addXp, type BadgeAwardResult } from '@/lib/gamification';
 import {
   createSkinToneNutritionAlert,
@@ -21,6 +22,7 @@ import {
 import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import { requireBiometricConsent } from '@/lib/api/biometric-consent';
 import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 
 // Gemini 응답에서 유효한 값만 필터링하기 위한 Zod 스키마
 const makeupConcernSchema = z.enum([
@@ -111,13 +113,15 @@ export async function POST(req: NextRequest) {
     const bioDenied = await requireBiometricConsent(userId);
     if (bioDenied) return bioDenied;
 
+    const fallbackSeed = buildFallbackSeed(userId, 'makeup', imageBase64);
+
     // AI 분석 실행
     let result: MakeupAnalysisResult;
     let usedMock = false;
 
-    if (FORCE_MOCK || useMock) {
+    if (FORCE_MOCK || useMock || !isGeminiAvailable()) {
       // Mock 모드
-      result = generateMockMakeupAnalysisResult();
+      result = generateMockMakeupAnalysisResult({ seed: fallbackSeed });
       usedMock = true;
     } else {
       // Gemini AI 분석 실행
@@ -160,7 +164,7 @@ export async function POST(req: NextRequest) {
         };
       } catch (aiError) {
         console.error('[M-1] Gemini error, falling back to mock:', aiError);
-        result = generateMockMakeupAnalysisResult();
+        result = generateMockMakeupAnalysisResult({ seed: fallbackSeed });
         usedMock = true;
       }
     }

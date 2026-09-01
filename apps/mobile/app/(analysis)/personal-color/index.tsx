@@ -66,7 +66,9 @@ export default function PersonalColorScreen() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
   const handleAnswer = (value: string) => {
-    setAnswers((prev) => ({ ...prev, [currentQuestion]: value }));
+    // 마지막 답도 카메라 경로에 포함되어야 하므로 비동기 state 갱신 전 완성본을 만든다.
+    const nextAnswers = { ...answers, [currentQuestion]: value };
+    setAnswers(nextAnswers);
 
     if (currentQuestion < QUESTIONS.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
@@ -74,7 +76,7 @@ export default function PersonalColorScreen() {
       // 문진 완료, 카메라로 이동
       router.push({
         pathname: '/(analysis)/personal-color/camera',
-        params: { answers: JSON.stringify(answers) },
+        params: { answers: JSON.stringify(nextAnswers) },
       });
     }
   };

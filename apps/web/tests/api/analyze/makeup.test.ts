@@ -18,6 +18,10 @@ vi.mock('@/lib/gemini', () => ({
   analyzeMakeup: vi.fn(),
 }));
 
+vi.mock('@/lib/gemini/client', () => ({
+  isGeminiAvailable: vi.fn(() => true),
+}));
+
 vi.mock('@/lib/mock/makeup-analysis', () => ({
   generateMockMakeupAnalysisResult: vi.fn(),
 }));
@@ -51,6 +55,7 @@ import { GET, POST } from '@/app/api/analyze/makeup/route';
 import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzeMakeup } from '@/lib/gemini';
+import { isGeminiAvailable } from '@/lib/gemini/client';
 import { generateMockMakeupAnalysisResult, type MakeupConcernId } from '@/lib/mock/makeup-analysis';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { addXp } from '@/lib/gamification';
@@ -58,6 +63,7 @@ import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
 import { createSkinToneNutritionAlert, createCollagenBoostAlert } from '@/lib/alerts';
 import { NextRequest } from 'next/server';
 import type { MakeupAnalysisResult } from '@/lib/mock/makeup-analysis';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 
 // Mock 요청 헬퍼 (NextRequest 호환)
 function createMockPostRequest(body: unknown): NextRequest {
@@ -227,6 +233,7 @@ describe('POST /api/analyze/makeup', () => {
       mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
     );
     vi.mocked(applyRateLimit).mockReturnValue({ success: true, headers: {} });
+    vi.mocked(isGeminiAvailable).mockReturnValue(true);
     vi.mocked(generateMockMakeupAnalysisResult).mockReturnValue(mockMakeupAnalysisResult);
     vi.mocked(analyzeMakeup).mockResolvedValue(
       mockGeminiResponse as Awaited<ReturnType<typeof analyzeMakeup>>
@@ -322,7 +329,24 @@ describe('POST /api/analyze/makeup', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(true);
-      expect(generateMockMakeupAnalysisResult).toHaveBeenCalled();
+      expect(generateMockMakeupAnalysisResult).toHaveBeenCalledWith({
+        seed: buildFallbackSeed('user_test123', 'makeup', 'data:image/jpeg;base64,/9j/test'),
+      });
+      expect(analyzeMakeup).not.toHaveBeenCalled();
+    });
+
+    it('Gemini 키가 없으면 시드 폴백으로 처리하고 usedMock=true를 반환한다', async () => {
+      vi.mocked(isGeminiAvailable).mockReturnValue(false);
+
+      const response = await POST(
+        createMockPostRequest({ imageBase64: 'data:image/jpeg;base64,/9j/no-key' })
+      );
+      const json = await response.json();
+
+      expect(json.usedMock).toBe(true);
+      expect(generateMockMakeupAnalysisResult).toHaveBeenCalledWith({
+        seed: buildFallbackSeed('user_test123', 'makeup', 'data:image/jpeg;base64,/9j/no-key'),
+      });
       expect(analyzeMakeup).not.toHaveBeenCalled();
     });
   });
@@ -403,7 +427,9 @@ describe('POST /api/analyze/makeup', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(true);
-      expect(generateMockMakeupAnalysisResult).toHaveBeenCalled();
+      expect(generateMockMakeupAnalysisResult).toHaveBeenCalledWith({
+        seed: buildFallbackSeed('user_test123', 'makeup', 'data:image/jpeg;base64,/9j/test'),
+      });
     });
   });
 

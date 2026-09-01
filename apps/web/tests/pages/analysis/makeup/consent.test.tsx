@@ -31,7 +31,9 @@ vi.mock('@/app/(main)/analysis/makeup/_components/MakeupGuide', () => ({
 }));
 
 vi.mock('@/app/(main)/analysis/makeup/_components/MakeupAnalysisResultView', () => ({
-  MakeupAnalysisResultView: () => <div data-testid="makeup-analysis-result" />,
+  MakeupAnalysisResultView: ({ usedMock }: { usedMock?: boolean }) => (
+    <div data-testid="makeup-analysis-result" data-used-mock={String(usedMock)} />
+  ),
 }));
 
 vi.mock('@/components/analysis/consent', () => ({
@@ -119,6 +121,28 @@ describe('MakeupAnalysisPage 이미지 저장 선택 동의', () => {
       expect.objectContaining({ imageStorageAllowed: false })
     );
     expect(mockFetch).not.toHaveBeenCalledWith('/api/consent', expect.anything());
+  });
+
+  it('API의 usedMock을 즉시 결과 화면에 그대로 전달한다', async () => {
+    const user = userEvent.setup();
+    mockFetch.mockResolvedValue({
+      ...analysisResponse,
+      json: () =>
+        Promise.resolve({
+          result: { analyzedAt: new Date().toISOString() },
+          data: { id: 'makeup-fallback-1' },
+          usedMock: true,
+        }),
+    });
+    render(<MakeupAnalysisPage />);
+
+    await selectPhotoAndStart(user);
+    await user.click(screen.getByTestId('consent-skip'));
+
+    expect(await screen.findByTestId('makeup-analysis-result')).toHaveAttribute(
+      'data-used-mock',
+      'true'
+    );
   });
 
   it('저장하기를 선택하면 makeup 동의를 기록한 뒤 분석한다', async () => {

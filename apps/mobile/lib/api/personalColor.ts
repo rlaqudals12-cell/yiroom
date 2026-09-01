@@ -65,6 +65,58 @@ export interface PersonalColorImageQuality {
 
 export interface PersonalColorAnalysisInput {
   imageBase64: string;
+  /** 자가보고는 시각 판정을 보조할 뿐, 사진에서 관찰한 근거로 간주하지 않는다. */
+  selfReport?: PersonalColorSelfReport;
+}
+
+export type PersonalColorSelfReportValue = 'warm' | 'cool' | 'neutral';
+
+export interface PersonalColorSelfReport {
+  skinAppearance: PersonalColorSelfReportValue;
+  veinAppearance: PersonalColorSelfReportValue;
+  jewelryPreference: PersonalColorSelfReportValue;
+  sunReaction: PersonalColorSelfReportValue;
+  whitePreference: PersonalColorSelfReportValue;
+}
+
+const SELF_REPORT_VALUES: readonly PersonalColorSelfReportValue[] = ['warm', 'cool', 'neutral'];
+
+/**
+ * 문진 라우트 파라미터를 API의 명시적 selfReport 계약으로 변환한다.
+ * 다섯 답이 모두 유효할 때만 전달해 불완전한 문진을 실제 관찰처럼 소비하지 않는다.
+ */
+export function parsePersonalColorSelfReport(
+  serializedAnswers: string | undefined
+): PersonalColorSelfReport | undefined {
+  if (!serializedAnswers) return undefined;
+
+  let value: unknown;
+  try {
+    value = JSON.parse(serializedAnswers);
+  } catch {
+    return undefined;
+  }
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+
+  const answers = value as Record<string, unknown>;
+  const ordered = ['0', '1', '2', '3', '4'].map((key) => answers[key]);
+  if (
+    !ordered.every(
+      (answer): answer is PersonalColorSelfReportValue =>
+        typeof answer === 'string' &&
+        SELF_REPORT_VALUES.includes(answer as PersonalColorSelfReportValue)
+    )
+  ) {
+    return undefined;
+  }
+
+  return {
+    skinAppearance: ordered[0],
+    veinAppearance: ordered[1],
+    jewelryPreference: ordered[2],
+    sunReaction: ordered[3],
+    whitePreference: ordered[4],
+  };
 }
 
 // ============================================
@@ -274,7 +326,10 @@ export async function requestPersonalColorAnalysis(
         Authorization: `Bearer ${clerkToken}`,
         'x-yiroom-client': 'mobile',
       },
-      body: JSON.stringify({ imageBase64: input.imageBase64 }),
+      body: JSON.stringify({
+        imageBase64: input.imageBase64,
+        ...(input.selfReport ? { selfReport: input.selfReport } : {}),
+      }),
     });
   } catch {
     throw new PersonalColorApiError('네트워크 연결을 확인해주세요.', 0, 'NETWORK_ERROR');

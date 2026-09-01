@@ -1790,7 +1790,50 @@ export interface PersonalColorMultiAngleInput {
   rightImageBase64?: string;
   /** 손목 이미지 (선택) - 웜/쿨 판단 정확도 향상 */
   wristImageBase64?: string;
+  /** 모바일 문진 자가보고. 시각 판정을 보조할 뿐 관찰 근거를 대체하지 않는다. */
+  selfReport?: PersonalColorSelfReport;
 }
+
+export type PersonalColorSelfReportValue = 'warm' | 'cool' | 'neutral';
+
+export interface PersonalColorSelfReport {
+  skinAppearance: PersonalColorSelfReportValue;
+  veinAppearance: PersonalColorSelfReportValue;
+  jewelryPreference: PersonalColorSelfReportValue;
+  sunReaction: PersonalColorSelfReportValue;
+  whitePreference: PersonalColorSelfReportValue;
+}
+
+const PERSONAL_COLOR_SELF_REPORT_LABELS: Record<
+  keyof PersonalColorSelfReport,
+  Record<PersonalColorSelfReportValue, string>
+> = {
+  skinAppearance: {
+    warm: '노르스름하거나 복숭아빛으로 보여요',
+    cool: '핑크빛이나 붉은기로 보여요',
+    neutral: '둘 다 비슷하게 보여요',
+  },
+  veinAppearance: {
+    warm: '초록색에 가까워요',
+    cool: '파란색이나 보라색에 가까워요',
+    neutral: '구분하기 어려워요',
+  },
+  jewelryPreference: {
+    warm: '금색이 더 잘 어울려요',
+    cool: '은색이 더 잘 어울려요',
+    neutral: '둘 다 잘 어울려요',
+  },
+  sunReaction: {
+    warm: '금방 태닝되고 잘 타요',
+    cool: '쉽게 붉어지고 잘 안 타요',
+    neutral: '약간 타고 금방 원래대로 돌아와요',
+  },
+  whitePreference: {
+    warm: '아이보리·크림색이 더 잘 어울려요',
+    cool: '순백색이 더 잘 어울려요',
+    neutral: '둘 다 비슷해요',
+  },
+};
 
 /**
  * PC-1 퍼스널 컬러 분석 (다각도 지원)
@@ -1878,6 +1921,24 @@ ${input.rightImageBase64 ? '- 우측: 측면 피부색, 볼 색조 분석 (좌�
 ✅ 좌우 피부톤이 다를 경우, 더 자연스러운 쪽 기준으로 판단
 ✅ 조명 영향이 적은 각도 우선 고려
 ✅ 다각도 분석으로 신뢰도 향상 (analysisReliability: high)`;
+    }
+
+    if (input.selfReport) {
+      prompt += `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+자가보고 참고 정보 (시각 분석 우선)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- 피부가 보이는 경향: ${PERSONAL_COLOR_SELF_REPORT_LABELS.skinAppearance[input.selfReport.skinAppearance]}
+- 손목 혈관 자가 관찰: ${PERSONAL_COLOR_SELF_REPORT_LABELS.veinAppearance[input.selfReport.veinAppearance]}
+- 액세서리 선호: ${PERSONAL_COLOR_SELF_REPORT_LABELS.jewelryPreference[input.selfReport.jewelryPreference]}
+- 햇빛 반응 자가보고: ${PERSONAL_COLOR_SELF_REPORT_LABELS.sunReaction[input.selfReport.sunReaction]}
+- 흰색 계열 선호: ${PERSONAL_COLOR_SELF_REPORT_LABELS.whitePreference[input.selfReport.whitePreference]}
+
+[자가보고 사용 규칙]
+1. 위 답은 참고 정보이며 이미지에서 관찰한 피부·눈·입술·대비를 우선한다.
+2. 이미지와 답이 충돌하면 이미지 관찰을 따른다.
+3. 자가보고만으로 analysisEvidence를 채우지 않는다. 사진에서 확인하지 못한 근거는 unknown 또는 생략한다.`;
     }
 
     // 캘리브레이션 카드 감지 프롬프트 추가 (Phase 1B)
@@ -3643,6 +3704,14 @@ export interface GeminiHairAnalysisResult {
 
   // 케어 팁
   careTips: string[];
+
+  // 이미지에서 함께 생성한 얼굴형·모발 특성 기반 헤어스타일 추천
+  hairStyleRecommendations?: {
+    faceShapeGuess: 'oval' | 'round' | 'square' | 'heart' | 'oblong' | 'diamond' | 'unknown';
+    recommendedStyles: Array<{ name: string; reason: string }>;
+    avoidStyles: string[];
+    colorSuggestion: string | null;
+  };
 
   // 메타데이터
   analysisReliability: ReliabilityLevel;

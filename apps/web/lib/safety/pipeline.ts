@@ -118,11 +118,24 @@ function step2ContraindicationCheck(ctx: PipelineContext): PipelineContext {
 
 /** 건강 상태 기반 금기사항 매칭 */
 function checkConditionContraindications(ctx: PipelineContext): PipelineContext {
-  const { conditions, skinConditions } = ctx.input.profile;
-  const allConditions = [
+  const { conditions, skinConditions, medications } = ctx.input.profile;
+  const normalizedConditions = [
     ...conditions.map((c) => c.toLowerCase().trim()),
     ...skinConditions.map((c) => c.toLowerCase().trim()),
   ];
+  // 결합 문진 marker와 수유 표현은 임신 금기 규칙과 같은 보수적 안전 계약으로 해석한다.
+  const allConditions = normalizedConditions.flatMap((condition) =>
+    ['pregnancy_or_breastfeeding', 'breastfeeding', 'lactation'].includes(condition)
+      ? [condition, 'pregnancy']
+      : [condition]
+  );
+  if (
+    medications.some((medication) =>
+      ['isotretinoin', 'accutane', 'roaccutane'].includes(medication.toLowerCase().trim())
+    )
+  ) {
+    allConditions.push('isotretinoin');
+  }
 
   for (const rule of CONTRAINDICATION_RULES) {
     if (!allConditions.includes(rule.condition)) continue;

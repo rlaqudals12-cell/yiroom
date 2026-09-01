@@ -16,6 +16,9 @@
  */
 
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { generateTonePalette } from '@/lib/analysis/personal-color-v2/classify';
+import { TWELVE_TONE_REFERENCE_LAB, type TwelveTone } from '@/lib/analysis/personal-color-v2';
+import { getKoreanColorName } from '@/lib/utils/color-names';
 import { DeadlineExceededError, withDeadline, type ExecutionDeadline } from '@/lib/utils/timeout';
 import { skinTypeKo, finishKo, coverageKo } from '../labels';
 import type {
@@ -79,19 +82,37 @@ function combinedFallbackState(
   return 'not_used';
 }
 
-/** PC 결과에서 립 팔레트 도출 */
-function deriveLipPalette(pc: PersonalColorAxisData): string[] {
-  // PC 메인 팔레트에서 립으로 쓸만한 warm/cool 톤 추출 (상위 4개)
-  // 실제로는 PC mock의 palette.lipColors를 활용하고 싶지만,
-  // PersonalColorAxisData가 단순화된 형태이므로 palette를 그대로 활용
-  return (pc.palette ?? []).slice(0, 4);
+/**
+ * PC 12톤 판정에서 메이크업 전용 팔레트를 읽는다.
+ *
+ * 왜: `pc.palette`는 의류용 mainColors다. 이를 잘라 립으로 쓰면 뮤티드 서머의
+ * 딤그레이 같은 의류 색이 입술 추천으로 섞인다. 12톤 정본이 이미 구분한
+ * lip/eyeshadow/blush 색만 소비하고, 구형 데이터처럼 12톤이 없으면 지어내지 않는다.
+ */
+function deriveMakeupPalettes(pc: PersonalColorAxisData): {
+  lipPalette: string[];
+  eyeshadowPalette: string[];
+  blushPalette: string[];
+} {
+  if (!(pc.tone in TWELVE_TONE_REFERENCE_LAB)) {
+    return { lipPalette: [], eyeshadowPalette: [], blushPalette: [] };
+  }
+
+  const palette = generateTonePalette(pc.tone as TwelveTone);
+  return {
+    lipPalette: palette.lipColors.slice(),
+    eyeshadowPalette: palette.eyeshadowColors.slice(),
+    blushPalette: palette.blushColors.slice(),
+  };
 }
 
-/** PC 결과에서 아이섀도 팔레트 도출 */
-function deriveEyeshadowPalette(pc: PersonalColorAxisData): string[] {
-  // PC 팔레트 중간 범위에서 아이섀도 톤 선택
-  const palette = pc.palette ?? [];
-  return palette.slice(Math.floor(palette.length / 2), palette.length);
+/** 사용자 문장에는 원시 HEX 대신 사람이 읽는 색 이름을 쓴다. */
+function describeColors(colors: string[], emptyMessage: string): string {
+  if (colors.length === 0) return emptyMessage;
+  return colors
+    .slice(0, 2)
+    .map((color) => getKoreanColorName(color))
+    .join(' / ');
 }
 
 /** 피부 상태 기반 베이스 타입 결정 */
@@ -131,18 +152,21 @@ function pickCoverageLevel(score: number): 'light' | 'medium' | 'full' {
  * 테스트 가능하도록 DB 저장과 분리.
  */
 export function composeMakeupData(pc: PersonalColorAxisData, skin: SkinAxisData): MakeupAxisData {
-  const lipPalette = deriveLipPalette(pc);
-  const eyeshadowPalette = deriveEyeshadowPalette(pc);
+  const { lipPalette, eyeshadowPalette, blushPalette } = deriveMakeupPalettes(pc);
   const base = deriveBaseRecommendation(skin);
+  const lipDescription = describeColors(lipPalette, '추천 색 정보가 없어요');
+  const eyeDescription = describeColors(eyeshadowPalette, '추천 색 정보가 없어요');
+  const blushDescription = describeColors(blushPalette, '추천 색 정보가 없어요');
 
   return {
     baseRecommendation: base.description,
     lipPalette,
     eyeshadowPalette,
+    blushPalette,
     tutorialSteps: [
       `1. ${finishKo(base.finishType)} 피니시의 베이스 제품으로 시작 (커버 ${coverageKo(base.coverageLevel)})`,
-      `2. 립 컬러: ${lipPalette[0] ?? '#000'} (메인) / ${lipPalette[1] ?? '#000'} (보조)`,
-      `3. 아이섀도: ${eyeshadowPalette[0] ?? '#000'} 기본 + ${eyeshadowPalette[1] ?? '#000'} 포인트`,
+      `2. 립 컬러: ${lipDescription}`,
+      `3. 아이섀도: ${eyeDescription} · 블러셔: ${blushDescription}`,
     ],
   };
 }

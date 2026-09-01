@@ -62,6 +62,15 @@ const pcCool: PersonalColorAxisData = {
   palette: ['#A5B4FC', '#C4B5FD', '#818CF8', '#6366F1'],
 };
 
+const pcMutedSummer: PersonalColorAxisData = {
+  season: 'summer',
+  tone: 'muted-summer',
+  undertone: 'cool',
+  confidence: 84,
+  // 의류 팔레트 첫 색은 딤그레이지만 립 추천으로 쓰이면 안 된다.
+  palette: ['#696969', '#808080', '#A9A9A9', '#C0C0C0'],
+};
+
 const skinDryHigh: SkinAxisData = {
   skinType: 'dry',
   overallScore: 85,
@@ -110,28 +119,26 @@ describe('composeMakeupData — 순수 조합 로직', () => {
     });
   });
 
-  describe('립/아이섀도 팔레트 도출', () => {
-    it('립 팔레트는 PC palette 앞 4개까지', () => {
-      const result = composeMakeupData(pcWarm, skinDryHigh);
-      expect(result.lipPalette).toBeDefined();
-      expect(result.lipPalette!.length).toBeLessThanOrEqual(4);
-      expect(result.lipPalette![0]).toBe('#F9A8D4');
+  describe('메이크업 전용 팔레트 도출', () => {
+    it('의류 mainColors가 아니라 12톤의 립·아이·블러셔 팔레트를 사용한다', () => {
+      const result = composeMakeupData(pcMutedSummer, skinDryHigh);
+
+      expect(result.lipPalette).toEqual(['#BC8F8F', '#C9A9A9', '#D2B48C', '#DEB887']);
+      expect(result.eyeshadowPalette).toEqual(['#A9A9A9', '#808080', '#696969', '#778899']);
+      expect(result.blushPalette).toEqual(['#D2B48C', '#C4AEAD', '#C9A9A9', '#BC8F8F']);
+      expect(result.lipPalette).not.toContain('#696969');
     });
 
-    it('아이섀도 팔레트는 PC palette 중간 이후', () => {
-      const result = composeMakeupData(pcWarm, skinDryHigh);
-      expect(result.eyeshadowPalette).toBeDefined();
-      expect(result.eyeshadowPalette!.length).toBeGreaterThan(0);
-    });
-
-    it('palette가 비어있으면 빈 배열 반환', () => {
-      const pcEmpty: PersonalColorAxisData = {
+    it('12톤 판정이 없는 구형 데이터는 의류색을 대신 쓰지 않고 빈 배열을 반환한다', () => {
+      const pcWithoutTwelveTone: PersonalColorAxisData = {
         ...pcWarm,
-        palette: [],
+        tone: 'cool',
       };
-      const result = composeMakeupData(pcEmpty, skinDryHigh);
+      const result = composeMakeupData(pcWithoutTwelveTone, skinDryHigh);
+
       expect(result.lipPalette).toEqual([]);
       expect(result.eyeshadowPalette).toEqual([]);
+      expect(result.blushPalette).toEqual([]);
     });
   });
 
@@ -144,9 +151,12 @@ describe('composeMakeupData — 순수 조합 로직', () => {
       expect(result.tutorialSteps![2]).toMatch(/^3\./);
     });
 
-    it('튜토리얼에 실제 팔레트 색상 참조', () => {
-      const result = composeMakeupData(pcWarm, skinDryHigh);
-      expect(result.tutorialSteps![1]).toContain('#F9A8D4');
+    it('튜토리얼은 원시 HEX 대신 한국어 색 이름을 표시한다', () => {
+      const result = composeMakeupData(pcMutedSummer, skinDryHigh);
+
+      expect(result.tutorialSteps!.join(' ')).not.toMatch(/#[0-9a-f]{6}/i);
+      expect(result.tutorialSteps![1]).toMatch(/^2\. 립 컬러: /);
+      expect(result.tutorialSteps![2]).toContain('블러셔:');
     });
   });
 

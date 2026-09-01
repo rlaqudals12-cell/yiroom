@@ -31,6 +31,11 @@ import {
   type EveningCycle,
   type WeeklyCycle,
 } from './cycling';
+import {
+  filterRoutineShelfItems,
+  getRoutineSafetyNotice,
+  type RoutineSafetyProfile,
+} from '@/lib/safety/routine-guard';
 
 /** 조립 입력 — 실측 지표 + 사용자 목표 + 보유 제품 */
 export interface DailyRoutineInput {
@@ -43,6 +48,8 @@ export interface DailyRoutineInput {
   shelfItems: ShelfItem[];
   /** 기준 시각(테스트/서버 고정 주입). 미지정 시 현재 시각 */
   now?: Date;
+  /** 별도 동의를 받아 암호화 저장한 안전 문진. 없으면 레티노이드 일정은 보수적으로 잠근다. */
+  safetyProfile?: RoutineSafetyProfile | null;
 }
 
 /** 오늘의 저녁 포커스 + 주간 사이클 */
@@ -61,6 +68,8 @@ export interface DailyRoutineResult {
   morning: RoutineStep[];
   evening: RoutineStep[];
   eveningFocus: DailyRoutineEveningFocus;
+  /** 실제 제한이 적용된 경우에만 표시하는 일반 참고 안내 */
+  safetyNotice?: string;
 }
 
 /**
@@ -83,6 +92,9 @@ function goalsToConcerns(goals: SkinGoalId[]): SkinConcernId[] {
 export async function assembleDailyRoutine(input: DailyRoutineInput): Promise<DailyRoutineResult> {
   const { skinType, scores, goals, shelfItems } = input;
   const now = input.now ?? new Date();
+  const originalOwnedActives = detectOwnedActives(shelfItems);
+  const safetyFilter = filterRoutineShelfItems(shelfItems, input.safetyProfile);
+  const safeShelfItems = safetyFilter.items;
 
   // 1) 파생 고민 + 선택 목표 union (결정론적 정렬 — 웹 페이지와 동일)
   const derived = deriveConcernsFromScores(scores);
@@ -111,17 +123,21 @@ export async function assembleDailyRoutine(input: DailyRoutineInput): Promise<Da
 
   // 4) shelf-우선 제품 배치 (보유 없으면 카탈로그 추천 — enrich 내부에서 처리)
   const [morning, evening] = await Promise.all([
-    enrichRoutineWithProducts(morningResult.routine, skinType, concerns, shelfItems),
-    enrichRoutineWithProducts(eveningResult.routine, skinType, concerns, shelfItems),
+    enrichRoutineWithProducts(morningResult.routine, skinType, concerns, safeShelfItems),
+    enrichRoutineWithProducts(eveningResult.routine, skinType, concerns, safeShelfItems),
   ]);
 
   // 5) 스킨 사이클링 — 보유 활성·민감도·케어 단계 기준
-  const ownedActives = detectOwnedActives(shelfItems);
+  const ownedActives = detectOwnedActives(safeShelfItems);
   const sensitivity = typeof scores.sensitivity === 'number' ? scores.sensitivity : 100;
+  const cyclingSafety = { retinoidAllowed: safetyFilter.safety.retinoidAllowed };
   const eveningFocus: DailyRoutineEveningFocus = {
-    cycle: getEveningCycle(now, ownedActives, sensitivity, carePhase),
-    weekly: composeWeeklyCycle(ownedActives, sensitivity, carePhase),
+    cycle: getEveningCycle(now, ownedActives, sensitivity, carePhase, cyclingSafety),
+    weekly: composeWeeklyCycle(ownedActives, sensitivity, carePhase, cyclingSafety),
   };
+  const hasAppliedRestriction =
+    safetyFilter.removedCount > 0 ||
+    (!safetyFilter.safety.retinoidAllowed && originalOwnedActives.has('retinoid'));
 
   return {
     concerns,
@@ -130,5 +146,8 @@ export async function assembleDailyRoutine(input: DailyRoutineInput): Promise<Da
     morning,
     evening,
     eveningFocus,
+    ...(hasAppliedRestriction
+      ? { safetyNotice: getRoutineSafetyNotice(safetyFilter.safety.reason) }
+      : {}),
   };
 }

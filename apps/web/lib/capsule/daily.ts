@@ -329,9 +329,17 @@ async function computeEveningFocus(
   const owned = await loadOwnedActives(userId);
   const sensitivity = typeof scores.sensitivity === 'number' ? scores.sensitivity : 100;
   const now = new Date();
+  let retinoidAllowed = false;
+  try {
+    const { getSafetyProfile, resolveRoutineSafety } = await import('@/lib/safety');
+    retinoidAllowed = resolveRoutineSafety(await getSafetyProfile(userId)).retinoidAllowed;
+  } catch {
+    // 안전 프로필을 확인하지 못하면 "해당 없음"으로 추측하지 않는다.
+  }
+  const cyclingSafety = { retinoidAllowed };
   return {
-    cycle: getEveningCycle(now, owned, sensitivity, carePhase),
-    change: getCycleChange(now, owned, sensitivity, carePhase),
+    cycle: getEveningCycle(now, owned, sensitivity, carePhase, cyclingSafety),
+    change: getCycleChange(now, owned, sensitivity, carePhase, cyclingSafety),
   };
 }
 

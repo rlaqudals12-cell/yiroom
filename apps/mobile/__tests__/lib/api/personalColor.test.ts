@@ -16,6 +16,7 @@ jest.mock('@/lib/analytics/tracker', () => ({
 import { DEFAULT_API_BASE_URL } from '@/lib/api/base-url';
 import {
   getPersonalColorToneLabel,
+  parsePersonalColorSelfReport,
   requestPersonalColorAnalysis,
   PersonalColorApiError,
 } from '@/lib/api/personalColor';
@@ -23,6 +24,33 @@ import {
 const BASE_URL = 'https://example.test';
 
 const VALID_INPUT = { imageBase64: 'x'.repeat(200) };
+const SELF_REPORT = {
+  skinAppearance: 'warm',
+  veinAppearance: 'cool',
+  jewelryPreference: 'neutral',
+  sunReaction: 'warm',
+  whitePreference: 'cool',
+} as const;
+
+describe('parsePersonalColorSelfReport', () => {
+  it('화면의 다섯 답을 이름 있는 자가보고 필드로 변환한다', () => {
+    expect(
+      parsePersonalColorSelfReport(
+        JSON.stringify({ 0: 'warm', 1: 'cool', 2: 'neutral', 3: 'warm', 4: 'cool' })
+      )
+    ).toEqual(SELF_REPORT);
+  });
+
+  it('답이 빠졌거나 값이 허용 목록 밖이면 전달하지 않는다', () => {
+    expect(parsePersonalColorSelfReport(JSON.stringify({ 0: 'warm' }))).toBeUndefined();
+    expect(
+      parsePersonalColorSelfReport(
+        JSON.stringify({ 0: 'warm', 1: 'cool', 2: 'neutral', 3: 'warm', 4: 'fabricated' })
+      )
+    ).toBeUndefined();
+    expect(parsePersonalColorSelfReport('{invalid')).toBeUndefined();
+  });
+});
 
 describe('getPersonalColorToneLabel', () => {
   it('계절과 DB 12톤 세부 표식을 함께 표기한다', () => {
@@ -182,6 +210,22 @@ describe('requestPersonalColorAnalysis', () => {
     expect(url).toBe(`${BASE_URL}/api/analyze/personal-color`);
     expect(init.headers.Authorization).toBe('Bearer token-1');
     expect(init.headers['x-yiroom-client']).toBe('mobile');
+  });
+
+  it('자가보고 다섯 답을 이미지와 함께 서버 경계까지 보존한다', async () => {
+    const fetchMock = mockFetchOnce(200, successBody());
+
+    await requestPersonalColorAnalysis(
+      { imageBase64: VALID_INPUT.imageBase64, selfReport: SELF_REPORT },
+      'token-1',
+      BASE_URL
+    );
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(JSON.parse(init.body)).toEqual({
+      imageBase64: VALID_INPUT.imageBase64,
+      selfReport: SELF_REPORT,
+    });
   });
 
   it('usedMock=true(폴백)를 그대로 전달한다', async () => {

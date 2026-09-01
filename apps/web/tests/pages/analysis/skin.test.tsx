@@ -113,6 +113,21 @@ vi.mock('@/components/analysis/consent', () => ({
   },
 }));
 
+// 이 파일은 안전 문진 다음의 기존 촬영·분석 플로우를 검증한다.
+// 안전 문진 자체와 저장 payload는 전용 컴포넌트 테스트에서 검증하므로 여기서는
+// 첫 렌더 뒤 "나중에 입력"과 같은 효과로 기존 플로우에 진입시킨다.
+vi.mock('@/components/analysis/skin/SkinSafetyScreening', async () => {
+  const { useLayoutEffect } = await import('react');
+  return {
+    SkinSafetyScreening: ({ onComplete }: { onComplete: () => void }) => {
+      useLayoutEffect(() => {
+        onComplete();
+      }, [onComplete]);
+      return null;
+    },
+  };
+});
+
 // Mock useUserProfile 훅 (성별 선택 자동 건너뛰기용)
 vi.mock('@/hooks/useUserProfile', () => ({
   useUserProfile: () => ({

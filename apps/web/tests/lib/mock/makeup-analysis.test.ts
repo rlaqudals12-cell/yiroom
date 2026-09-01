@@ -756,3 +756,29 @@ describe('M-1 메이크업 분석 Mock', () => {
     });
   });
 });
+
+describe('generateMockMakeupAnalysisResult 재현성', () => {
+  const projectResult = (result: MakeupAnalysisResult) => ({
+    undertone: result.undertone,
+    eyeShape: result.eyeShape,
+    lipShape: result.lipShape,
+    faceShape: result.faceShape,
+    overallScore: result.overallScore,
+    metrics: result.metrics,
+    concerns: result.concerns,
+  });
+
+  it('같은 시드에는 같은 분석 내용을 반환한다', () => {
+    const first = generateMockMakeupAnalysisResult({ seed: 'user-1:makeup:image-a' });
+    const second = generateMockMakeupAnalysisResult({ seed: 'user-1:makeup:image-a' });
+
+    expect(projectResult(second)).toEqual(projectResult(first));
+  });
+
+  it('다른 이미지 시드는 독립된 분석 내용을 만들 수 있다', () => {
+    const first = generateMockMakeupAnalysisResult({ seed: 'user-1:makeup:image-a' });
+    const second = generateMockMakeupAnalysisResult({ seed: 'user-1:makeup:image-b' });
+
+    expect(projectResult(second)).not.toEqual(projectResult(first));
+  });
+});

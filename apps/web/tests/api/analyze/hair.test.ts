@@ -19,6 +19,10 @@ vi.mock('@/lib/gemini', () => ({
   analyzeHair: vi.fn(),
 }));
 
+vi.mock('@/lib/gemini/client', () => ({
+  isGeminiAvailable: vi.fn(() => true),
+}));
+
 vi.mock('@/lib/mock/hair-analysis', () => ({
   generateMockHairAnalysisResult: vi.fn(),
 }));
@@ -46,6 +50,7 @@ import { GET, POST } from '@/app/api/analyze/hair/route';
 import { auth } from '@clerk/nextjs/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { analyzeHair } from '@/lib/gemini';
+import { isGeminiAvailable } from '@/lib/gemini/client';
 import { generateMockHairAnalysisResult } from '@/lib/mock/hair-analysis';
 import { applyRateLimit } from '@/lib/security/rate-limit';
 import { addXp } from '@/lib/gamification';
@@ -56,6 +61,7 @@ import {
   createHairShineBoostAlert,
 } from '@/lib/alerts';
 import { NextRequest } from 'next/server';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 
 // Mock 요청 헬퍼 (NextRequest 호환)
 function createMockPostRequest(body: unknown): NextRequest {
@@ -174,6 +180,15 @@ const mockGeminiResponse = {
   recommendedIngredients: ['히알루론산', '세라마이드', '아르간오일'],
   recommendedProducts: mockHairAnalysisResult.recommendedProducts,
   careTips: mockHairAnalysisResult.careTips,
+  hairStyleRecommendations: {
+    faceShapeGuess: 'oval',
+    recommendedStyles: [
+      { name: '레이어드 컷', reason: '직모에 볼륨을 더해요' },
+      { name: '사이드 파트', reason: '타원형 얼굴과 조화를 이뤄요' },
+    ],
+    avoidStyles: ['무거운 원랭스'],
+    colorSuggestion: null,
+  },
   analysisReliability: mockHairAnalysisResult.analysisReliability,
 };
 
@@ -222,6 +237,7 @@ describe('POST /api/analyze/hair', () => {
       mockSupabase as unknown as ReturnType<typeof createServiceRoleClient>
     );
     vi.mocked(applyRateLimit).mockReturnValue({ success: true, headers: {} });
+    vi.mocked(isGeminiAvailable).mockReturnValue(true);
     vi.mocked(generateMockHairAnalysisResult).mockReturnValue(
       mockHairAnalysisResult as unknown as ReturnType<typeof generateMockHairAnalysisResult>
     );
@@ -322,7 +338,24 @@ describe('POST /api/analyze/hair', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(true);
-      expect(generateMockHairAnalysisResult).toHaveBeenCalled();
+      expect(generateMockHairAnalysisResult).toHaveBeenCalledWith({
+        seed: buildFallbackSeed('user_test123', 'hair', 'data:image/jpeg;base64,/9j/test'),
+      });
+      expect(analyzeHair).not.toHaveBeenCalled();
+    });
+
+    it('Gemini 키가 없으면 시드 폴백으로 처리하고 usedMock=true를 반환한다', async () => {
+      vi.mocked(isGeminiAvailable).mockReturnValue(false);
+
+      const response = await POST(
+        createMockPostRequest({ imageBase64: 'data:image/jpeg;base64,/9j/no-key' })
+      );
+      const json = await response.json();
+
+      expect(json.usedMock).toBe(true);
+      expect(generateMockHairAnalysisResult).toHaveBeenCalledWith({
+        seed: buildFallbackSeed('user_test123', 'hair', 'data:image/jpeg;base64,/9j/no-key'),
+      });
       expect(analyzeHair).not.toHaveBeenCalled();
     });
   });
@@ -388,6 +421,10 @@ describe('POST /api/analyze/hair', () => {
       expect(json.usedMock).toBe(false);
       expect(analyzeHair).toHaveBeenCalledWith('data:image/jpeg;base64,/9j/test');
       expect(json.result.hairType).toBe('straight');
+      expect(json.result.hairStyleRecommendations.recommendedStyles).toEqual([
+        { name: '레이어드 컷', reason: '직모에 볼륨을 더해요' },
+        { name: '사이드 파트', reason: '타원형 얼굴과 조화를 이뤄요' },
+      ]);
     });
 
     it('Gemini 분석 실패 시 Mock으로 폴백한다', async () => {
@@ -403,11 +440,41 @@ describe('POST /api/analyze/hair', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(true);
-      expect(generateMockHairAnalysisResult).toHaveBeenCalled();
+      expect(generateMockHairAnalysisResult).toHaveBeenCalledWith({
+        seed: buildFallbackSeed('user_test123', 'hair', 'data:image/jpeg;base64,/9j/test'),
+      });
     });
   });
 
   describe('DB 저장', () => {
+    it('Gemini의 헤어스타일 추천을 재방문용 recommendations에 저장한다', async () => {
+      const insert = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: mockDbResult, error: null }),
+        }),
+      });
+      mockSupabase.from = vi.fn().mockImplementation((table: string) => {
+        if (table === 'hair_analyses') return { insert };
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: null, error: null }),
+        };
+      });
+
+      await POST(createMockPostRequest({ imageBase64: 'data:image/jpeg;base64,/9j/test' }));
+
+      expect(insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recommendations: expect.objectContaining({
+            styleRecommendations: mockGeminiResponse.hairStyleRecommendations.recommendedStyles,
+          }),
+        })
+      );
+    });
+
     it('분석 결과가 DB에 저장된다', async () => {
       const response = await POST(
         createMockPostRequest({

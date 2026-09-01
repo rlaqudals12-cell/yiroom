@@ -400,7 +400,7 @@ describe('generateMockHairAnalysisResult', () => {
     it('여러 번 호출 시 다양한 hairType이 생성된다', () => {
       const types = new Set<HairTypeId>();
       for (let i = 0; i < 50; i++) {
-        const result = generateMockHairAnalysisResult();
+        const result = generateMockHairAnalysisResult({ seed: `hair-type-${i}` });
         types.add(result.hairType);
       }
       // 50번 호출 시 최소 2가지 이상 다른 타입이 나와야 함 (확률적)
@@ -410,7 +410,7 @@ describe('generateMockHairAnalysisResult', () => {
     it('여러 번 호출 시 다양한 overallScore가 생성된다', () => {
       const scores = new Set<number>();
       for (let i = 0; i < 20; i++) {
-        const result = generateMockHairAnalysisResult();
+        const result = generateMockHairAnalysisResult({ seed: `overall-score-${i}` });
         scores.add(result.overallScore);
       }
       // 20번 호출 시 최소 3가지 이상 다른 점수가 나와야 함
@@ -426,7 +426,7 @@ describe('generateMockHairAnalysisResult', () => {
       // 여러 번 실행해서 분기 커버리지 확보
       let foundSplitEnds = false;
       for (let i = 0; i < 100; i++) {
-        const result = generateMockHairAnalysisResult();
+        const result = generateMockHairAnalysisResult({ seed: `split-ends-${i}` });
         // 수분도 >= 50, 두피 >= 50, 손상 >= 50, 밀도 >= 50일 때 concerns === ['split-ends']
         const hydration = result.metrics.find((m) => m.id === 'hydration')!.value;
         const scalp = result.metrics.find((m) => m.id === 'scalp')!.value;
@@ -449,7 +449,7 @@ describe('generateMockHairAnalysisResult', () => {
     it('수분도가 낮으면 frizz 고민이 포함된다', () => {
       let foundFrizz = false;
       for (let i = 0; i < 100; i++) {
-        const result = generateMockHairAnalysisResult();
+        const result = generateMockHairAnalysisResult({ seed: `frizz-${i}` });
         const hydration = result.metrics.find((m) => m.id === 'hydration')!.value;
         // 원래 hydration 값이 50 미만일 때 frizz
         // 하지만 hydration metric value = hydration (그대로)
@@ -467,7 +467,7 @@ describe('generateMockHairAnalysisResult', () => {
     it('밀도가 낮으면 hairloss와 lack-volume 고민이 포함된다', () => {
       let found = false;
       for (let i = 0; i < 100; i++) {
-        const result = generateMockHairAnalysisResult();
+        const result = generateMockHairAnalysisResult({ seed: `low-density-${i}` });
         const density = result.metrics.find((m) => m.id === 'density')!.value;
         if (
           density < 50 &&
@@ -486,7 +486,7 @@ describe('generateMockHairAnalysisResult', () => {
     it('건성 두피일 때 히알루론산이 추천된다', () => {
       let found = false;
       for (let i = 0; i < 50; i++) {
-        const result = generateMockHairAnalysisResult();
+        const result = generateMockHairAnalysisResult({ seed: `dry-scalp-${i}` });
         if (result.scalpType === 'dry') {
           expect(result.recommendedIngredients).toContain('히알루론산');
           expect(result.recommendedIngredients).toContain('아르간 오일');
@@ -500,7 +500,7 @@ describe('generateMockHairAnalysisResult', () => {
     it('지성 두피일 때 티트리 오일이 추천된다', () => {
       let found = false;
       for (let i = 0; i < 50; i++) {
-        const result = generateMockHairAnalysisResult();
+        const result = generateMockHairAnalysisResult({ seed: `oily-scalp-${i}` });
         if (result.scalpType === 'oily') {
           expect(result.recommendedIngredients).toContain('티트리 오일');
           expect(result.recommendedIngredients).toContain('살리실산');
@@ -514,7 +514,7 @@ describe('generateMockHairAnalysisResult', () => {
     it('민감성 두피일 때 알로에베라가 추천된다', () => {
       let found = false;
       for (let i = 0; i < 50; i++) {
-        const result = generateMockHairAnalysisResult();
+        const result = generateMockHairAnalysisResult({ seed: `sensitive-scalp-${i}` });
         if (result.scalpType === 'sensitive') {
           expect(result.recommendedIngredients).toContain('알로에베라');
           expect(result.recommendedIngredients).toContain('카모마일');
@@ -528,7 +528,7 @@ describe('generateMockHairAnalysisResult', () => {
     it('중성 두피일 때 케라틴이 추천된다', () => {
       let found = false;
       for (let i = 0; i < 50; i++) {
-        const result = generateMockHairAnalysisResult();
+        const result = generateMockHairAnalysisResult({ seed: `normal-scalp-${i}` });
         if (result.scalpType === 'normal') {
           expect(result.recommendedIngredients).toContain('케라틴');
           expect(result.recommendedIngredients).toContain('실크 아미노산');
@@ -585,5 +585,30 @@ describe('generateMockHairAnalysisResult', () => {
       expect(result.analyzedAt).toBeInstanceOf(Date);
       expect(typeof result.analysisReliability).toBe('string');
     });
+  });
+});
+
+describe('generateMockHairAnalysisResult 재현성', () => {
+  const projectResult = (result: HairAnalysisResult) => ({
+    hairType: result.hairType,
+    hairThickness: result.hairThickness,
+    scalpType: result.scalpType,
+    overallScore: result.overallScore,
+    metrics: result.metrics,
+    concerns: result.concerns,
+  });
+
+  it('같은 시드에는 같은 분석 내용을 반환한다', () => {
+    const first = generateMockHairAnalysisResult({ seed: 'user-1:hair:image-a' });
+    const second = generateMockHairAnalysisResult({ seed: 'user-1:hair:image-a' });
+
+    expect(projectResult(second)).toEqual(projectResult(first));
+  });
+
+  it('다른 이미지 시드는 독립된 분석 내용을 만들 수 있다', () => {
+    const first = generateMockHairAnalysisResult({ seed: 'user-1:hair:image-a' });
+    const second = generateMockHairAnalysisResult({ seed: 'user-1:hair:image-b' });
+
+    expect(projectResult(second)).not.toEqual(projectResult(first));
   });
 });

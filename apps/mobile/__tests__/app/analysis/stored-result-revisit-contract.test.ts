@@ -233,7 +233,7 @@ const STORED_RESULT_CASES: StoredResultCase[] = [
     historyId: 'hair-history-1',
     Screen: HairResultScreen,
     resultTestID: 'hair-analysis-result',
-    expectedText: '웨이브 · 굵은 모발',
+    expectedText: "'레이어드 컷' 스타일이 잘 어울려요",
     requestMock: mockRequestHairAnalysis,
     row: {
       id: 'hair-history-1',

@@ -31,6 +31,7 @@ import { unauthorizedError, internalError } from '@/lib/api/error-response';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { getZonedNow, DEFAULT_TIMEZONE } from '@/lib/utils/timezone';
 import type { SkinTypeId } from '@/lib/mock/skin-analysis';
+import { getSafetyProfile } from '@/lib/safety';
 
 /** 모바일 크로스 오리진 허용(ADR-103) — 이 라우트만 개방, 인증은 Bearer JWT가 담당 */
 const CORS_HEADERS: Record<string, string> = {
@@ -258,7 +259,23 @@ export async function GET(): Promise<NextResponse> {
       /* 화장대 조회 실패 — 카탈로그 추천으로 폴백 */
     }
 
-    const result = await assembleDailyRoutine({ skinType, scores, goals, shelfItems, now });
+    // 안전 프로필 조회 실패·미동의도 명시적으로 전달한다. 조립기는 이 경우
+    // "해당 없음"으로 추측하지 않고 레티노이드 일정만 보수적으로 잠근다.
+    let safetyProfile = null;
+    try {
+      safetyProfile = await getSafetyProfile(userId);
+    } catch {
+      /* 안전 프로필 조회 실패 — null을 전달해 fail-closed */
+    }
+
+    const result = await assembleDailyRoutine({
+      skinType,
+      scores,
+      goals,
+      shelfItems,
+      now,
+      safetyProfile,
+    });
 
     return withCors(
       NextResponse.json({
@@ -279,6 +296,7 @@ export async function GET(): Promise<NextResponse> {
             reason: result.eveningFocus.cycle.reason,
           },
           weeklyCycle: result.eveningFocus.weekly.days,
+          ...(result.safetyNotice ? { safetyNotice: result.safetyNotice } : {}),
         },
       })
     );

@@ -3,6 +3,8 @@
  * AI 분석 실패 시 Fallback으로 사용
  */
 
+import { createSeededRandom, DEFAULT_SEED } from '@/lib/utils/seeded-random';
+
 export type HairTypeId = 'straight' | 'wavy' | 'curly' | 'coily';
 export type HairThicknessId = 'fine' | 'medium' | 'thick';
 export type ScalpTypeId = 'dry' | 'normal' | 'oily' | 'sensitive';
@@ -65,6 +67,13 @@ export interface HairAnalysisMetric {
   description: string;
 }
 
+export interface HairStyleRecommendations {
+  faceShapeGuess: 'oval' | 'round' | 'square' | 'heart' | 'oblong' | 'diamond' | 'unknown';
+  recommendedStyles: Array<{ name: string; reason: string }>;
+  avoidStyles: string[];
+  colorSuggestion: string | null;
+}
+
 export interface HairAnalysisResult {
   // 기본 정보
   hairType: HairTypeId;
@@ -92,6 +101,9 @@ export interface HairAnalysisResult {
 
   // 케어 팁
   careTips: string[];
+
+  /** 실AI가 이미지에서 생성한 스타일 추천. Mock 폴백에서는 지어내지 않고 생략한다. */
+  hairStyleRecommendations?: HairStyleRecommendations;
 
   // 메타데이터
   analyzedAt: Date;
@@ -195,21 +207,21 @@ function buildRecommendedProducts(scalpType: ScalpTypeId) {
 /**
  * Mock 분석 결과 생성
  */
-export function generateMockHairAnalysisResult(): HairAnalysisResult {
+export function generateMockHairAnalysisResult(options?: { seed?: string }): HairAnalysisResult {
+  const rng = createSeededRandom(options?.seed ?? DEFAULT_SEED);
   const hairTypes = ['straight', 'wavy', 'curly', 'coily'] as const;
   const thicknesses = ['fine', 'medium', 'thick'] as const;
   const scalpTypes = ['dry', 'normal', 'oily', 'sensitive'] as const;
 
-  const randomHairType = hairTypes[Math.floor(Math.random() * hairTypes.length)];
-  const randomThickness = thicknesses[Math.floor(Math.random() * thicknesses.length)];
-  const randomScalpType = scalpTypes[Math.floor(Math.random() * scalpTypes.length)];
+  const randomHairType = hairTypes[Math.floor(rng() * hairTypes.length)];
+  const randomThickness = thicknesses[Math.floor(rng() * thicknesses.length)];
+  const randomScalpType = scalpTypes[Math.floor(rng() * scalpTypes.length)];
 
   const hairTypeLabels = HAIR_TYPE_LABELS;
   const thicknessLabels = THICKNESS_LABELS;
   const scalpTypeLabels = SCALP_TYPE_LABELS;
 
-  const generateScore = (min: number, max: number) =>
-    Math.floor(Math.random() * (max - min + 1)) + min;
+  const generateScore = (min: number, max: number) => Math.floor(rng() * (max - min + 1)) + min;
 
   const getStatus = getMetricStatus;
 

@@ -220,9 +220,7 @@ export default function MakeupAnalysisResultPage() {
       const transformedResult = transformDbToResult(dbData);
       setResult(transformedResult);
       setImageUrl(await resolveConsentedAnalysisImageUrl(supabase, 'makeup', dbData.image_url));
-      if (dbData.recommendations?.usedMock) {
-        setUsedMock(true);
-      }
+      setUsedMock(dbData.recommendations?.usedMock === true);
       fetchedRef.current = true;
     } catch (err) {
       console.error('[M-1] Fetch error:', err);
@@ -235,6 +233,7 @@ export default function MakeupAnalysisResultPage() {
           if (dbData) {
             const transformedResult = transformDbToResult(dbData as DbMakeupAnalysis);
             setResult(transformedResult);
+            setUsedMock(dbData.recommendations?.usedMock === true);
             setImageUrl(
               await resolveConsentedAnalysisImageUrl(supabase, 'makeup', dbData.image_url)
             );
@@ -359,7 +358,7 @@ export default function MakeupAnalysisResultPage() {
             <h1 className="text-lg font-bold text-foreground">{t('pageTitle.makeup')}</h1>
             <div className="flex items-center gap-2">
               <AIBadge variant="small" />
-              {result && (
+              {result && !usedMock && (
                 <span className="text-xs text-muted-foreground">
                   {t('confidence')} {reliabilityLabel}
                 </span>
@@ -481,7 +480,9 @@ export default function MakeupAnalysisResultPage() {
 
                   {/* 푸터 신뢰 블록 — 등급→% 매핑은 전문가 패널과 동일 (진단서의 직인) */}
                   <TrustFooter
-                    confidence={RELIABILITY_CONFIDENCE[result.analysisReliability]}
+                    confidence={
+                      usedMock ? null : RELIABILITY_CONFIDENCE[result.analysisReliability]
+                    }
                     reportTargetId={analysisId}
                     testId="makeup-trust-footer"
                     className="mt-6"

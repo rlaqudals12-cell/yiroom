@@ -54,6 +54,33 @@ describe('Gemini 단독 분석 실행 예산', () => {
     expect(generateContentMock).toHaveBeenCalledTimes(3);
   });
 
+  it('PC-1 자가보고를 원래 문항 의미로 보존하되 시각 관찰 우선 제한을 함께 보낸다', async () => {
+    generateContentMock.mockResolvedValue({ text: '{}' });
+
+    await analyzePersonalColor({
+      frontImageBase64: imageBase64,
+      selfReport: {
+        skinAppearance: 'warm',
+        veinAppearance: 'cool',
+        jewelryPreference: 'neutral',
+        sunReaction: 'warm',
+        whitePreference: 'cool',
+      },
+    });
+
+    const request = generateContentMock.mock.calls[0]?.[0] as
+      | { contents?: Array<{ text?: string }> }
+      | undefined;
+    const prompt = request?.contents?.[0]?.text ?? '';
+    expect(prompt).toContain('피부가 보이는 경향: 노르스름하거나 복숭아빛으로 보여요');
+    expect(prompt).toContain('손목 혈관 자가 관찰: 파란색이나 보라색에 가까워요');
+    expect(prompt).toContain('액세서리 선호: 둘 다 잘 어울려요');
+    expect(prompt).toContain('햇빛 반응 자가보고: 금방 태닝되고 잘 타요');
+    expect(prompt).toContain('흰색 계열 선호: 순백색이 더 잘 어울려요');
+    expect(prompt).toContain('이미지에서 관찰한 피부·눈·입술·대비를 우선한다');
+    expect(prompt).toContain('자가보고만으로 analysisEvidence를 채우지 않는다');
+  });
+
   it('C-1 단일 이미지의 4초 정상 응답을 타임아웃시키지 않는다', async () => {
     generateContentMock.mockImplementation(
       () =>

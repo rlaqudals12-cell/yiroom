@@ -104,6 +104,16 @@ vi.mock('@/components/analysis/consent', () => ({
   },
 }));
 
+vi.mock('@/components/analysis/skin/SkinSafetyScreening', () => ({
+  SkinSafetyScreening: ({ onComplete }: { onComplete: () => void }) => (
+    <div data-testid="skin-safety-screening">
+      <button onClick={onComplete} data-testid="safety-skip">
+        나중에 입력
+      </button>
+    </div>
+  ),
+}));
+
 // Mock 컴포넌트들
 vi.mock('@/app/(main)/analysis/skin/_components/LightingGuide', () => ({
   default: ({ onContinue, onGallery }: { onContinue: () => void; onGallery?: () => void }) => (
@@ -249,6 +259,7 @@ describe('SkinAnalysisPage - 이미지 저장 동의', () => {
     render(<SkinAnalysisPage />);
     await waitForLoading();
 
+    await user.click(screen.getByTestId('safety-skip'));
     await user.click(screen.getByTestId('guide-continue'));
     await user.click(screen.getByTestId('camera-mode-button'));
     await user.click(screen.getByTestId('capture-complete'));
@@ -294,6 +305,7 @@ describe('SkinAnalysisPage - 이미지 저장 동의', () => {
     render(<SkinAnalysisPage />);
     await waitForLoading();
 
+    await user.click(screen.getByTestId('safety-skip'));
     await user.click(screen.getByTestId('guide-continue'));
     await user.click(screen.getByTestId('camera-mode-button'));
     await user.click(screen.getByTestId('capture-complete'));
@@ -333,6 +345,7 @@ describe('SkinAnalysisPage - 이미지 저장 동의', () => {
     render(<SkinAnalysisPage />);
     await waitForLoading();
 
+    await user.click(screen.getByTestId('safety-skip'));
     await user.click(screen.getByTestId('guide-continue'));
     await user.click(screen.getByTestId('camera-mode-button'));
     await user.click(screen.getByTestId('capture-complete'));
@@ -369,6 +382,7 @@ describe('SkinAnalysisPage - 이미지 저장 동의', () => {
     render(<SkinAnalysisPage />);
     await waitForLoading();
 
+    await user.click(screen.getByTestId('safety-skip'));
     await user.click(screen.getByTestId('guide-continue'));
     await user.click(screen.getByTestId('camera-mode-button'));
     await user.click(screen.getByTestId('capture-complete'));
@@ -397,6 +411,7 @@ describe('SkinAnalysisPage - 이미지 저장 동의', () => {
     render(<SkinAnalysisPage />);
     await waitForLoading();
 
+    await user.click(screen.getByTestId('safety-skip'));
     // 갤러리에서 선택 버튼 클릭으로 갤러리 모드 진입
     await user.click(screen.getByTestId('guide-gallery'));
     await user.click(screen.getByTestId('gallery-upload-complete'));

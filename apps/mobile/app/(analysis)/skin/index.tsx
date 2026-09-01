@@ -1,20 +1,20 @@
 /**
  * S-1 피부 분석 - 시작 화면
  */
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Platform, View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import { SkinSafetyScreeningCard } from '@/components/analysis/skin/SkinSafetyScreeningCard';
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { staggeredEntry } from '../../../lib/animations';
 
 export default function SkinAnalysisScreen() {
-  const { colors, spacing, isDark, module: moduleColors } = useTheme();
+  const { colors, spacing, module: moduleColors } = useTheme();
 
-  const handleStartAnalysis = () => {
+  const handleSafetyComplete = () => {
     router.push('/(analysis)/skin/camera');
   };
 
@@ -99,46 +99,11 @@ export default function SkinAnalysisScreen() {
             </View>
           </GlassCard>
         </Animated.View>
-      </ScrollView>
 
-      {/* 시작 버튼 */}
-      <View
-        style={[
-          styles.footer,
-          { backgroundColor: colors.background, borderTopColor: colors.border },
-        ]}
-      >
-        <Pressable
-          onPress={handleStartAnalysis}
-          accessibilityRole="button"
-          accessibilityLabel="피부 분석 시작하기"
-          style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}
-        >
-          <LinearGradient
-            colors={[moduleColors.skin.base, moduleColors.skin.dark]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[
-              styles.startButton,
-              !isDark
-                ? (Platform.select({
-                    ios: {
-                      shadowColor: moduleColors.skin.base,
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.3,
-                      shadowRadius: 12,
-                    },
-                    android: { elevation: 4 },
-                  }) ?? {})
-                : {},
-            ]}
-          >
-            <Text style={[styles.startButtonText, { color: colors.overlayForeground }]}>
-              피부 분석 시작하기
-            </Text>
-          </LinearGradient>
-        </Pressable>
-      </View>
+        <Animated.View entering={staggeredEntry(3)}>
+          <SkinSafetyScreeningCard onComplete={handleSafetyComplete} />
+        </Animated.View>
+      </ScrollView>
     </ScreenContainer>
   );
 }
@@ -165,7 +130,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.mlg,
-    paddingBottom: 100,
+    paddingBottom: spacing.xl,
   },
   header: {
     alignItems: 'center',
@@ -230,23 +195,5 @@ const styles = StyleSheet.create({
   guideItem: {
     fontSize: typography.size.sm,
     lineHeight: 22,
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: spacing.mlg,
-    borderTopWidth: 1,
-  },
-  startButton: {
-    borderRadius: radii.full,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-  },
-  startButtonText: {
-    fontSize: typography.size.base,
-    fontWeight: typography.weight.semibold,
   },
 });

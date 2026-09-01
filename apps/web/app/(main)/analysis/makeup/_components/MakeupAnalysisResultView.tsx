@@ -23,6 +23,7 @@ import {
 } from '@/lib/analysis/makeup';
 import type { ShelfItem } from '@/lib/scan/product-shelf';
 import { Button } from '@/components/ui/button';
+import { MockDataNotice } from '@/components/common/MockDataNotice';
 import { AnonymousFaceTemplate } from '@/components/analysis/overlay';
 import { TextureSwatch, type TextureKind } from '@/components/share/TextureSwatch';
 import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
@@ -38,6 +39,7 @@ import {
 interface MakeupAnalysisResultViewProps {
   result: MakeupAnalysisResult;
   reportTargetId?: string;
+  usedMock?: boolean;
   onRetry: () => void;
 }
 
@@ -112,6 +114,7 @@ interface ReportSection {
 export function MakeupAnalysisResultView({
   result,
   reportTargetId,
+  usedMock = false,
   onRetry,
 }: MakeupAnalysisResultViewProps): React.JSX.Element {
   // 콜로폰 분석 시간 표기 — 하드코딩 ko-KR 대신 사용자 로캘 (PC 진단지 표준)
@@ -407,6 +410,8 @@ export function MakeupAnalysisResultView({
 
   return (
     <div className="space-y-6" data-testid="makeup-analysis-result">
+      {usedMock && <MockDataNotice />}
+
       {/* 진단지 한 장 — 히어로부터 신뢰 블록까지 단일 시트 (진단지 문법)
           깊이: 크림 지면 위 백색 시트 — rest 섀도 + 종이 그레인 1겹(시트 한정, ≤0.05) */}
       {/* text-pretty: 짧은 꼬리 줄 방지 점진 향상 (Tailwind v4 내장 유틸) */}
@@ -471,7 +476,7 @@ export function MakeupAnalysisResultView({
 
           {/* 푸터 신뢰 블록 — 등급→% 매핑은 result/[id]와 동일 (진단서의 직인) */}
           <TrustFooter
-            confidence={RELIABILITY_CONFIDENCE[result.analysisReliability]}
+            confidence={usedMock ? null : RELIABILITY_CONFIDENCE[result.analysisReliability]}
             reportTargetId={reportTargetId}
             testId="makeup-trust-footer"
             className="mt-6"

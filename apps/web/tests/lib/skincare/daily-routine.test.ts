@@ -100,4 +100,40 @@ describe('assembleDailyRoutine', () => {
     expect(owned?.ownedProduct?.name).toBe('데일리 선크림');
     expect(owned?.category).toBe('sunscreen');
   });
+
+  it('임신 문진이 확인되면 레티노이드 제품과 사이클을 제외한다', async () => {
+    const shelf = [
+      makeShelfItem({
+        productName: '레티놀 세럼',
+        productIngredients: [{ inciName: 'retinol', nameKo: '레티놀', order: 1 }],
+      }),
+    ];
+    const result = await assembleDailyRoutine({
+      skinType: 'normal',
+      scores: {
+        hydration: 70,
+        oil_level: 50,
+        pores: 70,
+        pigmentation: 70,
+        wrinkles: 70,
+        sensitivity: 70,
+      },
+      goals: [],
+      shelfItems: shelf,
+      safetyProfile: {
+        consentGiven: true,
+        conditions: ['pregnancy'],
+        medications: [],
+      },
+      now: new Date('2026-07-10T09:00:00Z'),
+    });
+
+    expect(result.eveningFocus.weekly.days.some((day) => day.focus === 'retinoid')).toBe(false);
+    expect(result.safetyNotice).toContain('주의가 필요한 성분 제품과 레티노이드 일정');
+    expect(
+      [...result.morning, ...result.evening].some(
+        (step) => step.ownedProduct?.name === '레티놀 세럼'
+      )
+    ).toBe(false);
+  });
 });

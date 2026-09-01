@@ -191,6 +191,41 @@ describe('Step 2: Contraindications', () => {
     );
   });
 
+  it('should interpret the combined pregnancy-or-breastfeeding marker as pregnancy safety', () => {
+    const input = createInput(['retinol'], {
+      conditions: ['pregnancy_or_breastfeeding'],
+    });
+
+    const report = checkProductSafety(input);
+
+    expect(report.alerts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'CONTRAINDICATION',
+          action: 'WARN',
+          ingredient: 'retinol',
+        }),
+      ])
+    );
+  });
+
+  it('should WARN for topical retinol while taking isotretinoin', () => {
+    const input = createInput(['retinol'], { medications: ['isotretinoin'] });
+
+    const report = checkProductSafety(input);
+
+    expect(report.alerts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'CONTRAINDICATION',
+          action: 'WARN',
+          ingredient: 'retinol',
+          reason: expect.stringContaining('처방 의료인'),
+        }),
+      ])
+    );
+  });
+
   // 임신 + 살리실산
   it('should WARN for salicylic acid during pregnancy', () => {
     const input = createInput(['salicylic acid', 'glycerin'], { conditions: ['pregnancy'] });

@@ -44,6 +44,7 @@ import { TodayFocusBadge } from '@/components/skincare/TodayFocusBadge';
 import { ReanalysisNotice } from '@/components/skincare/ReanalysisNotice';
 import { RoutineReplacementNotice } from '@/components/skincare/RoutineReplacementNotice';
 import { ShelfRedundancyNotice } from '@/components/skincare/ShelfRedundancyNotice';
+import { resolveRoutineSafety, type RoutineSafetyProfile } from '@/lib/safety/routine-guard';
 
 // 화장대 궁합 안내용 카테고리 한글 라벨
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
@@ -86,6 +87,9 @@ export default function SkincareRoutinePage() {
   const [morningSteps, setMorningSteps] = useState<RoutineStep[]>([]);
   const [eveningSteps, setEveningSteps] = useState<RoutineStep[]>([]);
   const [personalizationNote, setPersonalizationNote] = useState('');
+  const [safetyProfile, setSafetyProfile] = useState<RoutineSafetyProfile | null>(null);
+  const [safetyProfileLoaded, setSafetyProfileLoaded] = useState(false);
+  const [safetyNotice, setSafetyNotice] = useState('');
   // 내 화장대(제품함) 보유 제품 — 루틴 배치·궁합 안내에 사용. 실패 시 빈 배열(카탈로그 폴백).
   const [shelfItems, setShelfItems] = useState<ShelfItem[]>([]);
   // 내 피부 목표 — 선택 시 concerns에 반영해 루틴 재계산 (엔진 미배포 시 칩 미노출)
@@ -163,10 +167,37 @@ export default function SkincareRoutinePage() {
     };
   }, [isLoaded, isSignedIn]);
 
+  // 별도 동의한 민감정보는 서버 API에서만 복호화한다. 실패·미동의는 조립기에서
+  // fail-closed로 처리해 레티노이드 일정만 잠근다.
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    let cancelled = false;
+    async function loadSafetyProfile() {
+      try {
+        const response = await fetch('/api/safety/profile');
+        const json = (await response.json()) as {
+          success?: boolean;
+          data?: RoutineSafetyProfile;
+        };
+        if (!cancelled && response.ok && json.success && json.data) {
+          setSafetyProfile(json.data);
+        }
+      } catch {
+        // 조회 실패는 null로 유지 — 안전 조립기가 레티노이드를 보수적으로 제외한다.
+      } finally {
+        if (!cancelled) setSafetyProfileLoaded(true);
+      }
+    }
+    void loadSafetyProfile();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn]);
+
   // 루틴 생성 — 조립 정본(assembleDailyRoutine)에 위임. 페이지·API가 동일 결과를 쓴다(ADR-118).
   // 고민 파생 + 케어 단계 + shelf-우선 제품 배치가 한 곳에서 처리된다.
   useEffect(() => {
-    if (!skinData) return;
+    if (!skinData || !safetyProfileLoaded) return;
     let cancelled = false;
 
     const skinType = (skinData.skin_type || 'normal') as SkinTypeId;
@@ -175,19 +206,21 @@ export default function SkincareRoutinePage() {
       scores: skinScores,
       goals: selectedGoals,
       shelfItems,
+      safetyProfile,
     })
       .then((result) => {
         if (cancelled) return;
         setMorningSteps(result.morning);
         setEveningSteps(result.evening);
         setPersonalizationNote(result.personalizationNote);
+        setSafetyNotice(result.safetyNotice ?? '');
       })
       .catch((err) => console.error('[Routine] assemble error:', err));
 
     return () => {
       cancelled = true;
     };
-  }, [skinData, shelfItems, selectedGoals, skinScores]);
+  }, [skinData, shelfItems, selectedGoals, skinScores, safetyProfile, safetyProfileLoaded]);
 
   // 현재 활성 루틴
   const currentSteps = useMemo(
@@ -217,6 +250,10 @@ export default function SkincareRoutinePage() {
 
   // 화장대 활성 성분 보유 집합 — 저녁 사이클/폴백 분기용
   const ownedActives = useMemo(() => detectOwnedActives(shelfItems), [shelfItems]);
+  const cyclingSafety = useMemo(
+    () => ({ retinoidAllowed: resolveRoutineSafety(safetyProfile).retinoidAllowed }),
+    [safetyProfile]
+  );
 
   // 오늘 저녁 포커스 + 주간 사이클 — 단계·민감도·보유 활성 기준
   const eveningFocus = useMemo(() => {
@@ -224,17 +261,17 @@ export default function SkincareRoutinePage() {
     const phaseId = carePhase?.phase ?? 'goal';
     const sensitivity = skinData.sensitivity;
     return {
-      cycle: getEveningCycle(new Date(), ownedActives, sensitivity, phaseId),
-      weekly: composeWeeklyCycle(ownedActives, sensitivity, phaseId),
+      cycle: getEveningCycle(new Date(), ownedActives, sensitivity, phaseId, cyclingSafety),
+      weekly: composeWeeklyCycle(ownedActives, sensitivity, phaseId, cyclingSafety),
     };
-  }, [skinData, ownedActives, carePhase]);
+  }, [skinData, ownedActives, carePhase, cyclingSafety]);
 
   // 어제 대비 오늘 저녁 포커스 변화 (G4 일변화 체감) — 같으면 null(미표시)
   const cycleChange = useMemo(() => {
     if (!skinData) return null;
     const phaseId = carePhase?.phase ?? 'goal';
-    return getCycleChange(new Date(), ownedActives, skinData.sensitivity, phaseId);
-  }, [skinData, ownedActives, carePhase]);
+    return getCycleChange(new Date(), ownedActives, skinData.sensitivity, phaseId, cyclingSafety);
+  }, [skinData, ownedActives, carePhase, cyclingSafety]);
 
   // 화장대 중복 제품 안내 (같은 카테고리 다수 보유)
   const redundantProducts = useMemo(() => findRedundantProducts(shelfItems), [shelfItems]);
@@ -328,6 +365,17 @@ export default function SkincareRoutinePage() {
             analyzedAt={new Date(skinData.created_at)}
             onReanalyze={handleGoToAnalysis}
           />
+        )}
+
+        {safetyNotice && (
+          <div
+            className="mb-6 flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"
+            data-testid="routine-safety-notice"
+            role="status"
+          >
+            <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+            <p>{safetyNotice}</p>
+          </div>
         )}
 
         {/* 오늘의 저녁 포커스 배지 (G4 일변화 체감) — 상단 승격, 아침/저녁 탭 무관 */}

@@ -43,6 +43,7 @@ import {
   normalizePersonalColorHexes,
   normalizePersonalColorImageQuality,
   normalizePersonalColorSubtype,
+  parsePersonalColorSelfReport,
   PersonalColorApiError,
   requestPersonalColorAnalysis,
   type PersonalColorApiResult,
@@ -102,9 +103,10 @@ export default function PersonalColorResultScreen(): React.JSX.Element {
 function PersonalColorResultContent(): React.JSX.Element {
   const { getToken } = useAuth();
   const supabase = useClerkSupabaseClient();
-  const { imageUri, historyId } = useLocalSearchParams<{
+  const { imageUri, historyId, answers } = useLocalSearchParams<{
     imageUri?: string;
     historyId?: string;
+    answers?: string;
   }>();
   const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<PersonalColorApiResult | null>(null);
@@ -164,7 +166,14 @@ function PersonalColorResultContent(): React.JSX.Element {
         );
       }
 
-      const response = await requestPersonalColorAnalysis({ imageBase64: base64Data }, token);
+      const selfReport = parsePersonalColorSelfReport(answers);
+      const response = await requestPersonalColorAnalysis(
+        {
+          imageBase64: base64Data,
+          ...(selfReport ? { selfReport } : {}),
+        },
+        token
+      );
       const usesStaticDiagnosisFallback =
         response.seasonSubtype === null ||
         response.bestColors.length === 0 ||
@@ -186,7 +195,7 @@ function PersonalColorResultContent(): React.JSX.Element {
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, historyId, imageUri, supabase]);
+  }, [answers, getToken, historyId, imageUri, supabase]);
 
   const hasStartedRef = useRef(false);
   useEffect(() => {

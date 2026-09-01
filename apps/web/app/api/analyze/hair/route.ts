@@ -18,7 +18,9 @@ import {
   type HairConcernId,
 } from '@/lib/mock/hair-analysis';
 import { analyzeHair } from '@/lib/gemini';
+import { isGeminiAvailable } from '@/lib/gemini/client';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
+import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import { addXp, type BadgeAwardResult } from '@/lib/gamification';
 import {
   createScalpHealthNutritionAlert,
@@ -81,13 +83,15 @@ export async function POST(req: NextRequest) {
     const bioDenied = await requireBiometricConsent(userId);
     if (bioDenied) return bioDenied;
 
+    const fallbackSeed = buildFallbackSeed(userId, 'hair', imageBase64);
+
     // AI 분석 실행
     let result: HairAnalysisResult;
     let usedMock = false;
 
-    if (FORCE_MOCK || useMock) {
+    if (FORCE_MOCK || useMock || !isGeminiAvailable()) {
       // Mock 모드
-      result = generateMockHairAnalysisResult();
+      result = generateMockHairAnalysisResult({ seed: fallbackSeed });
       usedMock = true;
     } else {
       // Gemini AI 분석 실행
@@ -108,12 +112,13 @@ export async function POST(req: NextRequest) {
           recommendedIngredients: geminiResult.recommendedIngredients,
           recommendedProducts: geminiResult.recommendedProducts,
           careTips: geminiResult.careTips,
+          hairStyleRecommendations: geminiResult.hairStyleRecommendations,
           analyzedAt: new Date(),
           analysisReliability: geminiResult.analysisReliability,
         };
       } catch (aiError) {
         console.error('[H-1] Gemini error, falling back to mock:', aiError);
-        result = generateMockHairAnalysisResult();
+        result = generateMockHairAnalysisResult({ seed: fallbackSeed });
         usedMock = true;
       }
     }
@@ -162,6 +167,7 @@ export async function POST(req: NextRequest) {
             ingredients: result.recommendedIngredients,
             products: result.recommendedProducts,
             careTips: result.careTips,
+            styleRecommendations: result.hairStyleRecommendations?.recommendedStyles ?? [],
             analysisReliability: result.analysisReliability,
             usedMock,
           },

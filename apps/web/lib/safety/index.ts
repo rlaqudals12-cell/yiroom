@@ -14,6 +14,18 @@ export { checkProductSafety } from './pipeline';
 // 저장소
 export { getSafetyProfile, upsertSafetyProfile } from './repository';
 
+// 스킨케어 루틴 안전 게이트
+export {
+  resolveRoutineSafety,
+  filterRoutineShelfItems,
+  getRoutineSafetyNotice,
+} from './routine-guard';
+export type {
+  RoutineSafetyProfile,
+  RoutineSafetyState,
+  RetinoidRestrictionReason,
+} from './routine-guard';
+
 // 면책 문구
 export { getDisclaimer, DISCLAIMER_GLOBAL } from './disclaimer';
 

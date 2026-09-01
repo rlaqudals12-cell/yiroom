@@ -4,6 +4,7 @@
  */
 
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { createSeededRandom, DEFAULT_SEED } from '@/lib/utils/seeded-random';
 
 export type UndertoneId = 'warm' | 'cool' | 'neutral';
 export type EyeShapeId = 'monolid' | 'double' | 'hooded' | 'round' | 'almond' | 'downturned';
@@ -315,16 +316,19 @@ const COLORS_BY_UNDERTONE: Record<UndertoneId, ColorRecommendation[]> = {
 /**
  * Mock 분석 결과 생성
  */
-export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
+export function generateMockMakeupAnalysisResult(options?: {
+  seed?: string;
+}): MakeupAnalysisResult {
+  const rng = createSeededRandom(options?.seed ?? DEFAULT_SEED);
   const undertones = ['warm', 'cool', 'neutral'] as const;
   const eyeShapes = ['monolid', 'double', 'hooded', 'round', 'almond', 'downturned'] as const;
   const lipShapes = ['full', 'thin', 'wide', 'small', 'heart', 'asymmetric'] as const;
   const faceShapes = ['oval', 'round', 'square', 'heart', 'oblong', 'diamond'] as const;
 
-  const randomUndertone = undertones[Math.floor(Math.random() * undertones.length)];
-  const randomEyeShape = eyeShapes[Math.floor(Math.random() * eyeShapes.length)];
-  const randomLipShape = lipShapes[Math.floor(Math.random() * lipShapes.length)];
-  const randomFaceShape = faceShapes[Math.floor(Math.random() * faceShapes.length)];
+  const randomUndertone = undertones[Math.floor(rng() * undertones.length)];
+  const randomEyeShape = eyeShapes[Math.floor(rng() * eyeShapes.length)];
+  const randomLipShape = lipShapes[Math.floor(rng() * lipShapes.length)];
+  const randomFaceShape = faceShapes[Math.floor(rng() * faceShapes.length)];
 
   const undertoneLabels = UNDERTONE_LABEL_MAP;
 
@@ -355,8 +359,7 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
     diamond: '다이아몬드',
   };
 
-  const generateScore = (min: number, max: number) =>
-    Math.floor(Math.random() * (max - min + 1)) + min;
+  const generateScore = (min: number, max: number) => Math.floor(rng() * (max - min + 1)) + min;
 
   const getStatus = getMetricStatus;
 
@@ -412,7 +415,7 @@ export function generateMockMakeupAnalysisResult(): MakeupAnalysisResult {
   if (hydration < 50) concerns.push('dry-patches');
   if (poreVisibility < 50) concerns.push('large-pores');
   if (oilBalance < 50) concerns.push('oily-tzone');
-  if (Math.random() > 0.5) concerns.push('dark-circles');
+  if (rng() > 0.5) concerns.push('dark-circles');
   if (concerns.length === 0) concerns.push('redness');
 
   // 언더톤별 색상 추천 (모듈 공용 상수 사용)

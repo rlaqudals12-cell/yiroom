@@ -7,10 +7,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import {
-  ThemeContext,
-  type ThemeContextValue,
-} from '../../../lib/theme/ThemeProvider';
+import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
   lightColors,
@@ -68,9 +65,7 @@ function createThemeValue(isDark = false): ThemeContextValue {
 
 function renderWithTheme(ui: React.ReactElement, isDark = false) {
   return render(
-    <ThemeContext.Provider value={createThemeValue(isDark)}>
-      {ui}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={createThemeValue(isDark)}>{ui}</ThemeContext.Provider>
   );
 }
 
@@ -87,9 +82,7 @@ describe('PersonalColorScreen (문진 화면)', () => {
 
     it('첫 번째 질문이 표시되어야 한다', () => {
       const { getByText } = renderWithTheme(<PersonalColorScreen />);
-      expect(
-        getByText('햇빛 아래에서 피부 톤이 어떻게 보이나요?')
-      ).toBeTruthy();
+      expect(getByText('햇빛 아래에서 피부 톤이 어떻게 보이나요?')).toBeTruthy();
     });
 
     it('첫 번째 질문의 3개 선택지가 표시되어야 한다', () => {
@@ -118,9 +111,7 @@ describe('PersonalColorScreen (문진 화면)', () => {
       fireEvent.press(getByText('노르스름하거나 복숭아빛'));
 
       // 두 번째 질문 표시 확인
-      expect(
-        getByText('손목 안쪽 혈관 색은 무엇에 가깝나요?')
-      ).toBeTruthy();
+      expect(getByText('손목 안쪽 혈관 색은 무엇에 가깝나요?')).toBeTruthy();
       expect(getByText('2 / 5')).toBeTruthy();
     });
 
@@ -142,9 +133,7 @@ describe('PersonalColorScreen (문진 화면)', () => {
       // 뒤로가기
       fireEvent.press(getByText('이전 질문'));
       expect(getByText('1 / 5')).toBeTruthy();
-      expect(
-        getByText('햇빛 아래에서 피부 톤이 어떻게 보이나요?')
-      ).toBeTruthy();
+      expect(getByText('햇빛 아래에서 피부 톤이 어떻게 보이나요?')).toBeTruthy();
     });
 
     it('첫 질문에서 뒤로가기 시 router.back()이 호출되어야 한다', () => {
@@ -169,9 +158,15 @@ describe('PersonalColorScreen (문진 화면)', () => {
       expect(router.push).toHaveBeenCalledWith(
         expect.objectContaining({
           pathname: '/(analysis)/personal-color/camera',
-          params: expect.objectContaining({
-            answers: expect.any(String),
-          }),
+          params: {
+            answers: JSON.stringify({
+              0: 'warm',
+              1: 'warm',
+              2: 'warm',
+              3: 'warm',
+              4: 'warm',
+            }),
+          },
         })
       );
     });
@@ -179,14 +174,9 @@ describe('PersonalColorScreen (문진 화면)', () => {
 
   describe('다크 모드', () => {
     it('다크 모드에서도 정상 렌더링되어야 한다', () => {
-      const { getByTestId, getByText } = renderWithTheme(
-        <PersonalColorScreen />,
-        true
-      );
+      const { getByTestId, getByText } = renderWithTheme(<PersonalColorScreen />, true);
       expect(getByTestId('analysis-pc-screen')).toBeTruthy();
-      expect(
-        getByText('햇빛 아래에서 피부 톤이 어떻게 보이나요?')
-      ).toBeTruthy();
+      expect(getByText('햇빛 아래에서 피부 톤이 어떻게 보이나요?')).toBeTruthy();
     });
   });
 

@@ -35,6 +35,12 @@ export interface WeeklyCycle {
   days: Array<{ dow: number; focus: CyclingFocus; label: string }>;
 }
 
+/** 사용자 안전 문진에서 파생한 사이클 제한. */
+export interface CyclingSafety {
+  /** true로 확인된 경우에만 레티노이드 날짜를 배정한다. */
+  retinoidAllowed: boolean;
+}
+
 /** 포커스 표시 라벨 */
 export const CYCLE_LABELS: Record<CyclingFocus, string> = {
   exfoliation: '각질 케어의 날',
@@ -69,7 +75,8 @@ const SENSITIVE_THRESHOLD = 40;
 export function composeWeeklyCycle(
   ownedActives: Set<ActiveCategory>,
   sensitivityScore: number,
-  carePhase: CarePhase
+  carePhase: CarePhase,
+  safety?: CyclingSafety
 ): WeeklyCycle {
   const days: Array<{ dow: number; focus: CyclingFocus; label: string }> = [];
   for (let dow = 0; dow < 7; dow++) {
@@ -82,7 +89,8 @@ export function composeWeeklyCycle(
   }
 
   const sensitive = sensitivityScore < SENSITIVE_THRESHOLD;
-  const hasRetinoid = ownedActives.has('retinoid');
+  // 왜: 안전 문진 전달을 빠뜨린 새 소비처가 생겨도 레티노이드가 fail-open 되면 안 된다.
+  const hasRetinoid = ownedActives.has('retinoid') && safety?.retinoidAllowed === true;
   const hasAcid = ownedActives.has('exfoliantAHA') || ownedActives.has('exfoliantBHA');
 
   // 민감 시 활성 일수 축소 (회복일 확장). 미보유 활성의 날은 배정하지 않는다 (0일).
@@ -114,9 +122,10 @@ export function getEveningCycle(
   date: Date,
   ownedActives: Set<ActiveCategory>,
   sensitivityScore: number,
-  carePhase: CarePhase
+  carePhase: CarePhase,
+  safety?: CyclingSafety
 ): EveningCycle {
-  const weekly = composeWeeklyCycle(ownedActives, sensitivityScore, carePhase);
+  const weekly = composeWeeklyCycle(ownedActives, sensitivityScore, carePhase, safety);
   const dow = date.getDay();
   const day = weekly.days.find((d) => d.dow === dow) ?? weekly.days[0];
   return {
@@ -149,12 +158,19 @@ export function getCycleChange(
   date: Date,
   ownedActives: Set<ActiveCategory>,
   sensitivityScore: number,
-  carePhase: CarePhase
+  carePhase: CarePhase,
+  safety?: CyclingSafety
 ): CycleChange | null {
-  const todayCycle = getEveningCycle(date, ownedActives, sensitivityScore, carePhase);
+  const todayCycle = getEveningCycle(date, ownedActives, sensitivityScore, carePhase, safety);
   const yesterday = new Date(date);
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayCycle = getEveningCycle(yesterday, ownedActives, sensitivityScore, carePhase);
+  const yesterdayCycle = getEveningCycle(
+    yesterday,
+    ownedActives,
+    sensitivityScore,
+    carePhase,
+    safety
+  );
   if (todayCycle.focus === yesterdayCycle.focus) return null;
   return {
     today: todayCycle.focus,

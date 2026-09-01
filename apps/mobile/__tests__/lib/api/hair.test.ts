@@ -49,6 +49,15 @@ function successBody(overrides: Record<string, unknown> = {}) {
       ],
       concerns: ['hairloss', 'frizz'],
       careTips: ['미지근한 물로 샴푸하세요', '주 1-2회 헤어 마스크'],
+      hairStyleRecommendations: {
+        faceShapeGuess: 'oval',
+        recommendedStyles: [
+          { name: '레이어드 컷', reason: '웨이브 결을 살려요' },
+          { name: '사이드 파트', reason: '얼굴형과 조화를 이뤄요' },
+        ],
+        avoidStyles: [],
+        colorSuggestion: null,
+      },
       analysisReliability: 'medium',
     },
     ...overrides,
@@ -79,6 +88,7 @@ describe('requestHairAnalysis', () => {
     expect(result.scalpCondition).toBe('oily');
     expect(result.scores).toEqual({ shine: 60, elasticity: 72, density: 55, scalpHealth: 65 });
     expect(result.careRoutine).toEqual(['미지근한 물로 샴푸하세요', '주 1-2회 헤어 마스크']);
+    expect(result.recommendedStyles).toEqual(['레이어드 컷', '사이드 파트']);
     expect(result.usedMock).toBe(false);
     expect(result.analysisId).toBe('row-1');
   });
