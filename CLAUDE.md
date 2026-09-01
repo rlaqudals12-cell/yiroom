@@ -83,11 +83,11 @@ yiroom/
 
 ## 기술 스택 요약
 
-| 앱         | 기술                                                  |
-| ---------- | ----------------------------------------------------- |
-| **웹**     | Next.js 16, React 19, Supabase, Clerk, Gemini 3 Flash |
-| **모바일** | Expo SDK 54, React Native, NativeWind                 |
-| **공통**   | TypeScript, Turborepo, Zod                            |
+| 앱         | 기술                                                    |
+| ---------- | ------------------------------------------------------- |
+| **웹**     | Next.js 16, React 19, Supabase, Clerk, Gemini 3.5 Flash |
+| **모바일** | Expo SDK 54, React Native, NativeWind                   |
+| **공통**   | TypeScript, Turborepo, Zod                              |
 
 > 상세 → [apps/web/CLAUDE.md](apps/web/CLAUDE.md)
 
