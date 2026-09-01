@@ -47,12 +47,12 @@ model: process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 ## Fallback 전략
 
 > **상세 가이드**: Mock Fallback 전략은 [ADR-007](../../docs/adr/ADR-007-mock-fallback-strategy.md) 참조
-> (타임아웃 3초, 재시도 2회, Mock 파일 구조, UI 신뢰도 표시 등)
+> (Mock 파일 구조, UI 신뢰도 표시 등 — 타임아웃 실사용 정본은 lib/utils/timeout.ts: INTEGRATED_ROUTE 52s·AXIS_ATTEMPT 25s)
 
 **핵심 원칙**:
 
 - 모든 AI 호출에 Mock Fallback 필수
-- 타임아웃: 3초 / 재시도: 2회
+- 타임아웃: 축별 차등·시도별 적용 (정본 = lib/utils/timeout.ts, 통합 52s·축 시도 25s) / 재시도: 추가 최대 2회
 - Mock 사용 시 `isMock: true` + 낮은 `confidence` 반환
 
 ## 프롬프트 규칙
