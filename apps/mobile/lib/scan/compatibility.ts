@@ -5,6 +5,8 @@
  * - 성분 분석 및 상호작용 검출
  */
 
+import { getToneCompatibility, type TwelveTone } from '@/lib/analysis/personal-color-v2';
+import { hexToLab } from '@/lib/color';
 import type { ProductIngredient } from '@/types/scan';
 
 import {
@@ -30,6 +32,7 @@ export interface UserAnalysisData {
   personalColor?: {
     seasonType: 'spring' | 'summer' | 'autumn' | 'winter';
     tone: 'warm' | 'cool';
+    twelveTone?: TwelveTone;
   };
 }
 
@@ -48,13 +51,20 @@ export interface IngredientNote {
   reason: string;
 }
 
-// 컬러 매칭 결과
-export interface ColorMatchResult {
-  isRecommended: boolean;
-  matchScore: number;
-  reason: string;
-  alternatives?: string[];
-}
+// 컬러 매칭 결과. 수치 판정과 색상명 참고를 타입 경계에서 분리한다.
+export type ColorMatchResult =
+  | {
+      basis: 'ciede2000';
+      isRecommended: boolean;
+      matchScore: number;
+      reason: string;
+    }
+  | {
+      basis: 'qualitative-name';
+      colorName: string;
+      reason: string;
+      requiresHex: true;
+    };
 
 // 전체 호환성 결과
 export interface CompatibilityResult {
@@ -231,53 +241,88 @@ function calculateColorMatch(
   if (!personalColor) return undefined;
 
   // 색조 제품이 아니면 스킵
-  const colorCategories = ['lipstick', 'blush', 'eyeshadow', 'foundation', 'makeup'];
-  if (!colorCategories.some((c) => productCategory.toLowerCase().includes(c))) {
+  const colorCategories = [
+    'lip',
+    'lipstick',
+    'blush',
+    'eyeshadow',
+    'foundation',
+    'contour',
+    'makeup',
+  ];
+  if (!colorCategories.includes(productCategory.trim().toLowerCase())) {
     return undefined;
   }
 
-  // 컬러 정보가 없으면 기본 안내
-  if (!productColor) {
-    const toneLabel = personalColor.tone === 'warm' ? '웜톤' : '쿨톤';
+  // 색이 없으면 수치나 추정 안내를 만들지 않는다.
+  if (!productColor) return undefined;
+
+  // 정확한 12톤과 HEX가 있으면 웹 정본과 동일한 CIEDE2000 판정을 우선한다.
+  if (personalColor.twelveTone && /^#[0-9a-fA-F]{6}$/.test(productColor)) {
+    const compatibility = getToneCompatibility(personalColor.twelveTone, hexToLab(productColor));
     return {
-      isRecommended: true,
-      matchScore: 70,
-      reason: `${toneLabel}에 어울리는 색상인지 직접 확인해보세요`,
+      basis: 'ciede2000',
+      isRecommended: compatibility.grade === 'perfect' || compatibility.grade === 'good',
+      matchScore: compatibility.score,
+      reason: compatibility.description,
     };
   }
 
   // 컬러 매칭 로직 (간단한 버전)
-  const warmColors = ['coral', 'peach', 'orange', 'gold', 'bronze', 'warm'];
-  const coolColors = ['pink', 'berry', 'mauve', 'plum', 'rose', 'cool'];
+  const warmColors = [
+    'coral',
+    'peach',
+    'orange',
+    'gold',
+    'bronze',
+    'warm',
+    '코랄',
+    '피치',
+    '복숭아',
+    '오렌지',
+    '주황',
+    '골드',
+    '금색',
+    '브론즈',
+    '웜',
+    '살구',
+    '테라코타',
+  ];
+  const coolColors = [
+    'pink',
+    'berry',
+    'mauve',
+    'plum',
+    'rose',
+    'cool',
+    '핑크',
+    '베리',
+    '모브',
+    '플럼',
+    '자두',
+    '로즈',
+    '쿨',
+    '라벤더',
+  ];
 
   const colorLower = productColor.toLowerCase();
   const isWarmColor = warmColors.some((c) => colorLower.includes(c));
   const isCoolColor = coolColors.some((c) => colorLower.includes(c));
 
-  const userTone = personalColor.tone;
-
-  if ((userTone === 'warm' && isWarmColor) || (userTone === 'cool' && isCoolColor)) {
+  // 한글/영문 색상명은 정성 참고만 제공한다. 이름을 점수나 추천 판정으로 바꾸지 않는다.
+  if (isWarmColor || isCoolColor) {
+    const colorFamily =
+      isWarmColor && isCoolColor ? '웜·쿨 혼합' : isWarmColor ? '웜 계열' : '쿨 계열';
     return {
-      isRecommended: true,
-      matchScore: 90,
-      reason: `${userTone === 'warm' ? '웜톤' : '쿨톤'}에 잘 어울리는 색상이에요`,
-    };
-  } else if ((userTone === 'warm' && isCoolColor) || (userTone === 'cool' && isWarmColor)) {
-    const alternatives =
-      userTone === 'warm' ? ['코랄', '피치', '오렌지 계열'] : ['핑크', '베리', '로즈 계열'];
-    return {
-      isRecommended: false,
-      matchScore: 50,
-      reason: `${userTone === 'warm' ? '웜톤' : '쿨톤'}에는 다른 색상이 더 어울릴 수 있어요`,
-      alternatives,
+      basis: 'qualitative-name',
+      colorName: productColor,
+      reason: `${productColor}은 ${colorFamily} 색상명으로만 참고할 수 있어요. 개인 적합도 판정에는 정확한 HEX 색상 코드가 필요해요.`,
+      requiresHex: true,
     };
   }
 
-  return {
-    isRecommended: true,
-    matchScore: 75,
-    reason: '다양한 톤에 무난하게 어울리는 색상이에요',
-  };
+  // 미분류 색상명·3자리 HEX·12톤 부재는 colorMatch를 만들지 않는다.
+  return undefined;
 }
 
 /**
@@ -324,12 +369,10 @@ export async function analyzeCompatibility(
   // 종합 점수 계산
   const interactionPenalty = calculateInteractionPenalty(interactions);
   const baseScore = skinCompat.score;
-  // 컬러 매칭 보너스: 추천 색상 +5, 비추천 색상 -5, 매칭 데이터 없으면 0
+  // 정확한 12톤 + 6자리 HEX로 계산한 CIE 판정만 종합점수에 반영한다.
   let colorBonus = 0;
-  if (colorMatch?.isRecommended) {
-    colorBonus = 5;
-  } else if (colorMatch) {
-    colorBonus = -5;
+  if (colorMatch?.basis === 'ciede2000') {
+    colorBonus = colorMatch.isRecommended ? 5 : -5;
   }
   const overallScore = Math.max(0, Math.min(100, baseScore - interactionPenalty + colorBonus));
 

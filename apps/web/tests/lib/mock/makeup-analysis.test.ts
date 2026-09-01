@@ -781,4 +781,36 @@ describe('generateMockMakeupAnalysisResult 재현성', () => {
 
     expect(projectResult(second)).not.toEqual(projectResult(first));
   });
+
+  it.each([
+    ['spring', 'warm'],
+    ['summer', 'cool'],
+    ['autumn', 'warm'],
+    ['winter', 'cool'],
+  ] as const)('저장 퍼컬 %s가 있으면 폴백 추천을 %s 축으로 통일한다', (season, undertone) => {
+    const result = generateMockMakeupAnalysisResult({
+      seed: 'user-1:makeup:image-a',
+      personalColorSeason: season,
+    });
+
+    expect(result.undertone).toBe(undertone);
+    expect(result.personalColorConnection?.season).toBe(season);
+    expect(result.personalColorConnection?.note).toContain('저장된 퍼스널 컬러');
+
+    const sameAxis = generateMockMakeupAnalysisResult({
+      seed: 'another-user:makeup:another-image',
+      personalColorSeason: season,
+    });
+    expect(sameAxis.colorRecommendations).toEqual(result.colorRecommendations);
+  });
+
+  it('저장 퍼컬이 없으면 기존 시드 기반 폴백 계약을 유지한다', () => {
+    const first = generateMockMakeupAnalysisResult({ seed: 'user-1:makeup:no-pc' });
+    const second = generateMockMakeupAnalysisResult({ seed: 'user-1:makeup:no-pc' });
+
+    expect(second.undertone).toBe(first.undertone);
+    expect(second.colorRecommendations).toEqual(first.colorRecommendations);
+    expect(second.personalColorConnection).toEqual(first.personalColorConnection);
+    expect(first.personalColorConnection?.note).not.toContain('저장된 퍼스널 컬러');
+  });
 });

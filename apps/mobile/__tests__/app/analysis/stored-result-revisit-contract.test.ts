@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import fs from 'node:fs';
 import path from 'node:path';
 import React from 'react';
@@ -279,6 +279,15 @@ const STORED_RESULT_CASES: StoredResultCase[] = [
           { category: '립 메이크업', tips: ['로즈 컬러를 발라 주세요'] },
         ],
         colors: [{ colors: [{ hex: '#AABBCC' }] }],
+        foundationRecommendations: [
+          {
+            shadeName: '21호 쿨 핑크',
+            undertone: 'cool',
+            brandExample: '에스티로더 더블웨어 1C1',
+            easyDescription: '핑크 기가 도는 밝은 베이지 (로즈빛)',
+            oliveyoungAlt: '클리오 킬커버 파운웨어 02 랑제리',
+          },
+        ],
         usedFallback: false,
       },
       session_id: null,
@@ -322,5 +331,22 @@ describe('5축 저장 결과 재방문 계약', () => {
 
     expect(renderSource).not.toContain('result.scores');
     expect(renderSource).not.toMatch(/점수\s*\{|overall\}점/);
+  });
+
+  it('메이크업 저장 결과의 파운데이션 처방을 재방문에서도 복원한다', async () => {
+    const makeupCase = STORED_RESULT_CASES.find((item) => item.axis === 'makeup')!;
+    const destination = buildStoredResultDestination('makeup', makeupCase.historyId);
+    mockSearchParams = destination.params;
+    mockRowsByTable = { [makeupCase.table]: makeupCase.row };
+
+    const screen = render(
+      React.createElement(ThemeProvider, null, React.createElement(MakeupResultScreen))
+    );
+    await waitFor(() => expect(screen.getByTestId('makeup-analysis-result')).toBeTruthy());
+
+    fireEvent.press(screen.getByTestId('makeup-analysis-result-section-foundation-trigger'));
+    expect(screen.getByText(/에스티로더 더블웨어 1C1/)).toBeTruthy();
+    expect(screen.getByText(/올리브영: 클리오 킬커버 파운웨어 02 랑제리/)).toBeTruthy();
+    expect(mockRequestMakeupAnalysis).not.toHaveBeenCalled();
   });
 });

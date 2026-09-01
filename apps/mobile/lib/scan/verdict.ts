@@ -21,6 +21,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { resolveTwelveTone } from '@/lib/analysis/personal-color-v2';
 import type { ProductIngredient } from '@/types/scan';
 
 import {
@@ -186,7 +187,7 @@ export async function fetchScanUserAnalysis(
       .maybeSingle(),
     supabase
       .from('personal_color_assessments')
-      .select('season')
+      .select('season, season_subtype')
       .eq('clerk_user_id', clerkUserId)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -205,11 +206,19 @@ export async function fetchScanUserAnalysis(
     };
   }
 
-  const color = colorResult.data as { season: string | null } | null | undefined;
+  const color = colorResult.data as
+    | { season: string | null; season_subtype?: string | null }
+    | null
+    | undefined;
   const seasonType = normalizeSeason(color?.season ?? null);
   const tone = deriveTone(color?.season ?? null);
   if (seasonType && tone) {
-    userAnalysis.personalColor = { seasonType, tone };
+    const twelveTone = resolveTwelveTone(seasonType, color?.season_subtype);
+    userAnalysis.personalColor = {
+      seasonType,
+      tone,
+      ...(twelveTone ? { twelveTone } : {}),
+    };
   }
 
   return userAnalysis;

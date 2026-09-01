@@ -87,6 +87,13 @@ export {
   getAdjacentTones,
 } from './tone-classifier';
 
+export {
+  getToneCompatibility,
+  resolveTwelveTone,
+  type ToneColorCompatibility,
+  type ToneCompatibilityGrade,
+} from './compatibility';
+
 // ============================================
 // Mock 데이터 (Fallback용)
 // ============================================

@@ -25,9 +25,24 @@ const cosmeticRows = [
   },
 ];
 
-const limitFn = () => Promise.resolve({ data: cosmeticRows, error: null });
-const selectFn = () => ({ limit: limitFn });
-const fromFn = () => ({ select: selectFn });
+let personalColorRow: Record<string, unknown> | null = null;
+const fromFn = vi.fn((table: string) => {
+  if (table === 'cosmetic_ingredients') {
+    return {
+      select: () => ({ limit: () => Promise.resolve({ data: cosmeticRows, error: null }) }),
+    };
+  }
+  const row = table === 'personal_color_assessments' ? personalColorRow : null;
+  return {
+    select: () => ({
+      eq: () => ({
+        order: () => ({
+          limit: () => ({ single: () => Promise.resolve({ data: row, error: null }) }),
+        }),
+      }),
+    }),
+  };
+});
 
 vi.mock('@/lib/supabase/server', () => ({
   createClerkSupabaseClient: () => ({ from: fromFn }),
@@ -52,6 +67,7 @@ const ingredients = [
 describe('POST /api/scan/analyze', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    personalColorRow = null;
     vi.mocked(auth).mockResolvedValue({ userId: null } as never);
   });
 
@@ -86,5 +102,17 @@ describe('POST /api/scan/analyze', () => {
     const retinol = data.timelines.find((t: { name: string }) => t.name === '레티놀');
     expect(retinol).toBeDefined();
     expect(retinol.sourceUrl).toMatch(/^https?:\/\//);
+  });
+
+  it('season_subtype을 12톤으로 배선해 HEX 판정에 사용한다', async () => {
+    vi.mocked(auth).mockResolvedValue({ userId: 'user_1' } as never);
+    personalColorRow = { season: 'Summer', undertone: 'Cool', season_subtype: 'mute' };
+
+    const response = await POST(
+      createRequest({ ingredients, category: 'makeup', color: '#708090' })
+    );
+    const data = await response.json();
+
+    expect(data.colorMatch).toMatchObject({ isRecommended: true, matchScore: 95 });
   });
 });

@@ -11,11 +11,14 @@ jest.mock('@clerk/clerk-expo', () => ({
 }));
 
 const mockFetchBriefing = jest.fn();
+const mockClearBriefingCache = jest.fn().mockResolvedValue(undefined);
 jest.mock('@/lib/api/briefing', () => ({
   fetchBriefing: (...args: unknown[]) => mockFetchBriefing(...args),
+  clearBriefingCache: (...args: unknown[]) => mockClearBriefingCache(...args),
 }));
 
 let mockNetworkStatus: 'online' | 'offline' | 'unknown' = 'online';
+let mockUserId: string | null = 'user-a';
 jest.mock('@/lib/offline', () => ({
   useNetworkStatus: () => ({ status: mockNetworkStatus }),
 }));
@@ -27,11 +30,14 @@ import { useBriefing } from '../../hooks/useBriefing';
 describe('useBriefing — getToken 안정 패턴', () => {
   beforeEach(() => {
     mockNetworkStatus = 'online';
+    mockUserId = 'user-a';
     mockFetchBriefing.mockReset();
+    mockClearBriefingCache.mockClear();
     mockFetchBriefing.mockResolvedValue({ data: { hasAnalyses: false }, stale: false });
     // 매 렌더 새 getToken 함수를 반환(참조 불안정 시뮬레이션)
     (useAuth as jest.Mock).mockImplementation(() => ({
       getToken: () => Promise.resolve('mock-token'),
+      userId: mockUserId,
     }));
   });
 
@@ -77,5 +83,32 @@ describe('useBriefing — getToken 안정 패턴', () => {
       await Promise.resolve();
     });
     expect(mockFetchBriefing).toHaveBeenCalledTimes(2);
+  });
+
+  it('계정 전환 첫 렌더부터 A 데이터를 숨기고 A 캐시를 폐기한 뒤 B 데이터만 받는다', async () => {
+    let resolveUserB: ((value: unknown) => void) | undefined;
+    mockFetchBriefing
+      .mockResolvedValueOnce({ data: { date: 'user-a-private' }, stale: false })
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveUserB = resolve;
+          })
+      );
+
+    const { result, rerender } = renderHook(() => useBriefing());
+    await waitFor(() => expect(result.current.data).toEqual({ date: 'user-a-private' }));
+
+    mockUserId = 'user-b';
+    rerender({});
+
+    expect(result.current.data).toBeNull();
+    await waitFor(() => expect(mockClearBriefingCache).toHaveBeenCalledWith('user-a'));
+    expect(mockFetchBriefing).toHaveBeenLastCalledWith('mock-token', 'user-b');
+
+    await act(async () => {
+      resolveUserB?.({ data: { date: 'user-b-fresh' }, stale: false });
+    });
+    expect(result.current.data).toEqual({ date: 'user-b-fresh' });
   });
 });

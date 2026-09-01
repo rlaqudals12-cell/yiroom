@@ -119,8 +119,7 @@ describe('ReportResultLayout', () => {
   });
 
   it('검증된 축의 재현성 문구를 신뢰 영역에만 노출한다', () => {
-    const reproducibilityText =
-      '같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요.';
+    const reproducibilityText = '같은 사진이면 같은 판정을 목표로 합니다.';
     const screen = renderWithTheme(createLayout({ reproducibilityText }));
 
     expect(screen.getByTestId('hair-report-trust-reproducibility')).toBeTruthy();

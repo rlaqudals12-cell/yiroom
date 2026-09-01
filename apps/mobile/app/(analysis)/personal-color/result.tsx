@@ -36,6 +36,11 @@ import {
   PERSONAL_COLOR_REPORT_DATA,
   type PersonalColorReportSeasonInfo,
 } from '@/lib/analysis/personal-color-report-data';
+import {
+  TWELVE_TONE_LABELS,
+  getAdjacentTones,
+  resolveTwelveTone,
+} from '@/lib/analysis/personal-color-v2';
 import { StoredResultError } from '@/lib/analysis/stored-result-loader';
 import {
   getPersonalColorSubtypeLabel,
@@ -51,6 +56,7 @@ import {
 import { downscaleToBase64 } from '@/lib/image/downscale';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
+import { withSubjectParticle } from '@/lib/utils/korean';
 
 const DEFAULT_ERROR_MESSAGE = '분석에 실패했어요.';
 const TONE_EXPLANATION: Record<PersonalColorReportSeasonInfo['tone'], string> = {
@@ -242,6 +248,12 @@ function PersonalColorResultContent(): React.JSX.Element {
     worstColors: result.worstColors.length > 0 ? result.worstColors : fallbackSeason.worstColors,
   };
   const description = result.description || season.description;
+  const twelveTone = resolveTwelveTone(result.season.toLowerCase(), result.seasonSubtype);
+  const adjacentTone = twelveTone ? getAdjacentTones(twelveTone, 1)[0] : undefined;
+  const adjacentToneSentence =
+    twelveTone && adjacentTone
+      ? `현재 판정은 ${TWELVE_TONE_LABELS[twelveTone]}에 가깝고, ${withSubjectParticle(TWELVE_TONE_LABELS[adjacentTone])} 차선이에요.`
+      : null;
   const evidenceRows: { label: string; value: string }[] = [];
   if (!usedFallback) {
     const evidence = result.analysisEvidence;
@@ -335,6 +347,7 @@ function PersonalColorResultContent(): React.JSX.Element {
                 palette={season.bestColors}
                 seasonDescription={`${season.tone === 'warm' ? '웜톤' : '쿨톤'} ${season.subType}`}
                 seasonName={season.name}
+                tone={twelveTone ?? undefined}
                 testID="draping-preview"
               />
             ),
@@ -396,6 +409,9 @@ function PersonalColorResultContent(): React.JSX.Element {
         }
         conclusion={
           <View style={styles.conclusion}>
+            {adjacentToneSentence ? (
+              <ReportTextList items={[adjacentToneSentence]} testID="pc-adjacent-tone" />
+            ) : null}
             <ReportColorBand colors={season.bestColors} testID="pc-best-colors" title="대표 색" />
             {topActions.length > 0 ? (
               <>
@@ -413,7 +429,7 @@ function PersonalColorResultContent(): React.JSX.Element {
         onPrimaryAction={handleProductRecommendation}
         onSaveRetry={() => router.replace('/(analysis)/personal-color')}
         primaryActionText="내 색상에 맞는 제품 보기"
-        reproducibilityText="같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요."
+        reproducibilityText="같은 사진이면 같은 판정을 목표로 합니다."
         retryPath="/(analysis)/personal-color"
         reportTargetId={
           historyId ??

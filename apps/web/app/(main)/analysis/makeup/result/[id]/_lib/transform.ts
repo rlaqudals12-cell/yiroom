@@ -13,6 +13,7 @@ import type {
   MakeupConcernId,
 } from '@/lib/analysis/makeup';
 import type { ColorRecommendation } from '@/lib/mock/makeup-analysis';
+import type { FoundationRecommendation } from '@/lib/mock/personal-color';
 import { UNDERTONES, EYE_SHAPES, LIP_SHAPES, FACE_SHAPES } from '@/lib/analysis/makeup';
 
 // 신뢰도/호환성 수준
@@ -44,6 +45,7 @@ export interface DbMakeupAnalysis {
       compatibility: ReliabilityLevel;
       note: string;
     };
+    foundationRecommendations?: FoundationRecommendation[];
     analysisReliability?: ReliabilityLevel;
     usedMock?: boolean;
     /** 저장 출처 ('integrated' = 통합분석 M-1 composer) */
@@ -94,6 +96,7 @@ export interface MakeupResultView {
     compatibility: 'high' | 'medium' | 'low';
     note: string;
   };
+  foundationRecommendations: FoundationRecommendation[];
   analysisReliability: 'high' | 'medium' | 'low';
   analyzedAt: Date;
   /**
@@ -166,6 +169,7 @@ export function transformDbToResult(dbData: DbMakeupAnalysis): MakeupResultView 
     colorRecommendations: dbData.recommendations?.colors || [],
     makeupTips: dbData.recommendations?.tips || [],
     personalColorConnection: dbData.recommendations?.personalColorConnection,
+    foundationRecommendations: dbData.recommendations?.foundationRecommendations || [],
     analysisReliability:
       dbData.analysis_reliability || dbData.recommendations?.analysisReliability || 'medium',
     analyzedAt: new Date(dbData.created_at),

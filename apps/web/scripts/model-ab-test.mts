@@ -121,7 +121,7 @@ for (const file of faces) {
       };
     });
     await measure(r.makeup, async () => {
-      const m = await analyzeMakeup(face);
+      const m = await analyzeMakeup({ imageBase64: face });
       return {
         det: `${m.undertone}/${m.faceShape}/${m.eyeShape}/${m.lipShape}`,
         score: m.overallScore,

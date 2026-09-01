@@ -19,6 +19,13 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { drapingPreviewStyles as styles } from './DrapingPreview.styles';
 import { REPORT_COLORS } from './report/tokens';
+import { findNearestOpticalDrape } from '../../lib/analysis/drape-palette';
+import {
+  getToneCompatibility,
+  type ToneColorCompatibility,
+  type TwelveTone,
+} from '../../lib/analysis/personal-color-v2';
+import { hexToLab } from '../../lib/color';
 import { getKoreanColorName } from '../../lib/utils/color-names';
 
 /** 색천 최대 불투명도 — 좁은 밴드를 채워 '천' 느낌 */
@@ -32,6 +39,18 @@ const OBSERVE_HINT = '얼굴 혈색·눈밑 그늘·윤곽이 색에 따라 어�
 
 const BEST_LABEL = '베스트';
 const AVOID_LABEL = '피해야 할 색';
+
+const GRADE_LABELS: Record<ToneColorCompatibility['grade'], string> = {
+  perfect: '매우 잘 어울려요',
+  good: '잘 어울려요',
+  neutral: '무난해요',
+  poor: '덜 어울려요',
+  avoid: '피하는 편이 좋아요',
+};
+
+function isFullHex(value: string | undefined): value is string {
+  return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
+}
 
 /** HEX(#RGB·#RRGGBB) → rgba 문자열. */
 function withAlpha(hex: string, alpha: number): string {
@@ -62,6 +81,8 @@ interface DrapeFigureProps {
   captionStrong: boolean;
   selectedBorderColor: string;
   onImageError: () => void;
+  assessment: ToneColorCompatibility | null;
+  opticalReferenceName: string | null;
 }
 
 /** 사진 1장 + 하단 색천 + 색 스와치 (베스트/회피 각 1열) */
@@ -77,6 +98,8 @@ function DrapeFigure({
   captionStrong,
   selectedBorderColor,
   onImageError,
+  assessment,
+  opticalReferenceName,
 }: DrapeFigureProps): React.JSX.Element {
   const hex = paletteColors[Math.min(selected, paletteColors.length - 1)];
   const colorName = getKoreanColorName(hex);
@@ -113,6 +136,18 @@ function DrapeFigure({
       >
         {caption}
       </Text>
+      {assessment ? (
+        <>
+          <Text style={styles.grade} testID={`draping-grade-${tone}`}>
+            {GRADE_LABELS[assessment.grade]}
+          </Text>
+          {opticalReferenceName ? (
+            <Text style={styles.grade} testID={`draping-optical-reference-${tone}`}>
+              가장 가까운 표준 색천: {opticalReferenceName}
+            </Text>
+          ) : null}
+        </>
+      ) : null}
 
       {/* 색 스와치 — 탭해서 다른 진단 색으로 교체 */}
       <View style={styles.swatchRow} accessibilityRole="radiogroup" accessibilityLabel={label}>
@@ -151,6 +186,8 @@ interface DrapingPreviewProps {
   seasonName?: string;
   /** 시즌 설명 */
   seasonDescription?: string;
+  /** 저장된 12톤 판정이 있을 때만 색천별 적합도를 계산한다. */
+  tone?: TwelveTone;
   /** 사진 최대 높이 (좁은 화면에서는 폭에 맞춰 3:4로 줄어든다) */
   imageHeight?: number;
   style?: ViewStyle;
@@ -165,6 +202,7 @@ export function DrapingPreview({
   avoidPalette = [],
   seasonName,
   seasonDescription,
+  tone,
   imageHeight = 300,
   style,
   testID = 'draping-preview',
@@ -173,6 +211,32 @@ export function DrapingPreview({
   const [bestIndex, setBestIndex] = useState(0);
   const [avoidIndex, setAvoidIndex] = useState(0);
   const [imageFailed, setImageFailed] = useState(false);
+  const selectedBestHex = palette[Math.min(bestIndex, Math.max(0, palette.length - 1))];
+  const selectedAvoidHex = avoidPalette[Math.min(avoidIndex, Math.max(0, avoidPalette.length - 1))];
+  const bestAssessment =
+    tone && isFullHex(selectedBestHex)
+      ? getToneCompatibility(tone, hexToLab(selectedBestHex))
+      : null;
+  const avoidAssessment =
+    tone && isFullHex(selectedAvoidHex)
+      ? getToneCompatibility(tone, hexToLab(selectedAvoidHex))
+      : null;
+  const bestOpticalReference = isFullHex(selectedBestHex)
+    ? findNearestOpticalDrape(selectedBestHex)
+    : null;
+  const avoidOpticalReference = isFullHex(selectedAvoidHex)
+    ? findNearestOpticalDrape(selectedAvoidHex)
+    : null;
+  const comparisonVerdict = (() => {
+    if (!bestAssessment || !avoidAssessment || !selectedBestHex || !selectedAvoidHex) return null;
+    if (bestAssessment.score === avoidAssessment.score) {
+      return '왼쪽과 오른쪽 색의 12톤 적합도가 비슷해요.';
+    }
+    const winner = bestAssessment.score > avoidAssessment.score ? '왼쪽' : '오른쪽';
+    const winnerHex =
+      bestAssessment.score > avoidAssessment.score ? selectedBestHex : selectedAvoidHex;
+    return `${winner} ${getKoreanColorName(winnerHex)} 쪽이 진단된 12톤에 더 가까워요.`;
+  })();
 
   useEffect(() => {
     setImageFailed(false);
@@ -230,6 +294,12 @@ export function DrapingPreview({
         {OBSERVE_HINT}
       </Text>
 
+      {comparisonVerdict ? (
+        <Text style={styles.verdict} testID="draping-verdict">
+          {comparisonVerdict}
+        </Text>
+      ) : null}
+
       {/* 베스트 / 회피 병치 비교 */}
       <View style={styles.compareRow}>
         <DrapeFigure
@@ -244,6 +314,8 @@ export function DrapingPreview({
           captionStrong
           selectedBorderColor={REPORT_COLORS.ink}
           onImageError={() => setImageFailed(true)}
+          assessment={bestAssessment}
+          opticalReferenceName={bestOpticalReference?.name ?? null}
         />
         {avoidPalette.length > 0 && (
           <DrapeFigure
@@ -258,6 +330,8 @@ export function DrapingPreview({
             captionStrong={false}
             selectedBorderColor={REPORT_COLORS.mutedInk}
             onImageError={() => setImageFailed(true)}
+            assessment={avoidAssessment}
+            opticalReferenceName={avoidOpticalReference?.name ?? null}
           />
         )}
       </View>

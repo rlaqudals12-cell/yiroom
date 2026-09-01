@@ -317,7 +317,7 @@ describe('POST /api/analyze/makeup', () => {
   });
 
   describe('Mock 분석', () => {
-    it('useMock=true이면 Mock 분석을 사용한다', async () => {
+    it('저장 퍼컬이 없고 useMock=true이면 시즌을 지어내지 않고 시드 폴백을 사용한다', async () => {
       const response = await POST(
         createMockPostRequest({
           imageBase64: 'data:image/jpeg;base64,/9j/test',
@@ -332,6 +332,7 @@ describe('POST /api/analyze/makeup', () => {
       expect(generateMockMakeupAnalysisResult).toHaveBeenCalledWith({
         seed: buildFallbackSeed('user_test123', 'makeup', 'data:image/jpeg;base64,/9j/test'),
       });
+      expect(json.result.foundationRecommendations).toBeUndefined();
       expect(analyzeMakeup).not.toHaveBeenCalled();
     });
 
@@ -349,6 +350,43 @@ describe('POST /api/analyze/makeup', () => {
       });
       expect(analyzeMakeup).not.toHaveBeenCalled();
     });
+
+    it.each(['usedMock', 'usedFallback'] as const)(
+      '저장 PC가 예시 결과(%s=true)이면 메이크업 입력과 파운데이션 처방에 사용하지 않는다',
+      async (fallbackKey) => {
+        const insert = vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: mockDbResult, error: null }),
+          }),
+        });
+        mockSupabase.from = vi.fn().mockImplementation((table: string) => {
+          if (table === 'personal_color_assessments') {
+            return {
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockReturnThis(),
+              order: vi.fn().mockReturnThis(),
+              limit: vi.fn().mockReturnThis(),
+              single: vi.fn().mockResolvedValue({
+                data: { season: 'Summer', image_analysis: { [fallbackKey]: true } },
+                error: null,
+              }),
+            };
+          }
+          if (table === 'makeup_analyses') return { insert };
+          throw new Error(`Unexpected table: ${table}`);
+        });
+
+        const imageBase64 = `data:image/jpeg;base64,/9j/${fallbackKey}`;
+        const response = await POST(createMockPostRequest({ imageBase64, useMock: true }));
+        const json = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(generateMockMakeupAnalysisResult).toHaveBeenCalledWith({
+          seed: buildFallbackSeed('user_test123', 'makeup', imageBase64),
+        });
+        expect(json.result.foundationRecommendations).toBeUndefined();
+      }
+    );
   });
 
   describe('이미지 저장 동의', () => {
@@ -410,12 +448,86 @@ describe('POST /api/analyze/makeup', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(false);
-      expect(analyzeMakeup).toHaveBeenCalledWith('data:image/jpeg;base64,/9j/test');
+      expect(analyzeMakeup).toHaveBeenCalledWith({
+        imageBase64: 'data:image/jpeg;base64,/9j/test',
+        personalColorSeason: undefined,
+      });
       expect(json.result.undertone).toBe('warm');
     });
 
-    it('Gemini 분석 실패 시 Mock으로 폴백한다', async () => {
+    it('최신 저장 퍼스널컬러를 AI 입력과 기존 파운데이션 처방에 연결한다', async () => {
+      const insert = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: mockDbResult, error: null }),
+        }),
+      });
+      mockSupabase.from = vi.fn().mockImplementation((table: string) => {
+        if (table === 'personal_color_assessments') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({ data: { season: 'Summer' }, error: null }),
+          };
+        }
+        if (table === 'makeup_analyses') return { insert };
+        throw new Error(`Unexpected table: ${table}`);
+      });
+
+      const response = await POST(
+        createMockPostRequest({ imageBase64: 'data:image/jpeg;base64,/9j/pc-linked' })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(analyzeMakeup).toHaveBeenCalledWith({
+        imageBase64: 'data:image/jpeg;base64,/9j/pc-linked',
+        personalColorSeason: 'summer',
+      });
+      expect(json.result.personalColorConnection.season).toBe('summer');
+      expect(json.result.foundationRecommendations[0]).toMatchObject({
+        shadeName: '21호 쿨 핑크',
+        brandExample: '에스티로더 더블웨어 1C1',
+        oliveyoungAlt: '클리오 킬커버 파운웨어 02 랑제리',
+      });
+      expect(insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recommendations: expect.objectContaining({
+            foundationRecommendations: expect.arrayContaining([
+              expect.objectContaining({ shadeName: '21호 쿨 핑크' }),
+            ]),
+          }),
+        })
+      );
+    });
+
+    it('Gemini 분석 실패 시 저장 퍼컬을 폴백 추천·연결·호수 처방에 함께 반영한다', async () => {
+      const actualMakeupModule = await vi.importActual<typeof import('@/lib/mock/makeup-analysis')>(
+        '@/lib/mock/makeup-analysis'
+      );
+      vi.mocked(generateMockMakeupAnalysisResult).mockImplementation(
+        actualMakeupModule.generateMockMakeupAnalysisResult
+      );
       vi.mocked(analyzeMakeup).mockRejectedValue(new Error('Gemini timeout'));
+      const insert = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: mockDbResult, error: null }),
+        }),
+      });
+      mockSupabase.from = vi.fn().mockImplementation((table: string) => {
+        if (table === 'personal_color_assessments') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnThis(),
+            limit: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({ data: { season: 'Summer' }, error: null }),
+          };
+        }
+        if (table === 'makeup_analyses') return { insert };
+        throw new Error(`Unexpected table: ${table}`);
+      });
 
       const response = await POST(
         createMockPostRequest({
@@ -429,6 +541,14 @@ describe('POST /api/analyze/makeup', () => {
       expect(json.usedMock).toBe(true);
       expect(generateMockMakeupAnalysisResult).toHaveBeenCalledWith({
         seed: buildFallbackSeed('user_test123', 'makeup', 'data:image/jpeg;base64,/9j/test'),
+        personalColorSeason: 'summer',
+      });
+      expect(json.result.undertone).toBe('cool');
+      expect(json.result.personalColorConnection.season).toBe('summer');
+      expect(json.result.personalColorConnection.note).toContain('저장된 퍼스널 컬러');
+      expect(json.result.foundationRecommendations[0]).toMatchObject({
+        shadeName: '21호 쿨 핑크',
+        oliveyoungAlt: '클리오 킬커버 파운웨어 02 랑제리',
       });
     });
   });

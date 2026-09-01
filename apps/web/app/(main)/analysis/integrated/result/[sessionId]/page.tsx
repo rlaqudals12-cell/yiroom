@@ -61,6 +61,14 @@ import { ActionPlanCard } from './_components/ActionPlanCard';
 import { CrossInsightsCard } from './_components/CrossInsightsCard';
 import { CurationCard } from './_components/CurationCard';
 import { ShareReportButton } from './_components/ShareReportButton';
+import { validateToneValue, type TwelveTone } from '@/lib/analysis/personal-color-v2';
+
+/** 저장된 시즌·서브타입이 실제 12톤 조합일 때만 드레이핑 판정에 전달한다. */
+function resolveDrapingTone(season: string | undefined, subtype: string): TwelveTone | undefined {
+  if (!season || !subtype) return undefined;
+  const normalizedSubtype = subtype.toLowerCase() === 'mute' ? 'muted' : subtype.toLowerCase();
+  return validateToneValue(`${normalizedSubtype}-${season.toLowerCase()}`) ?? undefined;
+}
 
 /**
  * DB 레코드 → AxisResult 변환 (action-plan 입력용).
@@ -775,6 +783,7 @@ export default async function IntegratedResultPage({
             imageUrl={faceImageUrl}
             bestColors={personaPalette}
             worstColors={personaWorst}
+            tone={resolveDrapingTone(pcData?.season, pcSubtype)}
           />
         )}
 

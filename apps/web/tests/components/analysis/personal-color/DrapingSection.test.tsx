@@ -59,6 +59,35 @@ describe('DrapingSection — 드레이핑 비교(기기 내 캔버스 합성)', 
     expect(screen.getByTestId('draping-observe-hint')).toHaveTextContent('draping.observeHint');
   });
 
+  it('12톤이 있으면 CIE 등급·양쪽 winner와 최근접 광학 색천을 별도 근거로 표시한다', async () => {
+    render(
+      <DrapingSection
+        imageUrl="https://x/sig.jpg"
+        bestColors={[{ hex: '#FF7F50', name: '코랄' }]}
+        worstColors={[{ hex: '#000080', name: '네이비' }]}
+        tone="true-spring"
+      />
+    );
+
+    await waitFor(() => expect(screen.getByTestId('draping-verdict')).toBeInTheDocument());
+    expect(screen.getByTestId('draping-verdict')).toHaveTextContent(/왼쪽|오른쪽/);
+    expect(screen.getByTestId('draping-grade-best')).toHaveAttribute('data-grade', 'perfect');
+    expect(screen.getByTestId('draping-grade-best')).not.toHaveTextContent('표준 색천');
+    expect(screen.getByTestId('draping-optical-reference-best')).toHaveTextContent(
+      '가장 가까운 표준 색천:'
+    );
+    expect(screen.getByTestId('draping-optical-reference-best')).toHaveAttribute(
+      'data-optical-reflectance'
+    );
+    expect(screen.getByTestId('draping-grade-worst')).toBeInTheDocument();
+  });
+
+  it('12톤이 없으면 적합도 판정을 지어내지 않는다', () => {
+    render(<DrapingSection imageUrl="https://x/sig.jpg" bestColors={BEST} worstColors={WORST} />);
+    expect(screen.queryByTestId('draping-verdict')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('draping-grade-best')).not.toBeInTheDocument();
+  });
+
   it('인쇄물에서 제외된다 (얼굴 사진 0장 계약)', () => {
     render(<DrapingSection imageUrl="https://x/sig.jpg" bestColors={BEST} worstColors={WORST} />);
     expect(screen.getByTestId('draping-section')).toHaveAttribute('data-print-hide');

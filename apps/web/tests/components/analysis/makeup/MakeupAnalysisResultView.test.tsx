@@ -142,4 +142,28 @@ describe('MakeupAnalysisResultView', () => {
       expect(screen.queryByTestId('makeup-shelf-badge-lip')).not.toBeInTheDocument();
     });
   });
+
+  it('저장된 퍼스널컬러의 브랜드 호수와 올리브영 대안을 함께 표시한다', () => {
+    render(
+      <MakeupAnalysisResultView
+        result={{
+          ...result,
+          foundationRecommendations: [
+            {
+              shadeName: '21호 웜 베이지',
+              undertone: 'warm',
+              brandExample: '에스티로더 더블웨어 2W1',
+              easyDescription: '노란 기가 도는 밝은 베이지 (피치빛)',
+              oliveyoungAlt: '클리오 킬커버 파운웨어 03 린넨',
+            },
+          ],
+        }}
+        onRetry={() => {}}
+      />
+    );
+
+    expect(screen.getByText('추천 파운데이션')).toBeInTheDocument();
+    expect(screen.getByText('에스티로더 더블웨어 2W1')).toBeInTheDocument();
+    expect(screen.getByText(/올리브영: 클리오 킬커버 파운웨어 03 린넨/)).toBeInTheDocument();
+  });
 });

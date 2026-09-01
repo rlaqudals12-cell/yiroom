@@ -109,12 +109,101 @@ describe('analyzeCompatibility', () => {
     expect(result.ingredientAnalysis.caution.length).toBeGreaterThan(0);
   });
 
-  it('색조 제품에 퍼스널 컬러 매칭', async () => {
+  it('영문 색 이름은 HEX 필요 고지만 제공하고 점수·overall에 영향을 주지 않는다', async () => {
     const result = await analyzeCompatibility(mockIngredients, 'makeup', 'coral', mockUserAnalysis);
+    const baseline = await analyzeCompatibility(
+      mockIngredients,
+      'makeup',
+      undefined,
+      mockUserAnalysis
+    );
 
-    expect(result.colorMatch).toBeDefined();
-    // 쿨톤에 coral(웜 컬러)은 비추천
-    expect(result.colorMatch?.isRecommended).toBe(false);
+    expect(result.colorMatch?.reason).toContain('색상 HEX');
+    expect(result.colorMatch?.matchScore).toBeUndefined();
+    expect(result.colorMatch?.isRecommended).toBeUndefined();
+    expect(result.overallScore).toBe(baseline.overallScore);
+  });
+
+  it('한국어 색상명도 정성 참고만 제공하고 추천 점수를 만들지 않는다', async () => {
+    const warmUser: UserAnalysisData = {
+      personalColor: { seasonType: 'spring', tone: 'warm' },
+    };
+    const result = await analyzeCompatibility(mockIngredients, 'makeup', '코랄 레드', warmUser);
+    expect(result.colorMatch?.reason).toContain('웜 계열 색 이름');
+    expect(result.colorMatch?.reason).toContain('색상 HEX');
+    expect(result.colorMatch?.matchScore).toBeUndefined();
+    expect(result.colorMatch?.isRecommended).toBeUndefined();
+  });
+
+  it('12톤과 HEX가 있으면 키워드보다 CIEDE2000 엔진을 우선한다', async () => {
+    const userWithTwelveTone: UserAnalysisData = {
+      personalColor: {
+        seasonType: 'summer',
+        tone: 'cool',
+        twelveTone: 'true-summer',
+      },
+    };
+    const result = await analyzeCompatibility(
+      mockIngredients,
+      'makeup',
+      '#87CEEB',
+      userWithTwelveTone
+    );
+    const baseline = await analyzeCompatibility(
+      mockIngredients,
+      'makeup',
+      undefined,
+      userWithTwelveTone
+    );
+    expect(result.colorMatch).toMatchObject({
+      isRecommended: true,
+      matchScore: 95,
+      reason: '이 색상은 당신의 퍼스널 컬러와 완벽하게 어울립니다.',
+    });
+    expect(result.overallScore).toBe(baseline.overallScore + 5);
+  });
+
+  it('3자리 HEX는 colorMatch와 종합점수 보너스를 만들지 않는다', async () => {
+    const userWithTwelveTone: UserAnalysisData = {
+      personalColor: {
+        seasonType: 'summer',
+        tone: 'cool',
+        twelveTone: 'true-summer',
+      },
+    };
+    const result = await analyzeCompatibility(mockIngredients, 'makeup', '#abc', {
+      ...userWithTwelveTone,
+    });
+    const baseline = await analyzeCompatibility(
+      mockIngredients,
+      'makeup',
+      undefined,
+      userWithTwelveTone
+    );
+    expect(result.colorMatch).toBeUndefined();
+    expect(result.overallScore).toBe(baseline.overallScore);
+  });
+
+  it('정확한 HEX라도 12톤이 없으면 colorMatch와 보너스를 만들지 않는다', async () => {
+    const result = await analyzeCompatibility(mockIngredients, 'lip', '#87CEEB', mockUserAnalysis);
+    const baseline = await analyzeCompatibility(
+      mockIngredients,
+      'lip',
+      undefined,
+      mockUserAnalysis
+    );
+    expect(result.colorMatch).toBeUndefined();
+    expect(result.overallScore).toBe(baseline.overallScore);
+  });
+
+  it('미분류 색 이름은 colorMatch를 만들지 않는다', async () => {
+    const result = await analyzeCompatibility(
+      mockIngredients,
+      'lip',
+      '루비우 13호',
+      mockUserAnalysis
+    );
+    expect(result.colorMatch).toBeUndefined();
   });
 
   it('비색조 제품은 컬러 매칭 없음', async () => {

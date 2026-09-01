@@ -93,6 +93,15 @@ const RESULT = {
     contour: '얼굴 외곽에 옅은 음영을 넣어 주세요.',
   },
   bestColors: ['#AABBCC', '#DDEEFF', '#CC99BB', '#778899'],
+  foundationRecommendations: [
+    {
+      shadeName: '21호 쿨 핑크',
+      undertone: 'cool',
+      brandExample: '에스티로더 더블웨어 1C1',
+      easyDescription: '핑크 기가 도는 밝은 베이지 (로즈빛)',
+      oliveyoungAlt: '클리오 킬커버 파운웨어 02 랑제리',
+    },
+  ],
   usedMock: false,
   dbSaveFailed: false,
 };
@@ -152,5 +161,15 @@ describe('메이크업 결과 진단지 표현', () => {
 
     await waitFor(() => expect(screen.getByTestId('makeup-analysis-result')).toBeTruthy());
     expect(screen.queryByTestId('makeup-best-colors')).toBeNull();
+  });
+
+  it('퍼스널컬러 기반 파운데이션 브랜드 호수와 올리브영 대안을 접힌 처방으로 표시한다', async () => {
+    const screen = renderWithTheme(<MakeupResultScreen />);
+
+    await waitFor(() => expect(screen.getByTestId('makeup-analysis-result')).toBeTruthy());
+    fireEvent.press(screen.getByTestId('makeup-analysis-result-section-foundation-trigger'));
+
+    expect(screen.getByText(/에스티로더 더블웨어 1C1/)).toBeTruthy();
+    expect(screen.getByText(/올리브영: 클리오 킬커버 파운웨어 02 랑제리/)).toBeTruthy();
   });
 });

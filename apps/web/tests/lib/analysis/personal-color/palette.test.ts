@@ -13,6 +13,7 @@ import {
   getAllTonePalettes,
 } from '@/lib/analysis/personal-color/palette';
 import type { LabColor, TwelveTone } from '@/lib/analysis/personal-color/types';
+import { hexToLab } from '@/lib/color';
 
 // =============================================================================
 // 테스트
@@ -101,6 +102,10 @@ describe('lib/analysis/personal-color/palette', () => {
   // ---------------------------------------------------------------------------
 
   describe('getToneCompatibility', () => {
+    it('모바일 패리티 fixture: true-summer 스카이블루는 95/perfect다', () => {
+      const result = getToneCompatibility('true-summer', hexToLab('#87CEEB'));
+      expect(result).toMatchObject({ score: 95, grade: 'perfect' });
+    });
     it('should return high score for matching color', () => {
       // light-spring의 bestColor 중 하나: 파파야휩 #FFEFD5
       // Lab 값 (대략): L=96, a=2, b=10

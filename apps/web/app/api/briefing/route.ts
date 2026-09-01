@@ -29,6 +29,7 @@ import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { getShelfItems } from '@/lib/scan/product-shelf';
 import { getTodayDailyCapsule } from '@/lib/capsule';
+import { getInventoryItems } from '@/lib/inventory';
 import { normalizeColors } from '@/lib/color/normalize-colors';
 import {
   getCurrentHourInTimezone,
@@ -232,7 +233,12 @@ export async function OPTIONS(): Promise<NextResponse> {
  *     date, timeSlot,
  *     briefing: { greeting, observation?, advice[], closing },
  *     myColors: { analysisId, colors:[{name,hex}] } | null,
- *     todayStyle: { fashionTip, outfit: {baseName, colors:[{hex,role,name}]} | null },
+ *     todayStyle: {
+ *       fashionTip,
+ *       outfit: {baseName, colors:[{hex,role,name}]} | null,
+ *       closetOutfit: {items:[{id,name,imageUrl,role}], warnings:[]} | null,
+ *       closetItemCount: number | null
+ *     },
  *     hasAnalyses
  *   }
  * }
@@ -308,12 +314,14 @@ export async function GET(req?: NextRequest): Promise<NextResponse> {
     // 날씨(서울 기본) → 피부/패션 첫 팁. 실패해도 브리핑은 성립(정직성 가드)
     let weatherSkinTip: string | null = null;
     let weatherFashionTip: string | null = null;
+    let weatherTemp: number | null = null;
     try {
       const weather = await getCurrentWeather();
       if (weather) {
         const advice = generateEnvironmentAdvice(weather);
         weatherSkinTip = advice.skin[0] ?? null;
         weatherFashionTip = advice.fashion[0] ?? null;
+        weatherTemp = weather.temp;
       }
     } catch {
       /* 날씨 조회 실패 — 팁 없이 진행 */
@@ -326,9 +334,12 @@ export async function GET(req?: NextRequest): Promise<NextResponse> {
     const date = getDateKeyInTimezone(DEFAULT_TIMEZONE);
 
     // "기억한다" 화법 입력 — 제품함 후속 + 오늘 캡슐 우선(둘 다 없으면 미주입, 정직성 가드)
-    const [recentProduct, capsulePriority] = await Promise.all([
+    const [recentProduct, capsulePriority, closetItems] = await Promise.all([
       collectRecentProduct(supabase, userId, now),
       collectCapsulePriority(userId),
+      // repository가 비공개 버킷 경로를 서명 URL로 바꾸는 유일한 읽기 경계다.
+      // 조회 실패는 undefined로 두어 실제 빈 옷장(0벌)처럼 안내하지 않는다.
+      getInventoryItems(userId, { category: 'closet' }).catch(() => undefined),
     ]);
 
     const payload = assembleBriefing(analyses, {
@@ -337,6 +348,8 @@ export async function GET(req?: NextRequest): Promise<NextResponse> {
       hour,
       weatherSkinTip,
       weatherFashionTip,
+      weatherTemp,
+      closetItems,
       recentProduct,
       capsulePriority,
     });

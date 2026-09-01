@@ -116,6 +116,16 @@ describe('fetchScanUserAnalysis', () => {
     expect(result.personalColor).toEqual({ seasonType: 'summer', tone: 'cool' });
   });
 
+  it('season_subtype을 12톤으로 정규화해 스캔 판정에 전달한다', async () => {
+    const client = profileClient(null, { season: 'Summer', season_subtype: 'mute' });
+    const result = await fetchScanUserAnalysis(client, 'user_1');
+    expect(result.personalColor).toEqual({
+      seasonType: 'summer',
+      tone: 'cool',
+      twelveTone: 'muted-summer',
+    });
+  });
+
   it('데이터가 없으면 빈 프로필 (지어내지 않음)', async () => {
     const client = profileClient(null, null);
     const result = await fetchScanUserAnalysis(client, 'user_1');

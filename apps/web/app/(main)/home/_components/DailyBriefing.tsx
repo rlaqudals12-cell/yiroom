@@ -17,10 +17,12 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useUser } from '@clerk/nextjs';
 import { MessageCircle, Shirt, ChevronRight, ArrowRight } from 'lucide-react';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
 import type { DailyItem } from '@/types/capsule';
+import type { InventoryItem } from '@/types/inventory';
 import { PAPER_GRAIN_URI } from '@/components/share/paper-grain';
 import type { OutfitColor, OutfitRole } from '@/lib/color/daily-outfit';
 import { selectCurrentCapsuleAction } from '@/lib/capsule/time-of-day';
@@ -65,6 +67,8 @@ interface BriefingWeather {
   advice: EnvironmentAdvice | null;
   /** 조회 전이면 null. 'default'면 서울 기본 좌표 → 문구에 "서울 기준" 고지 */
   locationSource: WeatherLocationSource | null;
+  /** 보유 의류의 계절·아우터 선택에 쓰는 실측 기온 */
+  temp: number | null;
 }
 
 /**
@@ -75,7 +79,11 @@ interface BriefingWeather {
  * "현재 위치 날씨"라고 잘못 말하게 된다.
  */
 function useEnvironmentAdvice(): BriefingWeather {
-  const [weather, setWeather] = useState<BriefingWeather>({ advice: null, locationSource: null });
+  const [weather, setWeather] = useState<BriefingWeather>({
+    advice: null,
+    locationSource: null,
+    temp: null,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -85,6 +93,7 @@ function useEnvironmentAdvice(): BriefingWeather {
         advice: generateEnvironmentAdvice(data),
         // 구버전 캐시(필드 없음)는 서울 기본값으로 간주 — 위치를 과장하지 않는다
         locationSource: data.locationSource ?? 'default',
+        temp: data.temp,
       });
     }
 
@@ -290,6 +299,46 @@ function useBriefingMemory(hasUser: boolean): BriefingMemory {
   return memory;
 }
 
+/**
+ * 웹 홈의 보유 의류 입력 — 기존 인벤토리 API가 비공개 이미지 서명까지 맡는다.
+ * undefined는 조회 전/실패로 유지해 실제 빈 옷장처럼 안내하지 않는다.
+ */
+function useBriefingCloset(userId: string | undefined): InventoryItem[] | undefined {
+  const [result, setResult] = useState<{ userId: string; items: InventoryItem[] } | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    // 왜: Clerk 활성 세션이 바뀌면 이전 사용자의 비공개 옷 사진을 한 프레임도 재사용하지 않는다.
+    setResult(undefined);
+    if (!userId) return;
+    const ownerId = userId;
+    let cancelled = false;
+    async function load(): Promise<void> {
+      try {
+        const response = await fetch('/api/inventory?category=closet');
+        if (!response.ok) return;
+        const json = (await response.json()) as {
+          success?: boolean;
+          items?: InventoryItem[];
+        };
+        if (!cancelled && json.success === true && Array.isArray(json.items)) {
+          setResult({ userId: ownerId, items: json.items });
+        }
+      } catch {
+        /* 조회 실패 — 팔레트 폴백을 유지하고 빈 옷장이라고 말하지 않는다 */
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  // effect가 실행되기 전 렌더에서도 소유자가 다르면 이전 결과를 즉시 숨긴다.
+  return result && result.userId === userId ? result.items : undefined;
+}
+
 interface DailyBriefingProps {
   analyses: AnalysisSummary[];
 }
@@ -297,8 +346,13 @@ interface DailyBriefingProps {
 export default function DailyBriefing({ analyses }: DailyBriefingProps) {
   const { user } = useUser();
   const router = useRouter();
-  const { advice: env, locationSource: weatherLocationSource } = useEnvironmentAdvice();
+  const {
+    advice: env,
+    locationSource: weatherLocationSource,
+    temp: weatherTemp,
+  } = useEnvironmentAdvice();
   const memory = useBriefingMemory(!!user);
+  const closetItems = useBriefingCloset(user?.id);
   const [question, setQuestion] = useState('');
   // 제품함 후속 응답을 이 세션에서 이미 보냈는지 — 낙관적 "기억해둘게요" 표시용
   const [shelfFeedbackSaved, setShelfFeedbackSaved] = useState(false);
@@ -314,11 +368,13 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
         userName,
         weatherSkinTip: env?.skin?.[0] ?? null,
         weatherFashionTip: env?.fashion?.[0] ?? null,
+        weatherTemp,
+        closetItems,
         // "기억한다" 화법(제품함 후속·오늘 캡슐 우선) — 모바일 /api/briefing과 정합
         recentProduct: memory.recentProduct,
         capsulePriority: memory.capsulePriority,
       }),
-    [analyses, userName, env, memory]
+    [analyses, userName, env, weatherTemp, closetItems, memory]
   );
 
   const { briefing, myColors } = payload;
@@ -337,7 +393,12 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
     briefingAttributes.some((attribute) => attribute.rationale !== null);
 
   const dailyOutfit = payload.todayStyle.outfit;
+  const closetOutfit = payload.todayStyle.closetOutfit;
+  const closetItemCount = payload.todayStyle.closetItemCount;
+  const closetNeedsMoreItems = payload.todayStyle.closetNeedsMoreItems === true;
   const fashionTip = payload.todayStyle.fashionTip;
+  const outfitHref =
+    closetItemCount === 0 || closetNeedsMoreItems ? '/closet/add' : '/closet/recommend';
   // 배색 밴드 세그먼트(폭 비율 결합) — 밴드·범례·캡션·aria-label이 같은 배열을 공유
   const outfitBand = useMemo(
     () => (dailyOutfit ? orderOutfitBand(dailyOutfit.colors) : []),
@@ -568,11 +629,48 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
         <section aria-label="오늘의 코디" data-testid="briefing-style">
           <h3 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">오늘의 코디</h3>
           <Link
-            href="/closet/recommend"
+            href={outfitHref}
             className="block rounded-2xl border border-border bg-card p-4 transition-colors hover:border-foreground/30"
           >
-            {/* 오늘의 배색 (베스트 컬러가 있을 때만 — 결정론). 착장 면적 비율 배색 바 */}
-            {dailyOutfit && (
+            {/* 보유 의류가 있으면 기존 추천 엔진이 고른 실제 사진을 우선한다. */}
+            {closetOutfit && closetOutfit.items.length > 0 ? (
+              <div className="mb-3" data-testid="briefing-closet-outfit">
+                <div
+                  className={`grid gap-2 ${
+                    closetOutfit.items.length === 3 ? 'grid-cols-3' : 'grid-cols-4'
+                  }`}
+                >
+                  {closetOutfit.items.map((item) => (
+                    <div key={item.id} className="min-w-0">
+                      <div className="relative aspect-square overflow-hidden rounded-lg border border-border bg-secondary">
+                        <Image
+                          src={item.imageUrl}
+                          alt={`${item.role} ${item.name}`}
+                          fill
+                          // 비공개 signed URL을 전역 30일 optimizer 캐시에 남기지 않는다.
+                          unoptimized
+                          sizes="(max-width: 768px) 25vw, 144px"
+                          className="object-cover"
+                          data-testid="briefing-closet-outfit-image"
+                        />
+                      </div>
+                      <p className="mt-1 truncate text-[11px] text-foreground/80">
+                        {item.role} · {item.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                {closetOutfit.warnings.map((warning) => (
+                  <p
+                    key={warning}
+                    className="mt-2 text-xs leading-relaxed text-muted-foreground"
+                    data-testid="briefing-closet-warning"
+                  >
+                    {warning}
+                  </p>
+                ))}
+              </div>
+            ) : dailyOutfit ? (
               <div className="mb-3" data-testid="briefing-outfit-palette">
                 {outfitConclusion && (
                   <p
@@ -623,6 +721,22 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                   ))}
                 </div>
               </div>
+            ) : null}
+            {closetItemCount === 0 && (
+              <p
+                className="mb-3 text-sm leading-relaxed text-muted-foreground"
+                data-testid="briefing-closet-empty"
+              >
+                옷을 등록하면 내 옷으로 오늘의 코디를 준비해드려요.
+              </p>
+            )}
+            {closetNeedsMoreItems && (
+              <p
+                className="mb-3 text-sm leading-relaxed text-muted-foreground"
+                data-testid="briefing-closet-incomplete"
+              >
+                오늘의 코디를 완성하려면 옷을 조금 더 등록해주세요.
+              </p>
             )}
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
@@ -635,7 +749,10 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                   className="text-sm leading-snug text-foreground/90"
                   data-testid="briefing-weather-tip"
                 >
-                  {fashionTip ?? '오늘의 배색과 코디 조합을 더 자세히 확인해보세요'}
+                  {fashionTip ??
+                    (closetOutfit
+                      ? '내 옷으로 준비한 오늘의 코디예요'
+                      : '오늘의 배색과 코디 조합을 더 자세히 확인해보세요')}
                   {fashionTip && weatherLocationSource === 'default' && (
                     <span
                       className="ml-1.5 text-xs text-muted-foreground"
@@ -645,7 +762,9 @@ export default function DailyBriefing({ analyses }: DailyBriefingProps) {
                     </span>
                   )}
                 </p>
-                <p className="mt-0.5 text-xs font-medium text-foreground/70">코디 추천 받기</p>
+                <p className="mt-0.5 text-xs font-medium text-foreground/70">
+                  {closetItemCount === 0 || closetNeedsMoreItems ? '옷 등록하기' : '코디 추천 받기'}
+                </p>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             </div>

@@ -6,6 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import { assembleBriefing } from '@/lib/briefing';
 import type { AnalysisSummary } from '@/hooks/useAnalysisStatus';
+import type { ClothingCategory, InventoryItem, Season } from '@/types/inventory';
 
 const MORNING = new Date('2026-07-10T09:00:00');
 
@@ -15,8 +16,40 @@ function pc(bestColors?: Array<{ name: string; hex: string }>): AnalysisSummary 
     type: 'personal-color',
     createdAt: MORNING,
     summary: '봄 웜톤',
+    seasonType: 'spring',
     ...(bestColors ? { bestColors } : {}),
   } as AnalysisSummary;
+}
+
+function closetItem(
+  id: string,
+  subCategory: ClothingCategory,
+  seasons: Season[] = ['spring', 'summer', 'autumn', 'winter']
+): InventoryItem {
+  return {
+    id,
+    clerkUserId: 'user-1',
+    category: 'closet',
+    subCategory,
+    name: `${subCategory}-${id}`,
+    imageUrl: `https://signed.example/${id}.jpg?token=private`,
+    originalImageUrl: null,
+    brand: null,
+    tags: [],
+    isFavorite: false,
+    useCount: 0,
+    lastUsedAt: null,
+    expiryDate: null,
+    metadata: {
+      color: ['코랄'],
+      season: seasons,
+      occasion: [],
+      pattern: 'solid',
+      material: [],
+    },
+    createdAt: '2026-07-01T00:00:00.000Z',
+    updatedAt: '2026-07-01T00:00:00.000Z',
+  };
 }
 
 describe('assembleBriefing', () => {
@@ -46,6 +79,97 @@ describe('assembleBriefing', () => {
     expect(p.myColors).toBeNull();
     expect(p.todayStyle.outfit).toBeNull();
     expect(p.hasAnalyses).toBe(true);
+  });
+
+  it('옷장이 있으면 기존 매처가 고른 서명 사진 3~4장을 브리핑 코디로 투영한다', () => {
+    const closetItems = [
+      closetItem('top-1', 'top'),
+      closetItem('bottom-1', 'bottom'),
+      closetItem('shoes-1', 'shoes'),
+      closetItem('bag-1', 'bag'),
+    ];
+
+    const p = assembleBriefing([pc([{ name: '코랄', hex: '#FF7F50' }])], {
+      now: MORNING,
+      weatherTemp: 22,
+      closetItems,
+    });
+
+    expect(p.todayStyle.closetItemCount).toBe(4);
+    expect(p.todayStyle.closetOutfit?.items).toHaveLength(4);
+    expect(p.todayStyle.closetOutfit?.items.map((item) => item.role)).toEqual([
+      '상의',
+      '하의',
+      '신발',
+      '가방',
+    ]);
+    expect(p.todayStyle.closetOutfit?.items[0].imageUrl).toContain('token=private');
+  });
+
+  it('실제 빈 옷장은 0벌로 표식하되 기존 퍼스널컬러 팔레트를 유지한다', () => {
+    const p = assembleBriefing([pc([{ name: '코랄', hex: '#FF7F50' }])], {
+      now: MORNING,
+      closetItems: [],
+    });
+
+    expect(p.todayStyle.closetItemCount).toBe(0);
+    expect(p.todayStyle.closetOutfit).toBeNull();
+    expect(p.todayStyle.outfit?.colors).toHaveLength(5);
+  });
+
+  it('실제 추천 슬롯이 3개보다 적으면 사진을 복제하지 않고 구성 부족으로 폴백한다', () => {
+    const p = assembleBriefing([pc([{ name: '코랄', hex: '#FF7F50' }])], {
+      now: MORNING,
+      closetItems: [closetItem('top-only', 'top'), closetItem('bottom-only', 'bottom')],
+    });
+
+    expect(p.todayStyle.closetItemCount).toBe(2);
+    expect(p.todayStyle.closetOutfit).toBeNull();
+    expect(p.todayStyle.closetNeedsMoreItems).toBe(true);
+    expect(p.todayStyle.outfit?.colors).toHaveLength(5);
+  });
+
+  it('서명 실패로 남은 비공개 스토리지 경로는 브리핑 사진에 싣지 않는다', () => {
+    const unsignedTop = {
+      ...closetItem('top-unsigned', 'top'),
+      imageUrl: 'user-1/closet/top-unsigned.jpg',
+    };
+    const p = assembleBriefing([pc()], {
+      now: MORNING,
+      closetItems: [
+        unsignedTop,
+        closetItem('bottom-signed', 'bottom'),
+        closetItem('shoes-signed', 'shoes'),
+        closetItem('bag-signed', 'bag'),
+      ],
+    });
+
+    expect(p.todayStyle.closetOutfit?.items).toHaveLength(3);
+    expect(p.todayStyle.closetOutfit?.items.map((item) => item.imageUrl)).not.toContain(
+      'user-1/closet/top-unsigned.jpg'
+    );
+  });
+
+  it('옷장 조회 입력이 없으면 실패를 빈 옷장으로 가장하지 않는다', () => {
+    const p = assembleBriefing([pc()], { now: MORNING });
+    expect(p.todayStyle.closetItemCount).toBeNull();
+    expect(p.todayStyle.closetOutfit).toBeNull();
+  });
+
+  it('계절 조건을 완화한 코디는 기존 매처의 경고를 보존한다', () => {
+    const winterOnly = [
+      closetItem('top-winter', 'top', ['winter']),
+      closetItem('bottom-winter', 'bottom', ['winter']),
+      closetItem('shoes-winter', 'shoes', ['winter']),
+    ];
+
+    const p = assembleBriefing([pc()], {
+      now: MORNING,
+      weatherTemp: 27,
+      closetItems: winterOnly,
+    });
+
+    expect(p.todayStyle.closetOutfit?.warnings.join(' ')).toContain('계절이 안 맞지만');
   });
 
   it('피부 추이가 있으면 관찰 문장에 근거 수치(±점)를 포함한다', () => {

@@ -8,7 +8,7 @@
 import { useAuth } from '@clerk/clerk-expo';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { fetchBriefing, type BriefingData } from '../lib/api/briefing';
+import { clearBriefingCache, fetchBriefing, type BriefingData } from '../lib/api/briefing';
 import { useNetworkStatus } from '../lib/offline';
 
 export interface UseBriefingResult {
@@ -21,10 +21,13 @@ export interface UseBriefingResult {
 }
 
 export function useBriefing(): UseBriefingResult {
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
   const { status: networkStatus } = useNetworkStatus();
-  const [data, setData] = useState<BriefingData | null>(null);
-  const [stale, setStale] = useState(false);
+  const [briefingResult, setBriefingResult] = useState<{
+    ownerId: string;
+    data: BriefingData;
+    stale: boolean;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -34,6 +37,7 @@ export function useBriefing(): UseBriefingResult {
   const getTokenRef = useRef(getToken);
   getTokenRef.current = getToken;
   const previousNetworkStatusRef = useRef(networkStatus);
+  const previousUserIdRef = useRef(userId);
 
   const refetch = useCallback(() => setReloadKey((k) => k + 1), []);
 
@@ -46,6 +50,15 @@ export function useBriefing(): UseBriefingResult {
   }, [networkStatus, refetch]);
 
   useEffect(() => {
+    const previousUserId = previousUserIdRef.current;
+    previousUserIdRef.current = userId;
+    if (previousUserId && previousUserId !== userId) {
+      // 왜: 로그아웃·계정 전환 뒤 이전 사용자의 비공개 옷 사진 서명 URL을 남기지 않는다.
+      void clearBriefingCache(previousUserId);
+    }
+  }, [userId]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function load(): Promise<void> {
@@ -53,21 +66,20 @@ export function useBriefing(): UseBriefingResult {
       setError(null);
       try {
         const token = await getTokenRef.current();
-        if (!token) {
+        if (!token || !userId) {
           if (!cancelled) {
-            setData(null);
+            setBriefingResult(null);
             setIsLoading(false);
           }
           return;
         }
-        const result = await fetchBriefing(token);
+        const result = await fetchBriefing(token, userId);
         if (!cancelled) {
-          setData(result.data);
-          setStale(result.stale);
+          setBriefingResult({ ownerId: userId, data: result.data, stale: result.stale });
         }
       } catch (e) {
         if (!cancelled) {
-          setData(null);
+          setBriefingResult(null);
           setError(e instanceof Error ? e.message : '브리핑을 불러올 수 없어요.');
         }
       } finally {
@@ -79,7 +91,14 @@ export function useBriefing(): UseBriefingResult {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, userId]);
 
-  return { data, stale, isLoading, error, refetch };
+  const currentResult = briefingResult && briefingResult.ownerId === userId ? briefingResult : null;
+  return {
+    data: currentResult?.data ?? null,
+    stale: currentResult?.stale ?? false,
+    isLoading,
+    error,
+    refetch,
+  };
 }

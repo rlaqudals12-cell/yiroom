@@ -21,6 +21,7 @@ import {
 import { matchTimelines, type IngredientTimeline } from '@/lib/scan/ingredient-timeline';
 import type { ProductIngredient } from '@/types/scan';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { validateToneValue } from '@/lib/analysis/personal-color-v2';
 
 export const maxDuration = 10;
 
@@ -36,6 +37,22 @@ type ScanAnalyzeResponse = CompatibilityResult & {
   regulatory: RegulatoryFlag[];
   timelines: IngredientTimeline[];
 };
+
+function normalizeSeason(value: unknown): 'spring' | 'summer' | 'autumn' | 'winter' | null {
+  if (typeof value !== 'string') return null;
+  const season = value.toLowerCase();
+  return ['spring', 'summer', 'autumn', 'winter'].includes(season)
+    ? (season as 'spring' | 'summer' | 'autumn' | 'winter')
+    : null;
+}
+
+function normalizeTone(value: unknown, season: string): 'warm' | 'cool' {
+  if (typeof value === 'string') {
+    const tone = value.toLowerCase();
+    if (tone === 'warm' || tone === 'cool') return tone;
+  }
+  return season === 'spring' || season === 'autumn' ? 'warm' : 'cool';
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -99,7 +116,7 @@ export async function POST(request: NextRequest) {
           .single(),
         supabase
           .from('personal_color_assessments')
-          .select('season, tone')
+          .select('season, undertone, season_subtype')
           .eq('clerk_user_id', userId)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -115,14 +132,20 @@ export async function POST(request: NextRequest) {
       }
 
       if (colorResult.data) {
-        userAnalysis.personalColor = {
-          seasonType: colorResult.data.season?.toLowerCase() as
-            | 'spring'
-            | 'summer'
-            | 'autumn'
-            | 'winter',
-          tone: colorResult.data.tone?.toLowerCase() as 'warm' | 'cool',
-        };
+        const seasonType = normalizeSeason(colorResult.data.season);
+        if (seasonType) {
+          const rawSubtype =
+            typeof colorResult.data.season_subtype === 'string'
+              ? colorResult.data.season_subtype.toLowerCase()
+              : '';
+          const subtype = rawSubtype === 'mute' ? 'muted' : rawSubtype;
+          const twelveTone = subtype ? validateToneValue(`${subtype}-${seasonType}`) : null;
+          userAnalysis.personalColor = {
+            seasonType,
+            tone: normalizeTone(colorResult.data.undertone, seasonType),
+            ...(twelveTone ? { twelveTone } : {}),
+          };
+        }
       }
     }
 

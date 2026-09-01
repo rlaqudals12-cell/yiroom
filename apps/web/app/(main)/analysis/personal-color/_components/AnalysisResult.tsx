@@ -54,8 +54,16 @@ import {
   TrustFooter,
 } from '@/components/analysis/report';
 import { getRelativeLuminance, hexToRgb } from '@/lib/a11y';
-import { TONE_PALETTES, type TwelveTone, type TonePalette } from '@/lib/analysis/personal-color-v2';
+import {
+  TONE_PALETTES,
+  TWELVE_TONE_LABELS,
+  getAdjacentTones,
+  validateToneValue,
+  type TwelveTone,
+  type TonePalette,
+} from '@/lib/analysis/personal-color-v2';
 import { cn } from '@/lib/utils';
+import { withSubjectParticle } from '@/lib/utils/korean';
 
 // 계절 인장 텍스트 — 점수 없는 타입 확정 스탬프(진단지 문법). 히어로 진단명(한국어)과
 // 겹치지 않도록 영문 세리프로 — 아이브로우(PERSONAL COLOR REPORT) 영문 관례와 세트
@@ -1002,7 +1010,7 @@ function LipstickList({ items }: { items: PersonalColorResult['lipstickRecommend
 }
 
 /** 파운데이션 추천 목록 — 접힘 내부 (이모지 아이콘 → 라인아트) */
-function FoundationList({ items }: { items: FoundationRecommendation[] }) {
+export function FoundationList({ items }: { items: FoundationRecommendation[] }) {
   return (
     <div className="space-y-3">
       {items.map((foundation, index) => (
@@ -1305,6 +1313,8 @@ export default function AnalysisResult({
   // 12톤 서브타입 저장 건에서만 파생되는 정의 데이터 — 명도·채도 행 + 톤 팔레트 총람
   const subtypeAttrs = deriveSubtypeAttrs(result.paletteToneKey);
   const tonePalette = getTonePaletteOverview(result.paletteToneKey);
+  const twelveTone = result.paletteToneKey ? validateToneValue(result.paletteToneKey) : null;
+  const adjacentTone = twelveTone ? getAdjacentTones(twelveTone, 1)[0] : undefined;
 
   // 구 상세 리포트 탭 흡수(2026-08-01) — 실측 evidence가 있을 때만 파생(지어내지 않음)
   const toneTendency = deriveToneTendency(result.tone, evidence?.veinScore);
@@ -1500,6 +1510,15 @@ export default function AnalysisResult({
                 </h1>
                 {/* 12톤 라벨이 히어로일 때 계절 라벨은 속성표가 담당 — 중복 표기 없음 */}
                 <p className="mt-2 break-keep text-sm text-muted-foreground">{seasonDescription}</p>
+                {twelveTone && adjacentTone && (
+                  <p
+                    className="mt-2 break-keep text-xs text-foreground/75"
+                    data-testid="pc-adjacent-tone"
+                  >
+                    현재 판정은 {TWELVE_TONE_LABELS[twelveTone]}에 가깝고,{' '}
+                    {withSubjectParticle(TWELVE_TONE_LABELS[adjacentTone])} 차선이에요.
+                  </p>
+                )}
                 {/* md 캡션 — 마스트헤드 라벨·진단일 병치(초소형, G1). 기존 진단일 데이터의
                     표기일 뿐 신규 데이터 아님. 단일 텍스트 노드로 마스트헤드 라벨과 구분 */}
                 <p

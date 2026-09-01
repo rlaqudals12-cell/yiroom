@@ -37,7 +37,7 @@ export interface ReportResultLayoutProps {
   shareContent?: ReactNode;
   sections: ReportSection[];
   confidence?: number;
-  /** 실측으로 검증된 축에만 노출하는 동일 사진 재현성 안내. */
+  /** 같은 사진에서 같은 판정을 지향하는 설계 목표 안내. */
   reproducibilityText?: string;
   usedFallback?: boolean;
   saveFailed?: boolean;

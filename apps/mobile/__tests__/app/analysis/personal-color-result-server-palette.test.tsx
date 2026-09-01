@@ -140,6 +140,7 @@ describe('퍼스널컬러 결과 서버 팔레트·진단지 배선', () => {
 
     expect(screen.getAllByText('봄 웜톤').length).toBeGreaterThan(0);
     expect(screen.getAllByText('브라이트').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('pc-adjacent-tone')).toHaveTextContent(/차선이에요/);
     expect(screen.getByTestId('analysis-personal-color-result-screen-share')).toBeTruthy();
     expect(
       StyleSheet.flatten(screen.getByTestId('pc-best-colors-swatch-0').props.style).backgroundColor
@@ -151,9 +152,8 @@ describe('퍼스널컬러 결과 서버 팔레트·진단지 배선', () => {
     expect(screen.getByText('분석 신뢰도 91%')).toBeTruthy();
     expect(
       screen.getByTestId('analysis-personal-color-result-screen-trust-reproducibility')
-    ).toHaveTextContent(
-      '같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요.'
-    );
+    ).toHaveTextContent('같은 사진이면 같은 판정을 목표로 합니다.');
+    expect(screen.queryByText(/검증했어요/)).toBeNull();
     expect(screen.queryByText(/웜톤.*91|쿨톤.*9/)).toBeNull();
     expect(screen.queryByTestId('pc-warm-score')).toBeNull();
     expect(mockRequestPersonalColorAnalysis).toHaveBeenCalledWith(
@@ -207,6 +207,7 @@ describe('퍼스널컬러 결과 서버 팔레트·진단지 배선', () => {
       StyleSheet.flatten(screen.getByTestId('pc-best-colors-swatch-0').props.style).backgroundColor
     ).toBe('#FFB6C1');
     expect(screen.queryByText('분석 신뢰도 91%')).toBeNull();
+    expect(screen.queryByTestId('pc-adjacent-tone')).toBeNull();
     fireEvent.press(
       screen.getByTestId('analysis-personal-color-result-screen-section-basis-trigger')
     );

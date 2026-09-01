@@ -503,7 +503,7 @@
         "description": "셀카 한 장으로 분석한 퍼스널컬러·피부·체형·헤어·메이크업 통합 리포트"
       },
       "footer": {
-        "reproducibility": "같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요.",
+        "reproducibility": "같은 사진이면 같은 판정을 목표로 합니다.",
         "aiDisclaimer": "분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요.",
         "referenceDisclaimer": "분석 결과는 참고 정보이며, 의학적 진단을 대체하지 않아요."
       },
@@ -622,7 +622,7 @@
         "drapingLabel": "드레이핑",
         "confidenceHint": "— AI가 이 판정에 확신하는 정도예요",
         "faceShape": "얼굴형",
-        "reproBadge": "재현성 검증",
+        "reproBadge": "같은 판정 목표",
         "photoOptIn": "리포트에 내 사진 담기",
         "bestLabel": "베스트 컬러",
         "accentLabel": "포인트 컬러",
@@ -645,7 +645,7 @@
         "contrastMedium": "중간",
         "contrastHigh": "높음",
         "confidence": "분석 신뢰도 {value}%",
-        "repro": "같은 사진은 같은 결과 — 재현성 검증"
+        "repro": "같은 사진이면 같은 판정을 목표로 합니다"
       },
       "shareReport": {
         "shareTitle": "나의 스타일 리포트 | 이룸",
@@ -699,7 +699,7 @@
   },
   "landing": {
     "promiseBanner": "영원히 무료 · 광고 없음 · 중립 추천",
-    "trust1": "같은 사진, 같은 결과 — 재현성 검증",
+    "trust1": "같은 사진이면 같은 판정을 목표로 합니다",
     "trust2": "원본 사진 저장은 선택 — 기본은 꺼져 있어요",
     "trust3": "핵심 분석은 영원히 무료",
     "trust4": "인증 리테일러만 연결 — 가짜 제품 차단",

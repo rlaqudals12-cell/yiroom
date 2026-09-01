@@ -503,7 +503,7 @@
         "description": "A combined report of your personal color, skin, body, hair, and makeup from a single selfie"
       },
       "footer": {
-        "reproducibility": "Same photo, same result — we re-ran the same photo repeatedly to verify the results stay consistent.",
+        "reproducibility": "We aim for the same verdict from the same photo.",
         "aiDisclaimer": "Results are AI-generated reference information and are not a substitute for medical diagnosis.",
         "referenceDisclaimer": "Results are for reference and are not a substitute for medical diagnosis."
       },
@@ -622,7 +622,7 @@
         "drapingLabel": "Draping",
         "confidenceHint": "— how certain the AI is about this verdict",
         "faceShape": "Face shape",
-        "reproBadge": "Reproducibility tested",
+        "reproBadge": "Consistent verdict goal",
         "photoOptIn": "Include my photo in the report",
         "bestLabel": "Best colors",
         "accentLabel": "Point colors",
@@ -645,7 +645,7 @@
         "contrastMedium": "Medium",
         "contrastHigh": "High",
         "confidence": "Analysis confidence {value}%",
-        "repro": "Same photo, same verdict — reproducibility tested"
+        "repro": "We aim for the same verdict from the same photo"
       },
       "shareReport": {
         "shareTitle": "My Style Report | Yiroom",
@@ -699,7 +699,7 @@
   },
   "landing": {
     "promiseBanner": "Free forever · No ads · Neutral picks",
-    "trust1": "Same photo, same verdict — reproducibility tested",
+    "trust1": "We aim for the same verdict from the same photo",
     "trust2": "Saving original photos is optional — off by default",
     "trust3": "Core analysis is free, forever",
     "trust4": "Certified retailers only — no counterfeits",

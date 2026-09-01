@@ -179,4 +179,125 @@ describe('HomeBriefing 아침 브리핑 제안', () => {
     expect(getByTestId('home-briefing-my-colors-static')).toBeTruthy();
     expect(queryByTestId('home-briefing-my-colors-link')).toBeNull();
   });
+
+  it('서버가 보유 의류 코디를 주면 내 옷 사진 4장을 표시하고 코디 화면으로 이동한다', () => {
+    const data: BriefingData = {
+      ...mockBriefingData,
+      todayStyle: {
+        fashionTip: null,
+        outfit: null,
+        closetItemCount: 4,
+        closetOutfit: {
+          items: ['상의', '하의', '신발', '가방'].map((role, index) => ({
+            id: `item-${index}`,
+            name: `내 옷 ${index + 1}`,
+            imageUrl: `https://signed.example/item-${index}.jpg?token=private`,
+            role,
+          })),
+          warnings: [],
+        },
+      },
+    };
+    const { getByTestId, getAllByTestId, queryByTestId } = renderWithTheme(
+      <HomeBriefing briefingState={{ ...mockBriefingState, data }} />
+    );
+
+    expect(getAllByTestId('home-briefing-closet-outfit-image')).toHaveLength(4);
+    expect(queryByTestId('home-briefing-outfit')).toBeNull();
+    fireEvent.press(getByTestId('home-briefing-style-link'));
+    expect(mockPush).toHaveBeenCalledWith('/(closet)/recommend');
+  });
+
+  it('실제 빈 옷장은 기존 팔레트와 등록 유도 한 줄을 유지하고 등록 화면으로 이동한다', () => {
+    const data: BriefingData = {
+      ...mockBriefingData,
+      todayStyle: {
+        fashionTip: null,
+        outfit: {
+          baseName: '모브 상의 + 라이트 핑크 하의',
+          colors: [
+            { role: '상의', name: '모브', hex: '#A78B9B' },
+            { role: '하의', name: '라이트 핑크', hex: '#F8C8DC' },
+          ],
+        },
+        closetItemCount: 0,
+        closetOutfit: null,
+      },
+    };
+    const { getByTestId, getByText } = renderWithTheme(
+      <HomeBriefing briefingState={{ ...mockBriefingState, data }} />
+    );
+
+    expect(getByTestId('home-briefing-outfit')).toBeTruthy();
+    expect(getByText('옷을 등록하면 내 옷으로 오늘의 코디를 준비해드려요.')).toBeTruthy();
+    fireEvent.press(getByTestId('home-briefing-style-link'));
+    expect(mockPush).toHaveBeenCalledWith('/(closet)/add');
+  });
+
+  it('옷이 3장보다 적으면 팔레트를 유지하고 옷 등록 화면으로 연결한다', () => {
+    const data: BriefingData = {
+      ...mockBriefingData,
+      todayStyle: {
+        fashionTip: null,
+        outfit: {
+          baseName: '모브 상의 + 라이트 핑크 하의',
+          colors: [
+            { role: '상의', name: '모브', hex: '#A78B9B' },
+            { role: '하의', name: '라이트 핑크', hex: '#F8C8DC' },
+          ],
+        },
+        closetItemCount: 2,
+        closetOutfit: null,
+        closetNeedsMoreItems: true,
+      },
+    };
+    const { getByLabelText, getByTestId, queryByTestId } = renderWithTheme(
+      <HomeBriefing briefingState={{ ...mockBriefingState, data }} />
+    );
+
+    expect(queryByTestId('home-briefing-closet-outfit')).toBeNull();
+    expect(getByTestId('home-briefing-outfit')).toBeTruthy();
+    expect(getByTestId('home-briefing-closet-incomplete')).toHaveTextContent(
+      '오늘의 코디를 완성하려면 옷을 조금 더 등록해주세요.'
+    );
+    fireEvent.press(getByLabelText('옷 등록하기'));
+    expect(mockPush).toHaveBeenCalledWith('/(closet)/add');
+  });
+
+  it('서명 이미지가 하나라도 실패하면 사진 코디를 숨기고 팔레트로 대체한다', () => {
+    const data: BriefingData = {
+      ...mockBriefingData,
+      todayStyle: {
+        fashionTip: null,
+        outfit: {
+          baseName: '모브 상의 + 라이트 핑크 하의',
+          colors: [
+            { role: '상의', name: '모브', hex: '#A78B9B' },
+            { role: '하의', name: '라이트 핑크', hex: '#F8C8DC' },
+          ],
+        },
+        closetItemCount: 3,
+        closetOutfit: {
+          items: ['상의', '하의', '신발'].map((role, index) => ({
+            id: `item-${index}`,
+            name: `내 옷 ${index + 1}`,
+            imageUrl: `https://signed.example/item-${index}.jpg?token=private`,
+            role,
+          })),
+          warnings: [],
+        },
+      },
+    };
+    const { getAllByTestId, getByTestId, queryByTestId } = renderWithTheme(
+      <HomeBriefing briefingState={{ ...mockBriefingState, data }} />
+    );
+
+    fireEvent(getAllByTestId('home-briefing-closet-outfit-image')[0], 'error');
+
+    expect(queryByTestId('home-briefing-closet-outfit')).toBeNull();
+    expect(getByTestId('home-briefing-outfit')).toBeTruthy();
+    expect(getByTestId('home-briefing-closet-image-unavailable')).toHaveTextContent(
+      '옷 사진을 불러오지 못해 오늘의 배색으로 보여드려요.'
+    );
+  });
 });

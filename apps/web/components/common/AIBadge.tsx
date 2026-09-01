@@ -96,14 +96,13 @@ interface AITransparencyNoticeProps {
   compact?: boolean;
   /**
    * 재현성 안내 한 줄 추가 여부.
-   * 동일 사진 반복 분석에서 판정 일치를 실측한 축(퍼스널컬러·피부/통합)에서만 켠다.
+   * 실측 완료 전에는 동일 사진에서 같은 판정을 지향한다는 설계 목표만 알린다.
    */
   showReproducibility?: boolean;
 }
 
-// 재현성 실측 문구 — 과장 없이 "같은 입력 → 같은 판정"만 주장
-const REPRODUCIBILITY_TEXT =
-  '같은 사진은 같은 결과 — 동일 사진을 반복 분석해 판정이 일치하는지 검증했어요.';
+// 왜: 재현성 실측 전에는 검증 완료나 결과 보장을 주장하지 않는다.
+const REPRODUCIBILITY_TEXT = '같은 사진이면 같은 판정을 목표로 합니다.';
 
 export function AITransparencyNotice({
   className,

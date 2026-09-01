@@ -20,8 +20,12 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { getConstrainedCanvasSize, createOptimizedContext } from '@/lib/analysis/canvas-utils';
 import { applyDrapeColor } from '@/lib/analysis/drape-reflectance';
+import { findNearestOpticalDrape } from '@/lib/analysis/drape-palette';
+import { getToneCompatibility } from '@/lib/analysis/personal-color/palette';
+import { hexToLab } from '@/lib/color';
 import { getKoreanColorName } from '@/lib/utils/color-names';
 import type { PaletteColor } from '@/components/share/PersonaShareCard';
+import type { ColorCompatibility, TwelveTone } from '@/lib/analysis/personal-color/types';
 
 export interface DrapingSectionProps {
   /** 분석 사진 서명 URL (1h 만료 — 로드 실패 시 정직한 실패 문구) */
@@ -30,6 +34,8 @@ export interface DrapingSectionProps {
   bestColors: PaletteColor[];
   /** 피해야 할 색 */
   worstColors: PaletteColor[];
+  /** 저장된 12톤 판정이 있을 때만 색천별 적합도를 계산한다. */
+  tone?: TwelveTone;
   /**
    * 재시도 시 부모가 분석을 재조회해 **새 서명 URL**을 발급하도록 하는 훅.
    * 로드 실패의 주원인이 서명 URL 1h 만료라, 같은 URL로 다시 시도하면 반드시 또 실패한다.
@@ -40,6 +46,28 @@ export interface DrapingSectionProps {
 
 // 캔버스 최대 변 — 결과 페이지 2열 병치 기준 충분한 해상도(레티나 감안)
 const MAX_CANVAS = 640;
+
+const GRADE_LABELS: Record<ColorCompatibility['grade'], string> = {
+  perfect: '매우 잘 어울려요',
+  good: '잘 어울려요',
+  neutral: '무난해요',
+  poor: '덜 어울려요',
+  avoid: '피하는 편이 좋아요',
+};
+
+interface DrapeAssessment {
+  compatibility: ColorCompatibility;
+  opticalReference: ReturnType<typeof findNearestOpticalDrape>;
+}
+
+/** 12톤·유효 HEX가 모두 있을 때만 기존 CIE/광학 팔레트 엔진을 연결한다. */
+function assessDrapeColor(tone: TwelveTone, hex: string): DrapeAssessment | null {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return null;
+  return {
+    compatibility: getToneCompatibility(tone, hexToLab(hex)),
+    opticalReference: findNearestOpticalDrape(hex),
+  };
+}
 
 /** 사진에 드레이프 색을 합성해 캔버스에 그린다 (zero-mask = 얼굴 검출 없음) */
 function drawDrape(canvas: HTMLCanvasElement, img: HTMLImageElement, hex: string): void {
@@ -63,7 +91,8 @@ function DrapeFigure({
   selected,
   onSelect,
   label,
-  tone,
+  side,
+  assessment,
 }: {
   img: HTMLImageElement;
   color: PaletteColor;
@@ -71,7 +100,8 @@ function DrapeFigure({
   selected: number;
   onSelect: (i: number) => void;
   label: string;
-  tone: 'best' | 'worst';
+  side: 'best' | 'worst';
+  assessment: DrapeAssessment | null;
 }): React.JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -88,14 +118,32 @@ function DrapeFigure({
         ref={canvasRef}
         role="img"
         className="w-full rounded-xl border"
-        data-testid={`draping-canvas-${tone}`}
+        data-testid={`draping-canvas-${side}`}
         aria-label={captionText}
       />
       <figcaption className="flex items-center justify-between gap-2 text-xs">
-        <span className={tone === 'best' ? 'font-medium text-primary' : 'text-muted-foreground'}>
+        <span className={side === 'best' ? 'font-medium text-foreground' : 'text-muted-foreground'}>
           {captionText}
         </span>
       </figcaption>
+      {assessment && (
+        <div className="space-y-0.5 text-[11px] leading-relaxed text-muted-foreground">
+          <p
+            className="font-medium text-foreground"
+            data-testid={`draping-grade-${side}`}
+            data-grade={assessment.compatibility.grade}
+          >
+            {GRADE_LABELS[assessment.compatibility.grade]}
+          </p>
+          <p
+            data-testid={`draping-optical-reference-${side}`}
+            data-optical-reflectance={assessment.opticalReference.reflectance}
+            data-optical-warmth={assessment.opticalReference.warmth}
+          >
+            가장 가까운 표준 색천: {assessment.opticalReference.name}
+          </p>
+        </div>
+      )}
       {/* 색 스와치 — 탭해서 다른 진단 색으로 드레이프 교체.
           색만 칠한 버튼은 접근 가능한 이름이 없다 → 진단 색명(없으면 hex 기반 색명)으로 라벨링 */}
       <div className="flex flex-wrap gap-1.5" role="group" aria-label={label}>
@@ -112,7 +160,7 @@ function DrapeFigure({
               selected === i ? 'ring-2 ring-primary ring-offset-1 scale-110' : 'hover:scale-105'
             )}
             style={{ backgroundColor: c.hex }}
-            data-testid={`draping-swatch-${tone}-${i}`}
+            data-testid={`draping-swatch-${side}-${i}`}
           />
         ))}
       </div>
@@ -124,6 +172,7 @@ export function DrapingSection({
   imageUrl,
   bestColors,
   worstColors,
+  tone,
   onRetry,
 }: DrapingSectionProps): React.JSX.Element | null {
   const t = useTranslations('analysis.integratedResult');
@@ -155,6 +204,20 @@ export function DrapingSection({
   if (bestColors.length === 0) return null;
   const best = bestColors[Math.min(bestIdx, bestColors.length - 1)];
   const worst = worstColors[Math.min(worstIdx, Math.max(0, worstColors.length - 1))];
+  const bestAssessment = tone ? assessDrapeColor(tone, best.hex) : null;
+  const worstAssessment = tone && worst ? assessDrapeColor(tone, worst.hex) : null;
+  const bestColorName = best.name ?? getKoreanColorName(best.hex);
+  const worstColorName = worst ? (worst.name ?? getKoreanColorName(worst.hex)) : null;
+  const comparisonVerdict = (() => {
+    if (!bestAssessment || !worstAssessment || !worstColorName) return null;
+    if (bestAssessment.compatibility.score === worstAssessment.compatibility.score) {
+      return `${bestColorName}와 ${worstColorName}의 12톤 적합도가 비슷해요.`;
+    }
+    const bestWins = bestAssessment.compatibility.score > worstAssessment.compatibility.score;
+    const winnerSide = bestWins ? '왼쪽' : '오른쪽';
+    const winnerName = bestWins ? bestColorName : worstColorName;
+    return `${winnerSide} ${winnerName} 쪽이 진단된 12톤에 더 가까워요.`;
+  })();
 
   return (
     // 인쇄물에는 얼굴 사진을 넣지 않는다 — PDF는 파일로 남아 손을 떠난다(진단지 인쇄 계약)
@@ -173,6 +236,15 @@ export function DrapingSection({
           {t('draping.observeHint')}
         </p>
       </div>
+
+      {comparisonVerdict && (
+        <p
+          className="mt-3 border-y border-border py-2 font-serif text-sm text-foreground"
+          data-testid="draping-verdict"
+        >
+          {comparisonVerdict}
+        </p>
+      )}
 
       {/* 실패 → 정직한 실패 문구(조용한 숨김 금지) / 로딩 → 스켈레톤 / 성공 → 병치 비교 */}
       {failed && (
@@ -202,7 +274,8 @@ export function DrapingSection({
             selected={bestIdx}
             onSelect={setBestIdx}
             label={t('draping.bestLabel')}
-            tone="best"
+            side="best"
+            assessment={bestAssessment}
           />
           {worst && (
             <DrapeFigure
@@ -212,7 +285,8 @@ export function DrapingSection({
               selected={worstIdx}
               onSelect={setWorstIdx}
               label={t('draping.worstLabel')}
-              tone="worst"
+              side="worst"
+              assessment={worstAssessment}
             />
           )}
         </div>

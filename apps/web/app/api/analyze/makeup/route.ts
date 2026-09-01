@@ -23,6 +23,8 @@ import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import { requireBiometricConsent } from '@/lib/api/biometric-consent';
 import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
 import { buildFallbackSeed } from '@/lib/utils/seeded-random';
+import { getLatestPersonalColorResult } from '@/lib/analysis/cross-module';
+import { FOUNDATION_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
 
 // Gemini 응답에서 유효한 값만 필터링하기 위한 Zod 스키마
 const makeupConcernSchema = z.enum([
@@ -71,6 +73,34 @@ const XP_ANALYSIS_COMPLETE = 15;
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
 
+const PERSONAL_COLOR_SEASONS = new Set<SeasonType>(['spring', 'summer', 'autumn', 'winter']);
+
+function normalizePersonalColorSeason(value: unknown): SeasonType | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.toLowerCase() as SeasonType;
+  return PERSONAL_COLOR_SEASONS.has(normalized) ? normalized : null;
+}
+
+/** PC 조회 실패는 메이크업 분석을 막지 않는다. 값이 있을 때만 기존 처방을 연결한다. */
+async function loadStoredPersonalColorSeason(userId: string): Promise<SeasonType | null> {
+  try {
+    const supabase = createServiceRoleClient();
+    const personalColor = await getLatestPersonalColorResult(supabase, userId);
+    // 왜: 예시 PC 결과를 실진단 입력처럼 재사용하면 메이크업 처방까지 사실로 오인된다.
+    // 구행(undefined)은 호환상 허용하되 명시적 폴백 표식만 fail-closed로 제외한다.
+    if (
+      personalColor?.image_analysis?.usedMock === true ||
+      personalColor?.image_analysis?.usedFallback === true
+    ) {
+      return null;
+    }
+    return normalizePersonalColorSeason(personalColor?.season);
+  } catch (error) {
+    console.error('[M-1] Stored personal color lookup failed (non-blocking):', error);
+    return null;
+  }
+}
+
 /**
  * M-1 메이크업 분석 API
  *
@@ -114,6 +144,12 @@ export async function POST(req: NextRequest) {
     if (bioDenied) return bioDenied;
 
     const fallbackSeed = buildFallbackSeed(userId, 'makeup', imageBase64);
+    const personalColorSeason = await loadStoredPersonalColorSeason(userId);
+    const generateFallback = () =>
+      generateMockMakeupAnalysisResult({
+        seed: fallbackSeed,
+        ...(personalColorSeason ? { personalColorSeason } : {}),
+      });
 
     // AI 분석 실행
     let result: MakeupAnalysisResult;
@@ -121,12 +157,15 @@ export async function POST(req: NextRequest) {
 
     if (FORCE_MOCK || useMock || !isGeminiAvailable()) {
       // Mock 모드
-      result = generateMockMakeupAnalysisResult({ seed: fallbackSeed });
+      result = generateFallback();
       usedMock = true;
     } else {
       // Gemini AI 분석 실행
       try {
-        const geminiResult = await analyzeMakeup(imageBase64);
+        const geminiResult = await analyzeMakeup({
+          imageBase64,
+          personalColorSeason: personalColorSeason ?? undefined,
+        });
         // Gemini 결과를 MakeupAnalysisResult 형식으로 변환 (Zod 검증)
         const validConcerns = filterValidConcerns(geminiResult.concerns);
         const validStyles = filterValidStyles(geminiResult.recommendedStyles);
@@ -164,8 +203,19 @@ export async function POST(req: NextRequest) {
         };
       } catch (aiError) {
         console.error('[M-1] Gemini error, falling back to mock:', aiError);
-        result = generateMockMakeupAnalysisResult({ seed: fallbackSeed });
+        result = generateFallback();
         usedMock = true;
+      }
+    }
+
+    // PC 결과 화면이 쓰는 기존 처방 정본을 그대로 연결한다. 저장 진단이 없으면 지어내지 않는다.
+    if (personalColorSeason) {
+      result.foundationRecommendations = FOUNDATION_RECOMMENDATIONS[personalColorSeason];
+      if (result.personalColorConnection) {
+        result.personalColorConnection = {
+          ...result.personalColorConnection,
+          season: personalColorSeason,
+        };
       }
     }
 
@@ -214,6 +264,7 @@ export async function POST(req: NextRequest) {
             colors: result.colorRecommendations,
             tips: result.makeupTips,
             personalColorConnection: result.personalColorConnection,
+            foundationRecommendations: result.foundationRecommendations,
             analysisReliability: result.analysisReliability,
             usedMock,
           },

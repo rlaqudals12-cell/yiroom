@@ -38,6 +38,7 @@ import {
   generateMockMakeupAnalysisResult,
   type MakeupAnalysisResult as MockMakeupAnalysisResult,
 } from '@/lib/mock/makeup-analysis';
+import type { MakeupAnalysisInput } from '@/lib/analysis/makeup/types';
 
 // 모델 설정 (어댑터에서 기본 모델 사용)
 // thinkingLevel low: 분석은 결정론적 JSON 추출 작업이라 깊은 추론 불필요 —
@@ -4158,13 +4159,14 @@ S-1 피부 상태 연동:
  * - API 키 미설정 시 Mock 반환
  * - 5초 타임아웃 + 2회 재시도 후 Mock Fallback
  *
- * @param imageBase64 - Base64 인코딩된 얼굴 이미지
+ * @param input - Base64 얼굴 이미지와 저장된 퍼스널컬러 시즌
  * @returns 메이크업 분석 결과
  */
 export async function analyzeMakeup(
-  imageBase64: string,
+  input: Pick<MakeupAnalysisInput, 'imageBase64' | 'personalColorSeason'>,
   locale: OutputLocale = 'ko'
 ): Promise<GeminiMakeupAnalysisResult> {
+  const { imageBase64, personalColorSeason } = input;
   // Mock 결과를 GeminiMakeupAnalysisResult로 변환
   const convertMockToResult = (mock: MockMakeupAnalysisResult): GeminiMakeupAnalysisResult => ({
     undertone: mock.undertone,
@@ -4198,7 +4200,15 @@ export async function analyzeMakeup(
   // Mock 모드 확인
   if (!isGeminiAvailable()) {
     geminiLogger.info('[M-1] Using mock (FORCE_MOCK_AI=true)');
-    const mockResult = generateMockMakeupAnalysisResult();
+    const normalizedSeason = personalColorSeason?.toLowerCase();
+    const mockResult = generateMockMakeupAnalysisResult({
+      ...(normalizedSeason === 'spring' ||
+      normalizedSeason === 'summer' ||
+      normalizedSeason === 'autumn' ||
+      normalizedSeason === 'winter'
+        ? { personalColorSeason: normalizedSeason }
+        : {}),
+    });
     return convertMockToResult(mockResult);
   }
 
@@ -4213,7 +4223,13 @@ export async function analyzeMakeup(
           generateContent({
             // 결과 자유 텍스트만 사용자 언어로 (JSON 필드·enum은 영문 유지 = 파싱 규칙 보존)
             contents: [
-              { text: `${MAKEUP_ANALYSIS_PROMPT}\n\n${outputLanguageDirective(locale)}` },
+              {
+                text: `${MAKEUP_ANALYSIS_PROMPT}${
+                  personalColorSeason
+                    ? `\n\n📎 저장된 PC-1 퍼스널컬러 진단:\n- 시즌: ${personalColorSeason}\n- 색상 추천과 personalColorConnection은 이 저장 진단을 우선 반영하세요.`
+                    : ''
+                }\n\n${outputLanguageDirective(locale)}`,
+              },
               imagePart,
             ],
             config: geminiConfig,

@@ -5,6 +5,7 @@
 
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { createSeededRandom, DEFAULT_SEED } from '@/lib/utils/seeded-random';
+import type { FoundationRecommendation, SeasonType } from '@/lib/mock/personal-color';
 
 export type UndertoneId = 'warm' | 'cool' | 'neutral';
 export type EyeShapeId = 'monolid' | 'double' | 'hooded' | 'round' | 'almond' | 'downturned';
@@ -139,6 +140,9 @@ export interface MakeupAnalysisResult {
     compatibility: 'high' | 'medium' | 'low';
     note: string;
   };
+
+  // 저장된 퍼스널컬러 시즌에서 가져온 기존 호수 처방. PC 결과와 같은 정본 데이터를 쓴다.
+  foundationRecommendations?: FoundationRecommendation[];
 
   // 메타데이터
   analyzedAt: Date;
@@ -318,6 +322,7 @@ const COLORS_BY_UNDERTONE: Record<UndertoneId, ColorRecommendation[]> = {
  */
 export function generateMockMakeupAnalysisResult(options?: {
   seed?: string;
+  personalColorSeason?: SeasonType;
 }): MakeupAnalysisResult {
   const rng = createSeededRandom(options?.seed ?? DEFAULT_SEED);
   const undertones = ['warm', 'cool', 'neutral'] as const;
@@ -325,7 +330,18 @@ export function generateMockMakeupAnalysisResult(options?: {
   const lipShapes = ['full', 'thin', 'wide', 'small', 'heart', 'asymmetric'] as const;
   const faceShapes = ['oval', 'round', 'square', 'heart', 'oblong', 'diamond'] as const;
 
-  const randomUndertone = undertones[Math.floor(rng() * undertones.length)];
+  const seededUndertone = undertones[Math.floor(rng() * undertones.length)];
+  // 왜: 저장 퍼스널컬러가 있으면 폴백도 그 진단을 우선해야 색 추천·연결 문구·호수 처방이 충돌하지 않는다.
+  const personalColorUndertone: Partial<Record<SeasonType, UndertoneId>> = {
+    spring: 'warm',
+    summer: 'cool',
+    autumn: 'warm',
+    winter: 'cool',
+  };
+  const resolvedUndertone = options?.personalColorSeason
+    ? personalColorUndertone[options.personalColorSeason]
+    : undefined;
+  const undertone = resolvedUndertone ?? seededUndertone;
   const randomEyeShape = eyeShapes[Math.floor(rng() * eyeShapes.length)];
   const randomLipShape = lipShapes[Math.floor(rng() * lipShapes.length)];
   const randomFaceShape = faceShapes[Math.floor(rng() * faceShapes.length)];
@@ -432,11 +448,11 @@ export function generateMockMakeupAnalysisResult(options?: {
   };
 
   const colorSuggestion = selectByKey(
-    randomUndertone,
+    undertone,
     { warm: '따뜻한 코랄, 브라운 계열', cool: '로즈, 핑크 계열' },
     '다양한 컬러'
   )!;
-  const insight = `${undertoneLabels[randomUndertone]}에 ${faceShapeLabels[randomFaceShape]} 얼굴형이시네요. ${eyeShapeLabels[randomEyeShape]}과 ${lipShapeLabels[randomLipShape]}의 특성을 살려 ${colorSuggestion}의 메이크업을 추천드려요.`;
+  const insight = `${undertoneLabels[undertone]}에 ${faceShapeLabels[randomFaceShape]} 얼굴형이시네요. ${eyeShapeLabels[randomEyeShape]}과 ${lipShapeLabels[randomLipShape]}의 특성을 살려 ${colorSuggestion}의 메이크업을 추천드려요.`;
 
   // 메이크업 팁
   const makeupTips = [
@@ -495,8 +511,8 @@ export function generateMockMakeupAnalysisResult(options?: {
   const seasonByUndertone = SEASON_BY_UNDERTONE;
 
   return {
-    undertone: randomUndertone,
-    undertoneLabel: undertoneLabels[randomUndertone],
+    undertone,
+    undertoneLabel: undertoneLabels[undertone],
     eyeShape: randomEyeShape,
     eyeShapeLabel: eyeShapeLabels[randomEyeShape],
     lipShape: randomLipShape,
@@ -508,12 +524,14 @@ export function generateMockMakeupAnalysisResult(options?: {
     concerns,
     insight,
     recommendedStyles: stylesByType[randomFaceShape],
-    colorRecommendations: colorsByUndertone[randomUndertone],
+    colorRecommendations: colorsByUndertone[undertone],
     makeupTips,
     personalColorConnection: {
-      season: seasonByUndertone[randomUndertone],
-      compatibility: randomUndertone === 'neutral' ? 'high' : 'medium',
-      note: `퍼스널 컬러 진단 결과와 함께 보시면 더 정확한 컬러 추천을 받으실 수 있어요.`,
+      season: options?.personalColorSeason ?? seasonByUndertone[undertone],
+      compatibility: undertone === 'neutral' ? 'high' : 'medium',
+      note: options?.personalColorSeason
+        ? '저장된 퍼스널 컬러 진단을 우선 반영한 예시 추천이에요.'
+        : '퍼스널 컬러 진단 결과와 함께 보시면 더 정확한 컬러 추천을 받으실 수 있어요.',
     },
     analyzedAt: new Date(),
     analysisReliability: 'medium',

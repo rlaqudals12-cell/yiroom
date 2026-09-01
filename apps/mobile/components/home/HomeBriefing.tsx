@@ -13,6 +13,7 @@
  *
  * @see apps/web/app/(main)/home/_components/DailyBriefing.tsx
  */
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { ArrowRight, Bell, ChevronRight, Shirt, Sparkles, WifiOff } from 'lucide-react-native';
 import { useState } from 'react';
@@ -27,9 +28,10 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { buildStoredResultDestination } from '@/lib/analysis/stored-result-destination';
+
 import type { UseBriefingResult } from '../../hooks/useBriefing';
 import { useMorningBriefing } from '../../lib/notifications/useMorningBriefing';
-import { buildStoredResultDestination } from '@/lib/analysis/stored-result-destination';
 import { useTheme } from '../../lib/theme';
 
 export interface HomeBriefingProps {
@@ -47,6 +49,7 @@ export function HomeBriefing({
   const router = useRouter();
   const { data, stale, isLoading } = briefingState;
   const [question, setQuestion] = useState('');
+  const [failedClosetOutfitKey, setFailedClosetOutfitKey] = useState<string | null>(null);
 
   // 아침 브리핑 로컬 알림 — 첫 브리핑 조회 후 "매일 아침 알려드릴까요?" 1회 제안
   const morningBriefing = useMorningBriefing();
@@ -56,6 +59,17 @@ export function HomeBriefing({
   if (isLoading || !data || !data.hasAnalyses) return null;
 
   const { briefing, myColors, todayStyle } = data;
+  const closetOutfit = todayStyle.closetOutfit;
+  const closetItemCount = todayStyle.closetItemCount;
+  const closetNeedsMoreItems = todayStyle.closetNeedsMoreItems === true;
+  const closetOutfitKey = closetOutfit?.items.map((item) => item.imageUrl).join('|') ?? null;
+  const closetImageUnavailable =
+    closetOutfitKey !== null && failedClosetOutfitKey === closetOutfitKey;
+  const visibleClosetOutfit = closetImageUnavailable ? null : closetOutfit;
+  const styleDestination =
+    closetItemCount === 0 || closetNeedsMoreItems
+      ? ('/(closet)/add' as const)
+      : ('/(closet)/recommend' as const);
   const colorAnalysisId = myColors?.analysisId?.trim();
   // 저장 결과 목적지는 단일 정본을 쓴다(인라인 경로 조립 금지 — 배치 F 계약)
   const colorResultRoute = colorAnalysisId
@@ -284,7 +298,12 @@ export function HomeBriefing({
         >
           오늘의 스타일
         </Text>
-        <View
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            closetItemCount === 0 || closetNeedsMoreItems ? '옷 등록하기' : '오늘의 코디 보기'
+          }
+          onPress={() => router.push(styleDestination as never)}
           style={[
             {
               backgroundColor: colors.card,
@@ -293,8 +312,46 @@ export function HomeBriefing({
               padding: spacing.md,
             },
           ]}
+          testID="home-briefing-style-link"
         >
-          {todayStyle.outfit && (
+          {visibleClosetOutfit && visibleClosetOutfit.items.length > 0 ? (
+            <View style={{ marginBottom: spacing.smx }} testID="home-briefing-closet-outfit">
+              <View style={styles.closetOutfitRow}>
+                {visibleClosetOutfit.items.map((item) => (
+                  <View key={item.id} style={styles.closetOutfitItem}>
+                    <Image
+                      source={{ uri: item.imageUrl }}
+                      style={styles.closetOutfitImage}
+                      contentFit="cover"
+                      transition={200}
+                      onError={() => setFailedClosetOutfitKey(closetOutfitKey)}
+                      accessibilityLabel={`${item.role} ${item.name}`}
+                      testID="home-briefing-closet-outfit-image"
+                    />
+                    <Text
+                      numberOfLines={1}
+                      style={{ color: colors.mutedForeground, fontSize: 9, textAlign: 'center' }}
+                    >
+                      {item.role} · {item.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              {visibleClosetOutfit.warnings.map((warning) => (
+                <Text
+                  key={warning}
+                  style={{
+                    color: colors.mutedForeground,
+                    fontSize: typography.size.xs,
+                    marginTop: spacing.xs,
+                  }}
+                  testID="home-briefing-closet-warning"
+                >
+                  {warning}
+                </Text>
+              ))}
+            </View>
+          ) : todayStyle.outfit ? (
             <View
               style={{ flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.smx }}
               testID="home-briefing-outfit"
@@ -324,7 +381,46 @@ export function HomeBriefing({
                 </View>
               ))}
             </View>
-          )}
+          ) : null}
+          {closetItemCount === 0 ? (
+            <Text
+              style={{
+                color: colors.mutedForeground,
+                fontSize: typography.size.sm,
+                lineHeight: typography.size.sm * 1.5,
+                marginBottom: spacing.smx,
+              }}
+              testID="home-briefing-closet-empty"
+            >
+              옷을 등록하면 내 옷으로 오늘의 코디를 준비해드려요.
+            </Text>
+          ) : null}
+          {closetNeedsMoreItems ? (
+            <Text
+              style={{
+                color: colors.mutedForeground,
+                fontSize: typography.size.sm,
+                lineHeight: typography.size.sm * 1.5,
+                marginBottom: spacing.smx,
+              }}
+              testID="home-briefing-closet-incomplete"
+            >
+              오늘의 코디를 완성하려면 옷을 조금 더 등록해주세요.
+            </Text>
+          ) : null}
+          {closetImageUnavailable ? (
+            <Text
+              style={{
+                color: colors.mutedForeground,
+                fontSize: typography.size.sm,
+                lineHeight: typography.size.sm * 1.5,
+                marginBottom: spacing.smx,
+              }}
+              testID="home-briefing-closet-image-unavailable"
+            >
+              옷 사진을 불러오지 못해 오늘의 배색으로 보여드려요.
+            </Text>
+          ) : null}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.smx }}>
             <View
               style={[
@@ -336,12 +432,15 @@ export function HomeBriefing({
             </View>
             <Text style={{ flex: 1, color: colors.foreground, fontSize: typography.size.sm }}>
               {todayStyle.fashionTip ??
-                (todayStyle.outfit
-                  ? '내 베스트 컬러로 짠 오늘의 배색이에요'
-                  : '오늘 날씨와 내 체형에 맞는 코디를 골라줄게요')}
+                (visibleClosetOutfit
+                  ? '내 옷으로 준비한 오늘의 코디예요'
+                  : todayStyle.outfit
+                    ? '내 베스트 컬러로 짠 오늘의 배색이에요'
+                    : '오늘 날씨와 내 체형에 맞는 코디를 골라줄게요')}
             </Text>
+            <ChevronRight size={16} color={colors.mutedForeground} strokeWidth={2} />
           </View>
-        </View>
+        </Pressable>
       </View>
 
       {/* 4) 물어보기 인풋 → /(tabs)/ask */}
@@ -502,6 +601,20 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 12,
+  },
+  closetOutfitRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  closetOutfitItem: {
+    flex: 1,
+    minWidth: 0,
+    gap: 4,
+  },
+  closetOutfitImage: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 10,
   },
   styleIcon: {
     width: 40,

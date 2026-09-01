@@ -10,6 +10,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 const mockParams = { id: 'makeup-123' };
 
@@ -105,6 +106,15 @@ const standaloneRow = {
     styles: ['natural'],
     colors: [],
     tips: [],
+    foundationRecommendations: [
+      {
+        shadeName: '21호 웜 베이지',
+        undertone: 'warm',
+        brandExample: '에스티로더 더블웨어 2W1',
+        easyDescription: '노란 기가 도는 밝은 베이지 (피치빛)',
+        oliveyoungAlt: '클리오 킬커버 파운웨어 03 린넨',
+      },
+    ],
   },
 };
 
@@ -226,5 +236,20 @@ describe('MakeupAnalysisResultPage — 미측정 항목', () => {
     expect(screen.getByText('얼굴형')).toBeInTheDocument();
     expect(screen.getByTestId('makeup-report-metrics')).toBeInTheDocument();
     expect(screen.queryByTestId('makeup-unmeasured-note')).not.toBeInTheDocument();
+  });
+
+  it('저장 결과 재방문에서도 파운데이션 브랜드 호수와 올리브영 대안을 복원한다', async () => {
+    const user = userEvent.setup();
+    mockRow(standaloneRow);
+    render(<MakeupAnalysisResultPage />);
+
+    await waitFor(() => expect(screen.getByRole('tab', { name: /컬러/ })).toBeInTheDocument());
+    await user.click(screen.getByRole('tab', { name: /컬러/ }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('makeup-foundation-recommendations')).toBeInTheDocument();
+    });
+    expect(screen.getByText('에스티로더 더블웨어 2W1')).toBeInTheDocument();
+    expect(screen.getByText(/올리브영: 클리오 킬커버 파운웨어 03 린넨/)).toBeInTheDocument();
   });
 });

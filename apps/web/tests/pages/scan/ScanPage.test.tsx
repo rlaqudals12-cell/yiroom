@@ -77,6 +77,21 @@ vi.mock('@/components/scan/IngredientCapture', () => ({
       >
         OCR
       </button>
+      <button
+        data-testid="mock-ocr-makeup-btn"
+        onClick={() =>
+          onResult({
+            success: true,
+            productName: '코랄 립틴트',
+            brandName: '테스트 브랜드',
+            ingredients: [{ order: 1, inciName: 'Water', nameKo: '정제수', ewgGrade: 1 }],
+            confidence: 'high',
+            language: 'ko',
+          })
+        }
+      >
+        Makeup OCR
+      </button>
     </div>
   ),
 }));
@@ -164,6 +179,23 @@ describe('ScanPage', () => {
       expect(screen.getByText(/정제수/)).toBeInTheDocument();
       expect(screen.getByText(/글리세린/)).toBeInTheDocument();
     });
+  });
+
+  it('OCR 제품명에서 감지한 메이크업 카테고리와 실제 색 이름을 분석 API에 전달한다', async () => {
+    render(<ScanPage />);
+    fireEvent.click(screen.getByText('성분표'));
+    fireEvent.click(screen.getByTestId('mock-ocr-makeup-btn'));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/scan/analyze',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    const [, options] = mockFetch.mock.calls.find(([url]) => url === '/api/scan/analyze')!;
+    const body = JSON.parse((options as RequestInit).body as string);
+    expect(body).toMatchObject({ category: 'lip', color: '코랄' });
   });
 
   it('shows fit score hero when user has skin analysis profile', async () => {

@@ -114,6 +114,16 @@ describe('AnalysisResult', () => {
       expect(screen.getByText('밝고 따뜻한 느낌의 색상이 잘 어울려요')).toBeInTheDocument();
     });
 
+    it('12톤이 있으면 가장 가까운 차선 톤을 컨설팅 문장으로 표시한다', () => {
+      render(<AnalysisResult result={{ ...mockResult, paletteToneKey: 'true-spring' }} />);
+      expect(screen.getByTestId('pc-adjacent-tone')).toHaveTextContent('차선이에요');
+    });
+
+    it('12톤 서브타입이 없으면 차선 톤을 지어내지 않는다', () => {
+      render(<AnalysisResult result={mockResult} />);
+      expect(screen.queryByTestId('pc-adjacent-tone')).not.toBeInTheDocument();
+    });
+
     it('신뢰도를 푸터 신뢰 블록에 텍스트 라인으로 표시한다', () => {
       render(<AnalysisResult result={mockResult} />);
 

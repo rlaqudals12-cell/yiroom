@@ -5,14 +5,17 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 const pushMock = vi.fn();
 // "기억한다" 화법 입력은 fetch(제품함·캡슐 API)로 로드 — 기본은 빈 응답(미주입)
 const fetchMock = vi.fn();
+const clerkState = vi.hoisted(() => ({
+  user: { id: 'u1', firstName: '지민', username: null as string | null },
+}));
 
 vi.mock('@clerk/nextjs', () => ({
-  useUser: () => ({ user: { id: 'u1', firstName: '지민', username: null } }),
+  useUser: () => ({ user: clerkState.user }),
 }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
@@ -83,6 +86,7 @@ function createWeather(overrides: Record<string, unknown> = {}) {
 
 describe('DailyBriefing', () => {
   beforeEach(() => {
+    clerkState.user = { id: 'u1', firstName: '지민', username: null };
     pushMock.mockClear();
     fetchMock.mockReset();
     // 기본: 제품함/캡슐 비어 있음 → 화법 미주입(기존 렌더 단언에 영향 없음)
@@ -545,6 +549,195 @@ describe('DailyBriefing', () => {
     render(<DailyBriefing analyses={analysesWithColors} />);
     expect(screen.getByRole('heading', { name: '오늘의 코디' })).toBeInTheDocument();
     expect(screen.queryByText('오늘의 스타일')).not.toBeInTheDocument();
+  });
+
+  it('옷장이 있으면 팔레트 대신 기존 매처가 고른 내 옷 사진 4장을 보여준다', async () => {
+    const item = (id: string, subCategory: string) => ({
+      id,
+      clerkUserId: 'u1',
+      category: 'closet',
+      subCategory,
+      name: `${subCategory}-${id}`,
+      imageUrl: `https://signed.example/${id}.jpg?token=private`,
+      originalImageUrl: null,
+      brand: null,
+      tags: [],
+      isFavorite: false,
+      useCount: 0,
+      lastUsedAt: null,
+      expiryDate: null,
+      metadata: {
+        color: ['코랄'],
+        season: ['spring', 'summer', 'autumn', 'winter'],
+        occasion: [],
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    fetchMock.mockImplementation((url: string) => {
+      if (String(url).includes('/api/inventory')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            success: true,
+            items: [
+              item('top-1', 'top'),
+              item('bottom-1', 'bottom'),
+              item('shoes-1', 'shoes'),
+              item('bag-1', 'bag'),
+            ],
+          }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    expect(await screen.findByTestId('briefing-closet-outfit')).toBeInTheDocument();
+    const outfitImages = screen.getAllByTestId('briefing-closet-outfit-image');
+    expect(outfitImages).toHaveLength(4);
+    expect(outfitImages[0]).toHaveAttribute(
+      'src',
+      'https://signed.example/top-1.jpg?token=private'
+    );
+    expect(screen.queryByTestId('briefing-outfit-palette')).not.toBeInTheDocument();
+    expect(screen.getByTestId('briefing-style').querySelector('a')).toHaveAttribute(
+      'href',
+      '/closet/recommend'
+    );
+  });
+
+  it('실제 빈 옷장은 기존 팔레트를 유지하고 옷 등록 유도 한 줄로 연결한다', async () => {
+    fetchMock.mockImplementation((url: string) => {
+      if (String(url).includes('/api/inventory')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ success: true, items: [] }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    expect(await screen.findByTestId('briefing-closet-empty')).toHaveTextContent(
+      '옷을 등록하면 내 옷으로 오늘의 코디를 준비해드려요'
+    );
+    expect(screen.getByTestId('briefing-outfit-palette')).toBeInTheDocument();
+    expect(screen.getByTestId('briefing-style').querySelector('a')).toHaveAttribute(
+      'href',
+      '/closet/add'
+    );
+  });
+
+  it('옷이 3장보다 적으면 사진 코디를 만들지 않고 팔레트와 등록 유도를 유지한다', async () => {
+    const item = (id: string, subCategory: string) => ({
+      id,
+      clerkUserId: 'u1',
+      category: 'closet',
+      subCategory,
+      name: `${subCategory}-${id}`,
+      imageUrl: `https://signed.example/${id}.jpg?token=private`,
+      originalImageUrl: null,
+      brand: null,
+      tags: [],
+      isFavorite: false,
+      useCount: 0,
+      lastUsedAt: null,
+      expiryDate: null,
+      metadata: {
+        color: ['코랄'],
+        season: ['spring', 'summer', 'autumn', 'winter'],
+        occasion: [],
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    fetchMock.mockImplementation((url: string) => {
+      if (String(url).includes('/api/inventory')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            success: true,
+            items: [item('top-1', 'top'), item('bottom-1', 'bottom')],
+          }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+
+    render(<DailyBriefing analyses={analysesWithColors} />);
+
+    expect(await screen.findByTestId('briefing-closet-incomplete')).toHaveTextContent(
+      '오늘의 코디를 완성하려면 옷을 조금 더 등록해주세요'
+    );
+    expect(screen.queryByTestId('briefing-closet-outfit')).not.toBeInTheDocument();
+    expect(screen.getByTestId('briefing-outfit-palette')).toBeInTheDocument();
+    expect(screen.getByTestId('briefing-style').querySelector('a')).toHaveAttribute(
+      'href',
+      '/closet/add'
+    );
+  });
+
+  it('Clerk 활성 계정이 바뀌면 첫 렌더부터 이전 사용자의 옷 사진을 숨긴다', async () => {
+    const item = (ownerId: string, id: string, subCategory: string) => ({
+      id,
+      clerkUserId: ownerId,
+      category: 'closet',
+      subCategory,
+      name: `${ownerId}-${id}`,
+      imageUrl: `https://signed.example/${ownerId}/${id}.jpg?token=private`,
+      originalImageUrl: null,
+      brand: null,
+      tags: [],
+      isFavorite: false,
+      useCount: 0,
+      lastUsedAt: null,
+      expiryDate: null,
+      metadata: {
+        color: ['코랄'],
+        season: ['spring', 'summer', 'autumn', 'winter'],
+        occasion: [],
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    const inventory = (ownerId: string) =>
+      ['top', 'bottom', 'shoes', 'bag'].map((category) => item(ownerId, `${category}-1`, category));
+    let resolveUserB: ((value: unknown) => void) | undefined;
+    fetchMock.mockImplementation((url: string) => {
+      if (!String(url).includes('/api/inventory')) {
+        return Promise.resolve({ ok: true, json: async () => ({}) });
+      }
+      if (clerkState.user.id === 'u1') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ success: true, items: inventory('u1') }),
+        });
+      }
+      return new Promise((resolve) => {
+        resolveUserB = resolve;
+      });
+    });
+
+    const { rerender } = render(<DailyBriefing analyses={analysesWithColors} />);
+    expect(await screen.findByAltText(/u1-top-1/)).toBeInTheDocument();
+
+    clerkState.user = { id: 'u2', firstName: '서연', username: null };
+    rerender(<DailyBriefing analyses={analysesWithColors} />);
+
+    expect(screen.queryByAltText(/u1-top-1/)).not.toBeInTheDocument();
+    expect(screen.getByTestId('briefing-outfit-palette')).toBeInTheDocument();
+
+    await act(async () => {
+      resolveUserB?.({
+        ok: true,
+        json: async () => ({ success: true, items: inventory('u2') }),
+      });
+    });
+    expect(await screen.findByAltText(/u2-top-1/)).toBeInTheDocument();
+    expect(screen.queryByAltText(/u1-top-1/)).not.toBeInTheDocument();
   });
 
   // ── 코디 감량: 긴 권장 비율 설명은 빼고 범례·날씨·CTA 하나만 둔다 ──

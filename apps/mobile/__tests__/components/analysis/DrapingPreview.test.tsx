@@ -227,6 +227,37 @@ describe('DrapingPreview', () => {
   });
 
   describe('베스트/회피 병치 비교', () => {
+    it('12톤이 있으면 CIE 등급·winner와 최근접 광학 색천을 별도 근거로 표시한다', () => {
+      const { getByTestId } = renderWithTheme(
+        <DrapingPreview
+          imageUri={IMAGE_URI}
+          palette={['#FF7F50']}
+          avoidPalette={['#000080']}
+          tone="true-spring"
+        />
+      );
+
+      expect(getByTestId('draping-verdict').props.children).toMatch(/왼쪽|오른쪽/);
+      expect(getByTestId('draping-grade-best')).toHaveTextContent(/매우 잘 어울려요/);
+      expect(getByTestId('draping-grade-best')).not.toHaveTextContent('표준 색천');
+      expect(getByTestId('draping-optical-reference-best')).toHaveTextContent(
+        /가장 가까운 표준 색천:/
+      );
+      expect(getByTestId('draping-grade-avoid')).toBeTruthy();
+    });
+
+    it('12톤이 없으면 적합도 판정을 지어내지 않는다', () => {
+      const { queryByTestId } = renderWithTheme(
+        <DrapingPreview
+          imageUri={IMAGE_URI}
+          palette={SPRING_PALETTE}
+          avoidPalette={AVOID_PALETTE}
+        />
+      );
+      expect(queryByTestId('draping-verdict')).toBeNull();
+      expect(queryByTestId('draping-grade-best')).toBeNull();
+    });
+
     it('avoidPalette가 있으면 두 열이 함께 렌더링되어야 한다', () => {
       const { getByTestId } = renderWithTheme(
         <DrapingPreview

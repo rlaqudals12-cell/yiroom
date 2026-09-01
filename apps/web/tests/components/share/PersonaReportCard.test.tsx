@@ -16,7 +16,7 @@ const GROUP_LABELS = {
 
 const BASE = {
   oneLine: '여름 아침의 서늘한 빛을 닮은 사람',
-  reproducibilityText: '같은 사진은 같은 결과 — 재현성 검증',
+  reproducibilityText: '같은 사진이면 같은 판정을 목표로 합니다',
   dateText: '2026. 7. 16.',
   groupLabels: GROUP_LABELS,
   axisRows: [

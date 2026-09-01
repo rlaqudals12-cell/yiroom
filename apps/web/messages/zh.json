@@ -503,7 +503,7 @@
         "description": "通过一张自拍分析的个人色彩·肌肤·体型·发型·妆容综合报告"
       },
       "footer": {
-        "reproducibility": "同一张照片，结果一致 — 我们反复分析同一张照片，验证判定是否一致。",
+        "reproducibility": "我们以同一张照片得到一致判定为目标。",
         "aiDisclaimer": "分析结果为AI生成的参考信息，不能替代医学诊断。",
         "referenceDisclaimer": "分析结果仅供参考，不能替代医学诊断。"
       },
@@ -622,7 +622,7 @@
         "drapingLabel": "垂布试色",
         "confidenceHint": "— 表示AI对该判定的确信程度",
         "faceShape": "脸型",
-        "reproBadge": "已验证可复现",
+        "reproBadge": "一致判定目标",
         "photoOptIn": "在报告中加入我的照片",
         "bestLabel": "最佳颜色",
         "accentLabel": "点缀色",
@@ -645,7 +645,7 @@
         "contrastMedium": "中等",
         "contrastHigh": "较高",
         "confidence": "分析可信度{value}%",
-        "repro": "同一照片，同一结果 — 已验证可复现性"
+        "repro": "我们以同一张照片得到一致判定为目标"
       },
       "shareReport": {
         "shareTitle": "我的风格报告 | Yiroom",
@@ -699,7 +699,7 @@
   },
   "landing": {
     "promiseBanner": "永久免费 · 无广告 · 中立推荐",
-    "trust1": "同一照片，同一结果 — 已验证可复现",
+    "trust1": "我们以同一张照片得到一致判定为目标",
     "trust2": "原始照片存储可选 — 默认关闭",
     "trust3": "核心分析永久免费",
     "trust4": "仅接入认证零售商 — 杜绝假货",

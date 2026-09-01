@@ -230,6 +230,54 @@ describe('i18n messages', () => {
     );
   });
 
+  describe('재현성 실측 전 정직 카피 계약', () => {
+    const expectations = {
+      ko: {
+        sentence: '같은 사진이면 같은 판정을 목표로 합니다',
+        footerSentence: '같은 사진이면 같은 판정을 목표로 합니다.',
+        badge: '같은 판정 목표',
+      },
+      en: {
+        sentence: 'We aim for the same verdict from the same photo',
+        footerSentence: 'We aim for the same verdict from the same photo.',
+        badge: 'Consistent verdict goal',
+      },
+      ja: {
+        sentence: '同じ写真なら同じ判定になることを目指しています',
+        footerSentence: '同じ写真なら同じ判定になることを目指しています。',
+        badge: '同じ判定を目指す設計',
+      },
+      zh: {
+        sentence: '我们以同一张照片得到一致判定为目标',
+        footerSentence: '我们以同一张照片得到一致判定为目标。',
+        badge: '一致判定目标',
+      },
+    } as const;
+
+    it.each(['ko', 'en', 'ja', 'zh'] as const)(
+      '%s 결과·리포트·랜딩이 검증 완료가 아닌 설계 목표로 고지한다',
+      (locale) => {
+        const messages = { ko: koMessages, en: enMessages, ja: jaMessages, zh: zhMessages }[
+          locale
+        ] as {
+          analysis: {
+            integratedResult: {
+              footer: { reproducibility: string };
+              reportCard: { reproBadge: string; repro: string };
+            };
+          };
+          landing: { trust1: string };
+        };
+        const { sentence, footerSentence, badge } = expectations[locale];
+
+        expect(messages.analysis.integratedResult.footer.reproducibility).toBe(footerSentence);
+        expect(messages.analysis.integratedResult.reportCard.reproBadge).toBe(badge);
+        expect(messages.analysis.integratedResult.reportCard.repro).toBe(sentence);
+        expect(messages.landing.trust1).toBe(sentence);
+      }
+    );
+  });
+
   // 2026-08 랜딩 리뷰 확정 수리 — 히어로 과약속 제거 + 같은 목적지 CTA 문구 통일
   describe('랜딩 카피 계약', () => {
     const locales = () =>

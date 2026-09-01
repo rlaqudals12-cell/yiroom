@@ -30,6 +30,7 @@ import {
 import { StoredResultError } from '@/lib/analysis/stored-result-loader';
 import {
   MakeupApiError,
+  parseFoundationRecommendations,
   requestMakeupAnalysis,
   type MakeupAnalysisApiResult,
 } from '@/lib/api/makeup';
@@ -148,6 +149,9 @@ function MakeupResultContent(): React.JSX.Element {
           },
           recommendations,
           bestColors: collectStoredMakeupColors(recommendationData),
+          foundationRecommendations: parseFoundationRecommendations(
+            recommendationData.foundationRecommendations
+          ),
           usedMock: stored.usedFallback === true,
           dbSaveFailed: false,
           analysisId: typeof row.id === 'string' ? row.id : undefined,
@@ -256,6 +260,27 @@ function MakeupResultContent(): React.JSX.Element {
       title: '적용 팁',
       summary: applicationItems[0],
       content: <ReportTextList items={applicationItems} testID="makeup-application-tips" />,
+    });
+  }
+  if (result.foundationRecommendations.length > 0) {
+    const firstFoundation = result.foundationRecommendations[0];
+    sections.push({
+      key: 'foundation',
+      title: '추천 파운데이션',
+      summary: `${firstFoundation.shadeName} · ${firstFoundation.brandExample}`,
+      content: (
+        <ReportRowTable testID="makeup-foundation-recommendation-rows">
+          {result.foundationRecommendations.map((foundation) => (
+            <ReportAttrRow
+              key={`${foundation.shadeName}-${foundation.brandExample}`}
+              label={foundation.shadeName}
+              value={`${foundation.brandExample}${
+                foundation.oliveyoungAlt ? ` · 올리브영: ${foundation.oliveyoungAlt}` : ''
+              }`}
+            />
+          ))}
+        </ReportRowTable>
+      ),
     });
   }
   const verdict = [

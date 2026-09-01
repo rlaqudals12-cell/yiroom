@@ -6,6 +6,9 @@
  */
 
 import type { ProductIngredient } from '@/types/scan';
+import { hexToLab } from '@/lib/color';
+import { getToneCompatibility } from '@/lib/analysis/personal-color/palette';
+import type { TwelveTone } from '@/lib/analysis/personal-color/types';
 import {
   type SkinType,
   calculateSkinTypeScore,
@@ -29,6 +32,7 @@ export interface UserAnalysisData {
   personalColor?: {
     seasonType: 'spring' | 'summer' | 'autumn' | 'winter';
     tone: 'warm' | 'cool';
+    twelveTone?: TwelveTone;
   };
 }
 
@@ -49,8 +53,10 @@ export interface IngredientNote {
 
 // 컬러 매칭 결과
 export interface ColorMatchResult {
-  isRecommended: boolean;
-  matchScore: number;
+  /** CIEDE2000 실측 경로에서만 존재한다. 색 이름 참고에는 판정을 부여하지 않는다. */
+  isRecommended?: boolean;
+  /** 정확한 12톤 + #RRGGBB 조합에서만 존재한다. */
+  matchScore?: number;
   reason: string;
   alternatives?: string[];
 }
@@ -223,7 +229,6 @@ function calculateSkinCompatibility(
 /**
  * 색조 제품 컬러 매칭 (메이크업 제품용)
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- complex business logic
 function calculateColorMatch(
   productCategory: string,
   productColor: string | undefined,
@@ -232,52 +237,86 @@ function calculateColorMatch(
   if (!personalColor) return undefined;
 
   // 색조 제품이 아니면 스킵
-  const colorCategories = ['lipstick', 'blush', 'eyeshadow', 'foundation', 'makeup'];
+  const colorCategories = [
+    'lip',
+    'lipstick',
+    'blush',
+    'eyeshadow',
+    'foundation',
+    'contour',
+    'makeup',
+  ];
   if (!colorCategories.some((c) => productCategory.toLowerCase().includes(c))) {
     return undefined;
   }
 
-  // 컬러 정보가 없으면 기본 안내
-  if (!productColor) {
-    const toneLabel = personalColor.tone === 'warm' ? '웜톤' : '쿨톤';
+  // 색 없음·공백은 판정 근거가 아니다.
+  if (!productColor?.trim()) return undefined;
+  const normalizedColor = productColor.trim();
+
+  // 정확한 12톤과 HEX가 있으면 완성된 CIEDE2000 엔진을 우선한다.
+  if (personalColor.twelveTone && /^#[0-9a-fA-F]{6}$/.test(normalizedColor)) {
+    const compatibility = getToneCompatibility(personalColor.twelveTone, hexToLab(normalizedColor));
     return {
-      isRecommended: true,
-      matchScore: 70,
-      reason: `${toneLabel}에 어울리는 색상인지 직접 확인해보세요`,
+      isRecommended: compatibility.grade === 'perfect' || compatibility.grade === 'good',
+      matchScore: compatibility.score,
+      reason: compatibility.description,
     };
   }
+
+  // HEX는 12톤과 정확한 6자리 값이 함께 있을 때만 수치화한다. 축약 HEX를 보정해
+  // 측정값처럼 만들거나, 12톤 없이 계절만으로 점수를 추정하지 않는다.
+  if (/^#[0-9a-fA-F]+$/.test(normalizedColor)) return undefined;
 
   // 컬러 매칭 로직 (간단한 버전)
-  const warmColors = ['coral', 'peach', 'orange', 'gold', 'bronze', 'warm'];
-  const coolColors = ['pink', 'berry', 'mauve', 'plum', 'rose', 'cool'];
+  const warmColors = [
+    'coral',
+    'peach',
+    'orange',
+    'gold',
+    'bronze',
+    'warm',
+    '코랄',
+    '피치',
+    '복숭아',
+    '오렌지',
+    '주황',
+    '골드',
+    '금색',
+    '브론즈',
+    '웜',
+    '살구',
+    '테라코타',
+  ];
+  const coolColors = [
+    'pink',
+    'berry',
+    'mauve',
+    'plum',
+    'rose',
+    'cool',
+    '핑크',
+    '베리',
+    '모브',
+    '플럼',
+    '자두',
+    '로즈',
+    '쿨',
+    '라벤더',
+  ];
 
-  const colorLower = productColor.toLowerCase();
+  const colorLower = normalizedColor.toLowerCase();
   const isWarmColor = warmColors.some((c) => colorLower.includes(c));
   const isCoolColor = coolColors.some((c) => colorLower.includes(c));
+  if (!isWarmColor && !isCoolColor) return undefined;
 
-  const userTone = personalColor.tone;
-
-  if ((userTone === 'warm' && isWarmColor) || (userTone === 'cool' && isCoolColor)) {
-    return {
-      isRecommended: true,
-      matchScore: 90,
-      reason: `${userTone === 'warm' ? '웜톤' : '쿨톤'}에 잘 어울리는 색상이에요`,
-    };
-  } else if ((userTone === 'warm' && isCoolColor) || (userTone === 'cool' && isWarmColor)) {
-    const alternatives =
-      userTone === 'warm' ? ['코랄', '피치', '오렌지 계열'] : ['핑크', '베리', '로즈 계열'];
-    return {
-      isRecommended: false,
-      matchScore: 50,
-      reason: `${userTone === 'warm' ? '웜톤' : '쿨톤'}에는 다른 색상이 더 어울릴 수 있어요`,
-      alternatives,
-    };
-  }
-
+  // 제품명에서 읽힌 색 이름은 색 계열 참고만 제공한다. 실제 색 좌표가 아니므로
+  // 개인 적합 판정·점수·종합점수 보너스를 만들지 않는다.
+  let family = '혼합';
+  if (isWarmColor && !isCoolColor) family = '웜';
+  if (isCoolColor && !isWarmColor) family = '쿨';
   return {
-    isRecommended: true,
-    matchScore: 75,
-    reason: '다양한 톤에 무난하게 어울리는 색상이에요',
+    reason: `제품명에서 ${family} 계열 색 이름을 찾았어요. 정확한 적합도는 색상 HEX가 있어야 확인할 수 있어요.`,
   };
 }
 
@@ -325,11 +364,12 @@ export async function analyzeCompatibility(
   // 종합 점수 계산
   const interactionPenalty = calculateInteractionPenalty(interactions);
   const baseScore = skinCompat.score;
-  // 컬러 매칭 보너스: 추천 색상 +5, 비추천 색상 -5, 매칭 데이터 없으면 0
+  // 컬러 매칭 보너스: 정확한 12톤 + #RRGGBB로 CIE 점수가 산출된 경우에만 반영.
+  // 색 이름의 정성 참고는 종합점수에 영향을 주지 않는다.
   let colorBonus = 0;
-  if (colorMatch?.isRecommended) {
+  if (typeof colorMatch?.matchScore === 'number' && colorMatch.isRecommended === true) {
     colorBonus = 5;
-  } else if (colorMatch) {
+  } else if (typeof colorMatch?.matchScore === 'number' && colorMatch.isRecommended === false) {
     colorBonus = -5;
   }
   const overallScore = Math.max(0, Math.min(100, baseScore - interactionPenalty + colorBonus));

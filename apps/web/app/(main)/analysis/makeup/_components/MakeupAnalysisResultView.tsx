@@ -35,6 +35,7 @@ import {
   SpectrumRow,
   TrustFooter,
 } from '@/components/analysis/report';
+import { FoundationList } from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
 
 interface MakeupAnalysisResultViewProps {
   result: MakeupAnalysisResult;
@@ -304,6 +305,14 @@ export function MakeupAnalysisResultView({
           })}
         </div>
       ),
+    });
+  }
+
+  if (result.foundationRecommendations && result.foundationRecommendations.length > 0) {
+    sections.push({
+      key: 'foundation',
+      title: '추천 파운데이션',
+      body: <FoundationList items={result.foundationRecommendations} />,
     });
   }
 

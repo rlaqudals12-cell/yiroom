@@ -36,6 +36,7 @@ import { ScreenContainer } from '@/components/ui';
 import { fetchIngredientOcr } from '@/lib/api/scan';
 import { downscaleToBase64 } from '@/lib/image/downscale';
 import type { OcrResult } from '@/lib/scan/ingredient-ocr';
+import { detectScanProductMetadata } from '@/lib/scan/product-metadata';
 import { buildScanVerdict, fetchScanUserAnalysis, type ScanVerdictData } from '@/lib/scan/verdict';
 import { useClerkSupabaseClient } from '@/lib/supabase';
 import { useTheme, spacing, radii, typography } from '@/lib/theme';
@@ -90,8 +91,10 @@ export default function ScanScreen(): React.JSX.Element {
           console.error('[scan] 프로필 조회 실패:', e);
         }
 
+        const productMetadata = detectScanProductMetadata(ocrResult);
         const v = await buildScanVerdict({
           ingredients: ocrResult.ingredients,
+          ...productMetadata,
           userAnalysis,
           supabase,
         });

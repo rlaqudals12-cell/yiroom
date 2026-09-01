@@ -72,6 +72,7 @@ import {
   SpectrumRow,
   TrustFooter,
 } from '@/components/analysis/report';
+import { FoundationList } from '@/app/(main)/analysis/personal-color/_components/AnalysisResult';
 
 // 시즌 한국어 변환
 const SEASON_LABELS: Record<string, string> = {
@@ -601,6 +602,16 @@ export default function MakeupAnalysisResultPage() {
               ) : (
                 <div className="bg-card rounded-xl p-6 shadow-sm text-center">
                   <p className="text-muted-foreground">{t('noColorRecommendation')}</p>
+                </div>
+              )}
+
+              {result.foundationRecommendations.length > 0 && (
+                <div
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm"
+                  data-testid="makeup-foundation-recommendations"
+                >
+                  <h3 className="font-semibold mb-4">추천 파운데이션</h3>
+                  <FoundationList items={result.foundationRecommendations} />
                 </div>
               )}
 

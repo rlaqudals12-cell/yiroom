@@ -10,6 +10,7 @@ import {
   AUTUMN_PALETTE,
   WINTER_PALETTE,
   FULL_DRAPE_PALETTE,
+  findNearestOpticalDrape,
   calculateDrapeInteraction,
   analyzeWithSeason,
   analyzeFullPaletteOptical,
@@ -29,6 +30,10 @@ describe('drape-palette', () => {
   // ============================================
 
   describe('시즌별 팔레트', () => {
+    it('화면 입력 HEX를 가장 가까운 표준 광학 색천으로 연결한다', () => {
+      const reference = findNearestOpticalDrape('#FF8A65');
+      expect(reference).toMatchObject({ name: '코랄', reflectance: 0.7, warmth: 0.75 });
+    });
     it('각 시즌 팔레트는 8개 색상을 포함해야 함', () => {
       expect(SPRING_PALETTE).toHaveLength(8);
       expect(SUMMER_PALETTE).toHaveLength(8);

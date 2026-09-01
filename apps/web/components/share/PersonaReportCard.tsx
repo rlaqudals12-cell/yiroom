@@ -135,7 +135,7 @@ interface PersonaReportCardProps {
   confidenceHintText?: string;
   /** 재현성 한 줄 — 진단서의 직인 */
   reproducibilityText: string;
-  /** 재현성 짧은 배지(헤더 승격용, 예: "재현성 검증") — 시뮬 지적: 최강 자산이 각주에 묻혀 있었음 */
+  /** 재현성 목표를 정직하게 알리는 짧은 배지(헤더 승격용) */
   reproBadgeText?: string;
   /** 발급일(로케일 포맷 완료) */
   dateText: string;

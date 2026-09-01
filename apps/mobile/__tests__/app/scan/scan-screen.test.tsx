@@ -188,6 +188,73 @@ describe('ScanScreen (성분 스캔)', () => {
     expect(mockFetchIngredientOcr).toHaveBeenCalledWith('clerk-token-test', 'SCALED64');
   });
 
+  it('OCR 제품명의 메이크업 카테고리·정확한 HEX를 verdict 호출에 전달한다', async () => {
+    mockLaunchLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file://lip.jpg' }],
+    });
+    mockFetchIngredientOcr.mockResolvedValue({
+      ...OCR_SUCCESS,
+      productName: '롬앤 쥬시래스팅 틴트 코랄 #87CEEB',
+      brandName: '롬앤',
+    });
+    mockBuildScanVerdict.mockResolvedValue(verdictData(true));
+
+    const { getByTestId } = renderScreen();
+    fireEvent.press(getByTestId('scan-pick-gallery'));
+
+    await waitFor(() => expect(getByTestId('scan-verdict')).toBeTruthy());
+    expect(mockBuildScanVerdict).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: 'lip',
+        color: '#87CEEB',
+      })
+    );
+  });
+
+  it('OCR 제품명에 HEX가 없으면 실제 색상명만 verdict의 정성 참고로 전달한다', async () => {
+    mockLaunchLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file://lip-name.jpg' }],
+    });
+    mockFetchIngredientOcr.mockResolvedValue({
+      ...OCR_SUCCESS,
+      productName: '코랄 립틴트',
+    });
+    mockBuildScanVerdict.mockResolvedValue(verdictData(true));
+
+    const { getByTestId } = renderScreen();
+    fireEvent.press(getByTestId('scan-pick-gallery'));
+
+    await waitFor(() => expect(getByTestId('scan-verdict')).toBeTruthy());
+    expect(mockBuildScanVerdict).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: 'lip',
+        color: '코랄',
+      })
+    );
+  });
+
+  it('3자리 HEX는 색조 카테고리만 전달하고 color 메타데이터는 전달하지 않는다', async () => {
+    mockLaunchLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file://short-hex.jpg' }],
+    });
+    mockFetchIngredientOcr.mockResolvedValue({
+      ...OCR_SUCCESS,
+      productName: '코랄 립틴트 #abc',
+    });
+    mockBuildScanVerdict.mockResolvedValue(verdictData(true));
+
+    const { getByTestId } = renderScreen();
+    fireEvent.press(getByTestId('scan-pick-gallery'));
+
+    await waitFor(() => expect(getByTestId('scan-verdict')).toBeTruthy());
+    const params = mockBuildScanVerdict.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+    expect(params.category).toBe('lip');
+    expect(params).not.toHaveProperty('color');
+  });
+
   it('OCR가 성분을 못 읽으면 정직 안내 + 재시도를 보여준다 (지어내지 않음)', async () => {
     mockLaunchLibrary.mockResolvedValue({
       canceled: false,

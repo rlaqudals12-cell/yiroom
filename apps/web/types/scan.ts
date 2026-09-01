@@ -160,8 +160,8 @@ export interface SkinCompatibility {
 }
 
 export interface ColorMatch {
-  isRecommended: boolean;
-  matchScore: number;
+  isRecommended?: boolean;
+  matchScore?: number;
   reason: string;
   alternatives?: string[];
 }

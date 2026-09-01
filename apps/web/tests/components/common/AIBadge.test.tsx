@@ -97,6 +97,13 @@ describe('AITransparencyNotice', () => {
     expect(notice).toHaveClass('my-custom-class');
   });
 
+  it('재현성 실측 전에는 검증 완료가 아닌 설계 목표만 표시한다', () => {
+    render(<AITransparencyNotice showReproducibility />);
+
+    expect(screen.getByText('같은 사진이면 같은 판정을 목표로 합니다.')).toBeInTheDocument();
+    expect(screen.queryByText(/검증했어요|재현성 검증/)).not.toBeInTheDocument();
+  });
+
   it('should include professional consultation recommendation', () => {
     render(<AITransparencyNotice />);
 

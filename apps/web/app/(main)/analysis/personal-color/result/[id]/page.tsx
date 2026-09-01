@@ -80,6 +80,7 @@ import { useExpertMode } from '@/hooks/useExpertMode';
 import { useUrlTab } from '@/hooks/useUrlTab';
 import { ExpertModeToggle } from '@/components/analysis/ExpertModeToggle';
 import { ExpertDataPanel } from '@/components/analysis/ExpertDataPanel';
+import { validateToneValue } from '@/lib/analysis/personal-color-v2';
 
 // DB 데이터 타입
 interface DbPersonalColorAssessment {
@@ -862,6 +863,11 @@ export default function PersonalColorResultPage() {
                   imageUrl={imageUrl}
                   bestColors={result.bestColors}
                   worstColors={result.worstColors}
+                  tone={
+                    result.paletteToneKey
+                      ? (validateToneValue(result.paletteToneKey) ?? undefined)
+                      : undefined
+                  }
                   // 서명 URL 1h 만료가 로드 실패의 주원인 — 재시도는 분석 재조회로 새 URL을 받아야 산다
                   onRetry={handleRetry}
                 />

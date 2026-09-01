@@ -9,6 +9,7 @@
  */
 
 import type { DrapeColor, MetalType } from '@/types/visual-analysis';
+import { calculateCIEDE2000, hexToLab } from '@/lib/color';
 
 // ============================================
 // 광학 속성 타입 정의
@@ -446,6 +447,21 @@ export const FULL_DRAPE_PALETTE: DrapeOpticalProperties[] = [
   ...AUTUMN_PALETTE,
   ...WINTER_PALETTE,
 ];
+
+/**
+ * 임의 HEX와 가장 가까운 표준 광학 색천을 찾는다.
+ *
+ * 이 함수는 색천 자체의 광학 메타데이터를 화면에 연결하기 위한 브리지다. 피부의 홍조·
+ * 멜라닌 등 실측 입력은 받지 않으므로 피부 반응 점수를 계산하거나 암시하지 않는다.
+ */
+export function findNearestOpticalDrape(hex: string): DrapeOpticalProperties {
+  const targetLab = hexToLab(hex);
+  return FULL_DRAPE_PALETTE.slice(1).reduce((nearest, candidate) => {
+    const nearestDistance = calculateCIEDE2000(targetLab, hexToLab(nearest.hex));
+    const candidateDistance = calculateCIEDE2000(targetLab, hexToLab(candidate.hex));
+    return candidateDistance < nearestDistance ? candidate : nearest;
+  }, FULL_DRAPE_PALETTE[0]);
+}
 
 // ============================================
 // 피부톤-드레이프 상호작용 계산

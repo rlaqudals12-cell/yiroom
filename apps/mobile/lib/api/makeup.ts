@@ -16,9 +16,9 @@
  * @see apps/web/lib/mock/makeup-analysis.ts (응답 필드·enum 정본)
  * @see docs/adr/ADR-118 (웹 API 정본 + 모바일 thin client)
  */
-import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
+import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 
 // ============================================
 // 1. 타입 (모바일 결과 화면이 소비하는 형태)
@@ -45,6 +45,8 @@ export interface MakeupAnalysisApiResult {
   };
   /** 추천 컬러 hex 목록 (립·아이섀도·블러셔 색상에서 추출) */
   bestColors: string[];
+  /** 저장된 PC 시즌에서 가져온 웹 파운데이션 호수 처방 */
+  foundationRecommendations: FoundationRecommendation[];
   /** AI 폴백 여부 — true면 UI에 정직하게 표시 */
   usedMock: boolean;
   /** 분석은 반환됐지만 서버 기록 저장이 실패했는지 */
@@ -53,6 +55,15 @@ export interface MakeupAnalysisApiResult {
   analysisId?: string;
   /** 서버 분석 시각 — 미저장 결과 신고 식별자에만 사용 */
   analyzedAt?: string;
+}
+
+export interface FoundationRecommendation {
+  shadeName: string;
+  undertone: 'warm' | 'cool' | 'neutral';
+  brandExample: string;
+  easyDescription: string;
+  oliveyoungAlt?: string;
+  tip?: string;
 }
 
 export interface MakeupAnalysisInput {
@@ -172,6 +183,35 @@ function collectBestColors(recs: WebColorRec[]): string[] {
   return Array.from(new Set(hexes)).slice(0, 8);
 }
 
+/** 웹 PC 처방 정본의 필수 필드가 온전한 항목만 모바일 결과에 전달한다. */
+export function parseFoundationRecommendations(value: unknown): FoundationRecommendation[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((item) => {
+    if (typeof item !== 'object' || item === null) return [];
+    const row = item as Record<string, unknown>;
+    if (
+      typeof row.shadeName !== 'string' ||
+      typeof row.brandExample !== 'string' ||
+      typeof row.easyDescription !== 'string' ||
+      !['warm', 'cool', 'neutral'].includes(String(row.undertone))
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        shadeName: row.shadeName,
+        undertone: row.undertone as FoundationRecommendation['undertone'],
+        brandExample: row.brandExample,
+        easyDescription: row.easyDescription,
+        ...(typeof row.oliveyoungAlt === 'string' ? { oliveyoungAlt: row.oliveyoungAlt } : {}),
+        ...(typeof row.tip === 'string' ? { tip: row.tip } : {}),
+      },
+    ];
+  });
+}
+
 type WebMakeupTip = { category?: unknown; tips?: unknown };
 
 /** makeupTips 배열에서 카테고리별 첫 팁 문구 */
@@ -279,6 +319,7 @@ export async function requestMakeupAnalysis(
       contour: firstTip(tips, '컨투어링') || '얼굴 외곽에 은은하게 음영을 넣어 입체감을 살리세요',
     },
     bestColors: collectBestColors(colorRecs),
+    foundationRecommendations: parseFoundationRecommendations(result.foundationRecommendations),
     usedMock: obj.usedMock === true,
     dbSaveFailed: obj.dbSaveFailed === true,
     analysisId: typeof data.id === 'string' ? data.id : undefined,

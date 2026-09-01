@@ -28,6 +28,18 @@ export const drapingPreviewStyles = StyleSheet.create({
     lineHeight: 18,
     marginBottom: spacing.smd,
   },
+  verdict: {
+    borderBottomColor: REPORT_COLORS.rule,
+    borderBottomWidth: 1,
+    borderTopColor: REPORT_COLORS.rule,
+    borderTopWidth: 1,
+    color: REPORT_COLORS.ink,
+    fontFamily: 'NanumMyeongjo_700Bold',
+    fontSize: typography.size.sm,
+    lineHeight: 20,
+    marginBottom: spacing.smd,
+    paddingVertical: spacing.sm,
+  },
   compareRow: {
     flexDirection: 'row',
     gap: spacing.smd,
@@ -59,6 +71,11 @@ export const drapingPreviewStyles = StyleSheet.create({
   },
   caption: {
     fontSize: typography.size.xs,
+  },
+  grade: {
+    color: REPORT_COLORS.ink,
+    fontSize: 11,
+    lineHeight: 16,
   },
   swatchRow: {
     flexDirection: 'row',

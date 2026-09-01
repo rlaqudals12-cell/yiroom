@@ -25,5 +25,7 @@ export {
   type BriefingAssembleContext,
   type BriefingMyColors,
   type BriefingTodayStyle,
+  type BriefingClosetOutfit,
+  type BriefingClosetOutfitItem,
   type BriefingPayload,
 } from './assemble';

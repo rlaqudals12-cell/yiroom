@@ -62,6 +62,15 @@ function successBody(overrides: Record<string, unknown> = {}) {
         { category: '베이스', tips: ['프라이머를 얇게 바르세요'] },
         { category: '립 메이크업', tips: ['그라데이션 립을 연출하세요'] },
       ],
+      foundationRecommendations: [
+        {
+          shadeName: '21호 웜 베이지',
+          undertone: 'warm',
+          brandExample: '에스티로더 더블웨어 2W1',
+          easyDescription: '노란 기가 도는 밝은 베이지 (피치빛)',
+          oliveyoungAlt: '클리오 킬커버 파운웨어 03 린넨',
+        },
+      ],
     },
     ...overrides,
   };
@@ -97,6 +106,11 @@ describe('requestMakeupAnalysis', () => {
     expect(result.recommendations.base).toBe('프라이머를 얇게 바르세요');
     expect(result.recommendations.lip).toBe('그라데이션 립을 연출하세요');
     expect(result.bestColors).toEqual(['#FF6B4A', '#FFAB91']);
+    expect(result.foundationRecommendations[0]).toMatchObject({
+      shadeName: '21호 웜 베이지',
+      brandExample: '에스티로더 더블웨어 2W1',
+      oliveyoungAlt: '클리오 킬커버 파운웨어 03 린넨',
+    });
     expect(result.usedMock).toBe(false);
     expect(result.analysisId).toBe('row-1');
   });

@@ -69,11 +69,15 @@ vi.mock('@/lib/scan/product-shelf', () => ({
 vi.mock('@/lib/capsule', () => ({
   getTodayDailyCapsule: vi.fn().mockResolvedValue(null),
 }));
+vi.mock('@/lib/inventory', () => ({
+  getInventoryItems: vi.fn().mockResolvedValue([]),
+}));
 
 import { GET, OPTIONS } from '@/app/api/briefing/route';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { getShelfItems } from '@/lib/scan/product-shelf';
 import { getTodayDailyCapsule } from '@/lib/capsule';
+import { getInventoryItems } from '@/lib/inventory';
 
 // collectAnalyses의 5개 limit 호출 순서: pc → skin → body → hair → makeup
 function queueAnalyses(opts: {
@@ -176,6 +180,56 @@ describe('GET /api/briefing', () => {
     });
     expect(body.data.todayStyle.outfit.colors).toHaveLength(5);
     expect(body.data.todayStyle.outfit.colors[0].hex).toMatch(/^#(?:123456|ABCDEF)$/i);
+  });
+
+  it('서명된 보유 의류를 기존 매처로 조립해 모바일 브리핑에 실사진 코디를 반환한다', async () => {
+    queueAnalyses({
+      pc: [
+        {
+          id: 'pc-closet',
+          season: 'spring',
+          created_at: new Date().toISOString(),
+          best_colors: [{ name: '코랄', hex: '#FF7F50' }],
+          image_analysis: {},
+        },
+      ],
+    });
+    const item = (id: string, subCategory: string) => ({
+      id,
+      clerkUserId: 'user-123',
+      category: 'closet',
+      subCategory,
+      name: `${subCategory}-${id}`,
+      imageUrl: `https://signed.example/${id}.jpg?token=private`,
+      originalImageUrl: null,
+      brand: null,
+      tags: [],
+      isFavorite: false,
+      useCount: 0,
+      lastUsedAt: null,
+      expiryDate: null,
+      metadata: {
+        color: ['코랄'],
+        season: ['spring', 'summer', 'autumn', 'winter'],
+        occasion: [],
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    vi.mocked(getInventoryItems).mockResolvedValueOnce([
+      item('top-1', 'top'),
+      item('bottom-1', 'bottom'),
+      item('shoes-1', 'shoes'),
+      item('bag-1', 'bag'),
+    ] as never);
+
+    const res = await GET(mobileReq());
+    const body = await res.json();
+
+    expect(getInventoryItems).toHaveBeenCalledWith('user-123', { category: 'closet' });
+    expect(body.data.todayStyle.closetItemCount).toBe(4);
+    expect(body.data.todayStyle.closetOutfit.items).toHaveLength(4);
+    expect(body.data.todayStyle.closetOutfit.items[0].imageUrl).toContain('token=private');
   });
 
   it('분석이 없으면 hasAnalyses=false, myColors=null, outfit=null', async () => {

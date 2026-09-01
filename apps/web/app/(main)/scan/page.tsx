@@ -20,6 +20,8 @@ import { ScanVerdict, type ScanVerdictData } from '@/components/scan/ScanVerdict
 import { IngredientCapture } from '@/components/scan/IngredientCapture';
 import { lookupProduct } from '@/lib/scan';
 import type { BarcodeResult, OcrResult } from '@/lib/scan';
+import { detectScannedProductColor } from '@/lib/scan/product-metadata';
+import { detectMakeupShelfCategory } from '@/lib/analysis/makeup/guidance';
 import type { ProductLookupResult } from '@/types/scan';
 
 type ScanMode = 'camera' | 'manual' | 'ingredient';
@@ -142,10 +144,23 @@ export default function ScanPage() {
     if (ocr.success && ocr.ingredients.length > 0) {
       setCompatibilityLoading(true);
       try {
+        // OCR 정본에는 별도 카테고리·색 필드가 없다. 제품명/브랜드에 실제로 적힌 값만
+        // 기존 화장대 카테고리 감지기에 통과시켜 전달하며, 이름을 색 좌표로 추정하지 않는다.
+        const makeupCategory = detectMakeupShelfCategory({
+          productName: ocr.productName,
+          productBrand: ocr.brandName,
+        });
+        const colorMetadata = makeupCategory
+          ? detectScannedProductColor(ocr.productName)
+          : undefined;
         const response = await fetch('/api/scan/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ingredients: ocr.ingredients }),
+          body: JSON.stringify({
+            ingredients: ocr.ingredients,
+            ...(makeupCategory ? { category: makeupCategory } : {}),
+            ...(colorMetadata ? { color: colorMetadata } : {}),
+          }),
         });
         if (response.ok) {
           const compat: ScanVerdictData = await response.json();

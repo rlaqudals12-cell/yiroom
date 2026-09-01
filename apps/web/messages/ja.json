@@ -503,7 +503,7 @@
         "description": "セルフィー1枚で分析したパーソナルカラー・肌・体型・ヘア・メイクの統合レポート"
       },
       "footer": {
-        "reproducibility": "同じ写真なら同じ結果 — 同一写真を繰り返し分析し、判定が一致するか検証しました。",
+        "reproducibility": "同じ写真なら同じ判定になることを目指しています。",
         "aiDisclaimer": "分析結果はAIが生成した参考情報であり、医学的診断に代わるものではありません。",
         "referenceDisclaimer": "分析結果は参考情報であり、医学的診断に代わるものではありません。"
       },
@@ -622,7 +622,7 @@
         "drapingLabel": "ドレーピング",
         "confidenceHint": "— AIがこの判定に確信する度合いです",
         "faceShape": "顔型",
-        "reproBadge": "再現性検証済み",
+        "reproBadge": "同じ判定を目指す設計",
         "photoOptIn": "レポートに写真を載せる",
         "bestLabel": "ベストカラー",
         "accentLabel": "ポイントカラー",
@@ -645,7 +645,7 @@
         "contrastMedium": "中間",
         "contrastHigh": "高め",
         "confidence": "分析信頼度{value}%",
-        "repro": "同じ写真は同じ結果 — 再現性検証済み"
+        "repro": "同じ写真なら同じ判定になることを目指しています"
       },
       "shareReport": {
         "shareTitle": "私のスタイルレポート | Yiroom",
@@ -699,7 +699,7 @@
   },
   "landing": {
     "promiseBanner": "ずっと無料 · 広告なし · 中立なおすすめ",
-    "trust1": "同じ写真は同じ結果 — 再現性検証済み",
+    "trust1": "同じ写真なら同じ判定になることを目指しています",
     "trust2": "元の写真の保存は任意 — 初期設定はオフです",
     "trust3": "コア分析はずっと無料",
     "trust4": "認証リテーラーのみ接続 — 偽物を遮断",
