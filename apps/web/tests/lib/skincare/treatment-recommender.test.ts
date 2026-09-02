@@ -3,6 +3,7 @@ import {
   recommendTreatments,
   extractTreatmentConcerns,
   TREATMENT_DISCLAIMER,
+  buildHomeCareBoundary,
 } from '@/lib/skincare/treatment-recommender';
 
 describe('treatment-recommender', () => {
@@ -15,7 +16,7 @@ describe('treatment-recommender', () => {
         { id: 'wrinkles', value: 70 },
       ];
       const concerns = extractTreatmentConcerns(metrics);
-      expect(concerns).toEqual(['hydration', 'pores']);
+      expect(concerns).toEqual(['dryness', 'pores']);
     });
 
     it('모든 지표가 41+ 이면 빈 배열', () => {
@@ -88,6 +89,31 @@ describe('treatment-recommender', () => {
       for (let i = 1; i < results.length; i++) {
         expect(results[i].matchScore).toBeLessThanOrEqual(results[i - 1].matchScore);
       }
+    });
+
+    it('실측 저점에는 시술명·점수 없이 일반 한계 신호만 내보낸다', () => {
+      const boundary = buildHomeCareBoundary([
+        { id: 'hydration', value: 30 },
+        { id: 'pigmentation', value: 35 },
+      ]);
+
+      expect(boundary).not.toBeNull();
+      expect(boundary?.concernIds).toEqual(['dryness', 'pigmentation']);
+      expect(boundary).not.toHaveProperty('options');
+      expect(boundary?.disclaimer).toContain('시술이 필요한지 판정할 수 없어요');
+    });
+
+    it('폴백 결과에서는 홈케어 한계선을 만들지 않는다', () => {
+      expect(buildHomeCareBoundary([{ id: 'hydration', value: 20 }], true)).toBeNull();
+    });
+
+    it('화면에서 합성할 수 있는 비실측 지표만 낮으면 경계를 만들지 않는다', () => {
+      expect(
+        buildHomeCareBoundary([
+          { id: 'elasticity', value: 20 },
+          { id: 'darkCircles', value: 20 },
+        ])
+      ).toBeNull();
     });
   });
 });

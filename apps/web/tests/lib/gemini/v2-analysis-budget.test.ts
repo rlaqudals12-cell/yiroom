@@ -70,6 +70,8 @@ describe('v2 분석 호출 예산', () => {
 
     const config = generateContentMock.mock.calls[0][0].config;
     expect(config.abortSignal).toBeInstanceOf(AbortSignal);
+    expect(config.temperature).toBe(0);
+    expect(generateContentMock.mock.calls[0][0].model).toBe('gemini-3.5-flash');
   });
 
   it('완료된 호출의 AbortSignal은 정리 단계에서 abort된다', async () => {

@@ -24,6 +24,12 @@ import {
 } from '@/lib/mock/personal-color';
 import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import {
+  createAnalysisImageFingerprint,
+  createVerdictCacheEntry,
+  findCachedVerdictForUser,
+  syncCachedVerdictImagesForUser,
+} from '@/lib/analysis/verdict-cache';
+import {
   awardAnalysisBadge,
   checkAndAwardAllAnalysisBadge,
   addXp,
@@ -158,6 +164,38 @@ export async function POST(req: NextRequest) {
       wristImageBase64,
       ...(selfReport ? { selfReport } : {}),
     };
+
+    const verdictFingerprint = createAnalysisImageFingerprint(
+      userId,
+      'personal-color',
+      [
+        ['front', analysisInput.frontImageBase64],
+        ['left', analysisInput.leftImageBase64],
+        ['right', analysisInput.rightImageBase64],
+        ['wrist', analysisInput.wristImageBase64],
+      ],
+      { selfReport: selfReport ?? null, contrastLevel: contrastLevel ?? null }
+    );
+
+    if (!FORCE_MOCK && !useMock) {
+      const cached = await findCachedVerdictForUser(userId, 'personal-color', verdictFingerprint);
+      if (cached) {
+        const cachedData = await syncCachedVerdictImagesForUser({
+          userId,
+          axis: 'personal-color',
+          cachedData: cached.data,
+          bucketName: 'personal-color-images',
+          images: { front: analysisInput.frontImageBase64 },
+          imageStorageAllowed: saveImage,
+        });
+        return NextResponse.json({
+          ...cached.payload,
+          success: true,
+          data: cachedData,
+          cacheHit: true,
+        });
+      }
+    }
 
     // 폴백 Mock 시드 — 같은 사용자·같은 얼굴 사진이면 폴백 시즌도 항상 같아야 한다(재현성 계약).
     // 축 이름은 v2 라우트와 동일한 'personal-color': V1/V2 경로가 달라도 같은 시드가 나온다.
@@ -369,6 +407,7 @@ export async function POST(req: NextRequest) {
     const analysisReliability =
       aiResult.imageQuality?.analysisReliability ||
       determineReliability(hasMultiAngle, !!wristImageBase64);
+    const analyzedAt = new Date().toISOString();
 
     // 계절 타입 변환 (소문자 → DB 형식)
     const seasonMap: Record<string, string> = {
@@ -457,6 +496,17 @@ export async function POST(req: NextRequest) {
             ...(contrastLevel ? { contrastLevel } : {}),
             // Mock 폴백 여부 저장 — 재방문 시 MockDataNotice 표시 + 개인화 라벨 정직성 판단용
             usedMock,
+            ...(!usedMock
+              ? {
+                  verdictCache: createVerdictCacheEntry('personal-color', verdictFingerprint, {
+                    result: { ...result, analyzedAt },
+                    usedMock: false,
+                    analysisReliability,
+                    imagesCount,
+                    gamification: { badgeResults: [], xpAwarded: 0 },
+                  }),
+                }
+              : {}),
             multiAngle: hasMultiAngle
               ? {
                   imagesCount,
@@ -544,7 +594,7 @@ export async function POST(req: NextRequest) {
     // 클라이언트의 sessionStorage 캐시 → 결과 페이지 sessionStorage 폴백으로 정상 표시
     if (dbSaveFailed) {
       const syntheticId = crypto.randomUUID();
-      const now = new Date().toISOString();
+      const now = analyzedAt;
 
       return NextResponse.json({
         success: true,
@@ -606,7 +656,7 @@ export async function POST(req: NextRequest) {
       data: dbData,
       result: {
         ...result,
-        analyzedAt: new Date().toISOString(),
+        analyzedAt,
       },
       usedMock,
       analysisReliability,

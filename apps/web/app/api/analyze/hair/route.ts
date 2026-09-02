@@ -21,6 +21,16 @@ import { analyzeHair } from '@/lib/gemini';
 import { isGeminiAvailable } from '@/lib/gemini/client';
 import { classifyByRange } from '@/lib/utils/conditional-helpers';
 import { buildFallbackSeed } from '@/lib/utils/seeded-random';
+import { getLatestPersonalColorResult } from '@/lib/analysis/cross-module';
+import { matchStyles } from '@/lib/analysis/hair/style-matcher';
+import { classifyTexture } from '@/lib/analysis/hair/texture-classifier';
+import {
+  createAnalysisImageFingerprint,
+  createVerdictCacheEntry,
+  findCachedVerdictForUser,
+  syncCachedVerdictImagesForUser,
+} from '@/lib/analysis/verdict-cache';
+import type { FaceShapeType } from '@/lib/analysis/hair/types';
 import { addXp, type BadgeAwardResult } from '@/lib/gamification';
 import {
   createScalpHealthNutritionAlert,
@@ -34,6 +44,52 @@ const XP_ANALYSIS_COMPLETE = 10;
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
+
+const FACE_SHAPES = new Set<FaceShapeType>([
+  'oval',
+  'round',
+  'square',
+  'heart',
+  'oblong',
+  'diamond',
+  'rectangle',
+]);
+const PERSONAL_COLOR_SEASONS = new Set(['spring', 'summer', 'autumn', 'winter']);
+
+function normalizeFaceShape(value: unknown): FaceShapeType | undefined {
+  return typeof value === 'string' && FACE_SHAPES.has(value as FaceShapeType)
+    ? (value as FaceShapeType)
+    : undefined;
+}
+
+function normalizePersonalColorSeason(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const season = value.trim().toLowerCase();
+  return PERSONAL_COLOR_SEASONS.has(season) ? season : undefined;
+}
+
+/** 살아 있는 분석값만 3-Factor 엔진에 넘긴다. 없는 축은 엔진의 중립점수를 쓴다. */
+function buildMatchedStyleRecommendations(
+  result: HairAnalysisResult,
+  personalColorSeason?: string
+): NonNullable<HairAnalysisResult['hairStyleRecommendations']> {
+  const source = result.hairStyleRecommendations;
+  const faceShape = normalizeFaceShape(source?.faceShapeGuess);
+  const textureCode = classifyTexture(result.hairType, { thickness: result.hairThickness });
+  const matches = matchStyles({ faceShape, textureCode, personalColorSeason }, 5);
+
+  return {
+    faceShapeGuess: source?.faceShapeGuess ?? 'unknown',
+    recommendedStyles: matches.map((style) => ({
+      name: style.name,
+      reason: style.matchReasons.join(' · '),
+      matchReasons: style.matchReasons,
+      matchScore: style.matchScore,
+    })),
+    avoidStyles: source?.avoidStyles ?? [],
+    colorSuggestion: source?.colorSuggestion ?? null,
+  };
+}
 
 const hairAnalysisRequestSchema = z.object({
   imageBase64: z.string().min(1),
@@ -83,13 +139,43 @@ export async function POST(req: NextRequest) {
     const bioDenied = await requireBiometricConsent(userId);
     if (bioDenied) return bioDenied;
 
+    const personalColor = await getLatestPersonalColorResult(createServiceRoleClient(), userId);
+    const personalColorSeason = normalizePersonalColorSeason(personalColor?.season);
+
     const fallbackSeed = buildFallbackSeed(userId, 'hair', imageBase64);
+    const shouldUseMock = FORCE_MOCK || useMock || !isGeminiAvailable();
+    const verdictFingerprint = createAnalysisImageFingerprint(
+      userId,
+      'hair',
+      [['hair', imageBase64]],
+      { personalColorAssessmentId: personalColor?.id ?? null }
+    );
+
+    if (!FORCE_MOCK && !useMock) {
+      const cached = await findCachedVerdictForUser(userId, 'hair', verdictFingerprint);
+      if (cached) {
+        const cachedData = await syncCachedVerdictImagesForUser({
+          userId,
+          axis: 'hair',
+          cachedData: cached.data,
+          bucketName: 'hair-images',
+          images: { hair: imageBase64 },
+          imageStorageAllowed,
+        });
+        return NextResponse.json({
+          ...cached.payload,
+          success: true,
+          data: cachedData,
+          cacheHit: true,
+        });
+      }
+    }
 
     // AI 분석 실행
     let result: HairAnalysisResult;
     let usedMock = false;
 
-    if (FORCE_MOCK || useMock || !isGeminiAvailable()) {
+    if (shouldUseMock) {
       // Mock 모드
       result = generateMockHairAnalysisResult({ seed: fallbackSeed });
       usedMock = true;
@@ -123,9 +209,30 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Mock 폴백은 예시 결과이므로 새 스타일 처방을 덧붙이지 않는다. 실분석에서는 DB가
+    // 잠시 실패해도 얼굴형·모질 두 축으로 결과를 돌려줄 수 있게 먼저 중립 시즌으로 계산한다.
+    if (!usedMock) {
+      result.hairStyleRecommendations = buildMatchedStyleRecommendations(
+        result,
+        personalColorSeason
+      );
+    }
+
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
       const supabase = createServiceRoleClient();
+
+      // 저장된 퍼스널컬러가 있을 때만 세 번째 축을 더한다. 조회 실패·미진단은 중립으로 유지한다.
+      if (!usedMock) {
+        try {
+          result.hairStyleRecommendations = buildMatchedStyleRecommendations(
+            result,
+            personalColorSeason
+          );
+        } catch {
+          // 퍼스널컬러 미진단·조회 실패 — 앞서 계산한 얼굴형×모질 결과를 유지한다.
+        }
+      }
 
       // 분석 처리는 필수 생체동의로 허용하되, 원본 보존은 별도 이미지 저장 동의가 있을 때만 한다.
       // 동의 조회 실패도 hasConsent=false로 닫혀 이미지가 서버에 남지 않는다.
@@ -144,6 +251,8 @@ export async function POST(req: NextRequest) {
         const metric = result.metrics.find((m) => m.id === id);
         return metric?.value ?? null;
       };
+      const analyzedAt = new Date().toISOString();
+      const responseResult = { ...result, analyzedAt };
 
       // DB에 저장
       const { data, error } = await supabase
@@ -170,6 +279,14 @@ export async function POST(req: NextRequest) {
             styleRecommendations: result.hairStyleRecommendations?.recommendedStyles ?? [],
             analysisReliability: result.analysisReliability,
             usedMock,
+            ...(!usedMock && {
+              verdictCache: createVerdictCacheEntry('hair', verdictFingerprint, {
+                result: responseResult,
+                usedMock: false,
+                gamification: { badgeResults: [], xpAwarded: 0 },
+                alerts: [],
+              }),
+            }),
           },
         })
         .select()
@@ -236,10 +353,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         data: data,
-        result: {
-          ...result,
-          analyzedAt: new Date().toISOString(),
-        },
+        result: responseResult,
         usedMock,
         gamification: gamificationResult,
         alerts, // 크로스 모듈 알림

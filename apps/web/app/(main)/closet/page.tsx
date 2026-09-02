@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { InventoryGrid, CategoryFilter, ItemDetailSheet } from '@/components/inventory';
+import { ClosetInsightCard } from '@/components/inventory/recommendation';
 import { filterClosetItems, buildClosetSearchFilter } from '@/lib/inventory/client';
 // 비공개 버킷 이미지 해석 — 'use client' 번들에 서버 repository가 딸려오지 않도록 image-url만 직접 import
 import { resolveInventoryImageUrl, signInventoryImagePaths } from '@/lib/inventory/image-url';
@@ -301,6 +302,13 @@ export default function ClosetPage() {
             오늘의 코디 받기
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
+        </div>
+      )}
+
+      {/* 구매·착용 기록이 있을 때만 계산하며, 없는 값은 빈 상태로 정직하게 남긴다. */}
+      {items.length > 0 && !fetchError && (
+        <div className="px-4 pt-4">
+          <ClosetInsightCard items={items} />
         </div>
       )}
 

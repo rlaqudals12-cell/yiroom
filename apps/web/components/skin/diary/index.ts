@@ -11,3 +11,7 @@ export { default as RoutineCheckbox } from './RoutineCheckbox';
 export { default as MonthlyReportCard } from './MonthlyReportCard';
 export { default as CorrelationChart } from './CorrelationChart';
 export { default as FactorTrendChart } from './FactorTrendChart';
+export {
+  default as ProductProgressReplay,
+  type ProductProgressReplayItem,
+} from './ProductProgressReplay';

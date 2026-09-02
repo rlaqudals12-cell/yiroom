@@ -215,10 +215,10 @@ describe('matchStyles 텍스처별 매칭', () => {
   });
 
   it('텍스처 미지정 시 기본 그룹 2(웨이브)로 계산한다', () => {
-    matchStyles({ faceShape: 'oval', textureCode: '2b' }, 18);
     const withoutTexture = matchStyles({ faceShape: 'oval' }, 18);
     // textureCode 없이도 기본값이 적용되어 결과가 존재
     expect(withoutTexture.length).toBe(18);
+    expect(withoutTexture.every((result) => result.breakdown.textureScore === 15)).toBe(true);
     // 2b와 유사한 경향 (완전 동일하지는 않음 — textureInfo 보정 차이)
   });
 
@@ -374,6 +374,25 @@ describe('matchStyles 매칭 이유', () => {
 // =============================================================================
 
 describe('matchStyles 복합 입력', () => {
+  it('사각형도 세 축 입력이 있으면 동점 나열이 아닌 순위를 만든다', () => {
+    const results = matchStyles({
+      faceShape: 'square',
+      textureCode: '2b',
+      personalColorSeason: 'summer',
+    });
+
+    expect(new Set(results.map((result) => result.matchScore)).size).toBeGreaterThan(1);
+    expect(results[0].matchReasons.length).toBeGreaterThan(0);
+    expect(results[0].matchReasons.join(' ')).toMatch(/[가-힣]/);
+  });
+
+  it('같은 얼굴형에서도 직모와 곱슬의 추천 순위가 달라진다', () => {
+    const straight = matchStyles({ faceShape: 'square', textureCode: '1a' }, 5);
+    const curly = matchStyles({ faceShape: 'square', textureCode: '3b' }, 5);
+
+    expect(straight.map((result) => result.name)).not.toEqual(curly.map((result) => result.name));
+  });
+
   it('모든 Factor를 지정하면 최적의 결과를 반환한다', () => {
     const results = matchStyles({
       faceShape: 'oval',

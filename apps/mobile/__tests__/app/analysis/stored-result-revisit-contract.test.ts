@@ -249,7 +249,13 @@ const STORED_RESULT_CASES: StoredResultCase[] = [
       concerns: ['frizz'],
       recommendations: {
         careTips: ['미지근한 물로 샴푸해 주세요'],
-        styleRecommendations: [{ name: '레이어드 컷' }],
+        styleRecommendations: [
+          {
+            name: '레이어드 컷',
+            matchReasons: ['저장된 웨이브 결을 자연스럽게 살려요'],
+            matchScore: 94,
+          },
+        ],
         usedFallback: false,
       },
       session_id: null,
@@ -321,6 +327,78 @@ describe('5축 저장 결과 재방문 계약', () => {
       expect(requestMock).not.toHaveBeenCalled();
     }
   );
+
+  it('피부 저장 재방문은 서버가 보존한 일반 홈케어 한계만 복원한다', async () => {
+    const skinCase = STORED_RESULT_CASES.find((item) => item.axis === 'skin')!;
+    const destination = buildStoredResultDestination('skin', skinCase.historyId);
+    mockSearchParams = destination.params;
+    mockRowsByTable = {
+      [skinCase.table]: {
+        ...skinCase.row,
+        recommendations: {
+          usedFallback: false,
+          homeCareBoundary: {
+            concernIds: ['pigmentation'],
+            disclaimer:
+              '사진만으로 홈케어가 충분한지 또는 시술이 필요한지 판정할 수 없어요. 불편이 지속되면 피부과 전문의와 상담해 주세요.',
+          },
+        },
+      },
+    };
+
+    const screen = render(
+      React.createElement(ThemeProvider, null, React.createElement(SkinResultScreen))
+    );
+    await waitFor(() => expect(screen.getByTestId('skin-analysis-result')).toBeTruthy());
+
+    fireEvent.press(screen.getByTestId('skin-analysis-result-section-home-care-boundary-trigger'));
+    expect(screen.getByText(/불편이 지속되면 피부과 전문의와 상담/)).toBeTruthy();
+    expect(screen.queryByText(/IPL|필링|보톡스/)).toBeNull();
+  });
+
+  it('피부 저장 재방문이 폴백이면 저장 행에 남은 한계 데이터도 노출하지 않는다', async () => {
+    const skinCase = STORED_RESULT_CASES.find((item) => item.axis === 'skin')!;
+    const destination = buildStoredResultDestination('skin', skinCase.historyId);
+    mockSearchParams = destination.params;
+    mockRowsByTable = {
+      [skinCase.table]: {
+        ...skinCase.row,
+        recommendations: {
+          usedFallback: true,
+          homeCareBoundary: {
+            concernIds: ['pigmentation'],
+            disclaimer: '레거시 저장값',
+          },
+        },
+      },
+    };
+
+    const screen = render(
+      React.createElement(ThemeProvider, null, React.createElement(SkinResultScreen))
+    );
+    await waitFor(() => expect(screen.getByTestId('skin-analysis-result')).toBeTruthy());
+
+    expect(
+      screen.queryByTestId('skin-analysis-result-section-home-care-boundary-trigger')
+    ).toBeNull();
+  });
+
+  it('헤어 저장 결과의 추천 순서와 근거를 복원하되 점수는 노출하지 않는다', async () => {
+    const hairCase = STORED_RESULT_CASES.find((item) => item.axis === 'hair')!;
+    const destination = buildStoredResultDestination('hair', hairCase.historyId);
+    mockSearchParams = destination.params;
+    mockRowsByTable = { [hairCase.table]: hairCase.row };
+
+    const screen = render(
+      React.createElement(ThemeProvider, null, React.createElement(HairResultScreen))
+    );
+    await waitFor(() => expect(screen.getByTestId('hair-analysis-result')).toBeTruthy());
+
+    fireEvent.press(screen.getByTestId('hair-analysis-result-section-care-trigger'));
+    expect(screen.getByText('레이어드 컷 — 저장된 웨이브 결을 자연스럽게 살려요')).toBeTruthy();
+    expect(screen.queryByText(/94점|매칭.*94/)).toBeNull();
+    expect(mockRequestHairAnalysis).not.toHaveBeenCalled();
+  });
 
   it('메이크업 저장 결과의 nullable 점수는 결과 UI에 점수로 노출되지 않는다', () => {
     const source = fs.readFileSync(

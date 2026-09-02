@@ -16,9 +16,9 @@
 // 면책 고지 (ADR-024, AI기본법)
 // ============================================
 
-/** 시술 추천 시 반드시 표시할 면책 고지 */
+/** 홈케어 한계선과 의료기관 선택지를 함께 보여줄 때 반드시 표시할 고지 */
 export const TREATMENT_DISCLAIMER = {
-  ko: '이 정보는 AI가 생성한 참고용이며, 의학적 진단을 대체하지 않습니다. 실제 시술은 반드시 피부과 전문의와 상담 후 결정하세요.',
+  ko: '사진만으로 홈케어가 충분한지 또는 시술이 필요한지 판정할 수 없어요. 불편이 지속되면 피부과 전문의와 상담해 주세요.',
   en: 'This is AI-generated reference information and does not replace medical diagnosis. Always consult a dermatologist before any procedure.',
 } as const;
 
@@ -171,6 +171,11 @@ export interface TreatmentRecommendation {
   disclaimer: string;
 }
 
+export interface HomeCareBoundaryInfo {
+  concernIds: string[];
+  disclaimer: string;
+}
+
 /**
  * 피부 분석 결과 기반 시술 추천
  *
@@ -210,7 +215,7 @@ export function recommendTreatments(
       matchScore *= 0.7;
     }
 
-    const reason = `${matchedTargets.join(', ')} 고민에 효과적 (${treatment.recommendedSessions})`;
+    const reason = `${matchedTargets.join(', ')} 관련 고민을 상담할 때 확인할 수 있는 일반 선택지예요.`;
 
     recommendations.push({
       treatment,
@@ -232,5 +237,37 @@ export function recommendTreatments(
  * @returns 시술 대상 고민 ID 배열
  */
 export function extractTreatmentConcerns(metrics: { id: string; value: number }[]): string[] {
-  return metrics.filter((m) => m.value <= 40).map((m) => m.id);
+  const metricToConcern: Record<string, string> = {
+    hydration: 'dryness',
+    pores: 'pores',
+    pigmentation: 'pigmentation',
+    wrinkles: 'wrinkles',
+    sensitivity: 'redness',
+    trouble: 'acne',
+  };
+
+  return [
+    ...new Set(
+      metrics
+        .filter((metric) => metric.value <= 40)
+        .map((metric) => metricToConcern[metric.id])
+        .filter((concern): concern is string => typeof concern === 'string')
+    ),
+  ];
+}
+
+/** 실측 저점이 있을 때만 내보내는 사용자 대면 홈케어 한계선 신호. */
+export function buildHomeCareBoundary(
+  metrics: { id: string; value: number }[],
+  usedFallback = false
+): HomeCareBoundaryInfo | null {
+  if (usedFallback) return null;
+
+  const concernIds = extractTreatmentConcerns(metrics);
+  if (concernIds.length === 0) return null;
+
+  return {
+    concernIds,
+    disclaimer: TREATMENT_DISCLAIMER.ko,
+  };
 }

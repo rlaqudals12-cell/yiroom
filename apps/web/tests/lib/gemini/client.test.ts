@@ -51,6 +51,15 @@ describe('Gemini Client Adapter', () => {
   });
 
   describe('generateContent', () => {
+    it('판정 모델 상수는 환경 오버라이드와 무관하게 버전이 고정된다', async () => {
+      process.env.GEMINI_MODEL_FAST = 'latest';
+      const { FAST_MODEL, PINNED_VERDICT_MODEL } = await import('@/lib/gemini/client');
+
+      expect(PINNED_VERDICT_MODEL).toBe('gemini-3.5-flash');
+      expect(FAST_MODEL).toBe('gemini-3.1-flash-lite');
+      delete process.env.GEMINI_MODEL_FAST;
+    });
+
     it('should return text from response', async () => {
       mockGenerateContent.mockResolvedValue({ text: 'Hello from Gemini' });
 

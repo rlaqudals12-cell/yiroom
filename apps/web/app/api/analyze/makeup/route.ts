@@ -25,6 +25,12 @@ import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
 import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import { getLatestPersonalColorResult } from '@/lib/analysis/cross-module';
 import { FOUNDATION_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
+import {
+  createAnalysisImageFingerprint,
+  createVerdictCacheEntry,
+  findCachedVerdictForUser,
+  syncCachedVerdictImagesForUser,
+} from '@/lib/analysis/verdict-cache';
 
 // Gemini 응답에서 유효한 값만 필터링하기 위한 Zod 스키마
 const makeupConcernSchema = z.enum([
@@ -143,8 +149,34 @@ export async function POST(req: NextRequest) {
     const bioDenied = await requireBiometricConsent(userId);
     if (bioDenied) return bioDenied;
 
-    const fallbackSeed = buildFallbackSeed(userId, 'makeup', imageBase64);
     const personalColorSeason = await loadStoredPersonalColorSeason(userId);
+    const verdictFingerprint = createAnalysisImageFingerprint(
+      userId,
+      'makeup',
+      [['front', imageBase64]],
+      { personalColorSeason }
+    );
+    if (!FORCE_MOCK && !useMock) {
+      const cached = await findCachedVerdictForUser(userId, 'makeup', verdictFingerprint);
+      if (cached) {
+        const cachedData = await syncCachedVerdictImagesForUser({
+          userId,
+          axis: 'makeup',
+          cachedData: cached.data,
+          bucketName: 'makeup-images',
+          images: { makeup: imageBase64 },
+          imageStorageAllowed,
+        });
+        return NextResponse.json({
+          ...cached.payload,
+          success: true,
+          data: cachedData,
+          cacheHit: true,
+        });
+      }
+    }
+
+    const fallbackSeed = buildFallbackSeed(userId, 'makeup', imageBase64);
     const generateFallback = () =>
       generateMockMakeupAnalysisResult({
         seed: fallbackSeed,
@@ -219,6 +251,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const analyzedAt = new Date().toISOString();
+    const responseResult = { ...result, analyzedAt };
+
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
       const supabase = createServiceRoleClient();
@@ -267,6 +302,16 @@ export async function POST(req: NextRequest) {
             foundationRecommendations: result.foundationRecommendations,
             analysisReliability: result.analysisReliability,
             usedMock,
+            ...(!usedMock
+              ? {
+                  verdictCache: createVerdictCacheEntry('makeup', verdictFingerprint, {
+                    result: responseResult,
+                    usedMock: false,
+                    gamification: { badgeResults: [], xpAwarded: 0 },
+                    alerts: [],
+                  }),
+                }
+              : {}),
           },
           analysis_reliability: result.analysisReliability,
         })
@@ -339,10 +384,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         data: data,
-        result: {
-          ...result,
-          analyzedAt: new Date().toISOString(),
-        },
+        result: responseResult,
         usedMock,
         gamification: gamificationResult,
         alerts, // 크로스 모듈 알림
@@ -360,12 +402,9 @@ export async function POST(req: NextRequest) {
         data: {
           id: syntheticId,
           clerk_user_id: userId,
-          created_at: new Date().toISOString(),
+          created_at: analyzedAt,
         },
-        result: {
-          ...result,
-          analyzedAt: new Date().toISOString(),
-        },
+        result: responseResult,
         usedMock,
         gamification: { badgeResults: [], xpAwarded: 0 },
         alerts: [],

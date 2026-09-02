@@ -1,8 +1,8 @@
 /**
- * 제품→결과 추적 모듈
+ * 제품 사용 기록과 분석 경과를 함께 되짚는 모듈
  *
- * "이 크림 3주 사용 → 수분도 +14%"
- * 사용자가 구매한 제품의 효과를 피부/모발 분석 점수 변화로 추적
+ * 제품 개봉일 전후의 분석 기록을 나란히 보여준다.
+ * 두 기록의 동시 발생만 다루며 제품 효과나 인과관계를 판정하지 않는다.
  *
  * @module lib/product-tracking
  * @description 이룸 고유 가치 — 어떤 전문가도, 어떤 앱도 할 수 없는 것
@@ -34,6 +34,8 @@ export interface TrackedProduct {
 /** 분석 점수 스냅샷 */
 export interface ScoreSnapshot {
   date: string;
+  /** 저장된 분석이 Mock/폴백 결과인지 여부 — 경과 재생에서 출처를 숨기지 않는다. */
+  usedFallback?: boolean;
   /** S-1 피부 지표 */
   skin?: {
     hydration?: number;
@@ -43,6 +45,7 @@ export interface ScoreSnapshot {
     elasticity?: number;
     pigmentation?: number;
     trouble?: number;
+    sensitivity?: number;
     overallScore?: number;
   };
   /** H-1 헤어 지표 */
@@ -80,6 +83,16 @@ export interface ProductEffectAnalysis {
   reliability: 'high' | 'medium' | 'low';
 }
 
+/** 제품 개봉일 전후에 실제 저장된 분석 기록 한 쌍. */
+export interface ProductProgressReplay {
+  product: TrackedProduct;
+  beforeSnapshot: ScoreSnapshot;
+  afterSnapshot: ScoreSnapshot;
+  analysis: ProductEffectAnalysis;
+  /** 전후 기록 중 하나라도 예시 결과이면 낮은 신뢰도로 고지한다. */
+  includesFallback: boolean;
+}
+
 // ============================================
 // 효과 분석 로직
 // ============================================
@@ -102,8 +115,9 @@ export function analyzeProductEffect(
 ): ProductEffectAnalysis {
   const startDate = new Date(product.startDate);
   const currentDate = new Date(currentSnapshot.date);
-  const durationDays = Math.floor(
-    (currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+  const durationDays = Math.max(
+    0,
+    Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
   );
 
   const changes: ProductEffectAnalysis['changes'] = [];
@@ -121,6 +135,7 @@ export function analyzeProductEffect(
         { id: 'elasticity', name: '탄력' },
         { id: 'pigmentation', name: '색소침착' },
         { id: 'trouble', name: '트러블' },
+        { id: 'sensitivity', name: '민감도' },
         { id: 'overallScore', name: '종합 점수' },
       ];
 
@@ -187,21 +202,8 @@ export function analyzeProductEffect(
     reliability = 'low'; // 2주 미만
   }
 
-  // 요약 생성
-  const improved = changes.filter((c) => c.trend === 'improved');
-  const worsened = changes.filter((c) => c.trend === 'worsened');
-
-  let summary: string;
-  if (improved.length > 0 && worsened.length === 0) {
-    const topImproved = improved.sort((a, b) => b.change - a.change)[0];
-    summary = `${product.productName} 사용 ${durationDays}일 — ${topImproved.metricName} ${topImproved.change > 0 ? '+' : ''}${topImproved.change}점 개선`;
-  } else if (worsened.length > 0 && improved.length === 0) {
-    summary = `${product.productName} 사용 ${durationDays}일 — 일부 지표 하락, 제품 변경 검토 권장`;
-  } else if (improved.length > 0 && worsened.length > 0) {
-    summary = `${product.productName} 사용 ${durationDays}일 — ${improved.length}개 지표 개선, ${worsened.length}개 지표 하락`;
-  } else {
-    summary = `${product.productName} 사용 ${durationDays}일 — 유의미한 변화 없음 (더 사용 후 재평가)`;
-  }
+  // 사용자 대면 요약은 인과를 주장하지 않고 실제로 함께 저장된 기록만 말한다.
+  const summary = `${product.productName} 개봉일로부터 ${durationDays}일 뒤 저장 기록까지 피부 지표 ${changes.length}개를 비교했어요. 계속 사용했는지는 확인할 수 없으며, 제품의 효과나 원인을 뜻하지 않아요.`;
 
   return {
     productId: product.productId,
@@ -210,6 +212,41 @@ export function analyzeProductEffect(
     changes,
     summary,
     reliability,
+  };
+}
+
+/**
+ * 제품 개봉일을 경계로 가장 가까운 이전 기록과 가장 최신 이후 기록을 고른다.
+ * 전후 기록이 모두 있을 때만 재생 가능하며, 결과는 인과 추정이 아닌 기록 비교다.
+ */
+export function buildProductProgressReplay(
+  product: TrackedProduct,
+  snapshots: ScoreSnapshot[]
+): ProductProgressReplay | null {
+  const openedAt = new Date(product.startDate).getTime();
+  if (!Number.isFinite(openedAt)) return null;
+
+  const ordered = snapshots
+    .filter((snapshot) => Number.isFinite(new Date(snapshot.date).getTime()))
+    .slice()
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const beforeCandidates = ordered.filter(
+    (snapshot) => new Date(snapshot.date).getTime() <= openedAt
+  );
+  const afterCandidates = ordered.filter(
+    (snapshot) => new Date(snapshot.date).getTime() > openedAt
+  );
+
+  const beforeSnapshot = beforeCandidates[beforeCandidates.length - 1];
+  const afterSnapshot = afterCandidates[afterCandidates.length - 1];
+  if (!beforeSnapshot || !afterSnapshot) return null;
+
+  return {
+    product,
+    beforeSnapshot,
+    afterSnapshot,
+    analysis: analyzeProductEffect(product, beforeSnapshot, afterSnapshot),
+    includesFallback: beforeSnapshot.usedFallback === true || afterSnapshot.usedFallback === true,
   };
 }
 

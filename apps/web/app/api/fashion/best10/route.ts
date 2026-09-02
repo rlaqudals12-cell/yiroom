@@ -37,7 +37,9 @@ const postBest10Schema = z.object({
   style: z.enum(styleCategories),
   personalColor: z.enum(['Spring', 'Summer', 'Autumn', 'Winter']).optional(),
   season: z.enum(['spring', 'summer', 'autumn', 'winter']).optional(),
-  occasion: z.enum(['casual', 'formal', 'workout', 'date', 'travel']).optional(),
+  occasion: z
+    .enum(['casual', 'formal', 'workout', 'date', 'travel', 'work', 'wedding_guest'])
+    .optional(),
 });
 
 /**

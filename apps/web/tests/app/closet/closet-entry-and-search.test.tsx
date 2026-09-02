@@ -143,3 +143,32 @@ describe('등록 진입 경로', () => {
     expect(pushMock).toHaveBeenCalledWith('/closet/add/batch');
   });
 });
+
+describe('옷장 감사 배선', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    queryResult = {
+      data: [
+        makeRow({
+          use_count: 5,
+          metadata: {
+            color: ['네이비'],
+            season: ['autumn'],
+            occasion: ['work'],
+            price: 50_000,
+            purchaseDate: '2026-01-01',
+          },
+        }),
+      ],
+      error: null,
+    };
+  });
+
+  it('실제 옷장 페이지가 CPW 기반 감사 표면을 마운트한다', async () => {
+    render(<ClosetPage />);
+
+    expect(await screen.findByTestId('closet-insight-card')).toBeInTheDocument();
+    expect(screen.getByText('옷장 감사')).toBeInTheDocument();
+    expect(screen.getByText('10,000원')).toBeInTheDocument();
+  });
+});

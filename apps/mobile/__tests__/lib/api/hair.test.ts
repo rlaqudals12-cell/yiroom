@@ -52,8 +52,14 @@ function successBody(overrides: Record<string, unknown> = {}) {
       hairStyleRecommendations: {
         faceShapeGuess: 'oval',
         recommendedStyles: [
-          { name: '레이어드 컷', reason: '웨이브 결을 살려요' },
+          {
+            name: '레이어드 컷',
+            reason: '구형 근거는 사용하지 않아요',
+            matchReasons: ['웨이브 결을 살려요', '둥근 얼굴의 세로선을 보완해요'],
+            matchScore: 96,
+          },
           { name: '사이드 파트', reason: '얼굴형과 조화를 이뤄요' },
+          '내추럴 보브',
         ],
         avoidStyles: [],
         colorSuggestion: null,
@@ -88,7 +94,17 @@ describe('requestHairAnalysis', () => {
     expect(result.scalpCondition).toBe('oily');
     expect(result.scores).toEqual({ shine: 60, elasticity: 72, density: 55, scalpHealth: 65 });
     expect(result.careRoutine).toEqual(['미지근한 물로 샴푸하세요', '주 1-2회 헤어 마스크']);
-    expect(result.recommendedStyles).toEqual(['레이어드 컷', '사이드 파트']);
+    expect(result.recommendedStyles).toEqual([
+      {
+        name: '레이어드 컷',
+        matchReasons: ['웨이브 결을 살려요', '둥근 얼굴의 세로선을 보완해요'],
+      },
+      { name: '사이드 파트', matchReasons: ['얼굴형과 조화를 이뤄요'] },
+      { name: '내추럴 보브', matchReasons: [] },
+    ]);
+    expect(result.recommendedStyles).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ matchScore: expect.any(Number) })])
+    );
     expect(result.usedMock).toBe(false);
     expect(result.analysisId).toBe('row-1');
   });

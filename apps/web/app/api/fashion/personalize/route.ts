@@ -22,7 +22,9 @@ const personalizeSchema = z.object({
   // 체형 (선택)
   bodyType: z.enum(['S', 'W', 'N']).optional(),
   // 상황 (선택) - Occasion 타입 준수
-  occasion: z.enum(['casual', 'formal', 'workout', 'date', 'travel']).optional(),
+  occasion: z
+    .enum(['casual', 'formal', 'workout', 'date', 'travel', 'work', 'wedding_guest'])
+    .optional(),
   // 계절 (선택)
   season: z.enum(['spring', 'summer', 'autumn', 'winter']).optional(),
   // 선호 스타일 (선택)
@@ -117,7 +119,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 트렌드 보너스 적용 시 정렬
     if (prioritizeTrends) {
       uniqueRecommendations.sort(
-        (a, b) => ((b as { trendBonus?: number }).trendBonus || 0) - ((a as { trendBonus?: number }).trendBonus || 0)
+        (a, b) =>
+          ((b as { trendBonus?: number }).trendBonus || 0) -
+          ((a as { trendBonus?: number }).trendBonus || 0)
       );
     }
 

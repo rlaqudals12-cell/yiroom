@@ -79,6 +79,20 @@ describe('Fashion RAG', () => {
       expect(hasFormalTip).toBe(true);
     });
 
+    it('출근 질문을 별도 TPO로 감지한다', async () => {
+      const result = await searchFashionItems(null, '회사 출근 코디 추천해줘');
+
+      expect(result.recommendations[0].occasion).toBe('work');
+      expect(result.generalTips.some((tip) => tip.includes('출근'))).toBe(true);
+    });
+
+    it('하객 질문을 별도 TPO로 감지한다', async () => {
+      const result = await searchFashionItems(null, '결혼식 하객 코디 추천해줘');
+
+      expect(result.recommendations[0].occasion).toBe('wedding_guest');
+      expect(result.generalTips.some((tip) => tip.includes('예식'))).toBe(true);
+    });
+
     it('데이트 관련 질문에 데이트 스타일을 추천한다', async () => {
       const result = await searchFashionItems(null, '데이트할 때 코디 추천해줘');
 

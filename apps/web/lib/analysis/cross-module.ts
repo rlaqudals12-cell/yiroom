@@ -26,6 +26,7 @@ export interface PersonalColorAssessment {
   wrist_image_url?: string;
   images_count?: number;
   analysis_reliability?: 'high' | 'medium' | 'low';
+  makeup_recommendations?: { foundation?: string };
   /** 구행은 undefined. 명시적 true일 때만 후속 개인화 입력에서 제외한다. */
   image_analysis?: {
     usedMock?: boolean;

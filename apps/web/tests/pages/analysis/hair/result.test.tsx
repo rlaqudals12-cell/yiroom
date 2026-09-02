@@ -137,6 +137,21 @@ const mockDbHairAnalysis = {
     insight: '전반적으로 건강한 모발 상태입니다. 수분 보충에 신경 쓰시면 더 좋아요.',
     ingredients: ['아르간 오일', '히알루론산', '판테놀'],
     careTips: ['주 2회 딥 컨디셔닝', '열 스타일링 시 보호제 사용', '두피 마사지 권장'],
+    styleRecommendations: [
+      {
+        name: '웨이브 미디엄',
+        reason: '사각형 얼굴형과 웨이브 모질에 어울려요',
+        matchReasons: [
+          '사각형 얼굴형에 잘 어울리는 스타일이에요',
+          '웨이브 모발에 자연스럽게 어울려요',
+        ],
+      },
+      {
+        name: '레이어드 숏',
+        reason: '웨이브 모질에 자연스럽게 어울려요',
+        matchReasons: ['웨이브 모발에 자연스럽게 어울려요'],
+      },
+    ],
     analysisReliability: 'high',
   },
   created_at: new Date().toISOString(),
@@ -540,16 +555,20 @@ describe('HairAnalysisResultPage', () => {
       });
     });
 
-    it('컷은 통합 분석으로 유도하되 염색은 약속하지 않는다(통합 결과에 염색 컬러 없음)', async () => {
+    it('저장된 엔진 추천의 이름과 한국어 근거를 노출하고 구형 안내를 대체한다', async () => {
       render(<HairAnalysisResultPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('어울리는 컷은 얼굴형을 함께 봐야 정확해요')).toBeInTheDocument();
+        expect(screen.getByTestId('hair-style-recommendations')).toHaveTextContent('웨이브 미디엄');
       });
 
-      // 통합 분석 유도 문구에 '염색'이 남아 있으면 빈 약속(통합 결과는 염색 컬러를 렌더하지 않음)
-      expect(screen.getByTestId('top-actions-card')).not.toHaveTextContent('염색');
-      expect(screen.getByTestId('hair-style-consult-cta')).not.toHaveTextContent('염색');
+      expect(screen.getByTestId('hair-style-recommendations')).toHaveTextContent(
+        '사각형 얼굴형에 잘 어울리는 스타일이에요'
+      );
+      expect(screen.queryByTestId('hair-style-consult-cta')).not.toBeInTheDocument();
+      expect(screen.getByTestId('top-actions-card')).toHaveTextContent(
+        '웨이브 미디엄부터 살펴보세요'
+      );
     });
   });
 });

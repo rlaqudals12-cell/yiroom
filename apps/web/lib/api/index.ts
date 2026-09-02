@@ -35,6 +35,7 @@ export {
   checkImageConsent,
   uploadImageToStorage,
   checkConsentAndUploadImages,
+  rollbackConsentImagesOrMarkCleanupPending,
 } from './image-consent';
 export type { AnalysisType, ImageConsentResult } from './image-consent';
 

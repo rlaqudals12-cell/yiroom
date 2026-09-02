@@ -467,6 +467,24 @@ describe('closetMatcher', () => {
       expect(recs[0].occasionRelaxed).toBeUndefined();
     });
 
+    it.each([
+      ['work', '출근'],
+      ['wedding_guest', '하객'],
+    ] as const)('%s(%s) 태그도 같은 하드 필터 계약을 따른다', (occasion, _label) => {
+      const tagged = createMockItem({
+        id: `${occasion}-top`,
+        subCategory: 'top',
+        metadata: { color: ['블랙'], season: [], occasion: [occasion] },
+      });
+
+      const recs = recommendFromCloset([tagged, untaggedTop], {
+        category: 'top',
+        occasion,
+      });
+
+      expect(recs.map((rec) => rec.item.id)).toEqual([`${occasion}-top`]);
+    });
+
     it('칩을 전환하면 결과가 실제로 바뀌어야 한다', () => {
       const closet = [formalTop, casualTop, bottom];
 

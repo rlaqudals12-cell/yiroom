@@ -8,6 +8,7 @@ import {
   ImageUploadUncertainError,
   uploadImageToStorage,
   checkConsentAndUploadImages,
+  rollbackConsentImagesOrMarkCleanupPending,
 } from '@/lib/api/image-consent';
 
 const ACTIVE_CONSENT = {
@@ -505,5 +506,78 @@ describe('checkConsentAndUploadImages', () => {
     expect(
       (mockSupabase.storage as { from: ReturnType<typeof vi.fn> }).from
     ).not.toHaveBeenCalled();
+  });
+});
+
+describe('rollbackConsentImagesOrMarkCleanupPending', () => {
+  it('스토리지 롤백이 실패하면 기존 동의 행을 cleanup-pending 상태로 전환한다', async () => {
+    const remove = vi.fn().mockResolvedValue({ error: { message: 'storage unavailable' } });
+    const update = vi.fn();
+    const mockSupabase = createMockSupabase({
+      storage: { from: vi.fn(() => ({ remove })) },
+    });
+    const imageChain = mockSupabase as Record<string, ReturnType<typeof vi.fn>>;
+    const from = imageChain.from;
+    const originalFrom = from.getMockImplementation();
+    from.mockImplementation((table: string) =>
+      table === 'image_consents' ? imageChain : originalFrom?.(table)
+    );
+    imageChain.update = update.mockReturnValue(imageChain);
+    imageChain.select = vi.fn(() => imageChain);
+    imageChain.eq = vi.fn(() => imageChain);
+    imageChain.maybeSingle
+      .mockResolvedValueOnce({ data: ACTIVE_CONSENT, error: null })
+      .mockResolvedValueOnce({ data: { id: 'consent_1' }, error: null });
+
+    await expect(
+      rollbackConsentImagesOrMarkCleanupPending(
+        mockSupabase as never,
+        'user_123',
+        'skin',
+        'skin-images',
+        ['user_123/orphan.jpg']
+      )
+    ).resolves.toBeUndefined();
+
+    expect(remove).toHaveBeenCalledWith(['user_123/orphan.jpg']);
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        consent_given: false,
+        withdrawal_at: expect.any(String),
+        cleanup_reconciled_at: null,
+      })
+    );
+    expect(imageChain.eq).toHaveBeenCalledWith('updated_at', ACTIVE_CONSENT.updated_at);
+  });
+
+  it('스토리지 롤백과 cleanup-pending 표식이 모두 실패하면 예외로 차단한다', async () => {
+    const remove = vi.fn().mockResolvedValue({ error: { message: 'storage unavailable' } });
+    const update = vi.fn();
+    const mockSupabase = createMockSupabase({
+      storage: { from: vi.fn(() => ({ remove })) },
+    });
+    const imageChain = mockSupabase as Record<string, ReturnType<typeof vi.fn>>;
+    const from = imageChain.from;
+    const originalFrom = from.getMockImplementation();
+    from.mockImplementation((table: string) =>
+      table === 'image_consents' ? imageChain : originalFrom?.(table)
+    );
+    imageChain.update = update.mockReturnValue(imageChain);
+    imageChain.select = vi.fn(() => imageChain);
+    imageChain.eq = vi.fn(() => imageChain);
+    imageChain.maybeSingle
+      .mockResolvedValueOnce({ data: ACTIVE_CONSENT, error: null })
+      .mockResolvedValueOnce({ data: null, error: { message: 'db unavailable' } })
+      .mockResolvedValueOnce({ data: null, error: { message: 'db unavailable' } });
+
+    await expect(
+      rollbackConsentImagesOrMarkCleanupPending(
+        mockSupabase as never,
+        'user_123',
+        'skin',
+        'skin-images',
+        ['user_123/orphan.jpg']
+      )
+    ).rejects.toThrow('Image cleanup could not be scheduled');
   });
 });

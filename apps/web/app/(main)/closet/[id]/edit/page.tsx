@@ -56,6 +56,29 @@ const CATEGORY_LABELS: Record<ClothingCategory, string> = {
   accessory: '액세서리',
 };
 
+interface ClosetAuditMetadata {
+  price?: number;
+  purchaseDate?: string;
+}
+
+/** 빈값·잘못된 값은 저장하지 않아 옷장 감사 계산에 가짜 구매 기록이 섞이지 않게 한다. */
+function buildClosetAuditMetadata(
+  priceInput: string,
+  purchaseDateInput: string
+): ClosetAuditMetadata {
+  const price = Number(priceInput.trim());
+  const parsedDate = new Date(`${purchaseDateInput}T00:00:00Z`);
+  const isValidPurchaseDate =
+    /^\d{4}-\d{2}-\d{2}$/.test(purchaseDateInput) &&
+    !Number.isNaN(parsedDate.getTime()) &&
+    parsedDate.toISOString().slice(0, 10) === purchaseDateInput;
+
+  return {
+    ...(priceInput.trim() && Number.isFinite(price) && price > 0 ? { price } : {}),
+    ...(isValidPurchaseDate ? { purchaseDate: purchaseDateInput } : {}),
+  };
+}
+
 export default function EditClothingPage() {
   const router = useRouter();
   const params = useParams();
@@ -75,6 +98,8 @@ export default function EditClothingPage() {
   const [category, setCategory] = useState<ClothingCategory>('top');
   const [subCategory, setSubCategory] = useState('');
   const [brand, setBrand] = useState('');
+  const [price, setPrice] = useState('');
+  const [purchaseDate, setPurchaseDate] = useState('');
   const [colors, setColors] = useState<string[]>([]);
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [occasions, setOccasions] = useState<Occasion[]>([]);
@@ -114,6 +139,17 @@ export default function EditClothingPage() {
       setCategory((item.sub_category as ClothingCategory) || 'top');
       setSubCategory(item.sub_category || '');
       setBrand(item.brand || '');
+      setPrice(
+        typeof metadata.price === 'number' && Number.isFinite(metadata.price) && metadata.price > 0
+          ? String(metadata.price)
+          : ''
+      );
+      setPurchaseDate(
+        typeof metadata.purchaseDate === 'string' &&
+          buildClosetAuditMetadata('', metadata.purchaseDate).purchaseDate
+          ? metadata.purchaseDate
+          : ''
+      );
       setColors(metadata.color || []);
       setSeasons(metadata.season || []);
       setOccasions(metadata.occasion || []);
@@ -160,6 +196,7 @@ export default function EditClothingPage() {
 
     setSaving(true);
     try {
+      const auditMetadata = buildClosetAuditMetadata(price, purchaseDate);
       const { error } = await supabase
         .from('user_inventory')
         .update({
@@ -172,6 +209,7 @@ export default function EditClothingPage() {
             season: seasons,
             occasion: occasions,
             pattern,
+            ...auditMetadata,
           },
           updated_at: new Date().toISOString(),
         })
@@ -344,6 +382,35 @@ export default function EditClothingPage() {
             placeholder="예: ZARA"
           />
         </div>
+
+        {/* 옷장 감사 입력 — 둘 다 선택이며, 없는 값은 추정하지 않는다. */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="purchase-price">구매 가격 (선택)</Label>
+            <Input
+              id="purchase-price"
+              type="number"
+              min="1"
+              step="1"
+              inputMode="numeric"
+              value={price}
+              onChange={(event) => setPrice(event.target.value)}
+              placeholder="예: 59000"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="purchase-date">구매일 (선택)</Label>
+            <Input
+              id="purchase-date"
+              type="date"
+              value={purchaseDate}
+              onChange={(event) => setPurchaseDate(event.target.value)}
+            />
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          입력하면 옷장 감사의 착용당 비용과 다시 볼 옷 계산에 활용돼요.
+        </p>
 
         {/* 색상 */}
         {colors.length > 0 && (

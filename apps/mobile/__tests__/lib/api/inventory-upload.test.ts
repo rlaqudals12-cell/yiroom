@@ -10,6 +10,7 @@
 
 import {
   uploadInventoryImage,
+  classifyInventoryImage,
   recordInventoryItemUsage,
   recordInventoryOutfitWear,
   createUploadItemId,
@@ -242,6 +243,25 @@ describe('uploadInventoryImage', () => {
       if (originalYiroom !== undefined) process.env.EXPO_PUBLIC_YIROOM_API_URL = originalYiroom;
       if (originalApi !== undefined) process.env.EXPO_PUBLIC_API_URL = originalApi;
     }
+  });
+});
+
+describe('classifyInventoryImage TPO 계약', () => {
+  it('웹이 허용한 출근·하객 태그만 보존하고 미지원 값은 버린다', async () => {
+    global.fetch = jest.fn().mockResolvedValue(
+      okResponse({
+        suggestedName: '네이비 재킷',
+        category: 'outer',
+        colors: ['네이비'],
+        seasons: ['autumn'],
+        occasions: ['work', 'wedding_guest', 'party', 1],
+        usedFallback: false,
+      })
+    ) as unknown as typeof fetch;
+
+    const result = await classifyInventoryImage('data:image/jpeg;base64,AAAA', 'token-1', BASE);
+
+    expect(result.occasions).toEqual(['work', 'wedding_guest']);
   });
 });
 

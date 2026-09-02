@@ -7,6 +7,11 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+const { findCachedVerdictForUserMock, syncCachedVerdictImagesForUserMock } = vi.hoisted(() => ({
+  findCachedVerdictForUserMock: vi.fn(),
+  syncCachedVerdictImagesForUserMock: vi.fn(),
+}));
+
 // Mock 모듈 설정
 vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn(),
@@ -14,6 +19,12 @@ vi.mock('@clerk/nextjs/server', () => ({
 
 vi.mock('@/lib/supabase/service-role', () => ({
   createServiceRoleClient: vi.fn(),
+}));
+
+vi.mock('@/lib/analysis/verdict-cache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analysis/verdict-cache')>()),
+  findCachedVerdictForUser: findCachedVerdictForUserMock,
+  syncCachedVerdictImagesForUser: syncCachedVerdictImagesForUserMock,
 }));
 
 vi.mock('@/lib/gemini', () => ({
@@ -159,6 +170,8 @@ describe('POST /api/analyze/body', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    findCachedVerdictForUserMock.mockResolvedValue(null);
+    syncCachedVerdictImagesForUserMock.mockResolvedValue(mockDbResult);
     vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
       ReturnType<typeof auth>
     >);
@@ -222,6 +235,31 @@ describe('POST /api/analyze/body', () => {
           }),
         }),
       };
+    });
+  });
+
+  describe('판정 캐시', () => {
+    it('같은 입력의 저장 판정이 있으면 AI를 다시 호출하지 않고 이미지 슬롯을 동기화한다', async () => {
+      const imageBase64 = 'data:image/jpeg;base64,/9j/' + 'A'.repeat(200);
+      findCachedVerdictForUserMock.mockResolvedValue({
+        data: mockDbResult,
+        payload: { result: mockBodyAnalysisResult, usedMock: false },
+      });
+
+      const response = await POST(createMockPostRequest({ imageBase64 }));
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.cacheHit).toBe(true);
+      expect(syncCachedVerdictImagesForUserMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user_test123',
+          axis: 'body',
+          bucketName: 'body-images',
+          images: expect.objectContaining({ front: imageBase64 }),
+        })
+      );
+      expect(analyzeBody).not.toHaveBeenCalled();
     });
   });
 

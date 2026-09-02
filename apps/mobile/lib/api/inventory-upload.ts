@@ -51,12 +51,21 @@ export type InventoryClassifyCategory =
   | 'bag'
   | 'accessory';
 export type InventoryClassifySeason = 'spring' | 'summer' | 'autumn' | 'winter';
+export type InventoryClassifyOccasion =
+  | 'casual'
+  | 'formal'
+  | 'workout'
+  | 'date'
+  | 'travel'
+  | 'work'
+  | 'wedding_guest';
 
 export interface InventoryClassificationResult {
   suggestedName?: string;
   category?: InventoryClassifyCategory;
   colors: string[];
   seasons: InventoryClassifySeason[];
+  occasions: InventoryClassifyOccasion[];
   usedFallback: boolean;
 }
 
@@ -70,6 +79,15 @@ const CLASSIFY_CATEGORIES = new Set<InventoryClassifyCategory>([
   'accessory',
 ]);
 const CLASSIFY_SEASONS = new Set<InventoryClassifySeason>(['spring', 'summer', 'autumn', 'winter']);
+const CLASSIFY_OCCASIONS = new Set<InventoryClassifyOccasion>([
+  'casual',
+  'formal',
+  'workout',
+  'date',
+  'travel',
+  'work',
+  'wedding_guest',
+]);
 
 export class InventoryUploadError extends Error {
   public readonly status: number;
@@ -283,12 +301,19 @@ export async function classifyInventoryImage(
           typeof value === 'string' && CLASSIFY_SEASONS.has(value as InventoryClassifySeason)
       )
     : [];
+  const occasions = Array.isArray(raw.occasions)
+    ? raw.occasions.filter(
+        (value): value is InventoryClassifyOccasion =>
+          typeof value === 'string' && CLASSIFY_OCCASIONS.has(value as InventoryClassifyOccasion)
+      )
+    : [];
 
   return {
     suggestedName: typeof raw.suggestedName === 'string' ? raw.suggestedName : undefined,
     category,
     colors,
     seasons,
+    occasions,
     usedFallback: raw.usedFallback === true,
   };
 }

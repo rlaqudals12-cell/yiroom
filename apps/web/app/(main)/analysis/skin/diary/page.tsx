@@ -14,6 +14,8 @@ import {
   MonthlyReportCard,
   CorrelationChart,
   FactorTrendChart,
+  ProductProgressReplay,
+  type ProductProgressReplayItem,
 } from '@/components/skin/diary';
 import type {
   SkinDiaryEntry,
@@ -26,9 +28,59 @@ import type {
 import { analyzeCorrelations } from '@/lib/skincare/correlation';
 import { DEFAULT_INSIGHTS } from '@/lib/mock/skin-diary';
 import { useUrlTab } from '@/hooks/useUrlTab';
+import { getShelfItems } from '@/lib/scan/product-shelf';
+import { detectProductCategory } from '@/lib/skincare/shelf-routine-sync';
+import { ratingToFeedback } from '@/lib/briefing';
+import {
+  buildProductProgressReplay,
+  type ScoreSnapshot,
+  type TrackedProduct,
+} from '@/lib/product-tracking';
 
 // 탭 목록 — URL ?tab= 동기화용 (뒤로가기 시 탭 유지)
 const DIARY_TABS = ['calendar', 'insights'] as const;
+
+interface SkinAnalysisSnapshotRow {
+  created_at: string;
+  hydration: number | null;
+  oil_level: number | null;
+  pores: number | null;
+  wrinkles: number | null;
+  pigmentation: number | null;
+  sensitivity: number | null;
+  overall_score: number | null;
+  recommendations: unknown;
+}
+
+function hasFallbackProvenance(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  const recommendations = value as Record<string, unknown>;
+  return recommendations.usedMock === true || recommendations.usedFallback === true;
+}
+
+function toScoreSnapshot(row: SkinAnalysisSnapshotRow): ScoreSnapshot {
+  const skin = {
+    hydration: row.hydration ?? undefined,
+    oil: row.oil_level ?? undefined,
+    pores: row.pores ?? undefined,
+    wrinkles: row.wrinkles ?? undefined,
+    pigmentation: row.pigmentation ?? undefined,
+    sensitivity: row.sensitivity ?? undefined,
+    overallScore: row.overall_score ?? undefined,
+  };
+  return {
+    date: row.created_at,
+    skin,
+    usedFallback: hasFallbackProvenance(row.recommendations),
+  };
+}
+
+function getReactionLabel(rating?: number): string {
+  const feedback = ratingToFeedback(rating);
+  if (feedback === 'positive') return '잘 맞아요로 기록';
+  if (feedback === 'negative') return '글쎄요로 기록';
+  return '반응 미기록';
+}
 
 // DB 엔트리를 앱 엔트리로 변환
 function transformDbToEntry(dbEntry: DbSkinDiaryEntry): SkinDiaryEntry {
@@ -70,6 +122,9 @@ export default function SkinDiaryPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [productProgress, setProductProgress] = useState<ProductProgressReplayItem[]>([]);
+  const [productProgressLoading, setProductProgressLoading] = useState(false);
+  const [productProgressError, setProductProgressError] = useState(false);
 
   // 월별 엔트리 로드
   const loadEntries = useCallback(
@@ -102,12 +157,75 @@ export default function SkinDiaryPage() {
     [supabase]
   );
 
+  const loadProductProgress = useCallback(async () => {
+    if (!userId) return;
+
+    setProductProgressLoading(true);
+    setProductProgressError(false);
+    try {
+      const [{ items }, snapshotsResult] = await Promise.all([
+        getShelfItems(supabase, userId, { limit: 30 }),
+        supabase
+          .from('skin_analyses')
+          .select(
+            'created_at, hydration, oil_level, pores, wrinkles, pigmentation, sensitivity, overall_score, recommendations'
+          )
+          .order('created_at', { ascending: true })
+          .limit(50),
+      ]);
+
+      if (snapshotsResult.error) throw snapshotsResult.error;
+      const snapshots = ((snapshotsResult.data ?? []) as SkinAnalysisSnapshotRow[]).map(
+        toScoreSnapshot
+      );
+      const replays = items.flatMap<ProductProgressReplayItem>((item) => {
+        if (item.status !== 'owned' || !item.openedAt || !detectProductCategory(item)) return [];
+
+        const trackedProduct: TrackedProduct = {
+          id: item.id,
+          productId: item.productId ?? item.id,
+          productName: item.productName,
+          productBrand: item.productBrand ?? '',
+          category: 'skincare',
+          startDate: item.openedAt.toISOString(),
+          isActive: true,
+          notes: item.userNote,
+        };
+        const replay = buildProductProgressReplay(trackedProduct, snapshots);
+        if (!replay) return [];
+
+        return [
+          {
+            id: item.id,
+            brand: item.productBrand,
+            openedAt: item.openedAt.toISOString(),
+            reactionLabel: getReactionLabel(item.rating),
+            replay,
+          },
+        ];
+      });
+      setProductProgress(replays);
+    } catch (progressError) {
+      console.error('[Diary] Product progress load error:', progressError);
+      setProductProgress([]);
+      setProductProgressError(true);
+    } finally {
+      setProductProgressLoading(false);
+    }
+  }, [supabase, userId]);
+
   // 초기 로드
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       loadEntries(currentYear, currentMonth);
     }
   }, [isLoaded, isSignedIn, loadEntries, currentYear, currentMonth]);
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn && userId) {
+      void loadProductProgress();
+    }
+  }, [isLoaded, isSignedIn, loadProductProgress, userId]);
 
   // 월 변경 핸들러
   const handleMonthChange = useCallback((year: number, month: number) => {
@@ -361,6 +479,11 @@ export default function SkinDiaryPage() {
 
             {/* 인사이트 탭 */}
             <TabsContent value="insights" className="space-y-4">
+              <ProductProgressReplay
+                items={productProgress}
+                loading={productProgressLoading}
+                error={productProgressError}
+              />
               {entries.length === 0 ? (
                 <Card>
                   <CardContent className="py-12 text-center">

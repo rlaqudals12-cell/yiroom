@@ -87,7 +87,12 @@ const RESULT = {
   scores: { shine: 60, elasticity: 72, density: 55, scalpHealth: 65 },
   mainConcerns: ['푸석함'],
   careRoutine: ['미지근한 물로 샴푸하세요'],
-  recommendedStyles: ['레이어드 컷'],
+  recommendedStyles: [
+    {
+      name: '레이어드 컷',
+      matchReasons: ['웨이브 결을 자연스럽게 살려요', '얼굴선을 부드럽게 정돈해요'],
+    },
+  ],
   usedMock: false,
   dbSaveFailed: false,
 };
@@ -127,5 +132,21 @@ describe('헤어 결과 진단지 표현', () => {
 
     await waitFor(() => expect(screen.getByTestId('hair-analysis-result-fallback')).toBeTruthy());
     expect(screen.getAllByText('예시 결과 · 낮은 신뢰도')).toHaveLength(2);
+  });
+
+  it('서버가 정렬한 헤어스타일 이름과 근거만 노출하고 점수는 표시하지 않는다', async () => {
+    const screen = renderWithTheme(<HairResultScreen />);
+
+    await waitFor(() => expect(screen.getByTestId('hair-analysis-result')).toBeTruthy());
+    expect(screen.getAllByText("'레이어드 컷' 스타일이 잘 어울려요").length).toBeGreaterThan(0);
+
+    fireEvent.press(screen.getByTestId('hair-analysis-result-section-care-trigger'));
+
+    expect(
+      screen.getByText(
+        '레이어드 컷 — 웨이브 결을 자연스럽게 살려요 · 얼굴선을 부드럽게 정돈해요'
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText(/매칭.*\d+|\d+점/)).toBeNull();
   });
 });

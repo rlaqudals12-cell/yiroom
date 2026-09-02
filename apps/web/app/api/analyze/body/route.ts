@@ -22,6 +22,13 @@ import {
 import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import { requireBiometricConsent } from '@/lib/api/biometric-consent';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
+import { getLatestPersonalColorResult } from '@/lib/analysis/cross-module';
+import {
+  createAnalysisImageFingerprint,
+  createVerdictCacheEntry,
+  findCachedVerdictForUser,
+  syncCachedVerdictImagesForUser,
+} from '@/lib/analysis/verdict-cache';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -125,6 +132,9 @@ export async function POST(req: NextRequest) {
     const bioDenied = await requireBiometricConsent(userId);
     if (bioDenied) return bioDenied;
 
+    const personalColor = await getLatestPersonalColorResult(createServiceRoleClient(), userId);
+    const personalColorSeason = personalColor?.season || null;
+
     // 하위 호환: 기존 sideImageBase64 → leftSideImageBase64로 매핑
     const resolvedLeftSide = leftSideImageBase64 || sideImageBase64 || undefined;
     const resolvedRightSide = rightSideImageBase64 || undefined;
@@ -138,6 +148,42 @@ export async function POST(req: NextRequest) {
       back: !!resolvedBack,
     };
     const imageCount = Object.values(imagesAnalyzed).filter(Boolean).length;
+
+    const verdictFingerprint = createAnalysisImageFingerprint(
+      userId,
+      'body',
+      [
+        ['front', primaryImage],
+        ['left-side', resolvedLeftSide],
+        ['right-side', resolvedRightSide],
+        ['back', resolvedBack],
+      ],
+      { userInput: userInput ?? null, personalColorAssessmentId: personalColor?.id ?? null }
+    );
+
+    if (!FORCE_MOCK && !useMock) {
+      const cached = await findCachedVerdictForUser(userId, 'body', verdictFingerprint);
+      if (cached) {
+        const cachedData = await syncCachedVerdictImagesForUser({
+          userId,
+          axis: 'body',
+          cachedData: cached.data,
+          bucketName: 'body-images',
+          images: {
+            front: primaryImage,
+            left_side: resolvedLeftSide,
+            right_side: resolvedRightSide,
+            back: resolvedBack,
+          },
+        });
+        return NextResponse.json({
+          ...cached.payload,
+          success: true,
+          data: cachedData,
+          cacheHit: true,
+        });
+      }
+    }
 
     // AI 분석 실행 (Real AI 또는 Mock)
     let result: GeminiBodyAnalysisResult;
@@ -252,6 +298,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const analyzedAt = new Date().toISOString();
+
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
       const supabase = createServiceRoleClient();
@@ -273,16 +321,6 @@ export async function POST(req: NextRequest) {
       // 정면 이미지 URL (하위 호환성)
       const imageUrl = uploadedImages.front || null;
       // 퍼스널 컬러 조회 (자동 연동)
-      const { data: pcData } = await supabase
-        .from('personal_color_assessments')
-        .select('season, best_colors')
-        .eq('clerk_user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      const personalColorSeason = pcData?.season || null;
-
       // measurements에서 어깨/허리/골반 추출
       const measurements = result.measurements || [];
       const getMeasurement = (name: string) =>
@@ -294,6 +332,31 @@ export async function POST(req: NextRequest) {
         result.bodyType
       );
       const colorTips = getColorTipsForBodyType(result.bodyType);
+
+      let bmi: number | undefined;
+      let bmiCategory: string | undefined;
+      if (userInput?.height && userInput?.weight) {
+        bmi = userInput.weight / (userInput.height / 100) ** 2;
+        if (bmi < 18.5) bmiCategory = '저체중';
+        else if (bmi < 23) bmiCategory = '정상';
+        else if (bmi < 25) bmiCategory = '과체중';
+        else bmiCategory = '비만';
+      }
+
+      const bodyTypeInfo = BODY_TYPES_3[result.bodyType as BodyType3];
+      const responseResult = {
+        ...result,
+        bodyTypeLabel: result.bodyTypeLabel || bodyTypeInfo?.label,
+        bodyTypeLabelEn: result.bodyTypeLabelEn || bodyTypeInfo?.labelEn,
+        bodyTypeDescription: result.bodyTypeDescription || bodyTypeInfo?.description,
+        characteristics: result.characteristics || bodyTypeInfo?.characteristics,
+        keywords: result.keywords || bodyTypeInfo?.keywords,
+        avoidStyles: result.avoidStyles || bodyTypeInfo?.avoidStyles,
+        userInput,
+        bmi,
+        bmiCategory,
+        analyzedAt,
+      };
       // DB에 저장
       const { data, error } = await supabase
         .from('body_analyses')
@@ -322,6 +385,19 @@ export async function POST(req: NextRequest) {
             // Mock 폴백 여부 — 결과 페이지가 style_recommendations.usedMock을 읽어
             // MockDataNotice 표시 (2026-07-07, skin과 동일 누락 수정)
             usedMock,
+            ...(!usedMock
+              ? {
+                  verdictCache: createVerdictCacheEntry('body', verdictFingerprint, {
+                    result: responseResult,
+                    personalColorSeason,
+                    colorRecommendations,
+                    colorTips,
+                    imagesAnalyzed,
+                    usedMock: false,
+                    gamification: { badgeResults: [], xpAwarded: 0 },
+                  }),
+                }
+              : {}),
           },
           personal_color_season: personalColorSeason,
           // 퍼스널 컬러 + 체형 기반 색상 추천 (문서 구조에 맞춤)
@@ -336,21 +412,6 @@ export async function POST(req: NextRequest) {
         console.error('[C-1] Database insert error:', error);
         // DB 저장 실패해도 분석 결과는 반환 (사용자 경험 우선)
       }
-
-      // BMI 계산 (userInput이 있는 경우)
-      let bmi: number | undefined;
-      let bmiCategory: string | undefined;
-
-      if (userInput?.height && userInput?.weight) {
-        bmi = userInput.weight / (userInput.height / 100) ** 2;
-        if (bmi < 18.5) bmiCategory = '저체중';
-        else if (bmi < 23) bmiCategory = '정상';
-        else if (bmi < 25) bmiCategory = '과체중';
-        else bmiCategory = '비만';
-      }
-
-      // 체형 정보 보완 (BODY_TYPES_3에서 가져오기 - 3타입 시스템)
-      const bodyTypeInfo = BODY_TYPES_3[result.bodyType as BodyType3];
 
       // 게이미피케이션 연동
       const gamificationResult: {
@@ -384,19 +445,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         data: data,
-        result: {
-          ...result,
-          bodyTypeLabel: result.bodyTypeLabel || bodyTypeInfo?.label,
-          bodyTypeLabelEn: result.bodyTypeLabelEn || bodyTypeInfo?.labelEn,
-          bodyTypeDescription: result.bodyTypeDescription || bodyTypeInfo?.description,
-          characteristics: result.characteristics || bodyTypeInfo?.characteristics,
-          keywords: result.keywords || bodyTypeInfo?.keywords,
-          avoidStyles: result.avoidStyles || bodyTypeInfo?.avoidStyles,
-          userInput,
-          bmi,
-          bmiCategory,
-          analyzedAt: new Date().toISOString(),
-        },
+        result: responseResult,
         personalColorSeason,
         colorRecommendations,
         colorTips,
@@ -417,11 +466,11 @@ export async function POST(req: NextRequest) {
         data: {
           id: syntheticId,
           clerk_user_id: userId,
-          created_at: new Date().toISOString(),
+          created_at: analyzedAt,
         },
         result: {
           ...result,
-          analyzedAt: new Date().toISOString(),
+          analyzedAt,
         },
         personalColorSeason: null,
         colorRecommendations: [],

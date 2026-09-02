@@ -125,6 +125,21 @@ async function reachResultViaPhoto(user: ReturnType<typeof userEvent.setup>) {
           metrics: [{ id: 'hydration', label: '수분도', value: 80, status: 'good' }],
           recommendedIngredients: ['케라틴'],
           careTips: ['관리 잘 하고 계세요'],
+          hairStyleRecommendations: {
+            faceShapeGuess: 'square',
+            recommendedStyles: [
+              {
+                name: '웨이브 미디엄',
+                reason: '사각형 얼굴형과 웨이브 모질에 어울려요',
+                matchReasons: [
+                  '사각형 얼굴형에 잘 어울리는 스타일이에요',
+                  '웨이브 모발에 자연스럽게 어울려요',
+                ],
+              },
+            ],
+            avoidStyles: [],
+            colorSuggestion: null,
+          },
           analyzedAt: new Date().toISOString(),
         },
         // id 없음 = 정본 리포트로 리다이렉트하지 않는 인라인 폴백 경로를 검증
@@ -752,6 +767,18 @@ describe('HairAnalysisPage 엣지 케이스', () => {
       await reachResultViaPhoto(user);
 
       expect(screen.getByText('hair.careTips')).toBeInTheDocument();
+    });
+
+    it('API 추천 헤어스타일의 이름과 근거를 인라인 결과에 노출한다', async () => {
+      const user = userEvent.setup();
+      render(<HairAnalysisPage />);
+
+      await reachResultViaPhoto(user);
+
+      expect(screen.getByTestId('hair-style-recommendations')).toHaveTextContent('웨이브 미디엄');
+      expect(screen.getByTestId('hair-style-recommendations')).toHaveTextContent(
+        '사각형 얼굴형에 잘 어울리는 스타일이에요'
+      );
     });
   });
 });

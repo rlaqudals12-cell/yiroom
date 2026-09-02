@@ -1,243 +1,164 @@
 'use client';
 
-/**
- * 옷장 인사이트 카드
- *
- * 퍼스널컬러/체형 기반 옷장 분석 요약
- */
+/** 가격·구매일·착용 기록을 기존 CPW 엔진으로 되짚는 옷장 감사 표면. */
 
 import { useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { ClipboardList, Coins, RotateCcw, Shirt } from 'lucide-react';
 import {
-  Shirt,
-  TrendingUp,
-  AlertCircle,
-  CheckCircle2,
-  ArrowRight,
-  Coins,
-  Crown,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { getRecommendationSummary } from '@/lib/inventory/client';
-import type { InventoryItem, ClothingMetadata } from '@/types/inventory';
-import type { PersonalColorSeason } from '@/lib/color-recommendations';
-import { selectByKey } from '@/lib/utils/conditional-helpers';
-
-// 착용 통계 계산
-interface WearStats {
-  totalWearCount: number;
-  avgCostPerWear: number | null;
-  mostWornItem: InventoryItem | null;
-  leastWornItem: InventoryItem | null;
-  itemsWithPrice: number;
-}
+  calculateCostPerWear,
+  getWardrobeInsight,
+  type DeclutterSuggestion,
+  type WardrobeItemUsage,
+} from '@/lib/fashion';
+import type { ClothingMetadata, InventoryItem } from '@/types/inventory';
 
 interface ClosetInsightCardProps {
   items: InventoryItem[];
-  personalColor?: PersonalColorSeason | null;
-  bodyType?: 'S' | 'W' | 'N' | null;
   className?: string;
 }
 
-export function ClosetInsightCard({
-  items,
-  personalColor,
-  bodyType,
-  className = '',
-}: ClosetInsightCardProps) {
-  const router = useRouter();
+const ACTION_LABELS: Record<DeclutterSuggestion['action'], string> = {
+  sell: '판매를 고려해보세요',
+  donate: '기부를 고려해보세요',
+  recycle: '재활용을 고려해보세요',
+};
 
-  const closetItems = useMemo(() => items.filter((item) => item.category === 'closet'), [items]);
+/** 필수 기록이 없는 옷에 값을 보충해 CPW·보유기간을 지어내지 않는다. */
+function toAuditableItem(item: InventoryItem): WardrobeItemUsage | null {
+  if (item.category !== 'closet') return null;
 
-  // 옷장 분석
-  const summary = useMemo(() => {
-    if (closetItems.length === 0) return null;
-
-    return getRecommendationSummary(closetItems, {
-      personalColor,
-      bodyType,
-    });
-  }, [closetItems, personalColor, bodyType]);
-
-  // 착용 통계 계산
-  const wearStats = useMemo((): WearStats | null => {
-    if (closetItems.length === 0) return null;
-
-    const totalWearCount = closetItems.reduce((sum, item) => sum + item.useCount, 0);
-
-    // 가격이 있는 아이템만 필터링
-    const itemsWithPriceData = closetItems.filter((item) => {
-      const meta = item.metadata as Partial<ClothingMetadata>;
-      return meta?.price && meta.price > 0;
-    });
-
-    // 평균 Cost-per-wear 계산
-    let avgCostPerWear: number | null = null;
-    if (itemsWithPriceData.length > 0) {
-      const totalCost = itemsWithPriceData.reduce((sum, item) => {
-        const meta = item.metadata as Partial<ClothingMetadata>;
-        return sum + (meta?.price || 0);
-      }, 0);
-      const totalWears = itemsWithPriceData.reduce((sum, item) => sum + item.useCount, 0);
-      if (totalWears > 0) {
-        avgCostPerWear = Math.round(totalCost / totalWears);
-      }
-    }
-
-    // 가장 많이/적게 입은 아이템
-    const sortedByWear = [...closetItems].sort((a, b) => b.useCount - a.useCount);
-    const mostWornItem = sortedByWear[0]?.useCount > 0 ? sortedByWear[0] : null;
-    const leastWornItem = sortedByWear.length > 1 ? sortedByWear[sortedByWear.length - 1] : null;
-
-    return {
-      totalWearCount,
-      avgCostPerWear,
-      mostWornItem,
-      leastWornItem,
-      itemsWithPrice: itemsWithPriceData.length,
-    };
-  }, [closetItems]);
-
-  const closetCount = closetItems.length;
-
-  if (!summary || closetCount === 0) {
-    return (
-      <div
-        data-testid="closet-insight-card-empty"
-        className={`bg-muted/50 rounded-xl p-4 ${className}`}
-      >
-        <div className="flex items-center gap-2 mb-3">
-          <Shirt className="w-5 h-5 text-muted-foreground" />
-          <h3 className="font-semibold">내 옷장 분석</h3>
-        </div>
-        <p className="text-sm text-muted-foreground mb-4">옷장에 아이템을 추가하면 분석해드려요</p>
-        <Button variant="outline" size="sm" onClick={() => router.push('/closet/add')}>
-          옷 추가하기
-        </Button>
-      </div>
-    );
+  const metadata = item.metadata as Partial<ClothingMetadata>;
+  const priceKrw = metadata.price;
+  const purchasedAt = metadata.purchaseDate ? new Date(metadata.purchaseDate) : null;
+  if (
+    typeof priceKrw !== 'number' ||
+    !Number.isFinite(priceKrw) ||
+    priceKrw <= 0 ||
+    !purchasedAt ||
+    Number.isNaN(purchasedAt.getTime())
+  ) {
+    return null;
   }
 
-  // 매칭 비율 — 분모는 자체 재계산 대신 summary.total 소비 (요약과 같은 필터 기준 단일화)
-  const matchRate = summary.total > 0 ? Math.round((summary.wellMatched / summary.total) * 100) : 0;
+  const parsedLastWornAt = item.lastUsedAt ? new Date(item.lastUsedAt) : null;
+  const lastWornAt =
+    parsedLastWornAt && !Number.isNaN(parsedLastWornAt.getTime()) ? parsedLastWornAt : null;
 
-  // 상태 색상
-  const getStatusColor = (rate: number) => {
-    if (rate >= 70) return 'text-green-500';
-    if (rate >= 40) return 'text-yellow-500';
-    return 'text-red-500';
+  return {
+    id: item.id,
+    name: item.name,
+    priceKrw,
+    wearCount: item.useCount,
+    purchasedAt,
+    lastWornAt,
+    category: item.subCategory || '미분류',
   };
+}
 
-  // 상태 아이콘
-  const StatusIcon = matchRate >= 70 ? CheckCircle2 : AlertCircle;
+export function ClosetInsightCard({ items, className = '' }: ClosetInsightCardProps) {
+  const closetItems = useMemo(() => items.filter((item) => item.category === 'closet'), [items]);
+  const auditableItems = useMemo(
+    () => closetItems.flatMap((item) => toAuditableItem(item) ?? []),
+    [closetItems]
+  );
+  const insight = useMemo(() => getWardrobeInsight(auditableItems), [auditableItems]);
 
   return (
-    <div data-testid="closet-insight-card" className={`bg-card rounded-xl border p-4 ${className}`}>
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Shirt className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">내 옷장 분석</h3>
-        </div>
-        <Button variant="ghost" size="sm" onClick={() => router.push('/closet')}>
-          보기
-          <ArrowRight className="w-4 h-4 ml-1" />
-        </Button>
-      </div>
-
-      {/* 매칭 점수 */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-muted-foreground">퍼스널 매칭률</span>
-          <span className={`font-semibold ${getStatusColor(matchRate)}`}>{matchRate}%</span>
-        </div>
-        <Progress value={matchRate} className="h-2" />
-      </div>
-
-      {/* 통계 */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-primary">{closetCount}</div>
-          <div className="text-xs text-muted-foreground">전체 아이템</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-green-500">{summary.wellMatched}</div>
-          <div className="text-xs text-muted-foreground">잘 어울리는</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-yellow-500">{summary.needsImprovement}</div>
-          <div className="text-xs text-muted-foreground">개선 필요</div>
+    <section
+      data-testid="closet-insight-card"
+      className={`rounded-xl border bg-card p-4 ${className}`}
+      aria-labelledby="closet-audit-title"
+    >
+      <div className="flex items-start gap-3">
+        <ClipboardList className="mt-0.5 size-5 text-foreground" aria-hidden="true" />
+        <div>
+          <h2 id="closet-audit-title" className="font-semibold">
+            옷장 감사
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            가격·구매일·착용 기록으로 실제 사용 흐름을 되짚어요.
+          </p>
         </div>
       </div>
 
-      {/* 착용 통계 */}
-      {wearStats && (
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          {wearStats.totalWearCount > 0 && (
-            <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              <div>
-                <div className="text-sm font-semibold">{wearStats.totalWearCount}회</div>
-                <div className="text-xs text-muted-foreground">총 착용</div>
-              </div>
-            </div>
-          )}
-          {wearStats.avgCostPerWear && (
-            <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-2">
-              <Coins className="w-4 h-4 text-primary" />
-              <div>
-                <div className="text-sm font-semibold">
-                  {wearStats.avgCostPerWear.toLocaleString()}원
-                </div>
-                <div className="text-xs text-muted-foreground">평균 1회 비용</div>
-              </div>
-            </div>
-          )}
-          {wearStats.mostWornItem && (
-            <div className="col-span-2 flex items-center gap-2 bg-muted/50 rounded-lg p-2">
-              <Crown className="w-4 h-4 text-yellow-500" />
-              <div className="flex-1 min-w-0">
-                <div className="text-xs text-muted-foreground">최애템</div>
-                <div className="text-sm font-medium truncate">
-                  {wearStats.mostWornItem.name} ({wearStats.mostWornItem.useCount}회)
-                </div>
-              </div>
-            </div>
-          )}
+      {closetItems.length === 0 ? (
+        <p className="mt-4 text-sm text-muted-foreground" data-testid="closet-audit-empty">
+          등록된 옷이 없어 아직 감사할 기록이 없어요.
+        </p>
+      ) : auditableItems.length === 0 ? (
+        <div className="mt-4 rounded-lg border border-dashed p-3" data-testid="closet-audit-empty">
+          <p className="text-sm font-medium">감사에 필요한 기록이 아직 없어요</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            옷 상세에서 가격과 구매일을 기록하면 착용당 비용과 다시 볼 옷을 확인할 수 있어요.
+          </p>
         </div>
-      )}
+      ) : (
+        <div className="mt-4 space-y-4" data-testid="closet-audit-results">
+          <p className="text-xs text-muted-foreground">
+            현재 불러온 옷 중 기록이 갖춰진 {auditableItems.length}벌 기준
+          </p>
 
-      {/* 제안 */}
-      {summary.suggestions.length > 0 && (
-        <div className="bg-muted/50 rounded-lg p-3">
-          <div className="flex items-start gap-2">
-            <StatusIcon className={`w-4 h-4 mt-0.5 ${getStatusColor(matchRate)}`} />
-            <div className="flex-1">
-              <p className="text-sm font-medium mb-1">
-                {matchRate >= 70 ? '잘하고 있어요!' : '개선 포인트'}
+          <dl className="divide-y border-y text-sm">
+            <div className="flex items-center justify-between py-2">
+              <dt className="flex items-center gap-2 text-muted-foreground">
+                <Shirt className="size-4" aria-hidden="true" />
+                기록된 구매금액
+              </dt>
+              <dd className="font-medium text-foreground">
+                {insight.totalInvestment.toLocaleString()}원
+              </dd>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <dt className="flex items-center gap-2 text-muted-foreground">
+                <Coins className="size-4" aria-hidden="true" />
+                평균 착용당 비용
+              </dt>
+              <dd className="font-medium text-foreground">
+                {insight.averageCpw > 0
+                  ? `${insight.averageCpw.toLocaleString()}원`
+                  : '착용 기록 없음'}
+              </dd>
+            </div>
+            {insight.bestValue && (
+              <div className="flex items-center justify-between gap-3 py-2">
+                <dt className="flex min-w-0 items-center gap-2 text-muted-foreground">
+                  <RotateCcw className="size-4 shrink-0" aria-hidden="true" />
+                  <span className="truncate">가장 낮은 착용당 비용</span>
+                </dt>
+                <dd className="text-right font-medium text-foreground">
+                  {insight.bestValue.name} ·{' '}
+                  {calculateCostPerWear(insight.bestValue).costPerWear.toLocaleString()}원
+                </dd>
+              </div>
+            )}
+          </dl>
+
+          <div>
+            <h3 className="text-sm font-semibold">다시 볼 옷</h3>
+            {insight.declutterSuggestions.length === 0 ? (
+              <p className="mt-2 text-xs text-muted-foreground" data-testid="declutter-empty">
+                현재 기록 기준으로 다시 볼 후보가 없어요.
               </p>
-              <ul className="text-xs text-muted-foreground space-y-1">
-                {summary.suggestions.slice(0, 2).map((suggestion, idx) => (
-                  <li key={idx}>• {suggestion}</li>
+            ) : (
+              <ul className="mt-2 divide-y" data-testid="declutter-suggestions">
+                {insight.declutterSuggestions.slice(0, 3).map((suggestion) => (
+                  <li key={suggestion.item.id} className="py-2">
+                    <p className="text-sm font-medium">{suggestion.item.name}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{suggestion.reason}</p>
+                    <p className="mt-1 text-xs text-foreground">
+                      {ACTION_LABELS[suggestion.action]}
+                    </p>
+                  </li>
                 ))}
               </ul>
-            </div>
+            )}
           </div>
+
+          <p className="border-t pt-3 text-xs text-muted-foreground">
+            정리 후보는 구매일과 착용 기록을 되짚는 참고이며, 처분을 결정하지 않아요.
+          </p>
         </div>
       )}
-
-      {/* 분석 기준 표시 */}
-      <div className="flex items-center justify-center gap-2 mt-4 text-xs text-muted-foreground">
-        <TrendingUp className="w-3 h-3" />
-        <span>
-          {personalColor && `${personalColor} 컬러`}
-          {personalColor && bodyType && ' + '}
-          {bodyType && `${selectByKey(bodyType, { S: '스트레이트', W: '웨이브' }, '내추럴')} 체형`}
-          {!personalColor && !bodyType && '기본 분석'}
-          {' 기준'}
-        </span>
-      </div>
-    </div>
+    </section>
   );
 }

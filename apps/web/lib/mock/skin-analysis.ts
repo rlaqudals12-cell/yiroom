@@ -6,6 +6,7 @@ import type {
   DetailedZoneMap,
   DetailedStatusLevel,
 } from '@/types/skin-zones';
+import type { HomeCareBoundaryInfo } from '@/lib/skincare/treatment-recommender';
 
 export type MetricStatus = 'good' | 'normal' | 'warning';
 
@@ -270,6 +271,8 @@ export interface SkinAnalysisResult {
   productRecommendations?: ProductRecommendations | null;
   // Hybrid 데이터용 초보자 친화 필드 (선택적, 하위 호환)
   easySkinTip?: EasySkinTip;
+  /** 서버가 실측 저점에서만 저장한 일반 홈케어 한계 고지. */
+  homeCareBoundary?: HomeCareBoundaryInfo | null;
 }
 
 // 점수에 따른 상태 결정

@@ -3,7 +3,8 @@
  *
  * 근본 원인: 모바일 등록 화면이 복수형 키(colors/seasons/occasions)와 다른 어휘('fall',
  * 'daily'/'work'/'sports')로 저장했는데, 매칭 로직(closetMatcher)은 웹 계약인 단수 키
- * (color/season/occasion)와 웹 어휘(autumn, casual/formal/workout/date/travel)를 읽는다.
+ * (color/season/occasion)와 웹 어휘(autumn,
+ * casual/formal/workout/date/travel/work/wedding_guest)를 읽는다.
  * → 색·계절·TPO 점수가 전부 기본값 50으로 고정돼 "추천"이 사실상 무작위였다.
  *
  * 정본 = apps/web/app/(main)/closet/add/page.tsx 의 저장 페이로드.
@@ -25,7 +26,7 @@ export type ClosetItemMetadata = {
   color: string[];
   /** 계절 목록 — 단수 키, 어휘는 autumn (fall 아님) */
   season: Season[];
-  /** 착용 상황 목록 — 단수 키, 웹 어휘(casual/formal/workout/date/travel) */
+  /** 착용 상황 목록 — 단수 키, 웹 어휘(casual/formal/workout/date/travel/work/wedding_guest) */
   occasion: Occasion[];
   /**
    * 영문 대분류 보존 — sub_category에는 한글 세부종류('티셔츠')가 들어갈 수 있어

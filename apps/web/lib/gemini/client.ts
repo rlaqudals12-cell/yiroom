@@ -9,6 +9,9 @@
  */
 
 import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from '@google/genai';
+import { PINNED_FAST_VERDICT_MODEL, PINNED_VERDICT_MODEL } from '@/lib/gemini/model-contract';
+
+export { PINNED_FAST_VERDICT_MODEL, PINNED_VERDICT_MODEL };
 
 // --- 타입 정의 ---
 
@@ -60,7 +63,13 @@ export interface GeminiResponse {
 const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 // Gemini 3.5 Flash GA (2026-05-19): gemini-3-flash-preview가 폐기 목록에 올라 승계
 // (2026-07-06 마이그레이션, thinking 파라미터 미사용이라 모델 ID 교체만으로 호환)
-const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+/**
+ * 판정형 분석의 고정 모델입니다.
+ *
+ * 같은 입력의 판정 재현성을 위해 분석 경로는 이 상수를 명시적으로 전달합니다.
+ * `GEMINI_MODEL`은 코치·OCR 등 비판정 호출의 운영 오버라이드에만 남겨 둡니다.
+ */
+const DEFAULT_MODEL = process.env.GEMINI_MODEL || PINNED_VERDICT_MODEL;
 
 /**
  * 경량 모델 — 구조화 추출 작업용 (2026-07-07 A/B 실측 기반 모듈별 혼합 전략)
@@ -72,7 +81,7 @@ const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
  *   전환 시 기존 사용자 판정이 바뀌어 재현성 약속 위반 → 3.5 유지.
  * body: 미검증(전신 사진 픽스처 필요) — 3.5 유지, 검증 후 판단.
  */
-export const FAST_MODEL = process.env.GEMINI_MODEL_FAST || 'gemini-3.1-flash-lite';
+export const FAST_MODEL = PINNED_FAST_VERDICT_MODEL;
 
 // 기본 안전 설정 (기존 프로젝트와 동일)
 export const DEFAULT_SAFETY_SETTINGS: GeminiSafetySetting[] = [

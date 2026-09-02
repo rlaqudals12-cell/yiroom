@@ -81,6 +81,48 @@ beforeEach(() => {
 });
 
 describe('옷 단건 등록 — 큐레이션 맥락', () => {
+  it('선택한 구매 가격·구매일을 감사용 metadata에 저장한다', async () => {
+    render(<AddClothingPage />);
+
+    fireEvent.click(screen.getByTestId('stub-upload'));
+    await waitFor(() => expect(screen.getByTestId('category-select')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('구매 가격 (선택)'), {
+      target: { value: '59000' },
+    });
+    fireEvent.change(screen.getByLabelText('구매일 (선택)'), {
+      target: { value: '2026-08-15' },
+    });
+    fireEvent.click(screen.getByText('저장하기'));
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/closet'));
+    const inventoryCall = vi
+      .mocked(global.fetch)
+      .mock.calls.find(([input]) => String(input) === '/api/inventory');
+    expect(inventoryCall).toBeDefined();
+    const payload = JSON.parse(String(inventoryCall?.[1]?.body)) as {
+      metadata: { price?: number; purchaseDate?: string };
+    };
+    expect(payload.metadata).toEqual(
+      expect.objectContaining({ price: 59_000, purchaseDate: '2026-08-15' })
+    );
+  });
+
+  it('미입력 구매 기록은 metadata에 임의로 만들지 않는다', async () => {
+    render(<AddClothingPage />);
+
+    await uploadAndSave();
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/closet'));
+    const inventoryCall = vi
+      .mocked(global.fetch)
+      .mock.calls.find(([input]) => String(input) === '/api/inventory');
+    const payload = JSON.parse(String(inventoryCall?.[1]?.body)) as {
+      metadata: { price?: number; purchaseDate?: string };
+    };
+    expect(payload.metadata).not.toHaveProperty('price');
+    expect(payload.metadata).not.toHaveProperty('purchaseDate');
+  });
+
   it('맥락이 없으면 기존대로 옷장으로 이동한다', async () => {
     render(<AddClothingPage />);
 

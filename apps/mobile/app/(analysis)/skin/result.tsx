@@ -29,7 +29,12 @@ import {
   loadStoredAnalysisRecord,
 } from '@/lib/analysis';
 import { StoredResultError } from '@/lib/analysis/stored-result-loader';
-import { requestSkinAnalysis, SkinApiError } from '@/lib/api/skin';
+import {
+  parseSkinHomeCareBoundary,
+  requestSkinAnalysis,
+  SkinApiError,
+  type SkinHomeCareBoundary,
+} from '@/lib/api/skin';
 import { downscaleToBase64 } from '@/lib/image/downscale';
 import { captureError } from '@/lib/monitoring/sentry';
 import { SKIN_TYPE_DATA, type SkinMetrics, type SkinMetricsDelta } from '@/lib/skincare';
@@ -87,6 +92,7 @@ function SkinResultContent(): React.JSX.Element {
   const [usedFallback, setUsedFallback] = useState(false);
   const [dbSaveFailed, setDbSaveFailed] = useState(false);
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
+  const [homeCareBoundary, setHomeCareBoundary] = useState<SkinHomeCareBoundary | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>(DEFAULT_ERROR_MESSAGE);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
@@ -99,6 +105,7 @@ function SkinResultContent(): React.JSX.Element {
     setDelta(null);
     setHasPreviousAnalysis(false);
     setAvailableMetrics(null);
+    setHomeCareBoundary(null);
 
     try {
       const hasFreshImage = Boolean(imageUri);
@@ -139,6 +146,15 @@ function SkinResultContent(): React.JSX.Element {
         });
         setAvailableMetrics(available);
         setUsedFallback(stored.usedFallback === true);
+        const storedRecommendations =
+          typeof row.recommendations === 'object' && row.recommendations !== null
+            ? (row.recommendations as Record<string, unknown>)
+            : null;
+        setHomeCareBoundary(
+          stored.usedFallback === true
+            ? null
+            : (parseSkinHomeCareBoundary(storedRecommendations?.homeCareBoundary) ?? null)
+        );
         setReportTargetId(
           historyId ?? (typeof row.id === 'string' ? row.id : 'unsaved:skin:time-unavailable')
         );
@@ -163,6 +179,9 @@ function SkinResultContent(): React.JSX.Element {
       );
       setSkinType(analysisResult.skinType);
       setMetrics(analysisResult.metrics);
+      setHomeCareBoundary(
+        analysisResult.usedMock ? null : (analysisResult.homeCareBoundary ?? null)
+      );
 
       if (userId) {
         try {
@@ -305,6 +324,16 @@ function SkinResultContent(): React.JSX.Element {
         </ReportRowTable>
       ),
     },
+    ...(homeCareBoundary
+      ? [
+          {
+            key: 'home-care-boundary',
+            title: '홈케어의 한계선',
+            summary: '사진만으로 홈케어의 충분함이나 시술 필요 여부를 판정할 수 없어요.',
+            content: <Text style={styles.evidenceText}>{homeCareBoundary.disclaimer}</Text>,
+          },
+        ]
+      : []),
   ];
 
   return (

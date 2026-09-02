@@ -495,3 +495,76 @@ describe('계절 하드 가드', () => {
     expect(score.seasonScore).toBe(100);
   });
 });
+
+describe('웹 조립기 패리티 — TPO 하드 필터·완화·쌍 재랭킹', () => {
+  it.each([
+    ['work', '출근'],
+    ['wedding_guest', '하객'],
+  ] as const)('%s 필터는 %s 태그가 붙은 옷만 후보로 남긴다', (occasion, _label) => {
+    const tagged = createMockItem({
+      id: `${occasion}-top`,
+      name: '태그 상의',
+      subCategory: 'top',
+      metadata: { color: ['블랙'], season: [], occasion: [occasion] },
+    });
+    const higherColorScore = createMockItem({
+      id: 'casual-top',
+      name: '코랄 상의',
+      subCategory: 'top',
+      metadata: { color: ['코랄', '아이보리'], season: [], occasion: ['casual'] },
+    });
+
+    const results = recommendFromCloset([higherColorScore, tagged], {
+      category: 'top',
+      occasion,
+      personalColor: 'Spring',
+    });
+
+    expect(results.map((result) => result.item.id)).toEqual([`${occasion}-top`]);
+    expect(results[0].occasionRelaxed).toBeUndefined();
+  });
+
+  it('선택한 TPO 태그가 전혀 없으면 전체 후보로 완화하고 UI용 고지를 동봉한다', () => {
+    const top = createMockItem({
+      id: 'casual-top',
+      subCategory: 'top',
+      metadata: { color: ['화이트'], season: [], occasion: ['casual'] },
+    });
+    const bottom = createMockItem({
+      id: 'casual-bottom',
+      subCategory: 'bottom',
+      metadata: { color: ['네이비'], season: [], occasion: ['casual'] },
+    });
+
+    const suggestion = suggestOutfitFromCloset([top, bottom], { occasion: 'wedding_guest' });
+
+    expect(suggestion?.top?.occasionRelaxed).toBe(true);
+    expect(suggestion?.bottom?.occasionRelaxed).toBe(true);
+    expect(suggestion?.warnings).toContain(
+      "상의·하의는 '하객' 상황 태그가 붙은 옷이 없어 전체에서 골랐어요"
+    );
+  });
+
+  it('상·하의 개별 1등 대신 상위 후보 중 색조화가 더 좋은 쌍을 고른다', () => {
+    const redTop = createMockItem({
+      id: 'red-top',
+      subCategory: 'top',
+      metadata: { color: ['레드'], season: [], occasion: [] },
+    });
+    const blueBottom = createMockItem({
+      id: 'blue-bottom-first',
+      subCategory: 'bottom',
+      metadata: { color: ['블루'], season: [], occasion: [] },
+    });
+    const redBottom = createMockItem({
+      id: 'red-bottom-second',
+      subCategory: 'bottom',
+      metadata: { color: ['레드'], season: [], occasion: [] },
+    });
+
+    const suggestion = suggestOutfitFromCloset([redTop, blueBottom, redBottom], {});
+
+    expect(suggestion?.top?.item.id).toBe('red-top');
+    expect(suggestion?.bottom?.item.id).toBe('red-bottom-second');
+  });
+});

@@ -525,6 +525,30 @@ function AnalysisResultView({
         <p className="text-sm text-muted-foreground leading-relaxed">{result.insight}</p>
       </div>
 
+      {result.hairStyleRecommendations?.recommendedStyles.length ? (
+        <section
+          className="rounded-xl border border-border bg-card p-6 shadow-sm"
+          data-testid="hair-style-recommendations"
+        >
+          <h3 className="font-semibold">추천 헤어스타일</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            확인된 얼굴형·모질을 우선 반영하고, 저장된 퍼스널컬러가 있을 때만 함께 살폈어요.
+          </p>
+          <ol className="mt-4 divide-y divide-border">
+            {result.hairStyleRecommendations.recommendedStyles.map((style, index) => (
+              <li key={style.name} className="py-3 first:pt-0 last:pb-0">
+                <p className="text-sm font-medium text-foreground">
+                  {index + 1}. {style.name}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  {style.matchReasons?.join(' · ') || style.reason}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+
       {/* 추천 성분 — 중립 칩 (포인트 컬러 없이 텍스트로만) */}
       <div className="bg-card rounded-xl p-6 shadow-sm">
         <h3 className="font-semibold mb-3">{t('hair.recommendedIngredients')}</h3>

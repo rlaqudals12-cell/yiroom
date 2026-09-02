@@ -8,7 +8,7 @@ import { coachLogger } from '@/lib/utils/logger';
 import type { UserContext } from './types';
 
 /** TPO (상황) */
-type Occasion = 'casual' | 'formal' | 'workout' | 'date' | 'travel';
+type Occasion = 'casual' | 'formal' | 'workout' | 'date' | 'travel' | 'work' | 'wedding_guest';
 
 /** 코디 추천 결과 */
 export interface OutfitRecommendation {
@@ -47,12 +47,13 @@ export interface FashionSearchResult {
 function detectOccasion(query: string): Occasion | null {
   const lowerQuery = query.toLowerCase();
 
-  if (
-    lowerQuery.includes('면접') ||
-    lowerQuery.includes('회사') ||
-    lowerQuery.includes('포멀') ||
-    lowerQuery.includes('출근')
-  ) {
+  if (lowerQuery.includes('하객') || lowerQuery.includes('결혼식') || lowerQuery.includes('웨딩')) {
+    return 'wedding_guest';
+  }
+  if (lowerQuery.includes('출근') || lowerQuery.includes('회사') || lowerQuery.includes('오피스')) {
+    return 'work';
+  }
+  if (lowerQuery.includes('면접') || lowerQuery.includes('포멀')) {
     return 'formal';
   }
   if (
@@ -105,6 +106,16 @@ const OCCASION_TIPS: Record<Occasion, string[]> = {
     '편안하면서 세련된 스타일이 좋아요',
     '레이어링하기 좋은 아이템을 챙기세요',
     '구김이 적은 소재가 실용적이에요',
+  ],
+  work: [
+    '단정한 핏과 움직이기 편한 구성을 함께 살펴보세요',
+    '출근 환경에 맞는 색과 소재를 우선해보세요',
+    '오래 입어도 흐트러지지 않는 아이템이 실용적이에요',
+  ],
+  wedding_guest: [
+    '단정한 실루엣과 차분한 색 조합을 살펴보세요',
+    '예식 시간과 장소에 맞는 격식을 우선해보세요',
+    '주인공보다 도드라지는 구성은 피하는 편이 좋아요',
   ],
 };
 

@@ -12,9 +12,9 @@
  * @see apps/web/lib/mock/hair-analysis.ts (응답 필드·concern id 정본)
  * @see docs/adr/ADR-118 (웹 API 정본 + 모바일 thin client)
  */
-import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
+import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 
 // ============================================
 // 1. 타입 (모바일 결과 화면이 소비하는 형태)
@@ -39,8 +39,8 @@ export interface HairAnalysisApiResult {
   mainConcerns: string[];
   /** 추천 케어 루틴 (서버 careTips) */
   careRoutine: string[];
-  /** 추천 헤어스타일 — 서버가 제공하지 않으면 빈 배열(지어내지 않음) */
-  recommendedStyles: string[];
+  /** 추천 헤어스타일 — 서버 순서와 근거를 보존하며, 점수는 UI에 노출하지 않는다. */
+  recommendedStyles: HairStyleRecommendation[];
   /** AI 폴백 여부 — true면 UI에 정직하게 표시 */
   usedMock: boolean;
   /** 분석은 반환됐지만 서버 기록 저장이 실패했는지 */
@@ -49,6 +49,11 @@ export interface HairAnalysisApiResult {
   analysisId?: string;
   /** 서버 분석 시각 — 미저장 결과 신고 식별자에만 사용 */
   analyzedAt?: string;
+}
+
+export interface HairStyleRecommendation {
+  name: string;
+  matchReasons: string[];
 }
 
 export interface HairAnalysisInput {
@@ -138,16 +143,39 @@ function toStringArray(value: unknown): string[] {
   return value.filter((v): v is string => typeof v === 'string');
 }
 
-function toRecommendedStyleNames(value: unknown): string[] {
-  if (typeof value !== 'object' || value === null) return [];
-  const styles = (value as Record<string, unknown>).recommendedStyles;
+/**
+ * 웹의 랭킹 결과와 과거 저장본을 같은 화면 모델로 정규화한다.
+ * 왜: 기존 클라이언트는 이름만 남겨 서버가 계산한 한국어 추천 근거를 버리고 있었다.
+ */
+export function normalizeHairStyleRecommendations(value: unknown): HairStyleRecommendation[] {
+  const styles = Array.isArray(value)
+    ? value
+    : typeof value === 'object' && value !== null
+      ? (value as Record<string, unknown>).recommendedStyles
+      : undefined;
   if (!Array.isArray(styles)) return [];
 
   return styles.flatMap((style) => {
-    if (typeof style === 'string') return [style];
+    if (typeof style === 'string') {
+      const name = style.trim();
+      return name ? [{ name, matchReasons: [] }] : [];
+    }
     if (typeof style !== 'object' || style === null) return [];
-    const name = (style as Record<string, unknown>).name;
-    return typeof name === 'string' && name.trim().length > 0 ? [name.trim()] : [];
+    const record = style as Record<string, unknown>;
+    const name = typeof record.name === 'string' ? record.name.trim() : '';
+    if (!name) return [];
+
+    const rankedReasons = toStringArray(record.matchReasons)
+      .map((reason) => reason.trim())
+      .filter(Boolean);
+    const legacyReason = typeof record.reason === 'string' ? record.reason.trim() : '';
+
+    return [
+      {
+        name,
+        matchReasons: rankedReasons.length > 0 ? rankedReasons : legacyReason ? [legacyReason] : [],
+      },
+    ];
   });
 }
 
@@ -235,7 +263,7 @@ export async function requestHairAnalysis(
     },
     mainConcerns: toConcernLabels(result.concerns),
     careRoutine: toStringArray(result.careTips),
-    recommendedStyles: toRecommendedStyleNames(result.hairStyleRecommendations),
+    recommendedStyles: normalizeHairStyleRecommendations(result.hairStyleRecommendations),
     usedMock: obj.usedMock === true,
     dbSaveFailed: obj.dbSaveFailed === true,
     analysisId: typeof data.id === 'string' ? data.id : undefined,

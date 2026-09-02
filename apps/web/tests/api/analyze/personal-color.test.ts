@@ -7,6 +7,11 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+const { findCachedVerdictForUserMock, syncCachedVerdictImagesForUserMock } = vi.hoisted(() => ({
+  findCachedVerdictForUserMock: vi.fn(),
+  syncCachedVerdictImagesForUserMock: vi.fn(),
+}));
+
 // Mock 모듈 설정
 vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn(),
@@ -14,6 +19,12 @@ vi.mock('@clerk/nextjs/server', () => ({
 
 vi.mock('@/lib/supabase/service-role', () => ({
   createServiceRoleClient: vi.fn(),
+}));
+
+vi.mock('@/lib/analysis/verdict-cache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analysis/verdict-cache')>()),
+  findCachedVerdictForUser: findCachedVerdictForUserMock,
+  syncCachedVerdictImagesForUser: syncCachedVerdictImagesForUserMock,
 }));
 
 vi.mock('@/lib/gemini', () => ({
@@ -148,6 +159,8 @@ describe('POST /api/analyze/personal-color', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    findCachedVerdictForUserMock.mockResolvedValue(null);
+    syncCachedVerdictImagesForUserMock.mockResolvedValue(mockDbResult);
     vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
       ReturnType<typeof auth>
     >);
@@ -168,6 +181,33 @@ describe('POST /api/analyze/personal-color', () => {
         ),
       })
     );
+  });
+
+  describe('판정 캐시', () => {
+    it('같은 입력의 저장 판정이 있으면 AI를 다시 호출하지 않고 저장 동의를 반영한다', async () => {
+      findCachedVerdictForUserMock.mockResolvedValue({
+        data: mockDbResult,
+        payload: { result: mockPersonalColorResult, usedMock: false },
+      });
+
+      const response = await POST(
+        createMockPostRequest({ imageBase64: MOCK_BASE64, saveImage: true })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.cacheHit).toBe(true);
+      expect(syncCachedVerdictImagesForUserMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user_test123',
+          axis: 'personal-color',
+          bucketName: 'personal-color-images',
+          images: { front: MOCK_BASE64 },
+          imageStorageAllowed: true,
+        })
+      );
+      expect(analyzePersonalColor).not.toHaveBeenCalled();
+    });
   });
 
   describe('다각도 촬영 지원', () => {

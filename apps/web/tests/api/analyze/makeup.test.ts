@@ -5,6 +5,11 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+const { findCachedVerdictForUserMock, syncCachedVerdictImagesForUserMock } = vi.hoisted(() => ({
+  findCachedVerdictForUserMock: vi.fn(),
+  syncCachedVerdictImagesForUserMock: vi.fn(),
+}));
+
 // Mock 모듈 설정
 vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn(),
@@ -12,6 +17,12 @@ vi.mock('@clerk/nextjs/server', () => ({
 
 vi.mock('@/lib/supabase/service-role', () => ({
   createServiceRoleClient: vi.fn(),
+}));
+
+vi.mock('@/lib/analysis/verdict-cache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analysis/verdict-cache')>()),
+  findCachedVerdictForUser: findCachedVerdictForUserMock,
+  syncCachedVerdictImagesForUser: syncCachedVerdictImagesForUserMock,
 }));
 
 vi.mock('@/lib/gemini', () => ({
@@ -224,6 +235,8 @@ describe('POST /api/analyze/makeup', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    findCachedVerdictForUserMock.mockResolvedValue(null);
+    syncCachedVerdictImagesForUserMock.mockResolvedValue(mockDbResult);
 
     // 기본 mock 설정
     vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
@@ -287,6 +300,34 @@ describe('POST /api/analyze/makeup', () => {
         data: { path: 'user_test123/1234567890_makeup.jpg' },
         error: null,
       }),
+    });
+  });
+
+  describe('판정 캐시', () => {
+    it('같은 입력의 저장 판정이 있으면 AI를 다시 호출하지 않고 저장 동의를 반영한다', async () => {
+      const imageBase64 = 'data:image/jpeg;base64,/9j/test';
+      findCachedVerdictForUserMock.mockResolvedValue({
+        data: mockDbResult,
+        payload: { result: mockMakeupAnalysisResult, usedMock: false },
+      });
+
+      const response = await POST(
+        createMockPostRequest({ imageBase64, imageStorageAllowed: true })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.cacheHit).toBe(true);
+      expect(syncCachedVerdictImagesForUserMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user_test123',
+          axis: 'makeup',
+          bucketName: 'makeup-images',
+          images: { makeup: imageBase64 },
+          imageStorageAllowed: true,
+        })
+      );
+      expect(analyzeMakeup).not.toHaveBeenCalled();
     });
   });
 

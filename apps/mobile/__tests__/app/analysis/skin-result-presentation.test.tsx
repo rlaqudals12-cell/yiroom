@@ -90,6 +90,11 @@ const RESULT = {
   },
   usedMock: false,
   dbSaveFailed: false,
+  homeCareBoundary: {
+    concernIds: ['pigmentation'],
+    disclaimer:
+      '사진만으로 홈케어가 충분한지 또는 시술이 필요한지 판정할 수 없어요. 불편이 지속되면 피부과 전문의와 상담해 주세요.',
+  },
 };
 
 describe('피부 결과 진단지 표현', () => {
@@ -127,5 +132,25 @@ describe('피부 결과 진단지 표현', () => {
 
     await waitFor(() => expect(screen.getByTestId('skin-analysis-result-fallback')).toBeTruthy());
     expect(screen.getAllByText('예시 결과 · 낮은 신뢰도')).toHaveLength(2);
+    expect(
+      screen.queryByTestId('skin-analysis-result-section-home-care-boundary-trigger')
+    ).toBeNull();
+  });
+
+  it('서버가 보존한 일반 홈케어 한계만 보여주고 구체 시술은 만들지 않는다', async () => {
+    const screen = renderWithTheme(<SkinResultScreen />);
+
+    await waitFor(() => expect(screen.getByTestId('skin-analysis-result')).toBeTruthy());
+    expect(
+      screen.getByTestId('skin-analysis-result-section-home-care-boundary-trigger')
+    ).toBeTruthy();
+    expect(
+      screen.getByText('사진만으로 홈케어의 충분함이나 시술 필요 여부를 판정할 수 없어요.')
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('skin-analysis-result-section-home-care-boundary-trigger'));
+    expect(screen.getByText(/불편이 지속되면 피부과 전문의와 상담/)).toBeTruthy();
+    expect(screen.queryByText(/IPL|필링|보톡스/)).toBeNull();
+    expect(screen.queryByText(/매칭률|효과적/)).toBeNull();
   });
 });

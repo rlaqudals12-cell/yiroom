@@ -104,6 +104,7 @@ interface DbHairAnalysis {
     ingredients?: string[];
     products?: Array<{ category: string; name: string; description: string }>;
     careTips?: string[];
+    styleRecommendations?: unknown;
     analysisReliability?: 'high' | 'medium' | 'low';
     usedMock?: boolean;
   } | null;
@@ -131,8 +132,39 @@ interface HairAnalysisResultView {
   insight: string;
   recommendedIngredients: string[];
   careTips: string[];
+  styleRecommendations: HairStyleRecommendationView[];
   analysisReliability: 'high' | 'medium' | 'low';
   analyzedAt: Date;
+}
+
+interface HairStyleRecommendationView {
+  name: string;
+  matchReasons: string[];
+}
+
+/** JSON 저장본과 구형 문자열 배열을 모두 정직하게 읽고, 존재하지 않는 근거는 만들지 않는다. */
+function normalizeStyleRecommendations(value: unknown): HairStyleRecommendationView[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((entry) => {
+    if (typeof entry === 'string' && entry.trim()) {
+      return [{ name: entry.trim(), matchReasons: [] }];
+    }
+    if (!entry || typeof entry !== 'object') return [];
+
+    const record = entry as Record<string, unknown>;
+    if (typeof record.name !== 'string' || !record.name.trim()) return [];
+    const reasons = Array.isArray(record.matchReasons)
+      ? record.matchReasons.filter(
+          (reason): reason is string => typeof reason === 'string' && reason.trim().length > 0
+        )
+      : [];
+    if (reasons.length === 0 && typeof record.reason === 'string' && record.reason.trim()) {
+      reasons.push(record.reason.trim());
+    }
+
+    return [{ name: record.name.trim(), matchReasons: reasons }];
+  });
 }
 
 // DB 데이터 -> 뷰 데이터 변환
@@ -179,6 +211,9 @@ function transformDbToResult(dbData: DbHairAnalysis): HairAnalysisResultView {
     insight: dbData.recommendations?.insight || '더 나은 헤어 케어를 위한 팁을 확인해보세요',
     recommendedIngredients: dbData.recommendations?.ingredients || [],
     careTips: dbData.recommendations?.careTips || [],
+    styleRecommendations: normalizeStyleRecommendations(
+      dbData.recommendations?.styleRecommendations
+    ),
     analysisReliability: dbData.recommendations?.analysisReliability || 'medium',
     analyzedAt: new Date(dbData.created_at),
   };
@@ -516,14 +551,19 @@ export default function HairAnalysisResultPage() {
                       title: `${result.recommendedIngredients[0]} 성분이 든 샴푸를 골라보세요`,
                     });
                   }
-                  // 컷(×얼굴형)은 이 페이지에 데이터가 없어 통합 분석으로 정직하게 유도.
-                  // 염색은 아래 "염색 컬러 처방" 섹션이 이 페이지에서 이미 답하므로 여기서 언급하지 않는다
-                  // (통합 결과는 염색 컬러를 렌더하지 않아 빈 약속이 된다).
-                  actions.push({
-                    title: '어울리는 컷은 얼굴형을 함께 봐야 정확해요',
-                    href: '/analysis/integrated',
-                    hrefLabel: '통합 분석 보기',
-                  });
+                  const firstStyle = result.styleRecommendations[0];
+                  if (firstStyle) {
+                    actions.push({
+                      title: `${firstStyle.name}부터 살펴보세요`,
+                      detail: firstStyle.matchReasons.join(' · ') || undefined,
+                    });
+                  } else {
+                    actions.push({
+                      title: '어울리는 컷은 얼굴형을 함께 봐야 정확해요',
+                      href: '/analysis/integrated',
+                      hrefLabel: '통합 분석 보기',
+                    });
+                  }
                   return <TopActionsCard actions={actions} />;
                 })()}
 
@@ -733,9 +773,35 @@ export default function HairAnalysisResultPage() {
             </section>
           )}
 
-          {/* 헤어스타일(컷) 추천 안내 — 컷은 얼굴형과의 크로스축이라 통합 분석으로 유도 (ADR-107).
-              염색은 위 "염색 컬러 처방" 섹션이 이 페이지에서 답하므로 여기서 약속하지 않는다 */}
-          {result && (
+          {result && result.styleRecommendations.length > 0 ? (
+            <section
+              className="mt-6 rounded-xl border border-border bg-card p-5 shadow-sm"
+              data-testid="hair-style-recommendations"
+            >
+              <ReportEyebrow>HAIR STYLE</ReportEyebrow>
+              <h3 className="mt-2 font-serif text-lg font-semibold text-foreground">
+                추천 헤어스타일
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                확인된 얼굴형·모질을 우선 반영하고, 저장된 퍼스널컬러가 있을 때만 함께 살폈어요.
+              </p>
+              <ol className="mt-4 divide-y divide-border">
+                {result.styleRecommendations.map((style, index) => (
+                  <li key={style.name} className="py-3 first:pt-0 last:pb-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {index + 1}. {style.name}
+                    </p>
+                    {style.matchReasons.length > 0 ? (
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {style.matchReasons.join(' · ')}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
+          {result && result.styleRecommendations.length === 0 ? (
             <button
               onClick={() => router.push('/analysis/integrated')}
               className="mt-6 w-full text-left bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow"
@@ -747,7 +813,7 @@ export default function HairAnalysisResultPage() {
                 확인해보세요. →
               </p>
             </button>
-          )}
+          ) : null}
         </div>
       </div>
 

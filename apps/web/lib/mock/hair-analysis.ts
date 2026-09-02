@@ -69,7 +69,15 @@ export interface HairAnalysisMetric {
 
 export interface HairStyleRecommendations {
   faceShapeGuess: 'oval' | 'round' | 'square' | 'heart' | 'oblong' | 'diamond' | 'unknown';
-  recommendedStyles: Array<{ name: string; reason: string }>;
+  recommendedStyles: Array<{
+    name: string;
+    /** 기존 단일 이유 소비처용 요약. */
+    reason: string;
+    /** 3-Factor 엔진이 산출한 한국어 근거. */
+    matchReasons?: string[];
+    /** 추천 목록 안의 결정론적 정렬값. 외모 점수가 아니다. */
+    matchScore?: number;
+  }>;
   avoidStyles: string[];
   colorSuggestion: string | null;
 }

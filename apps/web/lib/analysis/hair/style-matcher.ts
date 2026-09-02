@@ -21,7 +21,8 @@ import { getTextureInfo } from './texture-classifier';
  * 스타일 매칭 입력
  */
 export interface StyleMatchInput {
-  faceShape: FaceShapeType;
+  /** 얼굴형을 관찰하지 못했으면 생략한다. 해당 축은 중립점수로 처리한다. */
+  faceShape?: FaceShapeType;
   textureCode?: TextureCode;
   personalColorSeason?: string;
   preferredLength?: HairLength;
@@ -258,8 +259,10 @@ const SEASON_STYLE_AFFINITY: Record<string, { keywords: string[]; description: s
 export function matchStyles(input: StyleMatchInput, maxResults: number = 5): StyleMatchResult[] {
   const { faceShape, textureCode, personalColorSeason, preferredLength } = input;
 
-  // 텍스처 그룹 (없으면 2=웨이브 기본값)
-  const textureGroup: TextureGroup = textureCode ? (parseInt(textureCode[0]) as TextureGroup) : 2;
+  // 텍스처를 관찰하지 못했으면 웨이브로 가정하지 않고 중립점수를 사용한다.
+  const textureGroup: TextureGroup | null = textureCode
+    ? (parseInt(textureCode[0]) as TextureGroup)
+    : null;
 
   const textureInfo = textureCode ? getTextureInfo(textureCode) : null;
 
@@ -314,31 +317,45 @@ export function matchStyles(input: StyleMatchInput, maxResults: number = 5): Sty
  *
  * FACE_SHAPE_STYLE_MAPPING 키워드 매칭 + 얼굴형별 세부 보정
  */
-function calculateFaceShapeScore(faceShape: FaceShapeType, style: StyleEntry): number {
+const GENERIC_STYLE_TOKENS = new Set(['스타일', '헤어', '컷', '길이', '가능', '대부분의']);
+
+/** 문장 부분일치 대신 카탈로그의 이름·태그와 정확히 같은 의미 토큰만 비교한다. */
+function toStyleTokens(values: string[]): Set<string> {
+  return new Set(
+    values
+      .flatMap((value) => value.toLowerCase().split(/[\s·()/,-]+/))
+      .map((token) => token.trim())
+      .filter((token) => token.length > 1 && !GENERIC_STYLE_TOKENS.has(token))
+  );
+}
+
+function calculateFaceShapeScore(faceShape: FaceShapeType | undefined, style: StyleEntry): number {
+  // 얼굴형이 없으면 타원형 등으로 대체하지 않는다.
+  if (!faceShape) return 20;
+
   let score = 20; // 기본 점수
 
   const mapping = FACE_SHAPE_STYLE_MAPPING[faceShape];
+  const styleTokens = toStyleTokens([style.name, ...style.tags]);
 
-  // 추천 키워드 매칭: 키워드 당 +5 (최대 +20)
+  // 추천 표현의 의미 토큰이 카탈로그 이름·태그와 정확히 같을 때만 가산한다.
   let keywordBonus = 0;
-  mapping.recommended.forEach((keyword) => {
-    if (
-      style.name.includes(keyword) ||
-      style.description.includes(keyword) ||
-      style.tags.some((tag) => tag.includes(keyword))
-    ) {
-      keywordBonus += 5;
+  mapping.recommended.forEach((phrase) => {
+    const recommendedTokens = toStyleTokens([phrase]);
+    if (recommendedTokens.size > 0) {
+      const matchedCount = [...recommendedTokens].filter((token) => styleTokens.has(token)).length;
+      // '소프트 레이어드' 중 '레이어드'만 맞는 경우와 표현 전체가 맞는 경우를
+      // 같은 점수로 만들지 않는다. 기존 매핑의 일치 비율만 쓰며 새 라벨은 만들지 않는다.
+      keywordBonus += 5 * (matchedCount / recommendedTokens.size);
     }
   });
   score += Math.min(20, keywordBonus);
 
-  // 피해야 할 키워드: 키워드 당 -8
-  mapping.avoid.forEach((keyword) => {
-    if (
-      style.name.includes(keyword) ||
-      style.description.includes(keyword) ||
-      style.tags.some((tag) => tag.includes(keyword))
-    ) {
+  // 회피 표현은 의미 토큰 전부가 일치할 때만 감점한다. 예: '일자 뱅'을 모든 뱅으로
+  // 확대 해석하지 않는다.
+  mapping.avoid.forEach((phrase) => {
+    const avoidedTokens = toStyleTokens([phrase]);
+    if (avoidedTokens.size > 0 && [...avoidedTokens].every((token) => styleTokens.has(token))) {
       score -= 8;
     }
   });
@@ -357,10 +374,12 @@ function calculateFaceShapeScore(faceShape: FaceShapeType, style: StyleEntry): n
  * 스타일 카탈로그의 textureAffinity 테이블 활용
  */
 function calculateTextureScore(
-  group: TextureGroup,
+  group: TextureGroup | null,
   style: StyleEntry,
   textureInfo: ReturnType<typeof getTextureInfo> | null
 ): number {
+  if (!group) return 15;
+
   // affinity 점수 (0-10 → 0-25)
   const affinity = style.textureAffinity[group] || 5;
   let score = (affinity / 10) * 25;
@@ -400,7 +419,7 @@ function calculateColorSeasonScore(season: string | undefined, style: StyleEntry
   if (seasonInfo) {
     let keywordMatch = 0;
     seasonInfo.keywords.forEach((keyword) => {
-      if (style.tags.some((tag) => tag.includes(keyword))) {
+      if (style.tags.some((tag) => tag === keyword)) {
         keywordMatch += 2;
       }
     });
@@ -414,7 +433,7 @@ function calculateColorSeasonScore(season: string | undefined, style: StyleEntry
  * 매칭 이유 생성
  */
 function generateMatchReasons(
-  faceShape: FaceShapeType,
+  faceShape: FaceShapeType | undefined,
   textureInfo: ReturnType<typeof getTextureInfo> | null,
   season: string | undefined,
   breakdown: MatchScoreBreakdown
@@ -422,7 +441,7 @@ function generateMatchReasons(
   const reasons: string[] = [];
 
   // 얼굴형 이유
-  if (breakdown.faceShapeScore >= 30) {
+  if (faceShape && breakdown.faceShapeScore >= 30) {
     const labels: Record<FaceShapeType, string> = {
       oval: '타원형',
       round: '둥근형',

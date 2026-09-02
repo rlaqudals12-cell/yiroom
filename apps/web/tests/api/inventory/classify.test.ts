@@ -120,7 +120,7 @@ describe('POST /api/inventory/classify', () => {
         colors: ['화이트'],
         pattern: 'solid',
         seasons: ['summer'],
-        occasions: ['casual'],
+        occasions: ['work', 'wedding_guest', 'party'],
         confidence: 0.9,
       }),
     } as never);
@@ -135,7 +135,11 @@ describe('POST /api/inventory/classify', () => {
 
     expect(response.status).toBe(200);
     expect(data.category).toBe('top');
+    expect(data.occasions).toEqual(['work', 'wedding_guest']);
     expect(generateContent).toHaveBeenCalled();
+    expect(vi.mocked(generateContent).mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({ config: expect.objectContaining({ temperature: 0 }) })
+    );
   });
 });
 

@@ -281,6 +281,7 @@ describe('ClosetAddScreen 자동 분류', () => {
       category: 'top',
       colors: ['화이트'],
       seasons: ['summer'],
+      occasions: ['work', 'wedding_guest'],
       usedFallback: false,
     });
     const screen = renderWithTheme(<ClosetAddScreen />);
@@ -291,6 +292,10 @@ describe('ClosetAddScreen 자동 분류', () => {
       expect(screen.getByPlaceholderText('예: 화이트 셔츠').props.value).toBe('화이트 린넨 셔츠')
     );
     expect(screen.getByTestId('closet-category-top').props.accessibilityState.selected).toBe(true);
+    expect(screen.getByTestId('closet-occasion-work').props.accessibilityState.selected).toBe(true);
+    expect(
+      screen.getByTestId('closet-occasion-wedding_guest').props.accessibilityState.selected
+    ).toBe(true);
     expect(mockDownscaleToDataUrl).toHaveBeenCalledWith(LOCAL_URI, 1024);
     expect(mockClassifyInventoryImage).toHaveBeenCalledWith(
       'data:image/jpeg;base64,CLASSIFY',
@@ -322,6 +327,7 @@ describe('ClosetAddScreen 자동 분류', () => {
       category: 'top',
       colors: [],
       seasons: [],
+      occasions: [],
       usedFallback: false,
     });
     const screen = renderWithTheme(<ClosetAddScreen />);
@@ -350,6 +356,7 @@ describe('ClosetAddScreen 사진 업로드', () => {
     mockClassifyInventoryImage.mockResolvedValue({
       colors: [],
       seasons: [],
+      occasions: [],
       usedFallback: true,
     });
     mockDownscaleToDataUrl.mockResolvedValue('data:image/jpeg;base64,CLASSIFY');

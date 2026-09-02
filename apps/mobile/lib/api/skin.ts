@@ -15,9 +15,9 @@ import type { SkinType } from '@yiroom/shared';
 
 import type { SkinMetrics } from '@/lib/skincare';
 
-import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 import { getApiBaseUrl } from './base-url';
 import { toUserMessage } from './error-text';
+import { trackAnalysisComplete, trackAnalysisStart } from '../analytics/tracker';
 
 // ============================================
 // 1. 타입
@@ -38,6 +38,13 @@ export interface SkinAnalysisApiResult {
   analysisId?: string;
   /** 서버 분석 시각 — 미저장 결과 신고 식별자에만 사용 */
   analyzedAt?: string;
+  /** 서버의 기존 시술 데이터에서 점수·효과 표현을 걷어낸 홈케어 한계선. */
+  homeCareBoundary?: SkinHomeCareBoundary;
+}
+
+export interface SkinHomeCareBoundary {
+  concernIds: string[];
+  disclaimer: string;
 }
 
 export interface SkinAnalysisInput {
@@ -112,6 +119,19 @@ function metricValue(metrics: unknown, id: string, fallbackId?: string): number 
     if (fb !== null) return fb;
   }
   return 50;
+}
+
+/** 저장 결과와 즉시 결과가 같은 경계 데이터를 쓰도록 안전하게 해석한다. */
+export function parseSkinHomeCareBoundary(value: unknown): SkinHomeCareBoundary | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const obj = value as Record<string, unknown>;
+  if (!Array.isArray(obj.concernIds) || typeof obj.disclaimer !== 'string') {
+    return undefined;
+  }
+
+  const concernIds = obj.concernIds.filter((item): item is string => typeof item === 'string');
+  if (concernIds.length === 0) return undefined;
+  return { concernIds, disclaimer: obj.disclaimer };
 }
 
 // ============================================
@@ -202,6 +222,8 @@ export async function requestSkinAnalysis(
     dbSaveFailed: obj.dbSaveFailed === true,
     analysisId: typeof data.id === 'string' ? data.id : undefined,
     analyzedAt: typeof result.analyzedAt === 'string' ? result.analyzedAt : undefined,
+    homeCareBoundary:
+      obj.usedMock === true ? undefined : parseSkinHomeCareBoundary(result.homeCareBoundary),
   };
   void trackAnalysisComplete(
     'skin',

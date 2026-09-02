@@ -76,7 +76,7 @@ const SEASONS: { value: Season; label: string; icon: string }[] = [
   { value: 'winter', label: '겨울', icon: '❄️' },
 ];
 
-// 상황 옵션 — 웹 어휘 5종(casual/formal/workout/date/travel)과 1:1.
+// 상황 옵션 — 웹 옷장 TPO 어휘와 1:1.
 // 이전의 daily/work/sports는 매칭 로직이 모르는 값이라 TPO 점수가 항상 무시됐다
 const OCCASIONS: { value: Occasion; label: string }[] = [
   { value: 'casual', label: '캐주얼' },
@@ -84,6 +84,8 @@ const OCCASIONS: { value: Occasion; label: string }[] = [
   { value: 'workout', label: '운동' },
   { value: 'date', label: '데이트' },
   { value: 'travel', label: '여행' },
+  { value: 'work', label: '출근' },
+  { value: 'wedding_guest', label: '하객' },
 ];
 
 /** 다중 선택 토글 (순수) — 이미 있으면 빼고, 없으면 더한다 */
@@ -157,6 +159,7 @@ export default function ClosetAddScreen() {
         category: classification.category || prev.category,
         colors: normalizedColors,
         seasons: classification.seasons,
+        occasions: classification.occasions,
       }));
     } catch {
       setClassificationError('자동 분류 실패 — 직접 입력해주세요.');
@@ -542,6 +545,8 @@ export default function ClosetAddScreen() {
                   <Pressable
                     key={occ.value}
                     onPress={() => toggleOccasion(occ.value)}
+                    testID={`closet-occasion-${occ.value}`}
+                    accessibilityState={{ selected: formData.occasions.includes(occ.value) }}
                     style={[
                       styles.chip,
                       formData.occasions.includes(occ.value) && styles.chipSelected,

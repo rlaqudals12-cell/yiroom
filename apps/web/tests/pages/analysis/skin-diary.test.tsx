@@ -22,6 +22,7 @@ vi.mock('@clerk/nextjs', () => ({
   useAuth: () => ({
     isSignedIn: true,
     isLoaded: true,
+    userId: 'user-test',
   }),
 }));
 
@@ -118,6 +119,18 @@ describe('SkinDiaryPage', () => {
       await waitFor(() => {
         const insightsTab = screen.getByRole('tab', { name: /인사이트/ });
         expect(insightsTab).not.toBeDisabled();
+      });
+    });
+
+    it('제품 개봉 기록과 피부 분석 스냅샷을 실제 저장소에서 함께 조회한다', async () => {
+      render(<SkinDiaryPage />);
+
+      await waitFor(() => {
+        expect(stableFrom).toHaveBeenCalledWith('user_product_shelf');
+        expect(stableFrom).toHaveBeenCalledWith('skin_analyses');
+        expect(stableBuilder.select).toHaveBeenCalledWith(
+          expect.stringContaining('recommendations')
+        );
       });
     });
   });

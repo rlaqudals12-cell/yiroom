@@ -36,6 +36,8 @@ const VALID_OCCASIONS: ReadonlySet<string> = new Set([
   'workout',
   'date',
   'travel',
+  'work',
+  'wedding_guest',
 ]);
 
 /**
@@ -196,12 +198,12 @@ Return a JSON object with these fields:
   "colors": ["primary color in Korean", "secondary color if any"],
   "pattern": "solid" | "stripe" | "check" | "floral" | "dot" | "geometric" | "animal" | "abstract",
   "seasons": ["spring" | "summer" | "autumn" | "winter"],
-  "occasions": ["casual" | "formal" | "workout" | "date" | "travel"],
+  "occasions": ["casual" | "formal" | "workout" | "date" | "travel" | "work" | "wedding_guest"],
   "confidence": 0.0-1.0
 }
 
 seasons: seasons this item suits based on fabric weight/sleeve length (e.g., padding → ["winter"], linen shirt → ["spring","summer"]). Empty array if not determinable.
-occasions: where this item fits. Most items are ["casual"]; suits/blouses add "formal", athleisure adds "workout". Empty array if not determinable.
+occasions: where this item fits. Most items are ["casual"]; office wear adds "work", wedding guest wear adds "wedding_guest", suits/blouses add "formal", athleisure adds "workout". Empty array if not determinable.
 
 Categories:
 - outer: coats, jackets, cardigans, paddings
@@ -236,7 +238,7 @@ Only return the JSON object, no other text.`;
       const result = await generateContent({
         model: FAST_MODEL,
         contents: [{ text: prompt }, imagePart],
-        config: { temperature: 0.1, thinkingConfig: { thinkingLevel: 'low' } },
+        config: { temperature: 0, thinkingConfig: { thinkingLevel: 'low' } },
       });
       const text = result.text;
 

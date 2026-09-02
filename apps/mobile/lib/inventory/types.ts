@@ -30,7 +30,14 @@ export type ClothingCategory = 'outer' | 'top' | 'bottom' | 'dress' | 'shoes' | 
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
 
-export type Occasion = 'casual' | 'formal' | 'workout' | 'date' | 'travel';
+export type Occasion =
+  | 'casual'
+  | 'formal'
+  | 'workout'
+  | 'date'
+  | 'travel'
+  | 'work'
+  | 'wedding_guest';
 
 export type Pattern =
   | 'solid'
@@ -87,6 +94,8 @@ export const OCCASION_LABELS: Record<Occasion, string> = {
   workout: '운동',
   date: '데이트',
   travel: '여행',
+  work: '출근',
+  wedding_guest: '하객',
 };
 
 export const PATTERN_LABELS: Record<Pattern, string> = {

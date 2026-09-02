@@ -7,13 +7,14 @@
  */
 
 import {
-  generateContent,
+  generateContent as generateGeminiContent,
   isGeminiAvailable,
   formatImageForGemini,
   FAST_MODEL,
+  PINNED_VERDICT_MODEL,
   outputLanguageDirective,
 } from '@/lib/gemini/client';
-import type { GeminiContentPart, OutputLocale } from '@/lib/gemini/client';
+import type { GeminiCallParams, GeminiContentPart, OutputLocale } from '@/lib/gemini/client';
 import { buildFoodAnalysisPrompt as buildFoodAnalysisPromptFromModule } from '@/lib/gemini/prompts/foodAnalysis';
 import { geminiLogger } from '@/lib/utils/logger';
 import { compressBase64Image } from '@/lib/utils/image-compression';
@@ -45,11 +46,23 @@ import type { MakeupAnalysisInput } from '@/lib/analysis/makeup/types';
 // gemini-3.5-flash의 thinking 기본값(medium)은 이미지 분석에서 3.8~6.8초로
 // 3초 타임아웃을 전부 초과시켰음 (2026-07-07 실측). low 적용 시 3.2~3.8초.
 const geminiConfig = {
-  temperature: 0.1,
+  temperature: 0,
   topP: 0.8,
   topK: 40,
   thinkingConfig: { thinkingLevel: 'low' },
 };
+
+/** 판정 호출은 모델과 temperature를 한 경계에서 고정한다. */
+function generateContent(params: GeminiCallParams) {
+  return generateGeminiContent({
+    ...params,
+    model: params.model ?? PINNED_VERDICT_MODEL,
+    config: {
+      ...params.config,
+      temperature: 0,
+    },
+  });
+}
 
 // ============================================
 // 공통 인라인 타입 별칭

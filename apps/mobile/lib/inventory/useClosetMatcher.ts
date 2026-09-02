@@ -18,7 +18,7 @@ import {
   suggestOutfitFromCloset,
   getRecommendationSummary,
 } from './closetMatcher';
-import type { ClothingCategory, InventoryItem } from './types';
+import type { ClothingCategory, InventoryItem, Occasion } from './types';
 import { useCloset } from './useInventory';
 
 interface UseClosetMatcherProps {
@@ -51,7 +51,7 @@ interface UseClosetMatcherResult {
   ) => ClosetRecommendation[];
   /** 상황(TPO)별 추천 */
   getOccasionRecommendations: (
-    occasion: 'casual' | 'formal' | 'workout' | 'date' | 'travel',
+    occasion: Occasion,
     category?: ClothingCategory
   ) => ClosetRecommendation[];
   /** 데이터 새로고침 */
@@ -122,10 +122,7 @@ export function useClosetMatcher(props?: UseClosetMatcherProps): UseClosetMatche
 
   // 상황별 추천
   const getOccasionRecommendations = useCallback(
-    (
-      occasion: 'casual' | 'formal' | 'workout' | 'date' | 'travel',
-      category?: ClothingCategory
-    ): ClosetRecommendation[] => {
+    (occasion: Occasion, category?: ClothingCategory): ClosetRecommendation[] => {
       return recommendFromCloset(items, {
         ...baseOptions,
         occasion,

@@ -7,6 +7,11 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+const { findCachedVerdictForUserMock, syncCachedVerdictImagesForUserMock } = vi.hoisted(() => ({
+  findCachedVerdictForUserMock: vi.fn(),
+  syncCachedVerdictImagesForUserMock: vi.fn(),
+}));
+
 // Mock 모듈 설정
 vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn(),
@@ -14,6 +19,12 @@ vi.mock('@clerk/nextjs/server', () => ({
 
 vi.mock('@/lib/supabase/service-role', () => ({
   createServiceRoleClient: vi.fn(),
+}));
+
+vi.mock('@/lib/analysis/verdict-cache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analysis/verdict-cache')>()),
+  findCachedVerdictForUser: findCachedVerdictForUserMock,
+  syncCachedVerdictImagesForUser: syncCachedVerdictImagesForUserMock,
 }));
 
 vi.mock('@/lib/gemini', () => ({
@@ -228,6 +239,8 @@ describe('POST /api/analyze/skin', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    findCachedVerdictForUserMock.mockResolvedValue(null);
+    syncCachedVerdictImagesForUserMock.mockResolvedValue(mockDbResult);
     vi.mocked(auth).mockResolvedValue({ userId: 'user_test123' } as Awaited<
       ReturnType<typeof auth>
     >);
@@ -240,6 +253,33 @@ describe('POST /api/analyze/skin', () => {
     vi.mocked(formatProductsForDB).mockReturnValue({ cleanser: ['밀크 클렌저'] });
     mockStorageUpload.mockResolvedValue({ data: { path: 'user_test123/123.jpg' }, error: null });
     mockPcSelect.mockResolvedValue({ data: { season: 'Spring' }, error: null });
+  });
+
+  describe('판정 캐시', () => {
+    it('같은 입력의 저장 판정이 있으면 AI를 다시 호출하지 않고 저장 동의를 반영한다', async () => {
+      findCachedVerdictForUserMock.mockResolvedValue({
+        data: mockDbResult,
+        payload: { result: mockSkinAnalysisResult, usedMock: false },
+      });
+
+      const response = await POST(
+        createMockPostRequest({ imageBase64: MOCK_IMAGE_BASE64, imageStorageAllowed: true })
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.cacheHit).toBe(true);
+      expect(syncCachedVerdictImagesForUserMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user_test123',
+          axis: 'skin',
+          bucketName: 'skin-images',
+          images: { front: MOCK_IMAGE_BASE64 },
+          imageStorageAllowed: true,
+        })
+      );
+      expect(analyzeSkin).not.toHaveBeenCalled();
+    });
   });
 
   describe('인증', () => {
@@ -360,6 +400,11 @@ describe('POST /api/analyze/skin', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(false);
+      expect(json.result.homeCareBoundary).toEqual({
+        concernIds: ['redness'],
+        disclaimer: expect.stringContaining('시술이 필요한지 판정할 수 없어요'),
+      });
+      expect(json.result.homeCareBoundary).not.toHaveProperty('options');
     });
 
     it('AI 분석 실패 시 Mock으로 폴백한다', async () => {
@@ -375,6 +420,7 @@ describe('POST /api/analyze/skin', () => {
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
       expect(json.usedMock).toBe(true);
+      expect(json.result.homeCareBoundary).toBeNull();
     });
   });
 
@@ -519,6 +565,7 @@ describe('POST /api/analyze/skin', () => {
       expect(json).toHaveProperty('ingredientWarnings');
       expect(json).toHaveProperty('productRecommendations');
       expect(json).toHaveProperty('usedMock');
+      expect(json.result.homeCareBoundary).toBeNull();
     });
   });
 });

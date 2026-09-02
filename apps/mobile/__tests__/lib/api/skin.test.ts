@@ -47,6 +47,10 @@ function successBody(overrides: Record<string, unknown> = {}) {
         { id: 'sensitivity', value: 25 },
         { id: 'elasticity', value: 70 },
       ],
+      homeCareBoundary: {
+        concernIds: ['pigmentation'],
+        disclaimer: '사진만으로 시술 필요 여부를 판단할 수 없어요.',
+      },
     },
     ...overrides,
   };
@@ -80,6 +84,10 @@ describe('requestSkinAnalysis', () => {
     expect(result.metrics.elasticity).toBe(70);
     expect(result.usedMock).toBe(false);
     expect(result.analysisId).toBe('row-1');
+    expect(result.homeCareBoundary).toEqual({
+      concernIds: ['pigmentation'],
+      disclaimer: '사진만으로 시술 필요 여부를 판단할 수 없어요.',
+    });
   });
 
   it('요청에 웹 계약(imageBase64 + Bearer + mobile 헤더)을 담는다', async () => {
@@ -123,6 +131,7 @@ describe('requestSkinAnalysis', () => {
     const result = await requestSkinAnalysis(VALID_INPUT, 'token-1', BASE_URL);
 
     expect(result.usedMock).toBe(true);
+    expect(result.homeCareBoundary).toBeUndefined();
   });
 
   it('DB 저장 실패 플래그를 결과 화면까지 보존한다', async () => {

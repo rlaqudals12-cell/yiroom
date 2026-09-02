@@ -8,10 +8,11 @@
  */
 
 import {
-  generateContent,
+  generateContent as generateGeminiContent,
   isGeminiAvailable,
   formatImageForGemini,
   FAST_MODEL,
+  PINNED_VERDICT_MODEL,
   outputLanguageDirective,
 } from '@/lib/gemini/client';
 import type { GeminiCallParams, OutputLocale } from '@/lib/gemini/client';
@@ -54,7 +55,7 @@ import {
 // 불필요. 3.5-flash thinking 기본값(medium)은 통합 5축 병렬에서 3~5초 타임아웃을
 // 전부 초과시켜 부분 실패를 유발했음 (2026-07-07). low + 30초 예산으로 통일.
 const geminiV2Config = {
-  temperature: 0.3,
+  temperature: 0,
   maxOutputTokens: 4096,
   thinkingConfig: { thinkingLevel: 'low' as const },
 };
@@ -108,9 +109,10 @@ async function callGeminiWithBudget(
       const abortFromParent = () => controller.abort(deadline?.signal.reason);
       deadline?.signal.addEventListener('abort', abortFromParent, { once: true });
       try {
-        const request = generateContent({
+        const request = generateGeminiContent({
           ...params,
-          config: { ...params.config, abortSignal: controller.signal },
+          model: params.model ?? PINNED_VERDICT_MODEL,
+          config: { ...params.config, temperature: 0, abortSignal: controller.signal },
         });
         return deadline
           ? await withDeadline(request, deadline, timeoutMessage, {

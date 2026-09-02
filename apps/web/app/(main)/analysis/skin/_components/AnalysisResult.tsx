@@ -65,6 +65,7 @@ import type { DetailedZoneId, DetailedZoneStatus, DetailedStatusLevel } from '@/
 import { ConcernGrid } from '@/components/analysis/common';
 import { mapSkinMetricsToConcernCards } from '@/components/analysis/skin/SkinConcernData';
 import { TwelveZoneSummary } from '@/components/analysis/skin/TwelveZoneSummary';
+import { HomeCareBoundary } from '@/components/analysis/skin/HomeCareBoundary';
 import type { ZoneMetricsV2 } from '@/lib/analysis/skin-v2/types';
 
 // 분석 근거 타입
@@ -470,6 +471,10 @@ export default function AnalysisResult({
             <ChevronRight className="w-4 h-4" />
           </Link>
         </section>
+      </FadeInUp>
+
+      <FadeInUp delay={2}>
+        <HomeCareBoundary boundary={result.homeCareBoundary} />
       </FadeInUp>
 
       {/* ─── 이하 상세는 접기 (결론 먼저, 근거는 접기 — ADR-111) ─── */}

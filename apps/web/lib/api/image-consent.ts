@@ -196,6 +196,34 @@ async function ensureCleanupPending(
 }
 
 /**
+ * 분석 결과 행 연결에 실패한 직후 업로드분을 되돌리고, 삭제까지 실패하면
+ * 기존 동의 파기 큐가 다시 수거할 수 있도록 cleanup-pending 상태를 남긴다.
+ */
+export async function rollbackConsentImagesOrMarkCleanupPending(
+  supabase: SupabaseClient,
+  userId: string,
+  analysisType: AnalysisType,
+  bucketName: string,
+  paths: readonly string[]
+): Promise<void> {
+  if (paths.length === 0) return;
+
+  const rollbackSucceeded = await rollbackUploadedImages(
+    supabase,
+    bucketName,
+    Object.fromEntries(paths.map((path, index) => [`rollback-${index}`, path]))
+  );
+  if (rollbackSucceeded) return;
+
+  const consentState = await readImageConsentState(supabase, userId, analysisType);
+  const pendingMarked = await ensureCleanupPending(supabase, userId, analysisType, consentState);
+  if (!pendingMarked) {
+    console.error('[Image Consent audit] rollback and cleanup-pending marker both failed');
+    throw new Error('Image cleanup could not be scheduled');
+  }
+}
+
+/**
  * Base64 이미지를 Supabase Storage에 업로드
  *
  * @param supabase - Supabase 클라이언트

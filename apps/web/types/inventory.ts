@@ -43,7 +43,14 @@ export const SEASON_LABELS: Record<Season, string> = {
 };
 
 // 상황/TPO
-export type Occasion = 'casual' | 'formal' | 'workout' | 'date' | 'travel';
+export type Occasion =
+  | 'casual'
+  | 'formal'
+  | 'workout'
+  | 'date'
+  | 'travel'
+  | 'work'
+  | 'wedding_guest';
 
 export const OCCASION_LABELS: Record<Occasion, string> = {
   casual: '캐주얼',
@@ -51,6 +58,8 @@ export const OCCASION_LABELS: Record<Occasion, string> = {
   workout: '운동',
   date: '데이트',
   travel: '여행',
+  work: '출근',
+  wedding_guest: '하객',
 };
 
 // 패턴
@@ -417,9 +426,7 @@ export function toClothingItems(items: InventoryItem[]): ClothingItem[] {
 /**
  * metadata에서 ClothingMetadata로 안전하게 접근
  */
-export function getClothingMetadata(
-  metadata: Record<string, unknown>
-): ClothingMetadata {
+export function getClothingMetadata(metadata: Record<string, unknown>): ClothingMetadata {
   const m = metadata as Partial<ClothingMetadata>;
   return {
     color: m.color || [],

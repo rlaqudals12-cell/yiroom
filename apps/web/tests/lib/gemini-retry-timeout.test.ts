@@ -11,6 +11,7 @@ vi.mock('@/lib/gemini/client', () => ({
     inlineData: { data: imageBase64, mimeType: 'image/jpeg' },
   }),
   FAST_MODEL: 'gemini-fast-test',
+  PINNED_VERDICT_MODEL: 'gemini-verdict-test',
   outputLanguageDirective: () => '',
 }));
 
@@ -69,9 +70,15 @@ describe('Gemini 단독 분석 실행 예산', () => {
     });
 
     const request = generateContentMock.mock.calls[0]?.[0] as
-      | { contents?: Array<{ text?: string }> }
+      | {
+          contents?: Array<{ text?: string }>;
+          model?: string;
+          config?: { temperature?: number };
+        }
       | undefined;
     const prompt = request?.contents?.[0]?.text ?? '';
+    expect(request?.model).toBe('gemini-verdict-test');
+    expect(request?.config?.temperature).toBe(0);
     expect(prompt).toContain('피부가 보이는 경향: 노르스름하거나 복숭아빛으로 보여요');
     expect(prompt).toContain('손목 혈관 자가 관찰: 파란색이나 보라색에 가까워요');
     expect(prompt).toContain('액세서리 선호: 둘 다 잘 어울려요');

@@ -24,6 +24,14 @@ import { requireAgeVerified } from '@/lib/api/age-verification-gate';
 import { requireBiometricConsent } from '@/lib/api/biometric-consent';
 import { selectByKey } from '@/lib/utils/conditional-helpers';
 import { checkConsentAndUploadImages } from '@/lib/api/image-consent';
+import { buildHomeCareBoundary } from '@/lib/skincare/treatment-recommender';
+import { getLatestPersonalColorResult } from '@/lib/analysis/cross-module';
+import {
+  createAnalysisImageFingerprint,
+  createVerdictCacheEntry,
+  findCachedVerdictForUser,
+  syncCachedVerdictImagesForUser,
+} from '@/lib/analysis/verdict-cache';
 
 // XP 보상 상수
 const XP_ANALYSIS_COMPLETE = 10;
@@ -114,6 +122,40 @@ export async function POST(req: NextRequest) {
     // 생체정보 수집·이용 동의 게이트 (fail-closed) — BIPA/PIPA 제23조, 미동의 시 403
     const bioDenied = await requireBiometricConsent(userId);
     if (bioDenied) return bioDenied;
+
+    const personalColor = await getLatestPersonalColorResult(createServiceRoleClient(), userId);
+
+    const verdictFingerprint = createAnalysisImageFingerprint(
+      userId,
+      'skin',
+      [
+        ['front', primaryImage],
+        ['left', leftImageBase64],
+        ['right', rightImageBase64],
+      ],
+      { personalColorAssessmentId: personalColor?.id ?? null }
+    );
+
+    if (!FORCE_MOCK && !useMock) {
+      const cached = await findCachedVerdictForUser(userId, 'skin', verdictFingerprint);
+      if (cached) {
+        const cachedData = await syncCachedVerdictImagesForUser({
+          userId,
+          axis: 'skin',
+          cachedData: cached.data,
+          bucketName: 'skin-images',
+          images: { front: primaryImage },
+          imageStorageAllowed,
+        });
+        return NextResponse.json({
+          ...cached.payload,
+          success: true,
+          saved: true,
+          data: cachedData,
+          cacheHit: true,
+        });
+      }
+    }
 
     // 다각도 이미지 수 계산
     const imagesCount = [primaryImage, leftImageBase64, rightImageBase64].filter(Boolean).length;
@@ -236,6 +278,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const analyzedAt = new Date().toISOString();
+    const homeCareBoundary = buildHomeCareBoundary(result.metrics ?? [], usedMock);
+
     // DB 저장 및 후처리 (Mock 모드에서 DB 실패 시 합성 응답 반환)
     try {
       const supabase = createServiceRoleClient();
@@ -257,13 +302,7 @@ export async function POST(req: NextRequest) {
       const imageUrl = uploadedImages.front ?? null;
 
       // 퍼스널 컬러 조회 (자동 연동 + 파운데이션 추천)
-      const { data: pcData } = await supabase
-        .from('personal_color_assessments')
-        .select('season, makeup_recommendations')
-        .eq('clerk_user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      const pcData = personalColor;
 
       const personalColorSeason = pcData?.season || null;
 
@@ -397,6 +436,10 @@ export async function POST(req: NextRequest) {
       // products 필드 형식으로 변환
       const productsForDB = formatProductsForDB(productRecommendations);
 
+      // 피부 타입 기반 파운데이션 제형 추천 (S-1 전용)
+      const foundationFormula =
+        FOUNDATION_FORMULAS[skinType as keyof typeof FOUNDATION_FORMULAS] || null;
+
       // DB에 저장
       const { data, error } = await supabase
         .from('skin_analyses')
@@ -425,6 +468,21 @@ export async function POST(req: NextRequest) {
             // Mock 폴백 여부 — 결과 페이지가 recommendations.usedMock을 읽어 MockDataNotice
             // 표시. 저장 누락 시 Mock 결과가 재방문에서 실분석으로 위장됨 (2026-07-07)
             usedMock,
+            homeCareBoundary,
+            ...(!usedMock
+              ? {
+                  verdictCache: createVerdictCacheEntry('skin', verdictFingerprint, {
+                    result: { ...result, analyzedAt, foundationFormula, homeCareBoundary },
+                    personalColorSeason,
+                    foundationRecommendation,
+                    foundationFormula,
+                    ingredientWarnings,
+                    productRecommendations,
+                    usedMock: false,
+                    gamification: { badgeResults: [], xpAwarded: 0 },
+                  }),
+                }
+              : {}),
           },
           // 제품 추천 (피부 타입별 루틴 + 특화 제품)
           products: productsForDB,
@@ -477,20 +535,16 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 피부 타입 기반 파운데이션 제형 추천 (S-1 전용)
-      // skinType을 SkinTypeId로 매핑 (SkinType과 SkinTypeId가 동일)
-      const foundationFormula =
-        FOUNDATION_FORMULAS[skinType as keyof typeof FOUNDATION_FORMULAS] || null;
-
       return NextResponse.json({
         success: true,
         saved,
         data: data ?? null,
         result: {
           ...result,
-          analyzedAt: new Date().toISOString(),
+          analyzedAt,
           // 피부 타입 기반 파운데이션 제형 추천
           foundationFormula,
+          homeCareBoundary,
         },
         personalColorSeason,
         foundationRecommendation, // deprecated, PC-1으로 이동
@@ -514,12 +568,13 @@ export async function POST(req: NextRequest) {
         data: {
           id: syntheticId,
           clerk_user_id: userId,
-          created_at: new Date().toISOString(),
+          created_at: analyzedAt,
         },
         result: {
           ...result,
-          analyzedAt: new Date().toISOString(),
+          analyzedAt,
           foundationFormula: null,
+          homeCareBoundary,
         },
         personalColorSeason: null,
         foundationRecommendation: null,

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   analyzeProductEffect,
+  buildProductProgressReplay,
   estimateContribution,
   type TrackedProduct,
   type ScoreSnapshot,
@@ -81,6 +82,9 @@ describe('analyzeProductEffect', () => {
     const result = analyzeProductEffect(mockProduct, startSnapshot, currentSnapshot);
     expect(result.summary).toContain('세라마이드 크림');
     expect(result.summary).toContain('28일');
+    expect(result.summary).toContain('효과나 원인을 뜻하지 않아요');
+    expect(result.summary).not.toContain('개선');
+    expect(result.summary).not.toContain('제품 변경');
   });
 
   it('헤어 제품은 hair 지표를 추적한다', () => {
@@ -96,6 +100,37 @@ describe('analyzeProductEffect', () => {
     const result = analyzeProductEffect(hairProduct, hairStart, hairCurrent);
     expect(result.changes.length).toBeGreaterThan(0);
     expect(result.changes.find((c) => c.metricId === 'shine')?.trend).toBe('improved');
+  });
+});
+
+describe('buildProductProgressReplay', () => {
+  it('개봉일 직전 기록과 개봉 후 최신 기록으로 경과를 재생한다', () => {
+    const replay = buildProductProgressReplay(mockProduct, [
+      { date: '2026-01-20', skin: { hydration: 50 } },
+      { date: '2026-01-31', skin: { hydration: 55 } },
+      { date: '2026-02-10', skin: { hydration: 60 } },
+      { date: '2026-03-01', skin: { hydration: 65 } },
+    ]);
+
+    expect(replay?.beforeSnapshot.date).toBe('2026-01-31');
+    expect(replay?.afterSnapshot.date).toBe('2026-03-01');
+    expect(replay?.analysis.changes[0]).toMatchObject({ before: 55, after: 65 });
+    expect(replay?.includesFallback).toBe(false);
+  });
+
+  it('전후 기록 중 예시 결과가 있으면 출처를 보존한다', () => {
+    const replay = buildProductProgressReplay(mockProduct, [
+      { date: '2026-01-31', skin: { hydration: 55 }, usedFallback: true },
+      { date: '2026-03-01', skin: { hydration: 65 } },
+    ]);
+
+    expect(replay?.includesFallback).toBe(true);
+  });
+
+  it('개봉일 전후 기록이 모두 없으면 효과를 지어내지 않는다', () => {
+    expect(
+      buildProductProgressReplay(mockProduct, [{ date: '2026-02-10', skin: { hydration: 60 } }])
+    ).toBeNull();
   });
 });
 

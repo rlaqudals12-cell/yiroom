@@ -311,6 +311,10 @@ function transformDbToResult(dbData: DbSkinAnalysis): SkinAnalysisResult {
       : undefined,
     // Hybrid 데이터: 초보자 친화 팁 (최신 Mock 사용)
     easySkinTip: mockEasySkinTip,
+    homeCareBoundary:
+      dbData.recommendations?.usedMock === true || dbData.recommendations?.usedFallback === true
+        ? null
+        : (dbData.recommendations?.homeCareBoundary ?? null),
   };
 }
 
@@ -336,6 +340,8 @@ interface DbSkinAnalysis {
     analysisEvidence?: SkinAnalysisEvidence;
     imageQuality?: SkinImageQuality;
     usedMock?: boolean; // AI 분석 실패 시 Mock 데이터 사용 여부
+    usedFallback?: boolean;
+    homeCareBoundary?: SkinAnalysisResult['homeCareBoundary'];
   } | null;
   products: {
     routine?: Array<{ step: number; category: string; products: string[] }>;
@@ -663,7 +669,7 @@ export default function SkinAnalysisResultPage() {
         setImageQuality(dbData.recommendations.imageQuality);
       }
       // AI Fallback 사용 여부 (AI 분석 실패 시 Mock 데이터 사용)
-      if (dbData.recommendations?.usedMock) {
+      if (dbData.recommendations?.usedMock || dbData.recommendations?.usedFallback) {
         setUsedMock(true);
       }
 
@@ -768,7 +774,10 @@ export default function SkinAnalysisResultPage() {
             if (cachedData.dbData.recommendations?.imageQuality) {
               setImageQuality(cachedData.dbData.recommendations.imageQuality);
             }
-            if (cachedData.dbData.recommendations?.usedMock) {
+            if (
+              cachedData.dbData.recommendations?.usedMock ||
+              cachedData.dbData.recommendations?.usedFallback
+            ) {
               setUsedMock(true);
             }
             if (cachedData.dbData.problem_areas?.length > 0) {

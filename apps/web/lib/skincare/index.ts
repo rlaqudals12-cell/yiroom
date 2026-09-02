@@ -138,7 +138,12 @@ export type { ShelfRoutineSync, ProductLayeringInfo } from './shelf-routine-sync
 export {
   recommendTreatments,
   extractTreatmentConcerns,
+  buildHomeCareBoundary,
   TREATMENT_DISCLAIMER,
   EXCLUDED_MEDICAL_ACTS,
 } from './treatment-recommender';
-export type { TreatmentOption, TreatmentRecommendation } from './treatment-recommender';
+export type {
+  TreatmentOption,
+  TreatmentRecommendation,
+  HomeCareBoundaryInfo,
+} from './treatment-recommender';

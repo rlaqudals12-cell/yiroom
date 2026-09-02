@@ -91,9 +91,11 @@ describe('Occasion 타입', () => {
       'workout',
       'date',
       'travel',
+      'work',
+      'wedding_guest',
     ];
 
-    expect(occasions).toHaveLength(5);
+    expect(occasions).toHaveLength(7);
     occasions.forEach((occasion) => {
       expect(OCCASION_LABELS[occasion]).toBeDefined();
     });
@@ -182,6 +184,8 @@ describe('OCCASION_LABELS', () => {
     expect(OCCASION_LABELS.workout).toBe('운동');
     expect(OCCASION_LABELS.date).toBe('데이트');
     expect(OCCASION_LABELS.travel).toBe('여행');
+    expect(OCCASION_LABELS.work).toBe('출근');
+    expect(OCCASION_LABELS.wedding_guest).toBe('하객');
   });
 });
 

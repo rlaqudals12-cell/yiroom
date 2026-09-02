@@ -67,6 +67,8 @@ const OCCASION_LABELS: Record<Occasion, string> = {
   date: '데이트',
   workout: '운동',
   travel: '여행',
+  work: '출근',
+  wedding_guest: '하객',
 };
 
 const PERSONAL_COLOR_LABELS: Record<PersonalColorSeason, string> = {

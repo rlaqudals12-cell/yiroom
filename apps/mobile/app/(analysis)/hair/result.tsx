@@ -29,7 +29,13 @@ import {
   stringArray,
 } from '@/lib/analysis';
 import { StoredResultError } from '@/lib/analysis/stored-result-loader';
-import { HairApiError, requestHairAnalysis, type HairAnalysisApiResult } from '@/lib/api/hair';
+import {
+  HairApiError,
+  normalizeHairStyleRecommendations,
+  requestHairAnalysis,
+  type HairAnalysisApiResult,
+  type HairStyleRecommendation,
+} from '@/lib/api/hair';
 import { downscaleToBase64 } from '@/lib/image/downscale';
 import { captureError } from '@/lib/monitoring/sentry';
 import { useClerkSupabaseClient } from '@/lib/supabase';
@@ -138,7 +144,9 @@ function HairResultContent(): React.JSX.Element {
           },
           mainConcerns: normalizeStoredHairConcerns(row.concerns),
           careRoutine: stringArray(recommendations.careTips),
-          recommendedStyles: normalizeStoredHairStyles(recommendations.styleRecommendations),
+          recommendedStyles: normalizeHairStyleRecommendations(
+            recommendations.styleRecommendations
+          ),
           usedMock: stored.usedFallback === true,
           dbSaveFailed: false,
           analysisId: typeof row.id === 'string' ? row.id : undefined,
@@ -205,7 +213,7 @@ function HairResultContent(): React.JSX.Element {
 
   const topActions = buildHairTopActions({
     careRoutine: result.careRoutine,
-    recommendedStyles: result.recommendedStyles,
+    recommendedStyles: result.recommendedStyles.map(({ name }) => name),
   });
   const cautionIngredients = getHairCautionIngredients(result.scalpCondition);
   const scalpConcernNotice = getScalpConcernNotice(result.mainConcerns);
@@ -251,7 +259,7 @@ function HairResultContent(): React.JSX.Element {
     sections.push({
       key: 'care',
       title: '케어와 스타일',
-      summary: result.careRoutine[0] ?? result.recommendedStyles[0],
+      summary: result.careRoutine[0] ?? result.recommendedStyles[0]?.name,
       content: (
         <View style={styles.sectionGroups} testID="hair-care-and-style">
           {result.careRoutine.length > 0 ? (
@@ -264,7 +272,7 @@ function HairResultContent(): React.JSX.Element {
           {result.recommendedStyles.length > 0 ? (
             <ReportTextList
               heading="추천 헤어스타일"
-              items={result.recommendedStyles}
+              items={result.recommendedStyles.map(formatHairStyleRecommendation)}
               testID="hair-styles"
             />
           ) : null}
@@ -391,13 +399,9 @@ function normalizeStoredHairConcerns(value: unknown): string[] {
   return stringArray(value).map((concern) => STORED_HAIR_CONCERN_LABELS[concern] ?? concern);
 }
 
-function normalizeStoredHairStyles(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.flatMap((item) => {
-    if (typeof item === 'string') return [item];
-    const record = storedRecord(item);
-    return typeof record.name === 'string' ? [record.name] : [];
-  });
+function formatHairStyleRecommendation(recommendation: HairStyleRecommendation): string {
+  const reason = recommendation.matchReasons.join(' · ');
+  return reason ? `${recommendation.name} — ${reason}` : recommendation.name;
 }
 
 const styles = StyleSheet.create({
