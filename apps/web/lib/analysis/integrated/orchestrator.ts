@@ -41,6 +41,7 @@ import {
   runSkinAxis,
   runBodyAxis,
   runHairAxis,
+  rerankAndPersistHairStyles,
 } from './internal/axis-adapters';
 import { runMakeupComposer } from './internal/makeup-composer';
 import {
@@ -564,7 +565,7 @@ export async function runIntegratedAnalysis(
     const pc = settledToAxisResult(pcSettled, '퍼스널컬러');
     const skin = settledToAxisResult(skinSettled, '피부');
     const body = settledToAxisResult(bodySettled, '체형');
-    const hair = settledToAxisResult(hairSettled, '헤어');
+    let hair = settledToAxisResult(hairSettled, '헤어');
 
     const profileSnapshot = await profileSnapshotPromise;
     const resolvedPc = resolveSnapshotAxis(
@@ -588,13 +589,29 @@ export async function runIntegratedAnalysis(
       'body',
       toBodyAxisData
     );
-    const resolvedHair = resolveSnapshotAxis(
+    let resolvedHair = resolveSnapshotAxis(
       selected.has('hair'),
       hair,
       profileSnapshot,
       'hair',
       toHairAxisData
     );
+
+    // H축과 PC축은 지연을 줄이려고 병렬 실행한다. 둘 다 확정된 이 경계에서만
+    // 이번 세션의 헤어 행을 3-Factor(얼굴형×모질×PC)로 재랭킹한다.
+    // 미선택 승계 행은 과거 기록이므로 절대 덮어쓰지 않는다.
+    if (selected.has('hair') && resolvedPc.success && resolvedHair.success) {
+      const enrichedHair = await rerankAndPersistHairStyles(
+        sessionId,
+        clerkUserId,
+        input,
+        resolvedPc.data.season,
+        resolvedHair,
+        makeupDeadline
+      );
+      hair = enrichedHair;
+      resolvedHair = enrichedHair;
+    }
 
     // 3. M-1 composer (상세는 runMakeupAxis 주석 참조)
     let makeup: AxisResult<MakeupAxisData>;

@@ -101,9 +101,10 @@ export async function initKakaoSDK(): Promise<void> {
   sdkLoadPromise = (async () => {
     await loadKakaoScript();
 
-    const kakaoAppKey = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
+    // 웹 정본(apps/web/lib/kakao/lazy-sdk.ts)과 env명 통일 — 배치 Q 카카오 키 단일화
+    const kakaoAppKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
     if (!kakaoAppKey) {
-      console.warn('[Kakao] NEXT_PUBLIC_KAKAO_APP_KEY not found');
+      console.warn('[Kakao] NEXT_PUBLIC_KAKAO_JS_KEY not found');
       return;
     }
 

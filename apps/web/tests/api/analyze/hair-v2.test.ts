@@ -22,7 +22,8 @@ vi.mock('@/lib/gemini/v2-analysis', () => ({
 vi.mock('@/lib/analysis/hair', () => ({
   analyzeFaceShape: vi.fn(),
   estimateFaceShapeFromPose: vi.fn(),
-  recommendHairstyles: vi.fn(),
+  classifyTexture: vi.fn(),
+  matchStyles: vi.fn(),
   recommendHairColors: vi.fn(),
   generateCareTips: vi.fn(),
   generateMockHairAnalysisResult: vi.fn(),
@@ -66,7 +67,8 @@ import { analyzeHairWithGemini } from '@/lib/gemini/v2-analysis';
 import {
   analyzeFaceShape,
   estimateFaceShapeFromPose,
-  recommendHairstyles,
+  classifyTexture,
+  matchStyles,
   recommendHairColors,
   generateCareTips,
   generateMockHairAnalysisResult,
@@ -227,7 +229,10 @@ describe('POST /api/analyze/hair-v2', () => {
     vi.mocked(generateMockHairAnalysisResult).mockReturnValue(mockHairAnalysisResult);
     vi.mocked(analyzeFaceShape).mockReturnValue(mockFaceShapeAnalysis);
     vi.mocked(estimateFaceShapeFromPose).mockReturnValue(mockFaceShapeAnalysis);
-    vi.mocked(recommendHairstyles).mockReturnValue(mockHairAnalysisResult.styleRecommendations);
+    vi.mocked(classifyTexture).mockReturnValue('2b');
+    vi.mocked(matchStyles).mockReturnValue(
+      mockHairAnalysisResult.styleRecommendations as ReturnType<typeof matchStyles>
+    );
     vi.mocked(recommendHairColors).mockReturnValue(
       mockHairAnalysisResult.hairColorAnalysis!.recommendedColors
     );
@@ -313,6 +318,33 @@ describe('POST /api/analyze/hair-v2', () => {
       expect(json.success).toBe(true);
       expect(json.usedFallback).toBe(true);
       expect(generateMockHairAnalysisResult).toHaveBeenCalled();
+    });
+
+    it('Mock 폴백도 currentHair와 퍼스널컬러로 스타일을 재랭킹한다', async () => {
+      const response = await POST(
+        createMockPostRequest({
+          imageBase64: 'data:image/jpeg;base64,/9j/test',
+          useMock: true,
+          currentHair: {
+            length: 'long',
+            texture: 'wavy',
+            thickness: 'thick',
+          },
+          personalColorSeason: 'Summer',
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(classifyTexture).toHaveBeenCalledWith('wavy', { thickness: 'thick' });
+      expect(matchStyles).toHaveBeenCalledWith(
+        {
+          faceShape: mockHairAnalysisResult.faceShapeAnalysis.faceShape,
+          textureCode: '2b',
+          personalColorSeason: 'summer',
+          preferredLength: 'long',
+        },
+        5
+      );
     });
   });
 
@@ -658,7 +690,10 @@ describe('POST /api/analyze/hair-v2 확장 테스트', () => {
     vi.mocked(generateMockHairAnalysisResult).mockReturnValue(mockHairAnalysisResult);
     vi.mocked(analyzeFaceShape).mockReturnValue(mockFaceShapeAnalysis);
     vi.mocked(estimateFaceShapeFromPose).mockReturnValue(mockFaceShapeAnalysis);
-    vi.mocked(recommendHairstyles).mockReturnValue(mockHairAnalysisResult.styleRecommendations);
+    vi.mocked(classifyTexture).mockReturnValue('2b');
+    vi.mocked(matchStyles).mockReturnValue(
+      mockHairAnalysisResult.styleRecommendations as ReturnType<typeof matchStyles>
+    );
     vi.mocked(recommendHairColors).mockReturnValue(
       mockHairAnalysisResult.hairColorAnalysis!.recommendedColors
     );
@@ -804,12 +839,23 @@ describe('POST /api/analyze/hair-v2 확장 테스트', () => {
             density: 'dense',
             scalpCondition: 'oily',
           },
+          personalColorSeason: 'summer',
         })
       );
       const json = await response.json();
 
       expect(response.status).toBe(200);
       expect(json.success).toBe(true);
+      expect(classifyTexture).toHaveBeenCalledWith('wavy', { thickness: 'thick' });
+      expect(matchStyles).toHaveBeenCalledWith(
+        {
+          faceShape: mockFaceShapeAnalysis.faceShape,
+          textureCode: '2b',
+          personalColorSeason: 'summer',
+          preferredLength: 'long',
+        },
+        5
+      );
       // generateCareTips가 scalpCondition을 받아 호출됨
       expect(generateCareTips).toHaveBeenCalled();
     });

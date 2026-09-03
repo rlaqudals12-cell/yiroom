@@ -6,14 +6,16 @@
  */
 
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AlertTriangle, CircleHelp } from 'lucide-react';
 import { getSharedReport, type PublicAxisCode } from '@/lib/share/report';
+import { normalizeReportReferral } from '@/lib/share/report-funnel';
 import { LIPSTICK_RECOMMENDATIONS, type SeasonType } from '@/lib/mock/personal-color';
+import { SharedReportFunnel } from './_components/SharedReportFunnel';
 
 interface PageProps {
   params: Promise<{ token: string }>;
+  searchParams?: Promise<{ ref?: string | string[] }>;
 }
 
 const SEASON_LABELS: Record<string, string> = {
@@ -92,8 +94,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function SharedReportPage({ params }: PageProps) {
+export default async function SharedReportPage({ params, searchParams }: PageProps) {
   const { token } = await params;
+  const query = searchParams ? await searchParams : undefined;
+  const referralSource = normalizeReportReferral(query?.ref);
   const report = await getSharedReport(token);
   if (!report) notFound();
 
@@ -321,20 +325,8 @@ export default async function SharedReportPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* CTA — 바이럴 루프 */}
-        {/* 장식 그라데 소거 — 솔리드 카드 + 헤어라인, CTA 버튼이 주인공 (깊이 레시피) */}
-        <section className="rounded-2xl bg-card border p-5 text-center space-y-3">
-          <p className="text-sm font-medium">나도 내 스타일이 궁금하다면?</p>
-          <p className="text-xs text-muted-foreground">
-            사진 한 장으로 퍼스널컬러·피부·체형·헤어·메이크업을 한 번에 — 무료
-          </p>
-          <Link
-            href="/"
-            className="inline-block px-6 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
-          >
-            무료로 분석받기
-          </Link>
-        </section>
+        {/* CTA — ref 귀속을 보존하며 열람→분석 시작을 기존 analytics_events에 기록 */}
+        <SharedReportFunnel referralSource={referralSource} />
 
         <p className="text-center text-[10px] text-muted-foreground">
           {fallbackLabels.length > 0 || unknownLabels.length > 0

@@ -5,6 +5,14 @@ import {
   TREATMENT_DISCLAIMER,
   buildHomeCareBoundary,
 } from '@/lib/skincare/treatment-recommender';
+import * as skincarePublicApi from '@/lib/skincare';
+
+describe('skincare 공개 계약', () => {
+  it('구체 시술 추천 엔진과 데이터베이스를 공개 배럴에 노출하지 않는다', () => {
+    expect(skincarePublicApi).not.toHaveProperty('recommendTreatments');
+    expect(skincarePublicApi).not.toHaveProperty('TREATMENT_DATABASE');
+  });
+});
 
 describe('treatment-recommender', () => {
   describe('extractTreatmentConcerns', () => {

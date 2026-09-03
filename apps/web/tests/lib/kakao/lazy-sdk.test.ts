@@ -11,6 +11,7 @@ describe('kakao lazy-sdk', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
@@ -33,8 +34,9 @@ describe('kakao lazy-sdk', () => {
     expect(mod).toBeDefined();
   });
 
-  it('initKakaoSDK가 KAKAO_APP_KEY 없으면 warn한다', async () => {
+  it('initKakaoSDK가 canonical JS key를 사용한다', async () => {
     // script 로드를 mock
+    const init = vi.fn();
     const mockScript = {
       src: '',
       async: false,
@@ -48,7 +50,7 @@ describe('kakao lazy-sdk', () => {
       if (mockScript.onload) {
         // Kakao 객체 설정 (isInitialized: false)
         (window as unknown as Record<string, unknown>).Kakao = {
-          init: vi.fn(),
+          init,
           isInitialized: () => false,
           Share: { sendDefault: vi.fn(), createDefaultButton: vi.fn() },
           Link: { sendDefault: vi.fn() },
@@ -58,11 +60,8 @@ describe('kakao lazy-sdk', () => {
       return el;
     });
 
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-    // NEXT_PUBLIC_KAKAO_APP_KEY 없는 환경
-    const originalEnv = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
-    delete process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
+    vi.stubEnv('NEXT_PUBLIC_KAKAO_JS_KEY', 'canonical-js-key');
+    vi.stubEnv('NEXT_PUBLIC_KAKAO_APP_KEY', 'legacy-app-key');
 
     // 모듈 캐시 초기화 후 재import
     vi.resetModules();
@@ -70,11 +69,6 @@ describe('kakao lazy-sdk', () => {
 
     await initKakaoSDK();
 
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('NEXT_PUBLIC_KAKAO_APP_KEY'));
-
-    // 정리
-    if (originalEnv !== undefined) {
-      process.env.NEXT_PUBLIC_KAKAO_APP_KEY = originalEnv;
-    }
+    expect(init).toHaveBeenCalledWith('canonical-js-key');
   });
 });

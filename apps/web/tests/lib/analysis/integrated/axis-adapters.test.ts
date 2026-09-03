@@ -62,7 +62,7 @@ import {
 import type { CaptureConditions } from '@/lib/analysis/integrated';
 import { analyzeBodyWithGemini, analyzeHairWithGemini } from '@/lib/gemini/v2-analysis';
 import { getBodyShapeInfo, generateMockBodyAnalysisResult } from '@/lib/analysis/body-v2';
-import { recommendHairstyles, generateMockHairAnalysisResult } from '@/lib/analysis/hair';
+import { classifyTexture, matchStyles, generateMockHairAnalysisResult } from '@/lib/analysis/hair';
 import { generateMockResult as generateMockPC } from '@/lib/analysis/personal-color-v2';
 import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import { createExecutionDeadline } from '@/lib/utils/timeout';
@@ -373,7 +373,13 @@ describe('axis-adapters — AI 성공 경로에 Mock 값이 섞이지 않는다'
       },
     } as unknown as Awaited<ReturnType<typeof analyzeHairWithGemini>>);
 
-    const result = await runHairAxis('sess-ai-hair', USER, baseInput());
+    const input = baseInput();
+    input.questionnaire.hair = {
+      curlType: 'curly',
+      density: 'thick',
+      length: 'very_long',
+    };
+    const result = await runHairAxis('sess-ai-hair', USER, input);
 
     expect(result.success).toBe(true);
     if (!result.success) return;
@@ -383,12 +389,13 @@ describe('axis-adapters — AI 성공 경로에 Mock 값이 섞이지 않는다'
     expect(insert).toBeDefined();
     expect(insert!.payload.face_shape).toBe(aiShape);
 
-    const expected = recommendHairstyles(aiShape, { maxResults: 5 });
+    const textureCode = classifyTexture('curly');
+    const expected = matchStyles({ faceShape: aiShape, textureCode, preferredLength: 'long' }, 5);
     const recs = insert!.payload.recommendations as Record<string, unknown>;
     expect(recs.styleRecommendations).toEqual(expected);
     // 구 결함 재발 방지: Mock이 뽑은 얼굴형의 추천이 저장되면 안 된다
     expect(recs.styleRecommendations).not.toEqual(
-      recommendHairstyles(mockShape, { maxResults: 5 })
+      matchStyles({ faceShape: mockShape, textureCode, preferredLength: 'long' }, 5)
     );
     // 반환 데이터도 저장한 것과 같은 출처여야 한다
     expect(result.data.recommendedStyles).toEqual(expected.map((s) => s.name));

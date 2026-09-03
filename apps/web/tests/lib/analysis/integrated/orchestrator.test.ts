@@ -37,6 +37,8 @@ const mocks = vi.hoisted(() => ({
   clearSessionImagePointers: vi.fn(),
   recordSessionImageStorageFailure: vi.fn(),
   recordSessionImageCleanupPending: vi.fn(),
+  hairRecommendationUpdates: [] as Record<string, unknown>[],
+  hairRecommendationUpdateResult: vi.fn(),
 }));
 
 vi.mock('@/lib/analysis/integrated/internal/storage-uploader', async (importOriginal) => ({
@@ -56,7 +58,8 @@ vi.mock('@/lib/analysis/integrated/internal/session-store', () => ({
   recordSessionImageCleanupPending: mocks.recordSessionImageCleanupPending,
 }));
 
-vi.mock('@/lib/analysis/integrated/internal/axis-adapters', () => ({
+vi.mock('@/lib/analysis/integrated/internal/axis-adapters', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analysis/integrated/internal/axis-adapters')>()),
   runPersonalColorAxis: mocks.runPersonalColorAxis,
   runSkinAxis: mocks.runSkinAxis,
   runBodyAxis: mocks.runBodyAxis,
@@ -76,7 +79,24 @@ vi.mock('@/lib/analysis/integrated/internal/persona-composer', () => ({
 }));
 
 vi.mock('@/lib/supabase/service-role', () => ({
-  createServiceRoleClient: () => ({}),
+  createServiceRoleClient: () => ({
+    from: (table: string) => {
+      if (table !== 'hair_analyses') return {};
+      return {
+        update: (payload: Record<string, unknown>) => {
+          mocks.hairRecommendationUpdates.push(payload);
+          const query = {
+            eq: vi.fn(),
+            select: vi.fn(),
+            single: vi.fn(() => mocks.hairRecommendationUpdateResult()),
+          };
+          query.eq.mockReturnValue(query);
+          query.select.mockReturnValue(query);
+          return query;
+        },
+      };
+    },
+  }),
 }));
 
 vi.mock('@/lib/api/analysis-helpers/gamification', () => ({
@@ -94,6 +114,7 @@ import {
   ImageStorageOperationError,
   ImageStorageRollbackError,
 } from '@/lib/analysis/integrated/internal/storage-uploader';
+import { classifyTexture, matchStyles } from '@/lib/analysis/hair';
 
 const USER = 'user_test_1';
 
@@ -130,7 +151,7 @@ const bodyOk: AxisResult<BodyAxisData> = {
 const hairOk: AxisResult<HairAxisData> = {
   success: true,
   usedFallback: false,
-  data: { faceShape: 'oval' },
+  data: { id: 'hair-new', faceShape: 'oval', hairType: 'curly' },
 };
 const makeupOk: AxisResult<MakeupAxisData> = {
   success: true,
@@ -204,6 +225,11 @@ beforeEach(() => {
   mocks.clearSessionImagePointers.mockResolvedValue(undefined);
   mocks.recordSessionImageStorageFailure.mockResolvedValue(undefined);
   mocks.recordSessionImageCleanupPending.mockResolvedValue(undefined);
+  mocks.hairRecommendationUpdates.length = 0;
+  mocks.hairRecommendationUpdateResult.mockResolvedValue({
+    data: { id: 'hair-new' },
+    error: null,
+  });
 });
 
 afterEach(() => {
@@ -414,7 +440,7 @@ describe('runIntegratedAnalysis — 선택 재분석 축 승계 (외부 리뷰 #
   });
 
   it('full 분석은 프로필 스냅샷을 조회하지 않고 새 5축만 persona에 쓴다', async () => {
-    await runIntegratedAnalysis(baseInput(), USER);
+    const result = await runIntegratedAnalysis(baseInput(), USER);
 
     expect(mocks.fetchProfileSnapshot).not.toHaveBeenCalled();
     const [personaAxes] = mocks.composePersona.mock.calls[0];
@@ -422,9 +448,125 @@ describe('runIntegratedAnalysis — 선택 재분석 축 승계 (외부 리뷰 #
       personalColor: pcOk,
       skin: skinOk,
       body: bodyOk,
-      hair: hairOk,
+      hair: result.axes.hair,
       makeup: makeupOk,
     });
+  });
+
+  it('full 분석은 settle된 PC 시즌으로 헤어를 재랭킹해 저장본과 반환본을 맞춘다', async () => {
+    const input = baseInput();
+    input.questionnaire.hair = {
+      curlType: 'curly',
+      density: 'thick',
+      length: 'very_long',
+    };
+    const expected = matchStyles(
+      {
+        faceShape: 'oval',
+        textureCode: classifyTexture('curly'),
+        personalColorSeason: 'spring',
+        preferredLength: 'long',
+      },
+      5
+    );
+    const withoutPc = matchStyles(
+      {
+        faceShape: 'oval',
+        textureCode: classifyTexture('curly'),
+        preferredLength: 'long',
+      },
+      5
+    );
+
+    const result = await runIntegratedAnalysis(input, USER);
+
+    expect(expected).not.toEqual(withoutPc);
+    expect(mocks.hairRecommendationUpdates).toHaveLength(1);
+    expect(mocks.hairRecommendationUpdates[0]).toEqual({
+      recommendations: {
+        version: 2,
+        source: 'integrated',
+        styleRecommendations: expected,
+        usedFallback: false,
+      },
+    });
+    expect(result.axes.hair).toMatchObject({
+      success: true,
+      data: { recommendedStyles: expected.map((style) => style.name) },
+    });
+  });
+
+  it('hair 재분석은 승계된 PC 시즌으로 실제 저장 행을 재랭킹한다', async () => {
+    mocks.fetchProfileSnapshot.mockResolvedValue(
+      snapshotWith({
+        personal_color: { id: 'pc-old', season: 'winter', undertone: 'cool' },
+      })
+    );
+    const input = baseInput({ mode: 'update', axes: ['hair'] });
+    input.questionnaire.hair = { curlType: 'curly', length: 'long' };
+    const expected = matchStyles(
+      {
+        faceShape: 'oval',
+        textureCode: classifyTexture('curly'),
+        personalColorSeason: 'winter',
+        preferredLength: 'long',
+      },
+      5
+    );
+
+    const result = await runIntegratedAnalysis(input, USER);
+
+    expect(mocks.hairRecommendationUpdates[0]).toEqual({
+      recommendations: {
+        version: 2,
+        source: 'integrated',
+        styleRecommendations: expected,
+        usedFallback: false,
+      },
+    });
+    expect(result.axes.hair).toMatchObject({
+      success: true,
+      data: { recommendedStyles: expected.map((style) => style.name) },
+    });
+  });
+
+  it('PC만 재분석할 때 과거 hair 저장 행을 덮어쓰지 않는다', async () => {
+    mocks.fetchProfileSnapshot.mockResolvedValue(
+      snapshotWith({
+        hair: {
+          id: 'hair-old',
+          face_shape: 'oval',
+          hair_type: 'wavy',
+          recommendations: { styleRecommendations: [{ name: '기존 스타일' }] },
+        },
+      })
+    );
+
+    await runIntegratedAnalysis(baseInput({ mode: 'update', axes: ['personal_color'] }), USER);
+
+    expect(mocks.hairRecommendationUpdates).toHaveLength(0);
+  });
+
+  it('헤어 재랭킹 저장 실패 시 기존 저장본과 반환 추천을 갈라놓지 않는다', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    mocks.hairRecommendationUpdateResult.mockResolvedValue({
+      data: null,
+      error: { message: 'update failed' },
+    });
+
+    try {
+      const result = await runIntegratedAnalysis(baseInput(), USER);
+
+      expect(mocks.hairRecommendationUpdates).toHaveLength(1);
+      expect(result.axes.hair).toBe(hairOk);
+      expect(mocks.finalizeSession).toHaveBeenCalledTimes(1);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[Integrated hair] 3-Factor recommendation save failed',
+        { message: 'update failed' }
+      );
+    } finally {
+      consoleSpy.mockRestore();
+    }
   });
 });
 

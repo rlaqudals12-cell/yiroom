@@ -80,11 +80,15 @@ export async function flushEvents(): Promise<void> {
       return;
     }
 
-    await fetch('/api/analytics/events', {
+    const response = await fetch('/api/analytics/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      keepalive: true,
     });
+    if (!response.ok) {
+      throw new Error(`Analytics request failed with status ${response.status}`);
+    }
   } catch (error) {
     // 실패 시 큐에 다시 추가 (재시도)
     analyticsLogger.error('Failed to send events:', error);
@@ -116,6 +120,36 @@ export async function trackBriefingView(homeState: string): Promise<void> {
     eventName: 'briefing_view',
     eventData: { homeState },
     pagePath: '/home',
+  });
+}
+
+/** 공개 리포트 공유 링크를 만든 시점 — 토큰·진단 내용은 계측하지 않는다. */
+export async function trackReportShareCreated(channel: 'kakao' | 'link'): Promise<void> {
+  await trackEvent({
+    eventType: 'button_click',
+    eventName: 'report_share_created',
+    eventData: { buttonId: 'report_share_create', channel },
+    pagePath: '/analysis/integrated/result',
+  });
+}
+
+/** 공유받은 사람이 공개 리포트를 실제로 연 시점. */
+export async function trackSharedReportView(referralSource: string): Promise<void> {
+  await trackEvent({
+    eventType: 'page_view',
+    eventName: 'report_share_viewed',
+    eventData: { referralSource },
+    pagePath: '/share/report/[token]',
+  });
+}
+
+/** 공개 리포트 유입 뒤 실제 분석 API를 요청한 시점. */
+export async function trackSharedReportAnalysisStart(referralSource: string): Promise<void> {
+  await trackEvent({
+    eventType: 'feature_use',
+    eventName: 'report_share_analysis_started',
+    eventData: { featureId: 'shared_report_analysis', referralSource },
+    pagePath: '/analysis/personal-color',
   });
 }
 

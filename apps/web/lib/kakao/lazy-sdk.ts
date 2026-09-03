@@ -83,7 +83,7 @@ async function loadKakaoScript(): Promise<void> {
 /**
  * Kakao SDK 초기화
  * - 싱글톤 패턴으로 중복 초기화 방지
- * - 환경변수에서 App Key 로드
+ * - 환경변수에서 JavaScript Key 로드
  */
 export async function initKakaoSDK(): Promise<void> {
   // 이미 초기화된 경우 스킵
@@ -101,14 +101,14 @@ export async function initKakaoSDK(): Promise<void> {
   sdkLoadPromise = (async () => {
     await loadKakaoScript();
 
-    const kakaoAppKey = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
-    if (!kakaoAppKey) {
-      console.warn('[Kakao] NEXT_PUBLIC_KAKAO_APP_KEY not found');
+    const kakaoJavaScriptKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
+    if (!kakaoJavaScriptKey) {
+      console.warn('[Kakao] NEXT_PUBLIC_KAKAO_JS_KEY not found');
       return;
     }
 
     if (window.Kakao && !window.Kakao.isInitialized()) {
-      window.Kakao.init(kakaoAppKey);
+      window.Kakao.init(kakaoJavaScriptKey);
       isInitialized = true;
     }
   })();

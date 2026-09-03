@@ -761,6 +761,9 @@ export default async function IntegratedResultPage({
           </p>
         )}
 
+        {/* 결론과 결과 출처 고지를 확인한 직후 공유 — 상세 근거보다 앞, 정직성 고지보다 뒤 */}
+        <ShareReportButton sessionId={session.id} />
+
         {/* 정체성 공유 카드 — "뽐내기" 정서(2026-07-12 인사이트): 페르소나를 자랑 가능한
             이미지 배지로. 사진 미포함(생체정보), 성공 축 뱃지만 표시 */}
         {persona?.oneLine && (
@@ -840,9 +843,6 @@ export default async function IntegratedResultPage({
           axesFailed={axesFailed}
           axisSummaries={axisSummaries}
         />
-
-        {/* 스타일 리포트 공유 — 사진 없는 공개 링크 (바이럴 루프) */}
-        <ShareReportButton sessionId={session.id} />
 
         {/* 하단 안내 */}
         <div className="space-y-1 pt-4 text-center text-[11px] text-muted-foreground">

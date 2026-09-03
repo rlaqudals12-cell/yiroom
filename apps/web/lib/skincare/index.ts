@@ -134,16 +134,11 @@ export {
 } from './shelf-routine-sync';
 export type { ShelfRoutineSync, ProductLayeringInfo } from './shelf-routine-sync';
 
-// 피부 시술 추천 (ADR-045)
+// 사진 분석 기반 홈케어 한계 고지 (ADR-045)
 export {
-  recommendTreatments,
   extractTreatmentConcerns,
   buildHomeCareBoundary,
   TREATMENT_DISCLAIMER,
   EXCLUDED_MEDICAL_ACTS,
 } from './treatment-recommender';
-export type {
-  TreatmentOption,
-  TreatmentRecommendation,
-  HomeCareBoundaryInfo,
-} from './treatment-recommender';
+export type { HomeCareBoundaryInfo } from './treatment-recommender';

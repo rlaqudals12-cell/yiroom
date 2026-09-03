@@ -11,6 +11,8 @@ import {
   generateCareTips,
   getStylesToAvoid,
 } from '@/lib/analysis/hair/style-recommender';
+import { matchStyles } from '@/lib/analysis/hair/style-matcher';
+import { classifyTexture } from '@/lib/analysis/hair/texture-classifier';
 import type { FaceShapeType, HairLength } from '@/lib/analysis/hair/types';
 
 // =============================================================================
@@ -59,6 +61,27 @@ describe('recommendHairstyles', () => {
     const recommendations = recommendHairstyles('oval', { maxResults });
 
     expect(recommendations).toHaveLength(maxResults);
+  });
+
+  it('delegates face, texture, personal color, and length to the 3-Factor matcher', () => {
+    const actual = recommendHairstyles('square', {
+      currentTexture: 'curly',
+      personalColorSeason: 'autumn',
+      preferredLength: 'long',
+      maxResults: 5,
+    });
+    const expected = matchStyles(
+      {
+        faceShape: 'square',
+        textureCode: classifyTexture('curly'),
+        personalColorSeason: 'autumn',
+        preferredLength: 'long',
+      },
+      5
+    );
+
+    expect(actual).toEqual(expected);
+    expect(actual.every((recommendation) => 'matchReasons' in recommendation)).toBe(true);
   });
 
   it('should filter by preferred length', () => {

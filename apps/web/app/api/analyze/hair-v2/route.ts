@@ -31,7 +31,8 @@ import {
 import {
   analyzeFaceShape,
   estimateFaceShapeFromPose,
-  recommendHairstyles,
+  classifyTexture,
+  matchStyles,
   recommendHairColors,
   generateCareTips,
   generateMockHairAnalysisResult,
@@ -50,6 +51,37 @@ const XP_ANALYSIS_COMPLETE = 10;
 
 // 환경변수: Mock 모드 강제 여부 (개발/테스트용)
 const FORCE_MOCK = process.env.FORCE_MOCK_AI === 'true';
+
+type CurrentHairInfo = NonNullable<HairAnalysisResult['currentHairInfo']>;
+
+/** Mock 얼굴 판정은 유지하되, 추천 순위는 실제 입력 3-Factor로 다시 계산한다. */
+function generateMatchedFallbackResult(params: {
+  personalColorSeason?: string;
+  currentHair?: CurrentHairInfo;
+  seed: string;
+}): HairAnalysisResult {
+  const { personalColorSeason, currentHair, seed } = params;
+  const result = generateMockHairAnalysisResult({ personalColorSeason, seed });
+  const observedHair = currentHair ?? result.currentHairInfo;
+  const observedTexture = observedHair?.texture;
+  const textureCode = observedTexture
+    ? classifyTexture(observedTexture, { thickness: observedHair?.thickness })
+    : undefined;
+
+  return {
+    ...result,
+    currentHairInfo: observedHair,
+    styleRecommendations: matchStyles(
+      {
+        faceShape: result.faceShapeAnalysis.faceShape,
+        textureCode,
+        personalColorSeason: personalColorSeason?.toLowerCase(),
+        preferredLength: observedHair?.length,
+      },
+      5
+    ),
+  };
+}
 
 /**
  * H-1 헤어분석 v2 분석 API
@@ -133,8 +165,9 @@ export async function POST(req: NextRequest) {
 
     if (FORCE_MOCK || useMock) {
       // Mock 모드
-      result = generateMockHairAnalysisResult({
+      result = generateMatchedFallbackResult({
         personalColorSeason,
+        currentHair,
         seed: fallbackSeed,
       });
       usedFallback = true;
@@ -174,7 +207,11 @@ export async function POST(req: NextRequest) {
             };
           } else {
             // Gemini 분석 실패 - Mock으로 폴백
-            result = generateMockHairAnalysisResult({ personalColorSeason, seed: fallbackSeed });
+            result = generateMatchedFallbackResult({
+              personalColorSeason,
+              currentHair,
+              seed: fallbackSeed,
+            });
             usedFallback = true;
 
             const supabase = createServiceRoleClient();
@@ -183,17 +220,33 @@ export async function POST(req: NextRequest) {
         }
         // 이미지도 없으면 Mock 폴백
         else {
-          result = generateMockHairAnalysisResult({ personalColorSeason, seed: fallbackSeed });
+          result = generateMatchedFallbackResult({
+            personalColorSeason,
+            currentHair,
+            seed: fallbackSeed,
+          });
           usedFallback = true;
 
           const supabase = createServiceRoleClient();
           return await saveAndRespond(supabase, userId, result, usedFallback, pipelineMeta);
         }
 
-        // 헤어스타일 추천 생성
-        const styleRecommendations = recommendHairstyles(faceShapeAnalysis.faceShape, {
-          maxResults: 5,
-        });
+        // 얼굴형 × 관찰 모질 × 퍼스널컬러를 3-Factor 정본에 함께 전달한다.
+        const observedTexture = currentHair?.texture as HairTexture | undefined;
+        const textureCode = observedTexture
+          ? classifyTexture(observedTexture, {
+              thickness: currentHair?.thickness as 'fine' | 'medium' | 'thick' | undefined,
+            })
+          : undefined;
+        const styleRecommendations = matchStyles(
+          {
+            faceShape: faceShapeAnalysis.faceShape,
+            textureCode,
+            personalColorSeason,
+            preferredLength: currentHair?.length,
+          },
+          5
+        );
 
         // 헤어컬러 추천 (퍼스널컬러 연계)
         const colorRecommendations = recommendHairColors(personalColorSeason || 'spring', {
@@ -226,7 +279,11 @@ export async function POST(req: NextRequest) {
       } catch (aiError) {
         // AI 실패 시 Mock으로 폴백
         console.error('[H-1] Analysis error, falling back to mock:', aiError);
-        result = generateMockHairAnalysisResult({ personalColorSeason, seed: fallbackSeed });
+        result = generateMatchedFallbackResult({
+          personalColorSeason,
+          currentHair,
+          seed: fallbackSeed,
+        });
         usedFallback = true;
       }
     }

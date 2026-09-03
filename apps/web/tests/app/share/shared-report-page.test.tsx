@@ -26,6 +26,16 @@ const notFound = vi.fn(() => {
 });
 vi.mock('next/navigation', () => ({ notFound: () => notFound() }));
 
+vi.mock('@clerk/nextjs', () => ({
+  useAuth: () => ({ isLoaded: true, isSignedIn: true }),
+}));
+
+vi.mock('@/lib/analytics/tracker', () => ({
+  trackSharedReportView: vi.fn(() => Promise.resolve()),
+  trackSharedReportAnalysisStart: vi.fn(() => Promise.resolve()),
+  flushEvents: vi.fn(() => Promise.resolve()),
+}));
+
 const getSharedReport = vi.fn();
 vi.mock('@/lib/share/report', () => ({ getSharedReport: () => getSharedReport() }));
 
@@ -56,9 +66,14 @@ function baseReport(overrides: Partial<PublicStyleReport> = {}): PublicStyleRepo
   };
 }
 
-async function renderPage() {
+async function renderPage(ref?: string) {
   const { default: SharedReportPage } = await import('@/app/share/report/[token]/page');
-  return render(await SharedReportPage({ params: Promise.resolve({ token: 'a'.repeat(32) }) }));
+  return render(
+    await SharedReportPage({
+      params: Promise.resolve({ token: 'a'.repeat(32) }),
+      searchParams: Promise.resolve({ ref }),
+    })
+  );
 }
 
 beforeEach(() => {
@@ -134,5 +149,22 @@ describe('공개 스타일 리포트 페이지', () => {
 
     await expect(renderPage()).rejects.toThrow('NEXT_NOT_FOUND');
     expect(notFound).toHaveBeenCalled();
+  });
+
+  it('허용된 ref만 공개 리포트 퍼널에 전달한다', async () => {
+    getSharedReport.mockResolvedValue(baseReport());
+
+    const valid = await renderPage('kakao');
+    expect(screen.getByTestId('shared-report-funnel')).toHaveAttribute(
+      'data-referral-source',
+      'kakao'
+    );
+    valid.unmount();
+
+    await renderPage('private-email');
+    expect(screen.getByTestId('shared-report-funnel')).toHaveAttribute(
+      'data-referral-source',
+      'direct'
+    );
   });
 });

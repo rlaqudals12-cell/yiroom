@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { composeCrossInsights } from '@/lib/analysis/integrated';
+import { classifyTexture, matchStyles } from '@/lib/analysis/hair';
 import type {
   AxisResult,
   PersonalColorAxisData,
@@ -64,7 +65,7 @@ const hairOval: AxisResult<HairAxisData> = {
 const hairRound: AxisResult<HairAxisData> = {
   success: true,
   usedFallback: false,
-  data: { faceShape: 'round' },
+  data: { faceShape: 'round', hairType: 'curly' },
 };
 
 const makeupSuccess: AxisResult<MakeupAxisData> = {
@@ -146,13 +147,40 @@ describe('composeCrossInsights', () => {
     expect(r.items[0].combo).toContain('체형');
   });
 
-  it('C + H round → 얼굴선 사이드 컷 조언', () => {
+  it('C + H round → 3-Factor 엔진의 상위 스타일을 제목과 본문에 사용한다', () => {
+    const expected = matchStyles(
+      { faceShape: 'round', textureCode: classifyTexture('curly') },
+      1
+    )[0];
     const r = composeCrossInsights({
       ...allFailed(),
       body: bodySuccess,
       hair: hairRound,
     });
-    expect(r.items[0].title).toContain('사이드 컷');
+    expect(expected).toBeDefined();
+    expect(r.items[0].title).toContain(expected?.name);
+    expect(r.items[0].body).toContain(expected?.name);
+  });
+
+  it('PC + C + H → 퍼스널컬러와 모질을 3-Factor 헤어 추천에 반영한다', () => {
+    const expected = matchStyles(
+      {
+        faceShape: 'round',
+        textureCode: classifyTexture('curly'),
+        personalColorSeason: 'spring',
+      },
+      1
+    )[0];
+
+    const r = composeCrossInsights({
+      ...allFailed(),
+      personalColor: pcWarm,
+      body: bodySuccess,
+      hair: hairRound,
+    });
+
+    expect(expected).toBeDefined();
+    expect(r.items.find((item) => item.id === 'c_h')?.body).toContain(expected?.name);
   });
 
   it('S sensitive + M → 저자극 베이스 조언', () => {

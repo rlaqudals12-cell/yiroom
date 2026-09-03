@@ -249,31 +249,3 @@ export function buildProductProgressReplay(
     includesFallback: beforeSnapshot.usedFallback === true || afterSnapshot.usedFallback === true,
   };
 }
-
-/**
- * 여러 제품의 기여도 추정 (인과 분석 기초)
- *
- * 같은 기간에 여러 제품을 사용했을 때, 각 제품의 기여도를 추정
- * 단순화된 방법: 제품의 주요 성분과 개선된 지표의 상관관계
- *
- * @param effects - 각 제품의 효과 분석 결과
- * @returns 기여도 순위 (높은 기여도 순)
- */
-export function estimateContribution(
-  effects: ProductEffectAnalysis[]
-): { productName: string; estimatedContribution: number; topMetric: string }[] {
-  return effects
-    .map((effect) => {
-      const improvedCount = effect.changes.filter((c) => c.trend === 'improved').length;
-      const totalChange = effect.changes.reduce((sum, c) => sum + Math.max(0, c.change), 0);
-      const topChange = effect.changes.sort((a, b) => b.change - a.change)[0];
-
-      return {
-        productName: effect.productName,
-        // 단순 추정: 개선된 지표 수 × 총 변화량
-        estimatedContribution: improvedCount * totalChange,
-        topMetric: topChange?.metricName ?? '없음',
-      };
-    })
-    .sort((a, b) => b.estimatedContribution - a.estimatedContribution);
-}

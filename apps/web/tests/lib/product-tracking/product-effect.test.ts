@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   analyzeProductEffect,
   buildProductProgressReplay,
-  estimateContribution,
   type TrackedProduct,
   type ScoreSnapshot,
 } from '@/lib/product-tracking';
+import * as productTrackingPublicApi from '@/lib/product-tracking';
 
 const mockProduct: TrackedProduct = {
   id: 'tp-1',
@@ -134,17 +134,8 @@ describe('buildProductProgressReplay', () => {
   });
 });
 
-describe('estimateContribution', () => {
-  it('기여도 높은 순으로 정렬한다', () => {
-    const effect1 = analyzeProductEffect(mockProduct, startSnapshot, currentSnapshot);
-    const effect2 = analyzeProductEffect({ ...mockProduct, productName: '토너' }, startSnapshot, {
-      date: '2026-03-01',
-      skin: { ...startSnapshot.skin!, hydration: 58 },
-    });
-    const contributions = estimateContribution([effect1, effect2]);
-    expect(contributions[0].productName).toBe('세라마이드 크림');
-    expect(contributions[0].estimatedContribution).toBeGreaterThan(
-      contributions[1].estimatedContribution
-    );
+describe('product-tracking 공개 계약', () => {
+  it('인과로 오해되는 기여도 추정 API를 노출하지 않는다', () => {
+    expect(productTrackingPublicApi).not.toHaveProperty('estimateContribution');
   });
 });

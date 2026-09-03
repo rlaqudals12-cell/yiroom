@@ -12,6 +12,8 @@ import type { ImageConsent } from '@/components/analysis/consent/types';
 import { compressFileToBase64 } from '@/lib/utils/image-compression';
 import { useFaceLandmarker } from '@/hooks/useFaceLandmarker';
 import { invalidateAnalysisCache } from '@/hooks/useAnalysisStatus';
+import { trackSharedReportAnalysisStart } from '@/lib/analytics/tracker';
+import { normalizeReportReferral } from '@/lib/share/report-funnel';
 import { measureContrastLevel } from './_components/measure-contrast';
 import LightingGuide from './_components/LightingGuide';
 import PhotoUpload from './_components/PhotoUpload';
@@ -86,6 +88,7 @@ export default function PersonalColorPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const forceNew = searchParams.get('forceNew') === 'true';
+  const sharedReportReferral = normalizeReportReferral(searchParams.get('ref') ?? undefined);
   const { isSignedIn, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   // 퍼스널 대비 실측용 MediaPipe 랜드마커 (ADR-116) — 미가용 시 detect가 null 반환 → 대비 생략
@@ -405,6 +408,11 @@ export default function PersonalColorPage() {
         };
       }
 
+      // 공유 CTA 클릭이 아니라 실제 분석 요청 직전에만 전환을 기록한다.
+      // 계측 실패가 분석 본기능을 막지 않도록 비차단으로 보낸다.
+      if (sharedReportReferral !== 'direct') {
+        void trackSharedReportAnalysisStart(sharedReportReferral);
+      }
       const response = await fetch('/api/analyze/personal-color', {
         method: 'POST',
         headers: {
@@ -456,6 +464,7 @@ export default function PersonalColorPage() {
     existingConsent,
     currentSessionConsent,
     detectFaceLandmarks,
+    sharedReportReferral,
     t,
   ]);
 

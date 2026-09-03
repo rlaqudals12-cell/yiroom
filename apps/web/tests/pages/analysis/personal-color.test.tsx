@@ -37,6 +37,7 @@ vi.mock('lucide-react', async (importOriginal) => {
 // Mock Next.js router
 const mockPush = vi.fn();
 const mockSearchParamsGet = vi.fn().mockReturnValue(null);
+const mockTrackSharedReportAnalysisStart = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
@@ -56,6 +57,10 @@ vi.mock('@clerk/nextjs', () => ({
     isSignedIn: mockIsSignedIn(),
     isLoaded: mockIsLoaded(),
   }),
+}));
+
+vi.mock('@/lib/analytics/tracker', () => ({
+  trackSharedReportAnalysisStart: mockTrackSharedReportAnalysisStart,
 }));
 
 // 퍼스널 대비 실측(ADR-116)은 jsdom에서 Image.onload가 발화하지 않아 목 처리 —
@@ -187,6 +192,7 @@ describe('PersonalColorPage', () => {
     vi.clearAllMocks();
     mockIsSignedIn.mockReturnValue(true);
     mockIsLoaded.mockReturnValue(true);
+    mockSearchParamsGet.mockReturnValue(null);
 
     // 기본 fetch mock — init 시 /api/analyze/personal-color 호출 대응
     global.fetch = vi.fn().mockResolvedValue({
@@ -432,6 +438,7 @@ describe('PersonalColorPage - API 통합', () => {
   });
 
   it('API 호출이 성공하면 결과가 표시된다', async () => {
+    mockSearchParamsGet.mockImplementation((key: string) => (key === 'ref' ? 'kakao' : null));
     // GET: 기존 분석 확인 (없음 반환 → 새 분석 진행)
     const mockGetResponse = {
       data: null,
@@ -482,6 +489,15 @@ describe('PersonalColorPage - API 통합', () => {
         expect(mockPush).toHaveBeenCalledWith('/analysis/personal-color/result/test-analysis-id');
       },
       { timeout: 3000 }
+    );
+
+    expect(mockTrackSharedReportAnalysisStart).toHaveBeenCalledWith('kakao');
+    const postCallIndex = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.findIndex(
+      ([, options]) => options?.method === 'POST'
+    );
+    expect(postCallIndex).toBeGreaterThan(-1);
+    expect(mockTrackSharedReportAnalysisStart.mock.invocationCallOrder[0]).toBeLessThan(
+      (global.fetch as ReturnType<typeof vi.fn>).mock.invocationCallOrder[postCallIndex]
     );
   });
 });

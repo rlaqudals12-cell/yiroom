@@ -35,8 +35,11 @@ import {
 import { bodyShapeToType3 } from '@/lib/body';
 import {
   generateMockHairAnalysisResult,
-  recommendHairstyles,
+  classifyTexture,
+  matchStyles,
   type FaceShapeType,
+  type HairLength,
+  type HairTexture,
 } from '@/lib/analysis/hair';
 import { buildFallbackSeed } from '@/lib/utils/seeded-random';
 import {
@@ -111,6 +114,106 @@ async function awaitAxisStage<T>(
 
 function aiDeadline(deadline?: ExecutionDeadline): ExecutionDeadline | undefined {
   return deadline ? reserveExecutionDeadline(deadline, AXIS_SAVE_RESERVE_MS) : undefined;
+}
+
+const HAIR_FACE_SHAPES: readonly FaceShapeType[] = [
+  'oval',
+  'round',
+  'square',
+  'heart',
+  'oblong',
+  'diamond',
+  'rectangle',
+];
+const HAIR_TEXTURES: readonly HairTexture[] = ['straight', 'wavy', 'curly', 'coily'];
+
+function toPreferredHairLength(
+  length: IntegratedAnalysisInput['questionnaire']['hair']['length']
+): HairLength | undefined {
+  if (length === 'very_short') return 'short';
+  if (length === 'very_long') return 'long';
+  return length;
+}
+
+function toFaceShape(value: string): FaceShapeType | undefined {
+  return HAIR_FACE_SHAPES.includes(value as FaceShapeType) ? (value as FaceShapeType) : undefined;
+}
+
+function toHairTexture(value: string | undefined): HairTexture | undefined {
+  return value && HAIR_TEXTURES.includes(value as HairTexture) ? (value as HairTexture) : undefined;
+}
+
+type SuccessfulHairAxisResult = Extract<AxisResult<HairAxisData>, { success: true }>;
+
+/**
+ * 병렬 축이 모두 끝난 뒤 확정된 PC 시즌을 헤어 3-Factor 추천에 합류시킨다.
+ *
+ * 왜: H축 실행 중에는 같은 세션의 PC 결과를 알 수 없다. 이 후처리는 새 AI 호출 없이
+ * 결정론 랭커만 다시 실행하며, DB 업데이트가 실패하면 메모리 결과도 바꾸지 않아
+ * 저장본과 즉시 응답이 서로 다른 추천을 말하지 않게 한다.
+ */
+export async function rerankAndPersistHairStyles(
+  sessionId: string,
+  clerkUserId: string,
+  input: IntegratedAnalysisInput,
+  personalColorSeason: string,
+  hair: SuccessfulHairAxisResult,
+  deadline?: ExecutionDeadline
+): Promise<SuccessfulHairAxisResult> {
+  const hairId = hair.data.id;
+  const season = personalColorSeason.trim().toLowerCase();
+  if (!hairId || !season) return hair;
+
+  const questionnaireHair = input.questionnaire.hair;
+  const texture = toHairTexture(hair.data.hairType) ?? toHairTexture(questionnaireHair.curlType);
+  const styleRecommendations = matchStyles(
+    {
+      faceShape: toFaceShape(hair.data.faceShape),
+      textureCode: texture ? classifyTexture(texture) : undefined,
+      personalColorSeason: season,
+      preferredLength: toPreferredHairLength(questionnaireHair.length),
+    },
+    5
+  );
+
+  try {
+    const supabase = createServiceRoleClient();
+    const { data, error } = await awaitAxisStage(
+      supabase
+        .from('hair_analyses')
+        .update({
+          recommendations: {
+            version: 2,
+            source: 'integrated',
+            styleRecommendations,
+            usedFallback: hair.usedFallback,
+          },
+        })
+        .eq('id', hairId)
+        .eq('session_id', sessionId)
+        .eq('clerk_user_id', clerkUserId)
+        .select('id')
+        .single(),
+      deadline,
+      '[Integrated hair] 3-Factor recommendation save timeout'
+    );
+
+    if (error || !data?.id) {
+      console.error('[Integrated hair] 3-Factor recommendation save failed', error);
+      return hair;
+    }
+
+    return {
+      ...hair,
+      data: {
+        ...hair.data,
+        recommendedStyles: styleRecommendations.map((style) => style.name),
+      },
+    };
+  } catch (error) {
+    console.error('[Integrated hair] 3-Factor recommendation save failed', error);
+    return hair;
+  }
 }
 
 /**
@@ -685,10 +788,13 @@ export async function runHairAxis(
       }
     }
 
-    // 스타일 추천은 "판정된 얼굴형"에서 결정론적으로 파생 — 단독 `/api/analyze/hair-v2`와 동일 계약.
-    // Gemini의 자유 텍스트 추천(hairstyleRecommendations.recommended)은 suitability·length 메타가
-    // 없어 리포트의 어울림 표시 계약을 만족하지 못하므로, 얼굴형 카탈로그 매핑을 정본으로 쓴다.
-    const styleRecommendations = recommendHairstyles(faceShape, { maxResults: 5 });
+    // 3-Factor 정본에 관찰 가능한 얼굴형·모질·선호 길이를 전달한다.
+    // 통합 축들은 병렬 실행되므로 이번 회차 PC 시즌은 cross-insights 조립 단계에서 합류한다.
+    const { curlType, length } = input.questionnaire.hair;
+    // 문진의 density(숱)는 모발 굵기(thickness)가 아니므로 12-type 세분화 근거로 쓰지 않는다.
+    const textureCode = curlType ? classifyTexture(curlType) : undefined;
+    const preferredLength = toPreferredHairLength(length);
+    const styleRecommendations = matchStyles({ faceShape, textureCode, preferredLength }, 5);
 
     const supabase = createServiceRoleClient();
     // hair_analyses 스키마 = 단독 `/api/analyze/hair` 계약과 동일:

@@ -72,6 +72,7 @@ describe('Social Share Utils', () => {
     });
 
     afterEach(() => {
+      vi.unstubAllEnvs();
       vi.unstubAllGlobals();
     });
 
@@ -109,6 +110,7 @@ describe('Social Share Utils', () => {
     it('초기화되지 않았으면 init을 호출한다', async () => {
       mockKakao.isInitialized.mockReturnValueOnce(false);
       vi.stubEnv('NEXT_PUBLIC_KAKAO_JS_KEY', 'test-key');
+      vi.stubEnv('NEXT_PUBLIC_KAKAO_APP_KEY', 'legacy-app-key');
 
       await shareToKakao(mockContent);
 

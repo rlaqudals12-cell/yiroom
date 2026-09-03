@@ -35,6 +35,9 @@ let trackSearch: typeof import('@/lib/analytics/tracker').trackSearch;
 let trackButtonClick: typeof import('@/lib/analytics/tracker').trackButtonClick;
 let trackShoppingClick: typeof import('@/lib/analytics/tracker').trackShoppingClick;
 let trackCustomEvent: typeof import('@/lib/analytics/tracker').trackCustomEvent;
+let trackReportShareCreated: typeof import('@/lib/analytics/tracker').trackReportShareCreated;
+let trackSharedReportView: typeof import('@/lib/analytics/tracker').trackSharedReportView;
+let trackSharedReportAnalysisStart: typeof import('@/lib/analytics/tracker').trackSharedReportAnalysisStart;
 
 describe('Analytics Tracker', () => {
   let fetchSpy: ReturnType<typeof vi.fn>;
@@ -61,6 +64,9 @@ describe('Analytics Tracker', () => {
     trackButtonClick = mod.trackButtonClick;
     trackShoppingClick = mod.trackShoppingClick;
     trackCustomEvent = mod.trackCustomEvent;
+    trackReportShareCreated = mod.trackReportShareCreated;
+    trackSharedReportView = mod.trackSharedReportView;
+    trackSharedReportAnalysisStart = mod.trackSharedReportAnalysisStart;
   });
 
   afterEach(() => {
@@ -92,6 +98,7 @@ describe('Analytics Tracker', () => {
       const [url, options] = fetchSpy.mock.calls[0];
       expect(url).toBe('/api/analytics/events');
       expect(options.method).toBe('POST');
+      expect(options.keepalive).toBe(true);
 
       const body = JSON.parse(options.body);
       expect(body.events).toHaveLength(10);
@@ -148,6 +155,20 @@ describe('Analytics Tracker', () => {
       await flushEvents();
 
       expect(fetchSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('HTTP 오류 응답도 버리지 않고 다음 flush에서 재전송한다', async () => {
+      fetchSpy.mockResolvedValueOnce({ ok: false, status: 500 });
+
+      await trackEvent({ eventType: 'page_view', eventName: 'Retry HTTP Event' });
+      await flushEvents();
+
+      fetchSpy.mockResolvedValueOnce({ ok: true, status: 200 });
+      await flushEvents();
+
+      expect(fetchSpy).toHaveBeenCalledTimes(2);
+      const retried = JSON.parse(fetchSpy.mock.calls[1][1].body);
+      expect(retried.events).toEqual([expect.objectContaining({ eventName: 'Retry HTTP Event' })]);
     });
 
     it('전송 실패 시 큐 최대 크기를 100으로 제한한다', async () => {
@@ -289,6 +310,29 @@ describe('Analytics Tracker', () => {
       const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
       expect(body.events[0].eventType).toBe('product_view');
       expect(body.events[0].eventName).toBe('제품 조회');
+    });
+
+    it('공유 생성→열람→분석 시작을 같은 채널 필드로 기록한다', async () => {
+      await trackReportShareCreated('kakao');
+      await trackSharedReportView('kakao');
+      await trackSharedReportAnalysisStart('kakao');
+      await flushEvents();
+
+      const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
+      expect(body.events).toEqual([
+        expect.objectContaining({
+          eventName: 'report_share_created',
+          eventData: expect.objectContaining({ channel: 'kakao' }),
+        }),
+        expect.objectContaining({
+          eventName: 'report_share_viewed',
+          eventData: expect.objectContaining({ referralSource: 'kakao' }),
+        }),
+        expect.objectContaining({
+          eventName: 'report_share_analysis_started',
+          eventData: expect.objectContaining({ referralSource: 'kakao' }),
+        }),
+      ]);
     });
   });
 });

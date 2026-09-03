@@ -25,8 +25,14 @@ import type {
   HairAxisData,
   MakeupAxisData,
 } from './types';
-// ADR-107: 얼굴형 기반 헤어스타일 추천기 — C×H 인사이트에 구체 컷·피할스타일 결합
-import { recommendHairstyles, getStylesToAvoid, type FaceShapeType } from '@/lib/analysis/hair';
+// ADR-107: 3-Factor 헤어 매칭 — C×H 인사이트에 구체 컷·피할스타일 결합
+import {
+  classifyTexture,
+  getStylesToAvoid,
+  matchStyles,
+  type FaceShapeType,
+  type HairTexture,
+} from '@/lib/analysis/hair';
 import { getBodyShapeLabel } from '@/lib/body';
 // 소비자 눈높이 라벨 (원시 영문 undertone/skinType/season/faceShape → 한국어)
 import { seasonKo, undertoneKo, skinTypeKo, faceShapeKo } from './labels';
@@ -98,9 +104,12 @@ function getBody(r: AxisResult<BodyAxisData>): { type: string } | null {
   return { type: getBodyShapeLabel(r.data.bodyType) };
 }
 
-function getHair(r: AxisResult<HairAxisData>): { faceShape: string } | null {
+function getHair(r: AxisResult<HairAxisData>): { faceShape: string; hairType?: string } | null {
   if (!r.success) return null;
-  return { faceShape: String(r.data.faceShape ?? '') };
+  return {
+    faceShape: String(r.data.faceShape ?? ''),
+    hairType: r.data.hairType ? String(r.data.hairType) : undefined,
+  };
 }
 
 function getMakeup(r: AxisResult<MakeupAxisData>): { base: string } | null {
@@ -151,33 +160,35 @@ function pcXmakeup(pc: {
 /** C × H — 실루엣 × 얼굴형 밸런스 */
 function bodyXhair(
   body: { type: string },
-  hair: { faceShape: string }
+  hair: { faceShape: string; hairType?: string },
+  personalColorSeason?: string
 ): Pick<CrossInsight, 'title' | 'body'> {
   const faceKey = hair.faceShape.toLowerCase();
-  // 설명형 가이드 (인사이트 한 줄용 — 얼굴형 의도 설명)
-  let hairStyle = '레이어드 컷';
-  if (faceKey.includes('round')) hairStyle = '얼굴선을 길게 빼는 사이드 컷';
-  else if (faceKey.includes('square')) hairStyle = '턱선 부드럽게 감싸는 웨이브';
-  else if (faceKey.includes('heart') || faceKey.includes('triangle'))
-    hairStyle = '턱 아래 볼륨 주는 컷';
-  else if (faceKey.includes('oval')) hairStyle = '자유로운 스타일';
-  else if (faceKey.includes('oblong') || faceKey.includes('long'))
-    hairStyle = '가로 볼륨을 만드는 뱅';
+  const faceShape = VALID_FACE_SHAPES.includes(faceKey) ? (faceKey as FaceShapeType) : undefined;
+  const observedTexture = ['straight', 'wavy', 'curly', 'coily'].includes(hair.hairType ?? '')
+    ? (hair.hairType as HairTexture)
+    : undefined;
+  const top = matchStyles(
+    {
+      faceShape,
+      textureCode: observedTexture ? classifyTexture(observedTexture) : undefined,
+      personalColorSeason,
+    },
+    1
+  )[0];
+  const hairStyle = top?.name ?? '레이어드 컷';
 
-  // 구체 추천: 얼굴형이 유효하면 추천기에서 톱 스타일 + 피할 스타일 결합 (ADR-107)
-  let example = '';
+  // 피할 스타일도 얼굴형을 실제로 관찰한 경우에만 제시한다.
   let avoid = '';
-  if (VALID_FACE_SHAPES.includes(faceKey)) {
-    const top = recommendHairstyles(faceKey as FaceShapeType, { maxResults: 1 })[0];
-    if (top) example = ` 예: ${top.name}.`;
-    const avoidList = getStylesToAvoid(faceKey as FaceShapeType);
+  if (faceShape) {
+    const avoidList = getStylesToAvoid(faceShape);
     if (avoidList[0]) avoid = ` ${avoidList[0]}은 피하세요.`;
   }
 
   return {
     title: `${body.type} × ${hairStyle}`,
     // 얼굴형 원시값(oval 등) 노출 금지 — faceShapeKo로 한국어화(매칭 실패 시 '내'로 폴백)
-    body: `${body.type} 실루엣과 ${faceShapeKo(hair.faceShape) || '내'} 얼굴형 균형은 ${hairStyle}이(가) 완성해요.${example}${avoid}`,
+    body: `${body.type} 실루엣과 ${faceShapeKo(hair.faceShape) || '내'} 얼굴형 균형은 ${hairStyle}이(가) 완성해요.${avoid}`,
   };
 }
 
@@ -271,7 +282,7 @@ export function composeCrossInsights(input: ComposeCrossInsightsInput): CrossIns
     items.push({
       id: 'c_h',
       combo: '체형 × 헤어',
-      ...bodyXhair(body, hair),
+      ...bodyXhair(body, hair, pc?.season),
     });
   }
 
