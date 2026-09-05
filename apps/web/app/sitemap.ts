@@ -97,5 +97,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // ADR-098: /wellness(폐기된 웰니스 통합)는 색인 제외
   ];
 
-  return staticPages;
+  return staticPages.map((page) => ({
+    ...page,
+    alternates: {
+      languages: {
+        'x-default': page.url,
+      },
+    },
+  }));
 }

@@ -87,8 +87,11 @@ describe('TermsScreen (이용약관)', () => {
       expect(getByText(/종료일로부터 최소 30일 전에 서비스 내 공지/)).toBeTruthy();
     });
 
-    it('AI 결과 무보장과 제휴 링크 면책이 명시된다', () => {
+    it('피부 분석의 비의료 3중 고지와 제휴 링크 면책이 명시된다', () => {
       const { getByText } = renderWithTheme(<TermsScreen />);
+      expect(getByText(/AI 피부 분석 기능은 의료기기가 아니며/)).toBeTruthy();
+      expect(getByText(/의학적 판단이나 의료인의 진단·치료를 대체하지 않습니다/)).toBeTruthy();
+      expect(getByText(/촬영 환경에 따라 달라질 수 있으며.*정확성·완전성/)).toBeTruthy();
       expect(
         getByText(/정확성, 완전성 또는 특정 목적에의 적합성을 보장하지 않습니다/)
       ).toBeTruthy();

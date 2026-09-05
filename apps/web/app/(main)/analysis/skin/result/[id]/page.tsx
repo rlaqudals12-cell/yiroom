@@ -1215,9 +1215,22 @@ export default function SkinAnalysisResultPage() {
 
                   {/* AI 투명성 고지 */}
                   <AITransparencyNotice compact className="mt-8" />
-                  <p className="mt-2 text-center text-[11px] text-zinc-600">
-                    분석 결과는 AI가 생성한 참고 정보이며, 의학적 진단을 대체하지 않아요.
-                  </p>
+                  <div
+                    className="mt-3 space-y-1 text-center text-[11px] leading-relaxed text-zinc-600"
+                    data-testid="skin-non-medical-notice"
+                  >
+                    <p>{t('skinNonMedicalDevice')}</p>
+                    <p>{t('skinNonMedicalPurpose')}</p>
+                  </div>
+                  <ProgressiveDisclosure
+                    className="mt-3"
+                    summary={t('skinNonMedicalLimitsSummary')}
+                    title={t('skinNonMedicalLimitsTitle')}
+                  >
+                    <p className="px-3 text-sm leading-relaxed text-muted-foreground">
+                      {t('skinNonMedicalLimits')}
+                    </p>
+                  </ProgressiveDisclosure>
 
                   {/* FAB 여백 */}
                   <div className="pb-40" />

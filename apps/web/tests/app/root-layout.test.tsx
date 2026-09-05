@@ -8,6 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { auth } from '@clerk/nextjs/server';
+import { getLocale } from 'next-intl/server';
 
 // next/font/google — Vite에는 Next 폰트 로더가 없어 직접 모킹
 vi.mock('next/font/google', () => ({
@@ -20,6 +21,10 @@ vi.mock('@clerk/nextjs', () => ({
   ClerkProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 vi.mock('@clerk/localizations', () => ({ koKR: {}, enUS: {} }));
+vi.mock('next-intl/server', () => ({
+  getLocale: vi.fn().mockResolvedValue('ko'),
+  getMessages: vi.fn().mockResolvedValue({}),
+}));
 
 // 레이아웃 껍데기(프로바이더·배너·계측)는 이 테스트의 관심사가 아니다 — 통과만 시킨다
 vi.mock('@vercel/analytics/next', () => ({ Analytics: () => null }));
@@ -60,6 +65,7 @@ async function renderLayout(): Promise<void> {
 describe('RootLayout — 하단 탭바 게이팅', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getLocale).mockResolvedValue('ko');
   });
 
   it('비로그인이면 하단 탭바를 렌더하지 않는다 (랜딩 `/` 포함)', async () => {
@@ -91,4 +97,23 @@ describe('RootLayout — 하단 탭바 게이팅', () => {
     expect(main?.className).toContain('pb-bottom-nav');
     expect(main?.className).toContain('md:pb-0');
   });
+
+  it.each(['ko', 'en', 'ja', 'zh'])(
+    '요청 로케일이 %s여도 한국어 OG 카피의 실제 로케일만 출력한다',
+    async (locale) => {
+      vi.mocked(auth).mockResolvedValue({ userId: null } as never);
+      vi.mocked(getLocale).mockResolvedValue(locale);
+
+      await renderLayout();
+
+      const primaryLocales = document.head.querySelectorAll(`meta[property='og:locale']`);
+      const alternateLocales = document.head.querySelectorAll(
+        `meta[property='og:locale:alternate']`
+      );
+
+      expect(primaryLocales).toHaveLength(1);
+      expect(primaryLocales[0]).toHaveAttribute('content', 'ko_KR');
+      expect(alternateLocales).toHaveLength(0);
+    }
+  );
 });

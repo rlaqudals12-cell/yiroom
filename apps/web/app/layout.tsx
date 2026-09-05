@@ -60,6 +60,10 @@ const notoSerifKR = Noto_Serif_KR({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
 
+// 현재 OG 제목·설명은 한국어 정본이다. 언어별 고유 URL과 메타 카피를 함께
+// 마련하기 전에는 요청 UI 로케일을 OG 로케일인 것처럼 표시하지 않는다.
+const OPEN_GRAPH_CONTENT_LOCALE = 'ko_KR';
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
@@ -85,7 +89,6 @@ export const metadata: Metadata = {
   creator: '이룸',
   openGraph: {
     type: 'website',
-    locale: 'ko_KR',
     url: siteUrl,
     siteName: '이룸',
     title: '이룸 - 셀카 한 장으로 색·피부·헤어·메이크업 AI 분석',
@@ -142,7 +145,6 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = pickClientMessages(await getMessages());
   const clerkLocalization = clerkLocalizations[locale as keyof typeof clerkLocalizations] || koKR;
-
   // 하단 탭바는 로그인 사용자 전용 앱 셸이다. 5탭 목적지가 모두 로그인 게이트라
   // 비로그인(랜딩 `/` 포함)에 띄우면 "가입도 안 했는데 앱 안에 있는" 오독을 만든다.
   // 탭바를 감출 땐 본문 하단 패딩(pb-bottom-nav)도 같이 풀어야 빈 여백이 남지 않는다.
@@ -153,6 +155,8 @@ export default async function RootLayout({
     <ClerkProvider localization={clerkLocalization}>
       <html lang={locale} suppressHydrationWarning>
         <head>
+          {/* 하위 openGraph가 부모 객체를 덮어써도 실제 OG 카피 언어를 전 페이지에 유지한다. */}
+          <meta property="og:locale" content={OPEN_GRAPH_CONTENT_LOCALE} />
           {/* 테마 CLS 방지: 렌더링 전에 저장된 테마 적용 */}
           <script
             dangerouslySetInnerHTML={{

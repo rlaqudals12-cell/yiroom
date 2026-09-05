@@ -1,23 +1,22 @@
 /**
  * i18n 서버 요청 설정
  * @description next-intl 서버 컴포넌트용 로케일 감지
- * 현재: 한국 출시 단계이므로 ko 고정 (사용자 쿠키 선택만 허용)
- * 글로벌 확장 시: Accept-Language 감지 + 언어 전환 UI 추가
+ * 사용자 쿠키를 우선하고, 첫 방문에는 Accept-Language를 사용한다.
  */
 
 import { getRequestConfig } from 'next-intl/server';
-import { cookies } from 'next/headers';
-import { locales, defaultLocale, type Locale } from './config';
+import { cookies, headers } from 'next/headers';
+import { isSupportedLocale, LOCALE_COOKIE, resolveRequestLocale } from './config';
 
 export default getRequestConfig(async () => {
   const cookieStore = await cookies();
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value;
+  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
 
-  // 쿠키에 유효한 로케일이 있으면 사용, 없으면 ko 고정
-  const locale: Locale =
-    cookieLocale && (locales as readonly string[]).includes(cookieLocale)
-      ? (cookieLocale as Locale)
-      : defaultLocale;
+  // 명시적으로 고른 쿠키가 있으면 브라우저 헤더보다 항상 우선한다.
+  const acceptLanguage = isSupportedLocale(cookieLocale)
+    ? null
+    : (await headers()).get('accept-language');
+  const locale = resolveRequestLocale(cookieLocale, acceptLanguage);
 
   return {
     locale,

@@ -117,6 +117,14 @@ describe('피부 결과 진단지 표현', () => {
     expect(screen.queryByText('55')).toBeNull();
     expect(screen.queryByText(/종합.*점/)).toBeNull();
     expect(screen.queryByTestId('skin-analysis-result-grade')).toBeNull();
+    expect(screen.getByTestId('skin-non-medical-notice')).toBeTruthy();
+    expect(screen.getByText(/피부 분석은 의료기기가 아니며/)).toBeTruthy();
+    expect(screen.getByText(/의학적 판단이나 의료인의 진단·치료를 대신하지 않아요/)).toBeTruthy();
+    expect(screen.queryByText(/정확성·완전성을 보장하지 않아요/)).toBeNull();
+
+    fireEvent.press(screen.getByTestId('skin-analysis-result-section-non-medical-limits-trigger'));
+    expect(screen.getByText(/정확성·완전성을 보장하지 않아요/)).toBeTruthy();
+    expect(screen.getByText(/피부 증상이나 불편이 있다면 의료 전문가와 상담/)).toBeTruthy();
 
     fireEvent.press(screen.getByTestId('skin-analysis-result-section-metrics-trigger'));
 

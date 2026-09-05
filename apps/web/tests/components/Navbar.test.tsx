@@ -4,13 +4,17 @@
  * 대시보드·제품·캡슐)가 제거됐는지 검증한다.
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-// Clerk — 로그인 상태를 가정 (SignedIn children 렌더)
+const clerkState = vi.hoisted(() => ({ signedIn: true }));
+
+// Clerk — 테스트마다 로그인/비로그인 표면을 전환한다.
 vi.mock('@clerk/nextjs', () => ({
-  SignedIn: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  SignedOut: () => null,
+  SignedIn: ({ children }: { children: React.ReactNode }) =>
+    clerkState.signedIn ? <>{children}</> : null,
+  SignedOut: ({ children }: { children: React.ReactNode }) =>
+    clerkState.signedIn ? null : <>{children}</>,
   SignInButton: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   UserButton: () => <div data-testid="user-button" />,
 }));
@@ -29,6 +33,10 @@ vi.mock('@/components/ThemeToggle', () => ({
 import Navbar from '@/components/Navbar';
 
 describe('Navbar — 5탭 단일 IA (ADR-114)', () => {
+  beforeEach(() => {
+    clerkState.signedIn = true;
+  });
+
   it('데스크톱 메뉴가 오늘/물어보기/뷰티/스타일 4링크 + 프로필(나)로 구성된다', () => {
     render(<Navbar />);
 
@@ -73,5 +81,15 @@ describe('Navbar — 5탭 단일 IA (ADR-114)', () => {
     expect(notificationLink).toHaveClass('hidden', 'md:inline-flex');
     expect(searchLink).toHaveAttribute('href', '/search');
     expect(searchLink).toHaveClass('hidden', 'md:inline-flex');
+  });
+
+  it('비로그인 방문자에게도 언어 전환 진입점을 표시한다', () => {
+    clerkState.signedIn = false;
+
+    render(<Navbar />);
+
+    expect(screen.getByRole('button', { name: 'Language' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'signIn' })).toBeVisible();
+    expect(screen.queryByTestId('user-button')).not.toBeInTheDocument();
   });
 });

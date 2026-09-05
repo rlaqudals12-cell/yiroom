@@ -3,8 +3,10 @@
  * @description 쿠키 기반 로케일 관리
  */
 
-export const LOCALE_COOKIE = 'NEXT_LOCALE';
-export const DEFAULT_LOCALE = 'ko';
+import { defaultLocale, LOCALE_COOKIE } from '@/i18n/config';
+
+export { LOCALE_COOKIE };
+export const DEFAULT_LOCALE = defaultLocale;
 
 /** 클라이언트에서 로케일 쿠키 설정 */
 export function setLocaleCookie(locale: string): void {

@@ -134,8 +134,10 @@ const TERMS_KO: TermsSection[] = [
     id: 'disclaimer',
     title: '제13조 (면책조항)',
     content: `① 회사는 천재지변, 전쟁, 기간통신사업자의 서비스 중지 등 불가항력으로 인한 서비스 제공 불가에 대해 책임을 지지 않습니다.
-② AI 분석 결과는 참고용이며, 의료적 진단이나 치료를 대체하지 않습니다.
-③ 이용자가 서비스 내 제휴 링크를 통해 외부 서비스를 이용하는 경우, 해당 외부 서비스에서 발생하는 문제에 대해 회사는 책임지지 않습니다.`,
+② 이룸의 AI 피부 분석 기능은 의료기기가 아니며, 회사는 서비스를 통해 의료 서비스를 제공하지 않습니다.
+③ AI 분석 결과와 안내 정보는 참고용이며, 의학적 판단이나 의료인의 진단·치료를 대체하지 않습니다.
+④ AI 분석 결과는 이용자가 제공한 이미지·정보와 촬영 환경에 따라 달라질 수 있으며, 회사는 그 정확성·완전성 또는 특정 목적 적합성을 보장하지 않습니다. 피부 증상이나 불편이 있으면 의료 전문가와 상담하시기 바랍니다.
+⑤ 이용자가 서비스 내 제휴 링크를 통해 외부 서비스를 이용하는 경우, 해당 외부 서비스에서 발생하는 문제에 대해 회사는 책임지지 않습니다.`,
   },
   {
     id: 'liability',
@@ -263,7 +265,9 @@ AI analysis results are owned by the Company. Users may freely use their analysi
     id: 'disclaimer',
     title: '13. Disclaimers',
     content: `The Company is not liable for service interruptions caused by force majeure events (natural disasters, war, infrastructure failures, etc.).
-AI analysis results are for reference purposes only and do not constitute medical diagnosis or treatment. Always consult qualified professionals for health decisions.
+Yiroom's AI skin analysis feature is not a medical device, and the Company does not provide medical services through the Service.
+AI analysis results and guidance are for reference purposes only and do not replace medical judgment, diagnosis, or treatment by a healthcare professional.
+AI analysis results may vary depending on the images, information, and capture conditions provided by the User. The Company does not guarantee their accuracy, completeness, or fitness for a particular purpose. Consult a healthcare professional if you have skin symptoms or discomfort.
 When Users access external services through affiliate links within the Service, the Company is not responsible for issues arising from those external services.`,
   },
   {

@@ -111,10 +111,14 @@ describe('TermsPage', () => {
     expect(backLink).toHaveAttribute('href', '/help');
   });
 
-  it('displays disclaimer about AI analysis', () => {
+  it('displays the three-part non-medical skin analysis notice', () => {
     render(<TermsPage />);
+    expect(screen.getByText(/AI 피부 분석 기능은 의료기기가 아니며/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/AI 분석 결과는 참고용이며, 의료적 진단이나 치료를 대체하지 않습니다/i)
+      screen.getByText(/의학적 판단이나 의료인의 진단·치료를 대체하지 않습니다/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/촬영 환경에 따라 달라질 수 있으며.*정확성·완전성/i)
     ).toBeInTheDocument();
   });
 });
