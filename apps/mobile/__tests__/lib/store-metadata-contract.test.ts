@@ -1,6 +1,19 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const STORE_LOCALES = ['ko', 'en', 'ja', 'zh'] as const;
+
+type StoreLocale = (typeof STORE_LOCALES)[number];
+
+interface StoreLocalization {
+  name: string;
+  subtitle: string;
+  description: string;
+  keywords: string;
+  whatsNew: string;
+  promotionalText: string;
+}
+
 interface StoreMetadata {
   app: { version: string };
   ios: {
@@ -11,10 +24,7 @@ interface StoreMetadata {
     marketingUrl: string;
   };
   android: { contentRating: string; minimumUserAge: number; privacyPolicyUrl: string };
-  localization: {
-    ko: { description: string; keywords: string; whatsNew: string };
-    en: { description: string; keywords: string; whatsNew: string };
-  };
+  localization: Record<StoreLocale, StoreLocalization>;
   screenshots: { required: { iphone6_5: { scenes: string[] } } };
   privacyNutritionLabels: {
     dataCollected: {
@@ -65,16 +75,16 @@ interface AppConfig {
 }
 
 interface SubmissionMetadata {
-  app_name: { ko: string; en: string };
-  subtitle: { ko: string; en: string };
-  description: { ko: string; en: string };
-  keywords: { ko: string[]; en: string[] };
+  app_name: Record<StoreLocale, string>;
+  subtitle: Record<StoreLocale, string>;
+  description: Record<StoreLocale, string>;
+  keywords: Record<StoreLocale, string[]>;
   privacy_url: string;
   support_url: string;
   marketing_url: string;
   screenshots: Record<string, string[]>;
   age_rating: string;
-  release_notes: { ko: string; en: string };
+  release_notes: Record<StoreLocale, string>;
 }
 
 function readStoreMetadata(): StoreMetadata {
@@ -97,7 +107,107 @@ function readStoreChecklist(): string {
   return readFileSync(join(process.cwd(), 'docs', 'APP-STORE-CHECKLIST.md'), 'utf8');
 }
 
+function readListing(locale: StoreLocale): string {
+  return readFileSync(join(process.cwd(), 'store-metadata', locale, 'listing.txt'), 'utf8');
+}
+
 describe('store metadata privacy contract', () => {
+  it('4개 로케일의 정본·제출 JSON·리스팅이 같은 공개 문구를 사용한다', () => {
+    const metadata = readStoreMetadata();
+    const submission = readSubmissionMetadata();
+
+    expect(Object.keys(metadata.localization).sort()).toEqual([...STORE_LOCALES].sort());
+
+    for (const field of [
+      submission.app_name,
+      submission.subtitle,
+      submission.description,
+      submission.keywords,
+      submission.release_notes,
+    ]) {
+      expect(Object.keys(field).sort()).toEqual([...STORE_LOCALES].sort());
+    }
+
+    for (const locale of STORE_LOCALES) {
+      const canonical = metadata.localization[locale];
+      const listing = readListing(locale);
+
+      expect(submission.app_name[locale]).toBe(canonical.name);
+      expect(submission.subtitle[locale]).toBe(canonical.subtitle);
+      expect(submission.description[locale]).toBe(canonical.description);
+      expect(submission.keywords[locale].join(',')).toBe(canonical.keywords);
+      expect(listing).toContain(canonical.name);
+      expect(listing).toContain(canonical.subtitle);
+      expect(listing).toContain(canonical.description);
+      expect(listing).toContain(canonical.keywords);
+      expect(listing).not.toContain('\uFFFD');
+      expect(canonical.name.length).toBeLessThanOrEqual(30);
+      expect(canonical.subtitle.length).toBeLessThanOrEqual(30);
+    }
+  });
+
+  it('모든 로케일이 14세·5축·Google AI·선택 저장 최대 1년 계약을 고지한다', () => {
+    const metadata = readStoreMetadata();
+    const contracts: Record<StoreLocale, { age: RegExp; axes: RegExp[]; storage: RegExp }> = {
+      ko: {
+        age: /만 14세 이상/,
+        axes: [/퍼스널컬러/, /피부/, /체형/, /헤어/, /메이크업/],
+        storage: /저장에 동의한 경우에만 최대 1년/,
+      },
+      en: {
+        age: /age 14 and older/i,
+        axes: [/personal color/i, /skin/i, /body/i, /hair/i, /makeup/i],
+        storage: /up to one year only when you consent/i,
+      },
+      ja: {
+        age: /14歳以上/,
+        axes: [/パーソナルカラー/, /肌/, /骨格診断（体型分析）/, /髪/, /メイク/],
+        storage: /同意した場合に限り、最長1年間/,
+      },
+      zh: {
+        age: /14岁及以上/,
+        axes: [/个人色彩/, /肌肤/, /体型/, /发质/, /妆容/],
+        storage: /仅当您同意保存图片时.*最多保存一年/,
+      },
+    };
+
+    for (const locale of STORE_LOCALES) {
+      const publicCopy = `${metadata.localization[locale].description}\n${readListing(locale)}`;
+      const contract = contracts[locale];
+
+      expect(publicCopy).toMatch(contract.age);
+      expect(publicCopy).toContain('Google AI');
+      expect(publicCopy).toMatch(contract.storage);
+      for (const axis of contract.axes) {
+        expect(publicCopy).toMatch(axis);
+      }
+    }
+  });
+
+  it('시장별 문법을 지키고 모든 로케일에서 숨김 기능을 약속하지 않는다', () => {
+    const metadata = readStoreMetadata();
+    const publicCopy = Object.fromEntries(
+      STORE_LOCALES.map((locale) => [
+        locale,
+        `${Object.values(metadata.localization[locale]).join('\n')}\n${readListing(locale)}`,
+      ])
+    ) as Record<StoreLocale, string>;
+
+    expect(publicCopy.ko).not.toMatch(/운동|영양|음식 분석|구강|치아|리더보드|날씨|소셜|피드/);
+    expect(publicCopy.en).not.toMatch(
+      /exercise|workout|nutrition|oral|dental|leaderboard|weather|social feed|wellness/i
+    );
+    expect(publicCopy.ja).not.toMatch(
+      /運動|栄養|口腔|歯|ランキング|天気|ソーシャル|フィード|ウェルネス/
+    );
+    expect(publicCopy.zh).not.toMatch(/运动|营养|口腔|牙齿|排行榜|天气|社交|动态|健身/);
+    expect(publicCopy.ja).toContain('骨格診断');
+    expect(publicCopy.zh).toMatch(/个人色彩.*肌肤.*体型.*发质.*妆容/s);
+    expect(publicCopy.zh).not.toMatch(
+      /個人色彩|肌膚|體型|髮質|妝容|綜合報告|服務器|僅當|儲存圖片|發送|賬號/
+    );
+  });
+
   it('분석이 서버와 Google AI에서 처리되고 선택 저장됨을 한국어·영어로 고지한다', () => {
     const metadata = readStoreMetadata();
 

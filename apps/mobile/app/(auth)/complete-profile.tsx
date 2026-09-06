@@ -20,6 +20,7 @@ import {
   fetchBirthdate,
   saveBirthdate,
 } from '@/lib/api/birthdate';
+import { useTranslation } from '@/lib/i18n';
 import { useNetworkStatus } from '@/lib/offline';
 import { useTheme } from '@/lib/theme';
 
@@ -29,6 +30,7 @@ export default function CompleteProfileScreen(): React.JSX.Element {
   const params = useLocalSearchParams<{ reason?: string | string[] }>();
   const { isConnected } = useNetworkStatus();
   const { brand, colors, radii, typography } = useTheme();
+  const { t } = useTranslation();
   const [birthdate, setBirthdate] = useState('');
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,12 +61,16 @@ export default function CompleteProfileScreen(): React.JSX.Element {
         }
         return;
       }
-      setError(gate.message);
+      setError(
+        birthdate.trim() === ''
+          ? t('auth.mobileAgeVerification.birthdateRequired')
+          : t('auth.mobileAgeVerification.birthdateInvalid')
+      );
       return;
     }
 
     if (!ageConfirmed) {
-      setError('만 14세 이상임을 확인해주세요.');
+      setError(t('auth.mobileAgeVerification.ageConfirmationRequired'));
       return;
     }
 
@@ -85,10 +91,13 @@ export default function CompleteProfileScreen(): React.JSX.Element {
         await moveToAgeRestricted();
         return;
       }
+      // 서버 userMessage(AppError 계약)는 원인별 안내라 일반 실패 문구보다 우선 — 네트워크 오류만 로컬 키
       setError(
-        saveError instanceof Error
-          ? saveError.message
-          : '생년월일을 저장하지 못했어요. 잠시 후 다시 시도해주세요.'
+        saveError instanceof BirthdateApiError && saveError.code === 'NETWORK_ERROR'
+          ? t('auth.mobileAgeVerification.networkError')
+          : saveError instanceof BirthdateApiError && saveError.message
+            ? saveError.message
+            : t('auth.mobileAgeVerification.saveFailure')
       );
     } finally {
       setIsSubmitting(false);
@@ -108,13 +117,13 @@ export default function CompleteProfileScreen(): React.JSX.Element {
 
       const storedBirthdate = await fetchBirthdate(token);
       if (!storedBirthdate.hasBirthDate || !storedBirthdate.birthDate) {
-        setError('저장된 생년월일이 없어요. 네트워크 연결 후 직접 입력해주세요.');
+        setError(t('auth.mobileAgeVerification.missingStoredBirthdate'));
         return;
       }
 
       const parsedBirthdate = parseBirthDate(storedBirthdate.birthDate);
       if (!parsedBirthdate) {
-        setError('저장된 생년월일을 확인할 수 없어요. 직접 입력해주세요.');
+        setError(t('auth.mobileAgeVerification.invalidStoredBirthdate'));
         return;
       }
       if (isMinor(parsedBirthdate)) {
@@ -129,9 +138,9 @@ export default function CompleteProfileScreen(): React.JSX.Element {
         return;
       }
       setError(
-        fetchError instanceof Error
-          ? fetchError.message
-          : '연령 확인 정보를 불러오지 못했어요. 네트워크 연결을 확인해주세요.'
+        fetchError instanceof BirthdateApiError && fetchError.code === 'NETWORK_ERROR'
+          ? t('auth.mobileAgeVerification.networkError')
+          : t('auth.mobileAgeVerification.fetchFailure')
       );
     } finally {
       setIsSubmitting(false);
@@ -145,26 +154,32 @@ export default function CompleteProfileScreen(): React.JSX.Element {
       testID="complete-profile-screen"
     >
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>연령 확인</Text>
+        <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>
+          {t('auth.mobileAgeVerification.eyebrow')}
+        </Text>
         <Text
           style={[styles.title, { color: colors.foreground, fontSize: typography.size['2xl'] }]}
         >
-          {isUnavailable ? '연령 확인 정보를 불러오지 못했어요' : '생년월일을 입력해주세요'}
+          {isUnavailable
+            ? t('auth.mobileAgeVerification.unavailableTitle')
+            : t('auth.mobileAgeVerification.title')}
         </Text>
         <Text style={[styles.description, { color: colors.mutedForeground }]}>
           {isUnavailable
-            ? '네트워크 연결을 확인한 뒤 다시 확인해주세요. 저장된 성인 정보가 확인되면 바로 이어갈 수 있어요.'
-            : '이룸은 만 14세 이상만 이용할 수 있어요. 입력한 생년월일은 연령 확인과 서비스 이용 자격 확인에 사용해요.'}
+            ? t('auth.mobileAgeVerification.unavailableDescription')
+            : t('auth.mobileAgeVerification.description')}
         </Text>
 
-        <Text style={[styles.label, { color: colors.foreground }]}>생년월일</Text>
+        <Text style={[styles.label, { color: colors.foreground }]}>
+          {t('auth.mobileAgeVerification.birthdateLabel')}
+        </Text>
         <TextInput
-          accessibilityLabel="생년월일 입력"
+          accessibilityLabel={t('auth.mobileAgeVerification.birthdateLabel')}
           autoCapitalize="none"
           keyboardType="number-pad"
           maxLength={10}
           onChangeText={(value) => setBirthdate(formatBirthdateInput(value))}
-          placeholder="YYYY-MM-DD"
+          placeholder={t('auth.mobileAgeVerification.birthdatePlaceholder')}
           placeholderTextColor={colors.mutedForeground}
           style={[
             styles.input,
@@ -181,7 +196,7 @@ export default function CompleteProfileScreen(): React.JSX.Element {
         />
 
         <Pressable
-          accessibilityLabel="만 14세 이상임을 확인합니다"
+          accessibilityLabel={t('auth.mobileAgeVerification.ageConfirmation')}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: ageConfirmed }}
           onPress={() => setAgeConfirmed((current) => !current)}
@@ -203,7 +218,7 @@ export default function CompleteProfileScreen(): React.JSX.Element {
             )}
           </View>
           <Text style={{ color: colors.foreground, flex: 1, fontSize: typography.size.sm }}>
-            만 14세 이상임을 확인합니다
+            {t('auth.mobileAgeVerification.ageConfirmation')}
           </Text>
         </Pressable>
 
@@ -238,7 +253,9 @@ export default function CompleteProfileScreen(): React.JSX.Element {
                 fontWeight: typography.weight.semibold,
               }}
             >
-              {shouldRecheck ? '다시 확인하기' : '확인하고 시작하기'}
+              {shouldRecheck
+                ? t('auth.mobileAgeVerification.recheckButton')
+                : t('auth.mobileAgeVerification.submitButton')}
             </Text>
           )}
         </Pressable>
@@ -250,7 +267,7 @@ export default function CompleteProfileScreen(): React.JSX.Element {
           testID="complete-profile-sign-out"
         >
           <Text style={{ color: colors.mutedForeground, fontSize: typography.size.sm }}>
-            다른 계정으로 로그인
+            {t('auth.mobileAgeVerification.signOut')}
           </Text>
         </Pressable>
       </View>

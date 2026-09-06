@@ -36,9 +36,25 @@
       "name": "Yiroom - Know Yourself",
       "subtitle": "AI Beauty and Style Analysis",
       "description": "Yiroom is an AI beauty analysis service for users age 14 and older.\n\n• Personal color analysis and color guidance\n• Skin analysis and care guidance\n• Body analysis and style guidance\n• Hair analysis and care guidance\n• Makeup analysis and color guidance\n• An integrated view of all five analysis results\n\nAnalysis information, including photos, is sent over encrypted connections to Yiroom servers and Google AI for processing. Analysis results are saved to your account, while original analysis images are retained for up to one year only when you consent to image storage.",
-      "keywords": "personalcolor,skinanalysis,bodytype,hairanalysis,makeup,style,AI,beauty",
+      "keywords": "personal color,skin analysis,body type,hair analysis,makeup,style,AI,beauty",
       "whatsNew": "• First Release\n• Personal Color Analysis\n• Skin Analysis\n• Body Analysis\n• Hair Analysis\n• Makeup Analysis",
       "promotionalText": "Explore AI-powered beauty guidance made for you."
+    },
+    "ja": {
+      "name": "Yiroom - 私らしさを知る",
+      "subtitle": "AIパーソナルカラー・肌・骨格診断",
+      "description": "Yiroomは14歳以上の方を対象としたAIビューティー分析サービスです。\n\n• パーソナルカラー分析とカラーガイド\n• 肌状態の分析とケアガイド\n• 骨格診断（体型分析）とスタイルガイド\n• 髪の状態分析とケアガイド\n• メイク分析とカラーガイド\n• 5つの分析結果をまとめて確認できる統合結果\n\n写真を含む分析情報は、暗号化された接続を通じてYiroomのサーバーとGoogle AIに送信され、処理されます。分析結果はアカウントに保存され、元の分析画像は画像保存に同意した場合に限り、最長1年間保管されます。",
+      "keywords": "パーソナルカラー,肌分析,骨格診断,ヘア分析,メイク,スタイル,AI,美容",
+      "whatsNew": "• 初回リリース\n• パーソナルカラー分析\n• 肌状態の分析\n• 骨格診断（体型分析）\n• 髪の状態分析\n• メイク分析",
+      "promotionalText": "AIで自分に合うビューティーガイドを確認しましょう。"
+    },
+    "zh": {
+      "name": "Yiroom - 认识真实的自己",
+      "subtitle": "AI个人色彩·肌肤·风格分析",
+      "description": "Yiroom是面向14岁及以上用户的AI美妆分析服务。\n\n• 个人色彩分析与配色指南\n• 肌肤状态分析与护理指南\n• 体型分析与穿搭指南\n• 发质状态分析与护理指南\n• 妆容分析与配色指南\n• 汇总五项分析结果的综合报告\n\n包括照片在内的分析信息会通过加密连接发送至Yiroom服务器和Google AI进行处理。分析结果会保存至您的账号；仅当您同意保存图片时，原始分析图片才会最多保存一年。",
+      "keywords": "个人色彩,肌肤分析,体型分析,发质分析,妆容,穿搭,AI,美妆",
+      "whatsNew": "• 首次发布\n• 个人色彩分析\n• 肌肤状态分析\n• 体型分析\n• 发质状态分析\n• 妆容分析",
+      "promotionalText": "用AI了解更适合您的美妆指南。"
     }
   },
   "screenshots": {

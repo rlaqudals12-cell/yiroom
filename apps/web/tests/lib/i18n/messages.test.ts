@@ -10,6 +10,24 @@ let enMessages: Record<string, unknown>;
 let jaMessages: Record<string, unknown>;
 let zhMessages: Record<string, unknown>;
 
+function flattenLeaves(value: Record<string, unknown>, prefix = ''): Record<string, string> {
+  return Object.entries(value).reduce<Record<string, string>>((leaves, [key, child]) => {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (typeof child === 'string') {
+      leaves[path] = child;
+    } else if (child && typeof child === 'object' && !Array.isArray(child)) {
+      Object.assign(leaves, flattenLeaves(child as Record<string, unknown>, path));
+    }
+    return leaves;
+  }, {});
+}
+
+function interpolationVariables(message: string): string[] {
+  return [...message.matchAll(/\{([A-Za-z][A-Za-z0-9_]*)(?:,|\})/g)]
+    .map((match) => match[1])
+    .sort();
+}
+
 beforeAll(async () => {
   koMessages = (await import('@/messages/ko.json')).default;
   enMessages = (await import('@/messages/en.json')).default;
@@ -161,6 +179,39 @@ describe('i18n messages', () => {
       expect(koKeys).toEqual(jaKeys);
       expect(koKeys).toEqual(zhKeys);
     });
+
+    it('모든 locale의 중첩 leaf key와 interpolation 변수가 한국어 정본과 일치한다', () => {
+      const koLeaves = flattenLeaves(koMessages);
+      const localizedLeaves = [enMessages, jaMessages, zhMessages].map((messages) =>
+        flattenLeaves(messages)
+      );
+
+      for (const leaves of localizedLeaves) {
+        expect(Object.keys(leaves).sort()).toEqual(Object.keys(koLeaves).sort());
+        for (const key of Object.keys(koLeaves)) {
+          expect(interpolationVariables(leaves[key]), key).toEqual(
+            interpolationVariables(koLeaves[key])
+          );
+        }
+      }
+    });
+
+    it('영문 카탈로그에는 의도된 한국어 언어명 외 한글과 대체 문자가 없다', () => {
+      const enLeaves = flattenLeaves(enMessages);
+      const hangulPaths = Object.entries(enLeaves)
+        .filter(([, value]) => /[가-힣]/.test(value))
+        .map(([path]) => path)
+        .sort();
+
+      expect(hangulPaths).toEqual(['landing.langKo', 'landing.langKoLabel']);
+      expect(JSON.stringify(enMessages)).not.toContain('\uFFFD');
+    });
+
+    it('모든 locale 카탈로그에 유니코드 대체 문자가 없다', () => {
+      for (const messages of [koMessages, enMessages, jaMessages, zhMessages]) {
+        expect(JSON.stringify(messages)).not.toContain('\uFFFD');
+      }
+    });
   });
 
   describe('메시지 값 형식', () => {
@@ -204,6 +255,16 @@ describe('i18n messages', () => {
       expect(JSON.stringify(zhMessages)).not.toContain('\uFFFD');
       expect((zhMessages.common as Record<string, string>).close).toBe('关闭');
       expect((zhMessages.settings as Record<string, string>).dataManagement).toBe('数据管理');
+      const auth = zhMessages.auth as {
+        mobileSignUp: { birthdateHelp: string };
+        mobileForgotPassword: { title: string };
+        mobileAgeVerification: { ageRestrictedMessage: string };
+      };
+      expect(auth.mobileSignUp.birthdateHelp).toBe('用于确认您已满14周岁并具备服务使用资格。');
+      expect(auth.mobileForgotPassword.title).toBe('重置密码');
+      expect(auth.mobileAgeVerification.ageRestrictedMessage).toBe(
+        'Yiroom 仅限年满14周岁的用户使用。未满14周岁的用户需要法定代理人同意，因此我们不向其提供生物特征信息分析。'
+      );
     });
   });
 

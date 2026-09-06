@@ -1,162 +1,144 @@
 /**
- * 한국어 번역
+ * 모바일 한국어 카탈로그.
+ *
+ * 화면 단위로만 확장하며, 공용 문구의 의미 정본은 apps/web/messages/ko.json이다.
  */
-
-export default {
-  // 공통
+const ko = {
   common: {
-    loading: '로딩 중...',
-    error: '오류가 발생했습니다',
-    retry: '다시 시도',
-    cancel: '취소',
-    confirm: '확인',
-    save: '저장',
-    delete: '삭제',
-    edit: '수정',
-    done: '완료',
-    next: '다음',
-    back: '뒤로',
     close: '닫기',
-    search: '검색',
-    seeMore: '더 보기',
-    noData: '데이터가 없습니다',
   },
-
-  // 탭
-  tabs: {
-    home: '홈',
-    workout: '운동',
-    nutrition: '영양',
-    profile: '프로필',
-  },
-
-  // 홈
-  home: {
-    greeting: '안녕하세요, {{name}}님!',
-    todayPlan: '오늘의 계획',
-    startWorkout: '운동 시작',
-    recordMeal: '식사 기록',
-    addWater: '물 추가',
-    streak: '{{count}}일 연속',
-    todaySummary: '오늘 요약',
-    notifications: '알림',
-  },
-
-  // 운동
-  workout: {
-    title: '운동',
-    session: '운동 세션',
-    log: '운동 기록',
-    history: '기록 히스토리',
-    plan: '주간 플랜',
-    exercise: '운동 종류',
-    duration: '운동 시간',
-    calories: '소모 칼로리',
-    sets: '세트',
-    reps: '횟수',
-    rest: '휴식',
-    complete: '완료',
-    skip: '건너뛰기',
-    pause: '일시정지',
-    resume: '계속하기',
-    finish: '운동 종료',
-    great: '잘했어요!',
-    caloriesBurned: '{{calories}}kcal 소모',
-    durationMinutes: '{{minutes}}분',
-    setCount: '{{current}}/{{total}} 세트',
-  },
-
-  // 영양
-  nutrition: {
-    title: '영양',
-    dashboard: '영양 대시보드',
-    record: '식사 기록',
-    camera: '사진 촬영',
-    search: '음식 검색',
-    water: '물 섭취',
-    meal: {
-      breakfast: '아침',
-      lunch: '점심',
-      dinner: '저녁',
-      snack: '간식',
+  auth: {
+    signIn: '로그인',
+    signUp: '회원가입',
+    mobileSignIn: {
+      brand: '이룸',
+      tagline: '온전한 나를 만나다',
+      loginRequired: '분석을 시작하려면 로그인이 필요해요',
+      emailLabel: '이메일',
+      emailPlaceholder: '이메일을 입력하세요',
+      passwordLabel: '비밀번호',
+      passwordPlaceholder: '비밀번호를 입력하세요',
+      forgotPassword: '비밀번호를 잊으셨나요?',
+      noAccount: '계정이 없으신가요?',
+      emptyAlertTitle: '알림',
+      credentialsRequired: '이메일과 비밀번호를 입력해주세요.',
+      additionalAuthTitle: '추가 인증 필요',
+      additionalAuthMessage: '추가 인증이 필요한 계정이에요. 웹({host})에서 로그인해주세요.',
+      openWeb: '웹에서 로그인',
+      verificationTitle: '이메일 인증',
+      verificationDescription: '{email}로 전송된 인증 코드를 입력해주세요',
+      verificationCodeLabel: '인증 코드',
+      verificationCodePlaceholder: '6자리 코드 입력',
+      verificationComplete: '인증 완료',
+      codeRequired: '인증 코드를 입력해주세요.',
+      signInFailureTitle: '로그인 실패',
+      signInFailure: '로그인에 실패했습니다.',
+      verificationFailureTitle: '인증 실패',
+      verificationFailure: '인증에 실패했습니다.',
     },
-    calories: '칼로리',
-    carbs: '탄수화물',
-    protein: '단백질',
-    fat: '지방',
-    goal: '목표',
-    remaining: '남은 칼로리',
-    waterGoal: '물 목표',
-    addWater: '물 추가',
-    waterUnit: 'ml',
+    mobileSignUp: {
+      title: '회원가입',
+      tagline: '이룸과 함께 시작하세요',
+      emailLabel: '이메일',
+      emailPlaceholder: '이메일을 입력하세요',
+      passwordLabel: '비밀번호',
+      passwordPlaceholder: '8자 이상 입력하세요',
+      confirmPasswordLabel: '비밀번호 확인',
+      confirmPasswordPlaceholder: '비밀번호를 다시 입력하세요',
+      birthdateLabel: '생년월일',
+      birthdatePlaceholder: 'YYYY-MM-DD',
+      birthdateHelp: '만 14세 이상 확인과 서비스 이용 자격 확인에 사용해요.',
+      ageConfirmation: '만 14세 이상임을 확인합니다',
+      signUpButton: '회원가입',
+      existingAccount: '이미 계정이 있으신가요?',
+      signIn: '로그인',
+      alertTitle: '알림',
+      credentialsRequired: '이메일과 비밀번호를 입력해주세요.',
+      passwordMismatch: '비밀번호가 일치하지 않습니다.',
+      passwordTooShort: '비밀번호는 8자 이상이어야 합니다.',
+      ageCheckTitle: '가입 연령 확인',
+      ageConfirmationRequired: '만 14세 이상임을 확인해주세요.',
+      signUpFailureTitle: '회원가입 실패',
+      signUpFailure: '회원가입에 실패했습니다.',
+      verificationTitle: '이메일 인증',
+      verificationDescription: '{email}로 전송된 인증 코드를 입력해주세요',
+      verificationCodeLabel: '인증 코드',
+      verificationCodePlaceholder: '6자리 코드 입력',
+      verificationComplete: '인증 완료',
+      codeRequired: '인증 코드를 입력해주세요.',
+      missingSession: '로그인 정보를 확인하지 못했습니다.',
+      birthdateSaveTitle: '생년월일 저장 안내',
+      birthdateSaveFailure:
+        '가입은 완료됐지만 생년월일을 저장하지 못했어요. 첫 분석 전에 다시 확인해주세요.',
+      verificationFailureTitle: '인증 실패',
+      verificationFailure: '인증에 실패했습니다.',
+      resendNotice: '{email}로 새 코드를 보냈어요',
+      resendFailureTitle: '인증 코드 재전송 실패',
+      resendFailure: '인증 코드를 다시 보내지 못했어요.',
+      resendAfter: '{seconds}초 후 다시 받기',
+      resendCode: '코드 다시 받기',
+      changeEmail: '이메일 바꾸기',
+    },
+    mobileForgotPassword: {
+      title: '비밀번호 재설정',
+      requestDescription: '가입한 이메일로 인증 코드를 보내드려요',
+      verifyDescription: '{email}로 전송된 인증 코드를 입력해주세요',
+      emailLabel: '이메일',
+      emailPlaceholder: '이메일을 입력하세요',
+      codeLabel: '인증 코드',
+      codePlaceholder: '6자리 코드 입력',
+      newPasswordLabel: '새 비밀번호',
+      newPasswordPlaceholder: '새 비밀번호를 입력하세요',
+      requestCode: '인증 코드 받기',
+      resetPassword: '비밀번호 재설정',
+      alertTitle: '알림',
+      emailRequired: '이메일을 입력해주세요.',
+      resetFailureTitle: '재설정 실패',
+      requestFailure: '인증 코드를 보내지 못했습니다.',
+      fieldsRequired: '인증 코드와 새 비밀번호를 입력해주세요.',
+      resetFailureRetry: '비밀번호를 재설정하지 못했습니다. 다시 시도해주세요.',
+      resetFailure: '비밀번호를 재설정하지 못했습니다.',
+    },
+    mobileAgeVerification: {
+      eyebrow: '연령 확인',
+      title: '생년월일을 입력해주세요',
+      unavailableTitle: '연령 확인 정보를 불러오지 못했어요',
+      description:
+        '이룸은 만 14세 이상만 이용할 수 있어요. 입력한 생년월일은 연령 확인과 서비스 이용 자격 확인에 사용해요.',
+      unavailableDescription:
+        '네트워크 연결을 확인한 뒤 다시 확인해주세요. 저장된 성인 정보가 확인되면 바로 이어갈 수 있어요.',
+      birthdateLabel: '생년월일',
+      birthdatePlaceholder: 'YYYY-MM-DD',
+      ageConfirmation: '만 14세 이상임을 확인합니다',
+      ageConfirmationRequired: '만 14세 이상임을 확인해주세요.',
+      birthdateRequired: '생년월일을 입력해주세요. (만 14세 이상 확인)',
+      birthdateInvalid: '올바른 생년월일 형식이 아니에요. (예: 2000-06-15)',
+      ageRestrictedMessage:
+        '만 14세 이상만 이용할 수 있어요. 만 14세 미만은 법정대리인 동의가 필요해 생체정보 분석을 제공하지 않아요.',
+      saveFailure: '생년월일을 저장하지 못했어요. 잠시 후 다시 시도해주세요.',
+      missingStoredBirthdate: '저장된 생년월일이 없어요. 네트워크 연결 후 직접 입력해주세요.',
+      invalidStoredBirthdate: '저장된 생년월일을 확인할 수 없어요. 직접 입력해주세요.',
+      fetchFailure: '연령 확인 정보를 불러오지 못했어요. 네트워크 연결을 확인해주세요.',
+      networkError: '네트워크 연결을 확인해주세요.',
+      recheckButton: '다시 확인하기',
+      submitButton: '확인하고 시작하기',
+      signOut: '다른 계정으로 로그인',
+      restrictedTitle: '연령 확인이 필요합니다',
+      restrictedDescription:
+        '일부 기능은 만 14세 이상 사용자를 위한 것입니다.\n연령 확인 후 이용하실 수 있습니다.',
+      verifyButton: '연령 확인하기',
+      back: '뒤로 가기',
+    },
   },
-
-  // 분석
   analysis: {
-    title: '분석',
-    personalColor: '퍼스널 컬러',
-    skin: '피부 분석',
-    body: '체형 분석',
-    takePhoto: '사진 촬영',
-    analyzing: '분석 중...',
-    result: '결과',
-    recommendations: '추천',
-    retake: '다시 촬영',
-  },
-
-  // 제품
-  products: {
-    title: '제품 추천',
-    forYou: '나를 위한 추천',
-    categories: {
-      skincare: '스킨케어',
-      makeup: '메이크업',
-      supplement: '영양제',
-      equipment: '운동 기구',
-    },
-    matchScore: '매칭 {{score}}%',
-    reviews: '리뷰 {{count}}개',
-    buyNow: '구매하러 가기',
-  },
-
-  // 설정
-  settings: {
-    title: '설정',
-    notifications: '알림 설정',
-    goals: '목표 설정',
-    widgets: '위젯 설정',
-    language: '언어',
-    darkMode: '다크 모드',
-    privacy: '개인정보 처리방침',
-    terms: '이용약관',
-    support: '문의하기',
-    version: '버전',
-    logout: '로그아웃',
-  },
-
-  // 프로필
-  profile: {
-    title: '프로필',
-    editProfile: '프로필 수정',
-    achievements: '업적',
-    friends: '친구',
-    challenges: '도전',
-    stats: '통계',
-  },
-
-  // 에러
-  errors: {
-    network: '네트워크 연결을 확인해주세요',
-    unknown: '알 수 없는 오류가 발생했습니다',
-    permission: '권한이 필요합니다',
-    camera: '카메라 접근 권한이 필요합니다',
-    photos: '사진 접근 권한이 필요합니다',
-  },
-
-  // 온보딩
-  onboarding: {
-    welcome: '이룸에 오신 것을 환영합니다',
-    getStarted: '시작하기',
-    skip: '건너뛰기',
+    skinNonMedicalDevice: '이룸의 피부 분석은 의료기기가 아니며 의료 서비스를 제공하지 않아요.',
+    skinNonMedicalPurpose:
+      '분석 결과와 안내 정보는 의학적 판단이나 의료인의 진단·치료를 대신하지 않아요.',
+    skinNonMedicalLimitsTitle: '결과 한계와 상담 안내',
+    skinNonMedicalLimitsSummary: '사진과 촬영 환경에 따라 결과가 달라질 수 있어요',
+    skinNonMedicalLimits:
+      '사진과 촬영 환경에 따라 결과가 달라질 수 있으며 정확성·완전성을 보장하지 않아요. 피부 증상이나 불편이 있다면 의료 전문가와 상담해 주세요.',
   },
 } as const;
+
+export default ko;

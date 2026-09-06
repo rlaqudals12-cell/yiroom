@@ -3,10 +3,12 @@
  */
 import { Stack } from 'expo-router';
 
+import { useTranslation } from '../../lib/i18n';
 import { useTheme } from '../../lib/theme';
 
 export default function AuthLayout() {
   const { colors, typography } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <Stack
@@ -23,32 +25,32 @@ export default function AuthLayout() {
       <Stack.Screen
         name="sign-in"
         options={{
-          title: '로그인',
+          title: t('auth.signIn'),
         }}
       />
       <Stack.Screen
         name="sign-up"
         options={{
-          title: '회원가입',
+          title: t('auth.signUp'),
         }}
       />
       <Stack.Screen
         name="forgot-password"
         options={{
-          title: '비밀번호 재설정',
+          title: t('auth.mobileForgotPassword.title'),
         }}
       />
       <Stack.Screen
         name="complete-profile"
         options={{
-          title: '연령 확인',
+          title: t('auth.mobileAgeVerification.eyebrow'),
           headerBackVisible: false,
         }}
       />
       <Stack.Screen
         name="age-restricted"
         options={{
-          title: '이용 연령 안내',
+          title: t('auth.mobileAgeVerification.restrictedTitle'),
           headerBackVisible: false,
         }}
       />

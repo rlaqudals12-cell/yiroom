@@ -338,8 +338,8 @@ export function TermsContent({ lang = 'ko' }: { lang?: Lang }) {
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         <p className="text-sm text-muted-foreground">
           {lang === 'ko'
-            ? '최종 수정일: 2026년 7월 12일 | 시행일: 2026년 7월 12일'
-            : 'Last updated: July 12, 2026 | Effective: July 12, 2026'}
+            ? '최종 수정일: 2026년 9월 5일 | 시행일: 2026년 9월 12일'
+            : 'Last updated: September 5, 2026 | Effective: September 12, 2026'}
         </p>
 
         {sections.map((section) => (
@@ -363,10 +363,12 @@ export function TermsContent({ lang = 'ko' }: { lang?: Lang }) {
           <CardContent>
             <p className="text-sm text-muted-foreground whitespace-pre-line">
               {lang === 'ko'
-                ? `① 이 약관은 2026년 7월 12일부터 시행합니다.
-② 2026년 7월 12일 개정으로 미성년자 이용(제5조), 서비스 변경·중단·종료(제7조), 이용자 게시물 관리(제10조), 손해배상 및 책임의 제한(제14조) 조항이 신설·정비되었습니다.`
-                : `1. These Terms are effective as of July 12, 2026.
-2. The July 12, 2026 revision added and reorganized provisions on Minors (Art. 5), Modification/Termination of Service (Art. 7), User Content and Moderation (Art. 10), and Limitation of Liability (Art. 14).`}
+                ? `① 이 약관은 2026년 9월 12일부터 시행합니다.
+② 2026년 7월 12일 개정으로 미성년자 이용(제5조), 서비스 변경·중단·종료(제7조), 이용자 게시물 관리(제10조), 손해배상 및 책임의 제한(제14조) 조항이 신설·정비되었습니다.
+③ 2026년 9월 5일 개정으로 제13조 비의료 고지를 보강했습니다.`
+                : `1. These Terms are effective as of September 12, 2026.
+2. The July 12, 2026 revision added and reorganized provisions on Minors (Art. 5), Modification/Termination of Service (Art. 7), User Content and Moderation (Art. 10), and Limitation of Liability (Art. 14).
+3. The September 5, 2026 revision strengthened the non-medical notice in Article 13.`}
             </p>
           </CardContent>
         </Card>

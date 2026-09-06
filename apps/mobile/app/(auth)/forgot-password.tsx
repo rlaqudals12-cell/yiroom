@@ -19,12 +19,14 @@ import {
 } from 'react-native';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
+import { useTranslation } from '@/lib/i18n';
 import { brand, radii, spacing, typography, useTheme } from '@/lib/theme';
 
 export default function ForgotPasswordScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -34,7 +36,10 @@ export default function ForgotPasswordScreen() {
   const handleRequestCode = async () => {
     if (!isLoaded) return;
     if (!email.trim()) {
-      Alert.alert('알림', '이메일을 입력해주세요.');
+      Alert.alert(
+        t('auth.mobileForgotPassword.alertTitle'),
+        t('auth.mobileForgotPassword.emailRequired')
+      );
       return;
     }
 
@@ -48,8 +53,8 @@ export default function ForgotPasswordScreen() {
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
       Alert.alert(
-        '재설정 실패',
-        clerkError.errors?.[0]?.message || '인증 코드를 보내지 못했습니다.'
+        t('auth.mobileForgotPassword.resetFailureTitle'),
+        clerkError.errors?.[0]?.message || t('auth.mobileForgotPassword.requestFailure')
       );
     } finally {
       setIsLoading(false);
@@ -59,7 +64,10 @@ export default function ForgotPasswordScreen() {
   const handleResetPassword = async () => {
     if (!isLoaded) return;
     if (!code || !password) {
-      Alert.alert('알림', '인증 코드와 새 비밀번호를 입력해주세요.');
+      Alert.alert(
+        t('auth.mobileForgotPassword.alertTitle'),
+        t('auth.mobileForgotPassword.fieldsRequired')
+      );
       return;
     }
 
@@ -75,12 +83,15 @@ export default function ForgotPasswordScreen() {
         router.replace('/(tabs)');
         return;
       }
-      Alert.alert('재설정 실패', '비밀번호를 재설정하지 못했습니다. 다시 시도해주세요.');
+      Alert.alert(
+        t('auth.mobileForgotPassword.resetFailureTitle'),
+        t('auth.mobileForgotPassword.resetFailureRetry')
+      );
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
       Alert.alert(
-        '재설정 실패',
-        clerkError.errors?.[0]?.message || '비밀번호를 재설정하지 못했습니다.'
+        t('auth.mobileForgotPassword.resetFailureTitle'),
+        clerkError.errors?.[0]?.message || t('auth.mobileForgotPassword.resetFailure')
       );
     } finally {
       setIsLoading(false);
@@ -101,22 +112,27 @@ export default function ForgotPasswordScreen() {
     >
       <ScreenContainer backgroundGradient="home" contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.foreground }]}>비밀번호 재설정</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>
+            {t('auth.mobileForgotPassword.title')}
+          </Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
             {pendingCode
-              ? `${email.trim()}로 전송된 인증 코드를 입력해주세요`
-              : '가입한 이메일로 인증 코드를 보내드려요'}
+              ? t('auth.mobileForgotPassword.verifyDescription', { email: email.trim() })
+              : t('auth.mobileForgotPassword.requestDescription')}
           </Text>
         </View>
 
         <GlassCard shadowSize="md" style={styles.card}>
           {!pendingCode ? (
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.foreground }]}>이메일</Text>
+              <Text style={[styles.label, { color: colors.foreground }]}>
+                {t('auth.mobileForgotPassword.emailLabel')}
+              </Text>
               <TextInput
                 testID="forgot-password-email-input"
                 style={[styles.input, inputStyle]}
-                placeholder="이메일을 입력하세요"
+                placeholder={t('auth.mobileForgotPassword.emailPlaceholder')}
+                accessibilityLabel={t('auth.mobileForgotPassword.emailLabel')}
                 placeholderTextColor={colors.mutedForeground}
                 value={email}
                 onChangeText={setEmail}
@@ -128,11 +144,14 @@ export default function ForgotPasswordScreen() {
           ) : (
             <>
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: colors.foreground }]}>인증 코드</Text>
+                <Text style={[styles.label, { color: colors.foreground }]}>
+                  {t('auth.mobileForgotPassword.codeLabel')}
+                </Text>
                 <TextInput
                   testID="forgot-password-code-input"
                   style={[styles.input, inputStyle]}
-                  placeholder="6자리 코드 입력"
+                  placeholder={t('auth.mobileForgotPassword.codePlaceholder')}
+                  accessibilityLabel={t('auth.mobileForgotPassword.codeLabel')}
                   placeholderTextColor={colors.mutedForeground}
                   value={code}
                   onChangeText={setCode}
@@ -141,11 +160,14 @@ export default function ForgotPasswordScreen() {
                 />
               </View>
               <View style={[styles.inputGroup, styles.passwordGroup]}>
-                <Text style={[styles.label, { color: colors.foreground }]}>새 비밀번호</Text>
+                <Text style={[styles.label, { color: colors.foreground }]}>
+                  {t('auth.mobileForgotPassword.newPasswordLabel')}
+                </Text>
                 <TextInput
                   testID="forgot-password-new-password-input"
                   style={[styles.input, inputStyle]}
-                  placeholder="새 비밀번호를 입력하세요"
+                  placeholder={t('auth.mobileForgotPassword.newPasswordPlaceholder')}
+                  accessibilityLabel={t('auth.mobileForgotPassword.newPasswordLabel')}
                   placeholderTextColor={colors.mutedForeground}
                   value={password}
                   onChangeText={setPassword}
@@ -161,12 +183,21 @@ export default function ForgotPasswordScreen() {
           style={[styles.button, isLoading && styles.buttonDisabled]}
           onPress={pendingCode ? handleResetPassword : handleRequestCode}
           disabled={isLoading}
+          accessibilityRole="button"
+          accessibilityLabel={
+            pendingCode
+              ? t('auth.mobileForgotPassword.resetPassword')
+              : t('auth.mobileForgotPassword.requestCode')
+          }
+          accessibilityState={{ disabled: isLoading }}
         >
           {isLoading ? (
             <ActivityIndicator color={brand.primaryForeground} />
           ) : (
             <Text style={styles.buttonText}>
-              {pendingCode ? '비밀번호 재설정' : '인증 코드 받기'}
+              {pendingCode
+                ? t('auth.mobileForgotPassword.resetPassword')
+                : t('auth.mobileForgotPassword.requestCode')}
             </Text>
           )}
         </Pressable>

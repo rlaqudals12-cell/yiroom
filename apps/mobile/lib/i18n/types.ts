@@ -1,19 +1,13 @@
-/**
- * 국제화 타입 정의
- */
+/** 모바일에 번들된 카탈로그 언어. 공개 활성 언어와 구분한다. */
+export const CATALOG_LOCALES = ['ko', 'en'] as const;
+export type SupportedLocale = (typeof CATALOG_LOCALES)[number];
 
-// 지원 언어
-export type SupportedLocale = 'ko' | 'en';
+/** 영어 핵심 여정 QA 전에는 혼합 언어 노출을 막기 위해 한국어만 공개한다. */
+export const ENABLED_LOCALES = ['ko'] as const;
+export type EnabledLocale = (typeof ENABLED_LOCALES)[number];
 
-// 번역 키
-export type TranslationKey = keyof typeof import('./locales/ko').default;
-
-// 번역 옵션
 export interface TranslationOptions {
-  // 변수 치환
   params?: Record<string, string | number>;
-  // 기본값
   defaultValue?: string;
-  // 복수형
   count?: number;
 }

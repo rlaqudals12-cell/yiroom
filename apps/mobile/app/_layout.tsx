@@ -19,6 +19,7 @@ import { cleanupHiddenWellnessNotificationsOnce } from '../lib/notifications/hid
 import { useNotificationResponse } from '../lib/notifications/useNotifications';
 import { ThemeProvider, useTheme, lightColors, typography, spacing } from '../lib/theme';
 import { resultSerifFonts } from '../lib/theme/fonts';
+import { MobileI18nProvider } from '../lib/i18n/provider';
 import { appLogger } from '../lib/utils/logger';
 
 // Expo Go에서 expo-notifications 경고 억제 (SDK 53+ 제한)
@@ -137,15 +138,17 @@ function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SentryErrorBoundary fallback={SentryFallback}>
-        <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
-          <ClerkLoaded>
-            <ThemeProvider>
-              <ThemedStack />
-            </ThemeProvider>
-          </ClerkLoaded>
-        </ClerkProvider>
-      </SentryErrorBoundary>
+      <MobileI18nProvider>
+        <SentryErrorBoundary fallback={SentryFallback}>
+          <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+            <ClerkLoaded>
+              <ThemeProvider>
+                <ThemedStack />
+              </ThemeProvider>
+            </ClerkLoaded>
+          </ClerkProvider>
+        </SentryErrorBoundary>
+      </MobileI18nProvider>
     </GestureHandlerRootView>
   );
 }

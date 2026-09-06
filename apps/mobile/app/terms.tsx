@@ -290,20 +290,22 @@ Any disputes arising from Service use shall be subject to the exclusive jurisdic
 // 언어별 부속 텍스트 (시행일·부칙·문의·최신 전문 안내)
 const META = {
   ko: {
-    updated: '최종 수정일: 2026년 7월 12일 | 시행일: 2026년 7월 12일',
+    updated: '최종 수정일: 2026년 9월 5일 | 시행일: 2026년 9월 12일',
     supplementTitle: '부칙',
-    supplement: `① 이 약관은 2026년 7월 12일부터 시행합니다.
-② 2026년 7월 12일 개정으로 미성년자 이용(제5조), 서비스 변경·중단·종료(제7조), 이용자 게시물 관리(제10조), 손해배상 및 책임의 제한(제14조) 조항이 신설·정비되었습니다.`,
+    supplement: `① 이 약관은 2026년 9월 12일부터 시행합니다.
+② 2026년 7월 12일 개정으로 미성년자 이용(제5조), 서비스 변경·중단·종료(제7조), 이용자 게시물 관리(제10조), 손해배상 및 책임의 제한(제14조) 조항이 신설·정비되었습니다.
+③ 2026년 9월 5일 개정으로 제13조 비의료 고지를 보강했습니다.`,
     contactTitle: '문의',
     contact: '이메일: contact@yiroom.app',
     latestNotice:
       '최신 전문: 이 약관의 최신 전문은 이룸(yiroom) 웹 이용약관 페이지에서 확인하실 수 있습니다. 앱 내 표시 내용과 차이가 있는 경우 웹에 게시된 약관이 우선합니다.',
   },
   en: {
-    updated: 'Last updated: July 12, 2026 | Effective: July 12, 2026',
+    updated: 'Last updated: September 5, 2026 | Effective: September 12, 2026',
     supplementTitle: 'Supplementary Provisions',
-    supplement: `1. These Terms are effective as of July 12, 2026.
-2. The July 12, 2026 revision added and reorganized provisions on Minors (Art. 5), Modification/Termination of Service (Art. 7), User Content and Moderation (Art. 10), and Limitation of Liability (Art. 14).`,
+    supplement: `1. These Terms are effective as of September 12, 2026.
+2. The July 12, 2026 revision added and reorganized provisions on Minors (Art. 5), Modification/Termination of Service (Art. 7), User Content and Moderation (Art. 10), and Limitation of Liability (Art. 14).
+3. The September 5, 2026 revision strengthened the non-medical notice in Article 13.`,
     contactTitle: 'Contact',
     contact: 'Email: contact@yiroom.app',
     latestNotice:

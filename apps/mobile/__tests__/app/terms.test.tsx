@@ -2,7 +2,7 @@
  * 이용약관 화면 테스트
  *
  * 대상: app/terms.tsx
- * 검증: 웹 정본 15조 체계 동기화(2026-07-12), 미제공 서비스(운동·영양·소셜) 미표기,
+ * 검증: 웹 정본 15조 체계 동기화(2026-09-05 개정), 미제공 서비스(운동·영양·소셜) 미표기,
  *       신규 조항(미성년자·서비스 종료·게시물·손해배상), 드리프트 가드 문구, 한/영 토글.
  */
 import React from 'react';
@@ -53,9 +53,10 @@ describe('TermsScreen (이용약관)', () => {
       expect(getByTestId('terms-screen')).toBeTruthy();
     });
 
-    it('시행일이 웹 정본과 동일하게 2026년 7월 12일로 표시된다', () => {
+    it('개정일·시행일이 웹 정본과 동일하고 제13조 개정 이력이 표시된다', () => {
       const { getByText } = renderWithTheme(<TermsScreen />);
-      expect(getByText(/시행일: 2026년 7월 12일/)).toBeTruthy();
+      expect(getByText(/최종 수정일: 2026년 9월 5일 \| 시행일: 2026년 9월 12일/)).toBeTruthy();
+      expect(getByText(/제13조 비의료 고지를 보강했습니다/)).toBeTruthy();
     });
 
     it('15조 체계의 조 제목이 표시된다', () => {
@@ -135,7 +136,12 @@ describe('TermsScreen (이용약관)', () => {
       const { getByText, queryByText } = renderWithTheme(<TermsScreen />);
       fireEvent.press(getByText('English'));
 
-      expect(getByText(/Effective: July 12, 2026/)).toBeTruthy();
+      expect(
+        getByText(/Last updated: September 5, 2026 \| Effective: September 12, 2026/)
+      ).toBeTruthy();
+      expect(
+        getByText(/September 5, 2026 revision strengthened the non-medical notice in Article 13/)
+      ).toBeTruthy();
       expect(getByText('5. Minors')).toBeTruthy();
       expect(getByText('7. Modification, Suspension, and Termination of Service')).toBeTruthy();
       expect(getByText('10. User Content and Moderation')).toBeTruthy();

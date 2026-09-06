@@ -19,6 +19,8 @@ import type { AxisCode, IntegratedAnalysisResult } from '../../../lib/api';
 const mockTrackAnalysisResultView = jest.fn();
 const mockUseIntegratedSession = jest.fn();
 
+jest.mock('@/lib/i18n', () => jest.requireActual('@/lib/i18n'));
+
 jest.mock('@/lib/analytics/tracker', () => ({
   trackAnalysisResultView: (...args: unknown[]) => mockTrackAnalysisResultView(...args),
 }));
@@ -166,6 +168,23 @@ describe('통합 결과 화면 — 축별 Mock 고지 배선', () => {
     expect(screen.getByTestId('integrated-axis-summary')).toBeTruthy();
     expect(screen.getAllByTestId('report-attr-row')).toHaveLength(5);
     expect(screen.getByTestId('persona-share-section')).toBeTruthy();
+  });
+
+  it('비의료 두 문장은 상시 노출하고 결과 한계만 기본 접힘으로 둔다', () => {
+    setPayload(buildResult([]));
+    const screen = renderWithTheme(<IntegratedResultScreen />);
+
+    expect(screen.getByTestId('integrated-non-medical-notice')).toBeTruthy();
+    expect(screen.getByText(/피부 분석은 의료기기가 아니며/)).toBeTruthy();
+    expect(screen.getByText(/의학적 판단이나 의료인의 진단·치료를 대신하지 않아요/)).toBeTruthy();
+    expect(
+      screen.queryByText(/정확성·완전성을 보장하지 않아요.*의료 전문가와 상담해 주세요/)
+    ).toBeNull();
+
+    fireEvent.press(screen.getByTestId('integrated-non-medical-limits-trigger'));
+    expect(
+      screen.getByText(/정확성·완전성을 보장하지 않아요.*의료 전문가와 상담해 주세요/)
+    ).toBeTruthy();
   });
 
   it('행동 근거는 기본 접힘이고 사용자가 요청할 때만 펼친다', () => {

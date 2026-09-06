@@ -7,7 +7,13 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
+import fs from 'node:fs';
+import path from 'node:path';
+import ts from 'typescript';
 
+jest.mock('@/lib/i18n', () => jest.requireActual('@/lib/i18n'));
+
+import { i18n } from '../../../lib/i18n';
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
@@ -157,18 +163,50 @@ function fillEligibleAgeGate(result: Pick<ReturnType<typeof renderWithTheme>, 'g
   fireEvent.press(result.getByTestId('signup-age-confirmation'));
 }
 
+function findKoreanStringLiterals(relativePath: string): string[] {
+  const absolutePath = path.join(process.cwd(), relativePath);
+  const sourceText = fs.readFileSync(absolutePath, 'utf8');
+  const sourceFile = ts.createSourceFile(
+    absolutePath,
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  );
+  const violations: string[] = [];
+
+  function visit(node: ts.Node): void {
+    if (
+      (ts.isStringLiteralLike(node) || ts.isJsxText(node)) &&
+      /[가-힣]/.test(node.getText(sourceFile))
+    ) {
+      const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+      violations.push(`${relativePath}:${line + 1}:${node.getText(sourceFile)}`);
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+  return violations;
+}
+
 // ============================================
 // 테스트
 // ============================================
 
 describe('SignUpScreen', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
     mockGetToken.mockResolvedValue('clerk-token');
     mockSaveBirthdate.mockResolvedValue(undefined);
+    await i18n.changeLanguage('ko');
   });
 
   describe('기본 렌더링', () => {
+    it('화면의 가시 문구가 한국어 literal로 회귀하지 않는다', () => {
+      expect(findKoreanStringLiterals('app/(auth)/sign-up.tsx')).toEqual([]);
+    });
+
     it('회원가입 화면을 정상적으로 렌더링한다', () => {
       const { getByTestId } = renderWithTheme(<SignUpScreen />);
       expect(getByTestId('auth-signup-screen')).toBeTruthy();
@@ -336,6 +374,38 @@ describe('SignUpScreen', () => {
       expect(alertSpy).toHaveBeenCalledWith('가입 연령 확인', '만 14세 이상임을 확인해주세요.');
       expect(mockSignUpCreate).not.toHaveBeenCalled();
     });
+
+    it.each([
+      ['미입력', '', 'Please enter your date of birth to confirm that you are 14 or older.'],
+      ['유효하지 않은 날짜', '2026-13-40', 'Enter a valid date of birth. (Example: 2000-06-15)'],
+      [
+        '만 14세 미만',
+        '2018-01-01',
+        'Yiroom is available only to users aged 14 or older. Because users under 14 require consent from a legal guardian, we do not provide biometric analysis to them.',
+      ],
+    ])(
+      '영문 카탈로그에서 생년월일 %s 오류를 영어로만 안내하고 가입 호출을 막는다',
+      async (_caseName, birthdateValue, expectedMessage) => {
+        await i18n.changeLanguage('en');
+        const alertSpy = jest.spyOn(Alert, 'alert');
+        const result = renderWithTheme(<SignUpScreen />);
+
+        fireEvent.changeText(result.getByTestId('signup-email-input'), 'adult@example.com');
+        fireEvent.changeText(result.getByTestId('signup-password-input'), 'password123');
+        fireEvent.changeText(
+          result.getByPlaceholderText('Enter your password again'),
+          'password123'
+        );
+        if (birthdateValue) {
+          fireEvent.changeText(result.getByTestId('signup-birthdate-input'), birthdateValue);
+        }
+        fireEvent.press(result.getByTestId('signup-submit-button'));
+
+        expect(alertSpy).toHaveBeenCalledWith('Confirm your age', expectedMessage);
+        expect(JSON.stringify(alertSpy.mock.calls.at(-1))).not.toMatch(/[가-힣]/);
+        expect(mockSignUpCreate).not.toHaveBeenCalled();
+      }
+    );
 
     it('회원가입 성공 시 이메일 인증 화면으로 전환된다', async () => {
       mockSignUpCreate.mockResolvedValueOnce({});

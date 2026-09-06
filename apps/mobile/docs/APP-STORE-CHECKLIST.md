@@ -48,7 +48,7 @@ Analysis information, including photos, is sent over encrypted connections to Yi
 ### 검색·프로모션 문구
 
 - 한국어 키워드: `퍼스널컬러,피부분석,체형분석,헤어분석,메이크업,스타일,AI,뷰티`
-- 영어 키워드: `personalcolor,skinanalysis,bodytype,hairanalysis,makeup,style,AI,beauty`
+- 영어 키워드: `personal color,skin analysis,body type,hair analysis,makeup,style,AI,beauty`
 - 프로모션 텍스트: `AI로 나에게 맞는 뷰티 가이드를 확인해보세요.`
 
 ## 2. 제출 화면 범위

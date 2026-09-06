@@ -6,11 +6,13 @@
 import { useRouter } from 'expo-router';
 import { View, Text, Pressable } from 'react-native';
 
+import { useTranslation } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme';
 
 export default function AgeRestrictedScreen(): React.ReactElement {
   const router = useRouter();
-  const { colors, brand, spacing, radii, typography, status } = useTheme();
+  const { colors, brand, spacing, radii, typography } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View
@@ -34,7 +36,7 @@ export default function AgeRestrictedScreen(): React.ReactElement {
           marginBottom: spacing.sm,
         }}
       >
-        연령 확인이 필요합니다
+        {t('auth.mobileAgeVerification.restrictedTitle')}
       </Text>
 
       <Text
@@ -46,12 +48,11 @@ export default function AgeRestrictedScreen(): React.ReactElement {
           marginBottom: spacing.xl,
         }}
       >
-        일부 기능은 만 14세 이상 사용자를 위한 것입니다.{'\n'}
-        연령 확인 후 이용하실 수 있습니다.
+        {t('auth.mobileAgeVerification.restrictedDescription')}
       </Text>
 
       <Pressable
-        accessibilityLabel="연령 확인하기"
+        accessibilityLabel={t('auth.mobileAgeVerification.verifyButton')}
         onPress={() => router.push('/(auth)/complete-profile')}
         style={{
           backgroundColor: brand.primary,
@@ -68,17 +69,17 @@ export default function AgeRestrictedScreen(): React.ReactElement {
             color: brand.primaryForeground,
           }}
         >
-          연령 확인하기
+          {t('auth.mobileAgeVerification.verifyButton')}
         </Text>
       </Pressable>
 
       <Pressable
-        accessibilityLabel="뒤로 가기"
+        accessibilityLabel={t('auth.mobileAgeVerification.back')}
         onPress={() => router.back()}
         style={{ padding: spacing.sm }}
       >
         <Text style={{ fontSize: typography.size.sm, color: colors.mutedForeground }}>
-          뒤로 가기
+          {t('auth.mobileAgeVerification.back')}
         </Text>
       </Pressable>
     </View>

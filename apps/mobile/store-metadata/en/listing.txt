@@ -1,45 +1,21 @@
-App Name: Yiroom - AI Beauty & Wellness
-Short Description (80 chars): AI-powered personal color, skin, body & beauty analysis. Your beauty coach.
+App name: Yiroom - Know Yourself
+Short description (80 characters): AI Beauty and Style Analysis
 
-Full Description:
+Full description:
 
-Know yourself, wholly. Yiroom.
+Yiroom is an AI beauty analysis service for users age 14 and older.
 
-Yiroom is an AI-powered beauty & wellness platform that helps you discover
-your unique beauty profile. With just a photo, get comprehensive analysis
-of your personal color, skin type, body shape, hair, and makeup style
-with personalized care recommendations.
+• Personal color analysis and color guidance
+• Skin analysis and care guidance
+• Body analysis and style guidance
+• Hair analysis and care guidance
+• Makeup analysis and color guidance
+• An integrated view of all five analysis results
 
---- Key Features ---
+Analysis information, including photos, is sent over encrypted connections to Yiroom servers and Google AI for processing. Analysis results are saved to your account, while original analysis images are retained for up to one year only when you consent to image storage.
 
-[AI Beauty Analysis]
-- Personal Color : Spring/Summer/Autumn/Winter + detailed sub-tones
-- Skin Analysis : 6-point assessment (hydration, oil, sensitivity, pores, wrinkles, elasticity)
-- Body Shape : Skeleton-based classification + styling guide
-- Hair Analysis : Hair type, scalp condition, customized care routine
-- Makeup Analysis : Face shape & tone-matched makeup recommendations
-- Oral Health : Tooth color & gum health check
+Keywords:
+personal color,skin analysis,body type,hair analysis,makeup,style,AI,beauty
 
-[Personalized Recommendations]
-- Skincare routine designed from your skin analysis
-- Cosmetics matched to your personal color palette
-- Exercise & styling guide for your body type
-- Weather-based outfit recommendations
-
-[Track Your Journey]
-- Analysis history to monitor changes
-- Closet management + AI outfit styling
-- Nutrition/exercise logging + AI wellness coach
-
-[Social]
-- Share beauty routines with friends
-- Wellness challenges on the leaderboard
-
---- Keywords ---
-personal color, skin analysis, body analysis, beauty app, AI analysis, skincare, makeup, haircare, wellness, outfit recommendation
-
---- Category ---
-Health & Fitness / Beauty
-
---- Content Rating ---
-Everyone
+Content rating:
+Age 14 and older

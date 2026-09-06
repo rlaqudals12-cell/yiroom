@@ -249,19 +249,20 @@
 
 ## 8. 메타/계획
 
-| 문서                                                          | 설명                       | 용도                |
-| ------------------------------------------------------------- | -------------------------- | ------------------- |
-| [SDD-MASTER-REFACTORING-PLAN](SDD-MASTER-REFACTORING-PLAN.md) | 마스터 리팩토링 계획       | 프로젝트 로드맵     |
-| [SDD-ULTIMATE-CHECKLIST](SDD-ULTIMATE-CHECKLIST.md)           | 궁극의 형태 체크리스트     | 품질 검증           |
-| [SYNC-ANALYSIS-REPORT](SYNC-ANALYSIS-REPORT.md)               | 동기화 분석 리포트         | 상태 점검           |
-| [ATOMIC-DECOMPOSITION-REVIEW](ATOMIC-DECOMPOSITION-REVIEW.md) | 원자 분해 검토             | P3 검증             |
-| [SDD-DB-MIGRATION-MANAGEMENT](SDD-DB-MIGRATION-MANAGEMENT.md) | DB 마이그레이션 관리       | 스키마 변경         |
-| [SDD-MOBILE-SHARED-LIBRARY](SDD-MOBILE-SHARED-LIBRARY.md)     | 모바일 공유 라이브러리     | 웹/모바일 코드 공유 |
-| [SDD-ANALYSIS-DB-SCHEMA](SDD-ANALYSIS-DB-SCHEMA.md)           | 분석 테이블 DB 스키마      | 참조 문서           |
-| [GEMINI-UI-UX-SPEC-BUNDLE](GEMINI-UI-UX-SPEC-BUNDLE.md)       | Gemini용 UI/UX 통합 스펙   | AI 디자인 참조      |
-| [GEMINI-REQUEST-PROMPTS](GEMINI-REQUEST-PROMPTS.md)           | Gemini UI/UX 요청 프롬프트 | AI 디자인 참조      |
-| [GEMINI-ULTIMATE-BUNDLE](GEMINI-ULTIMATE-BUNDLE.md)           | Gemini Ultimate 요청 번들  | AI 디자인 참조      |
-| [ULTIMATE-UI-STRATEGY](ULTIMATE-UI-STRATEGY.md)               | 궁극의 UI/UX 전략          | 디자인 전략         |
+| 문서                                                          | 설명                         | 용도                                                                 |
+| ------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------- |
+| [SDD-MASTER-REFACTORING-PLAN](SDD-MASTER-REFACTORING-PLAN.md) | 마스터 리팩토링 계획         | 프로젝트 로드맵                                                      |
+| [SDD-ULTIMATE-CHECKLIST](SDD-ULTIMATE-CHECKLIST.md)           | 궁극의 형태 체크리스트       | 품질 검증                                                            |
+| [SYNC-ANALYSIS-REPORT](SYNC-ANALYSIS-REPORT.md)               | 동기화 분석 리포트           | 상태 점검                                                            |
+| [ATOMIC-DECOMPOSITION-REVIEW](ATOMIC-DECOMPOSITION-REVIEW.md) | 원자 분해 검토               | P3 검증                                                              |
+| [SDD-DB-MIGRATION-MANAGEMENT](SDD-DB-MIGRATION-MANAGEMENT.md) | DB 마이그레이션 관리         | 스키마 변경                                                          |
+| [SDD-MOBILE-SHARED-LIBRARY](SDD-MOBILE-SHARED-LIBRARY.md)     | 모바일 공유 라이브러리       | 웹/모바일 코드 공유                                                  |
+| [SDD-MOBILE-I18N-RUNTIME](SDD-MOBILE-I18N-RUNTIME.md)         | 모바일 i18n 런타임 (ADR-122) | expo-localization+i18next, 공개 언어 게이트 ko, 웹 ko.json 정본 투영 |
+| [SDD-ANALYSIS-DB-SCHEMA](SDD-ANALYSIS-DB-SCHEMA.md)           | 분석 테이블 DB 스키마        | 참조 문서                                                            |
+| [GEMINI-UI-UX-SPEC-BUNDLE](GEMINI-UI-UX-SPEC-BUNDLE.md)       | Gemini용 UI/UX 통합 스펙     | AI 디자인 참조                                                       |
+| [GEMINI-REQUEST-PROMPTS](GEMINI-REQUEST-PROMPTS.md)           | Gemini UI/UX 요청 프롬프트   | AI 디자인 참조                                                       |
+| [GEMINI-ULTIMATE-BUNDLE](GEMINI-ULTIMATE-BUNDLE.md)           | Gemini Ultimate 요청 번들    | AI 디자인 참조                                                       |
+| [ULTIMATE-UI-STRATEGY](ULTIMATE-UI-STRATEGY.md)               | 궁극의 UI/UX 전략            | 디자인 전략                                                          |
 
 ---
 

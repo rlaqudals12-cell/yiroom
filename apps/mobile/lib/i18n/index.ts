@@ -1,159 +1,120 @@
 /**
- * 국제화 (i18n) 모듈
- * 다국어 지원
+ * 모바일 국제화 공개 어댑터.
+ *
+ * 기존 `@/lib/i18n` 호출 경로는 유지하되, 전역 변경 전파와 폴백은 i18next가 맡는다.
  */
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocales } from 'expo-localization';
-import { useState, useCallback, useEffect } from 'react';
+import i18next from 'i18next';
+import { initReactI18next, useTranslation as useReactTranslation } from 'react-i18next';
 
 import en from './locales/en';
 import ko from './locales/ko';
-import { SupportedLocale, TranslationOptions } from './types';
+import {
+  CATALOG_LOCALES,
+  ENABLED_LOCALES,
+  type EnabledLocale,
+  type SupportedLocale,
+  type TranslationOptions,
+} from './types';
 
-// 번역 데이터
-const translations = { ko, en } as const;
-
-// 저장 키
 const LOCALE_KEY = '@yiroom/locale';
+const DEFAULT_LOCALE: EnabledLocale = 'ko';
+// 로컬 저장소 조회가 멈춰도 앱 시작 화면을 영구 차단하지 않도록 짧은 상한을 둔다.
+const LOCALE_STORAGE_TIMEOUT_MS = 1000;
 
-// 기본 언어
-const DEFAULT_LOCALE: SupportedLocale = 'ko';
+const resources = {
+  ko: { translation: ko },
+  en: { translation: en },
+} as const;
 
-// 현재 언어
-let currentLocale: SupportedLocale = DEFAULT_LOCALE;
-
-/**
- * 시스템 언어 가져오기
- */
-function getSystemLocale(): SupportedLocale {
-  const locales = getLocales();
-  const systemLocale = locales[0]?.languageCode?.toLowerCase();
-
-  if (systemLocale === 'ko') return 'ko';
-  return 'en';
+function includesLocale<T extends string>(locales: readonly T[], value: unknown): value is T {
+  return typeof value === 'string' && locales.some((locale) => locale === value);
 }
 
-/**
- * 저장된 언어 로드
- */
-async function loadSavedLocale(): Promise<SupportedLocale> {
+function getDeviceLocale(): EnabledLocale {
+  const languageCode = getLocales()[0]?.languageCode?.toLowerCase();
+  return includesLocale(ENABLED_LOCALES, languageCode) ? languageCode : DEFAULT_LOCALE;
+}
+
+if (!i18next.isInitialized) {
+  void i18next.use(initReactI18next).init({
+    resources,
+    lng: getDeviceLocale(),
+    fallbackLng: DEFAULT_LOCALE,
+    supportedLngs: CATALOG_LOCALES,
+    defaultNS: 'translation',
+    initAsync: false,
+    returnNull: false,
+    interpolation: {
+      escapeValue: false,
+      prefix: '{',
+      suffix: '}',
+    },
+  });
+}
+
+export const i18n = i18next;
+
+function readStoredLocaleWithTimeout(): Promise<string | null> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<null>((resolve) => {
+    timeoutId = setTimeout(() => resolve(null), LOCALE_STORAGE_TIMEOUT_MS);
+  });
+
+  // Promise.race가 한 번 결정된 뒤 늦게 도착한 저장소 값은 초기 언어를 다시 바꾸지 않는다.
+  return Promise.race([AsyncStorage.getItem(LOCALE_KEY), timeout]).finally(() => {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
+  });
+}
+
+async function loadInitialLocale(): Promise<EnabledLocale> {
   try {
-    const saved = await AsyncStorage.getItem(LOCALE_KEY);
-    if (saved && (saved === 'ko' || saved === 'en')) {
-      return saved;
+    const savedLocale = await readStoredLocaleWithTimeout();
+    if (includesLocale(ENABLED_LOCALES, savedLocale)) {
+      return savedLocale;
     }
   } catch {
-    // 무시
+    // 저장소 오류는 앱 진입을 막지 않고 공개 기본 언어로 폴백한다.
   }
-  return getSystemLocale();
+
+  return getDeviceLocale();
 }
 
-/**
- * 언어 저장
- */
-async function saveLocale(locale: SupportedLocale): Promise<void> {
-  await AsyncStorage.setItem(LOCALE_KEY, locale);
-}
-
-/**
- * 번역 함수
- */
 export function t(key: string, options?: TranslationOptions): string {
-  const keys = key.split('.');
-  let value: unknown = translations[currentLocale];
-
-  for (const k of keys) {
-    if (typeof value === 'object' && value !== null) {
-      value = (value as Record<string, unknown>)[k];
-    } else {
-      value = undefined;
-      break;
-    }
-  }
-
-  if (typeof value !== 'string') {
-    // 영어 폴백
-    value = translations.en;
-    for (const k of keys) {
-      if (typeof value === 'object' && value !== null) {
-        value = (value as Record<string, unknown>)[k];
-      } else {
-        value = undefined;
-        break;
-      }
-    }
-  }
-
-  if (typeof value !== 'string') {
-    return options?.defaultValue || key;
-  }
-
-  // 변수 치환
-  let result = value;
-  if (options?.params) {
-    Object.entries(options.params).forEach(([param, val]) => {
-      result = result.replace(new RegExp(`{{${param}}}`, 'g'), String(val));
-    });
-  }
-
-  return result;
+  return i18n.t(key, {
+    ...options?.params,
+    count: options?.count,
+    defaultValue: options?.defaultValue,
+  });
 }
 
-/**
- * 현재 언어 가져오기
- */
 export function getLocale(): SupportedLocale {
-  return currentLocale;
+  const resolvedLanguage = i18n.resolvedLanguage ?? i18n.language;
+  return includesLocale(CATALOG_LOCALES, resolvedLanguage) ? resolvedLanguage : DEFAULT_LOCALE;
 }
 
 /**
- * 언어 설정
+ * 공개 활성 locale만 저장한다. 카탈로그가 있어도 미완성 언어는 사용자에게 열지 않는다.
  */
 export async function setLocale(locale: SupportedLocale): Promise<void> {
-  currentLocale = locale;
-  await saveLocale(locale);
+  const enabledLocale = includesLocale(ENABLED_LOCALES, locale) ? locale : DEFAULT_LOCALE;
+  await i18n.changeLanguage(enabledLocale);
+  await AsyncStorage.setItem(LOCALE_KEY, enabledLocale);
 }
 
-/**
- * i18n 초기화
- */
-export async function initI18n(): Promise<SupportedLocale> {
-  currentLocale = await loadSavedLocale();
-  return currentLocale;
+export async function initI18n(): Promise<EnabledLocale> {
+  const locale = await loadInitialLocale();
+  await i18n.changeLanguage(locale);
+  return locale;
 }
 
-// ---- React Hook ----
-
-/**
- * i18n Hook
- */
-export function useI18n() {
-  const [locale, setLocaleState] = useState<SupportedLocale>(currentLocale);
-
-  useEffect(() => {
-    initI18n().then(setLocaleState);
-  }, []);
-
-  const changeLocale = useCallback(async (newLocale: SupportedLocale) => {
-    await setLocale(newLocale);
-    setLocaleState(newLocale);
-  }, []);
-
+export function useTranslation() {
+  const translation = useReactTranslation();
   return {
-    locale,
-    setLocale: changeLocale,
-    t,
+    ...translation,
+    locale: getLocale(),
   };
 }
 
-/**
- * 번역 Hook (간단 버전)
- */
-export function useTranslation() {
-  const { t, locale } = useI18n();
-  return { t, locale };
-}
-
-// 타입 export
-export type { SupportedLocale, TranslationOptions } from './types';
+export type { EnabledLocale, SupportedLocale, TranslationOptions } from './types';

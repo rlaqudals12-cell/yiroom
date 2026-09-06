@@ -8,6 +8,9 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert, Linking } from 'react-native';
 
+jest.mock('@/lib/i18n', () => jest.requireActual('@/lib/i18n'));
+
+import { i18n } from '../../../lib/i18n';
 import { ThemeContext, type ThemeContextValue } from '../../../lib/theme/ThemeProvider';
 import {
   brand,
@@ -153,9 +156,10 @@ function renderWithTheme(ui: React.ReactElement, isDark = false) {
 // ============================================
 
 describe('SignInScreen', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
     mockSearchParams = {};
+    await i18n.changeLanguage('ko');
   });
 
   describe('기본 렌더링', () => {
@@ -199,6 +203,19 @@ describe('SignInScreen', () => {
       const { getByText } = renderWithTheme(<SignInScreen />);
       expect(getByText('계정이 없으신가요?')).toBeTruthy();
       expect(getByText('회원가입')).toBeTruthy();
+    });
+
+    it('검수용 영문 카탈로그로 전환하면 로그인 화면 전체가 영어로 렌더링된다', async () => {
+      await i18n.changeLanguage('en');
+
+      const { getByText, getByTestId } = renderWithTheme(<SignInScreen />);
+
+      expect(getByText('Yiroom')).toBeTruthy();
+      expect(getByText('Meet the whole you')).toBeTruthy();
+      expect(getByTestId('signin-email-input').props.placeholder).toBe('Enter your email');
+      expect(getByTestId('signin-password-input').props.placeholder).toBe('Enter your password');
+      expect(getByText('Sign In')).toBeTruthy();
+      expect(getByText('Sign Up')).toBeTruthy();
     });
   });
 
@@ -290,9 +307,7 @@ describe('SignInScreen', () => {
       fireEvent.changeText(getByTestId('signin-password-input'), 'password123');
       fireEvent.press(getByTestId('signin-submit-button'));
 
-      await waitFor(() =>
-        expect(mockReplace).toHaveBeenCalledWith('/(analysis)/integrated')
-      );
+      await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(analysis)/integrated'));
     });
 
     it('외부 returnTo는 거부하고 기존 메인 탭으로 이동한다', async () => {

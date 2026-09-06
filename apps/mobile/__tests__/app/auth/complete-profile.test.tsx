@@ -1,5 +1,9 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import ts from 'typescript';
 
 const mockGetToken = jest.fn();
 const mockSignOut = jest.fn();
@@ -37,6 +41,8 @@ jest.mock('@/lib/offline', () => ({
   useNetworkStatus: () => ({ isConnected: mockIsConnected }),
 }));
 
+jest.mock('@/lib/i18n', () => jest.requireActual('@/lib/i18n'));
+
 jest.mock('@/lib/theme', () => ({
   useTheme: () => ({
     brand: { primary: '#7C3AED', primaryForeground: '#FFFFFF' },
@@ -60,9 +66,36 @@ jest.mock('@/lib/theme', () => ({
 
 import CompleteProfileScreen from '@/app/(auth)/complete-profile';
 import { BirthdateApiError } from '@/lib/api/birthdate';
+import { i18n } from '@/lib/i18n';
+
+function findUiKoreanLiterals(relativePath: string): string[] {
+  const absolutePath = path.join(process.cwd(), relativePath);
+  const sourceText = fs.readFileSync(absolutePath, 'utf8');
+  const sourceFile = ts.createSourceFile(
+    absolutePath,
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  );
+  const violations: string[] = [];
+
+  function visit(node: ts.Node): void {
+    if (
+      (ts.isStringLiteralLike(node) || ts.isJsxText(node)) &&
+      /[가-힣]/.test(node.getText(sourceFile))
+    ) {
+      violations.push(node.getText(sourceFile));
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+  return violations;
+}
 
 describe('CompleteProfileScreen', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
     mockIsSignedIn = true;
     mockReason = undefined;
@@ -71,6 +104,7 @@ describe('CompleteProfileScreen', () => {
     mockSignOut.mockResolvedValue(undefined);
     mockSaveBirthdate.mockResolvedValue(undefined);
     mockFetchBirthdate.mockResolvedValue({ birthDate: null, hasBirthDate: false });
+    await i18n.changeLanguage('ko');
   });
 
   it('기존 계정의 생년월일을 서버 정본에 저장한 뒤 탭으로 보낸다', async () => {
@@ -116,6 +150,21 @@ describe('CompleteProfileScreen', () => {
     });
   });
 
+  it('서버가 보낸 원인별 안내문(userMessage)을 일반 실패 문구로 덮지 않는다', async () => {
+    const serverMessage = '생년월일 저장에 실패했어요. 잠시 후 다시 시도해 주세요.';
+    mockSaveBirthdate.mockRejectedValue(new BirthdateApiError(serverMessage, 500, 'DB_ERROR'));
+    const { getByTestId } = render(<CompleteProfileScreen />);
+
+    fireEvent.changeText(getByTestId('complete-profile-birthdate-input'), '20000615');
+    fireEvent.press(getByTestId('complete-profile-age-confirmation'));
+    fireEvent.press(getByTestId('complete-profile-submit'));
+
+    await waitFor(() => {
+      expect(getByTestId('complete-profile-error')).toHaveTextContent(serverMessage);
+    });
+    expect(mockReplace).not.toHaveBeenCalledWith('/(tabs)');
+  });
+
   it('유효하지 않은 입력은 저장하지 않고 인라인 오류를 보여준다', () => {
     const { getByTestId } = render(<CompleteProfileScreen />);
 
@@ -124,6 +173,25 @@ describe('CompleteProfileScreen', () => {
 
     expect(getByTestId('complete-profile-error')).toBeTruthy();
     expect(mockSaveBirthdate).not.toHaveBeenCalled();
+  });
+
+  it('생년월일과 만 14세 확인 문구를 i18n 카탈로그에서 표시한다', () => {
+    const { getByLabelText, getByPlaceholderText, getByText } = render(<CompleteProfileScreen />);
+
+    expect(getByText('생년월일을 입력해주세요')).toBeTruthy();
+    expect(getByPlaceholderText('YYYY-MM-DD')).toBeTruthy();
+    expect(getByLabelText('만 14세 이상임을 확인합니다')).toBeTruthy();
+  });
+
+  it('검수용 영문 카탈로그로 전환하면 연령 확인 화면이 영어로만 렌더링된다', async () => {
+    await i18n.changeLanguage('en');
+    const screen = render(<CompleteProfileScreen />);
+
+    expect(screen.getByText('Enter your date of birth')).toBeTruthy();
+    expect(screen.getByPlaceholderText('YYYY-MM-DD')).toBeTruthy();
+    expect(screen.getByLabelText('I confirm that I am 14 or older')).toBeTruthy();
+    expect(screen.getByText('Confirm and continue')).toBeTruthy();
+    expect(JSON.stringify(screen.toJSON())).not.toMatch(/[가-힣]/);
   });
 
   it('연령 조회가 불가능한 오프라인 진입은 네트워크 안내와 다시 확인하기만 노출한다', () => {
@@ -151,5 +219,9 @@ describe('CompleteProfileScreen', () => {
       expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
     });
     expect(mockSaveBirthdate).not.toHaveBeenCalled();
+  });
+
+  it('이관된 화면에 한국어 UI literal이 재유입되지 않는다', () => {
+    expect(findUiKoreanLiterals('app/(auth)/complete-profile.tsx')).toEqual([]);
   });
 });

@@ -47,7 +47,23 @@ describe('TermsPage', () => {
 
   it('shows the last modified date', () => {
     render(<TermsPage />);
-    expect(screen.getByText(/최종 수정일/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/최종 수정일: 2026년 9월 5일 \| 시행일: 2026년 9월 12일/)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/제13조 비의료 고지를 보강했습니다/)).toBeInTheDocument();
+  });
+
+  it('영문 약관도 같은 개정일·시행일과 제13조 개정 이력을 표시한다', () => {
+    render(<TermsPage lang="en" />);
+
+    expect(
+      screen.getByText(/Last updated: September 5, 2026 \| Effective: September 12, 2026/)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /September 5, 2026 revision strengthened the non-medical notice in Article 13/
+      )
+    ).toBeInTheDocument();
   });
 
   it('renders all terms sections', () => {

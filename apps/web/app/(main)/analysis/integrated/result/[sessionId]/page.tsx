@@ -62,6 +62,8 @@ import { CrossInsightsCard } from './_components/CrossInsightsCard';
 import { CurationCard } from './_components/CurationCard';
 import { ShareReportButton } from './_components/ShareReportButton';
 import { validateToneValue, type TwelveTone } from '@/lib/analysis/personal-color-v2';
+import { ProgressiveDisclosure } from '@/components/common';
+import { AITransparencyNotice } from '@/components/common/AIBadge';
 
 /** 저장된 시즌·서브타입이 실제 12톤 조합일 때만 드레이핑 판정에 전달한다. */
 function resolveDrapingTone(season: string | undefined, subtype: string): TwelveTone | undefined {
@@ -467,6 +469,7 @@ export default async function IntegratedResultPage({
   }
 
   const t = await getTranslations('analysis.integratedResult');
+  const tAnalysis = await getTranslations('analysis');
   const locale = await getLocale();
   const dateLocale = DATE_LOCALE[locale] ?? 'ko-KR';
   // 라벨 헬퍼용 로케일 (지원 4언어로 좁힘, 그 외는 ko 폴백)
@@ -845,15 +848,28 @@ export default async function IntegratedResultPage({
         />
 
         {/* 하단 안내 */}
-        <div className="space-y-1 pt-4 text-center text-[11px] text-muted-foreground">
+        <div className="pt-4 text-center text-[11px] text-muted-foreground">
           {/* 재현성 실측 — 과장 없이 "같은 입력 → 같은 판정"만 (퍼스널컬러·피부에서 검증) */}
           <p>{t('footer.reproducibility')}</p>
-          <p>
-            {usedFallbackAxes.length > 0 || unknownAxes.length > 0
-              ? t('footer.referenceDisclaimer')
-              : t('footer.aiDisclaimer')}
-          </p>
         </div>
+        {/* AI 기본법 제31조 — 통합 결과도 피부 결과와 같이 'AI 생성물' 명시를 비의료 고지 위에 유지 */}
+        <AITransparencyNotice compact className="mt-6" />
+        <div
+          className="mt-3 space-y-1 text-center text-[11px] leading-relaxed text-zinc-600"
+          data-testid="integrated-non-medical-notice"
+        >
+          <p>{tAnalysis('skinNonMedicalDevice')}</p>
+          <p>{tAnalysis('skinNonMedicalPurpose')}</p>
+        </div>
+        <ProgressiveDisclosure
+          className="mt-3"
+          summary={tAnalysis('skinNonMedicalLimitsSummary')}
+          title={tAnalysis('skinNonMedicalLimitsTitle')}
+        >
+          <p className="px-3 text-sm leading-relaxed text-muted-foreground">
+            {tAnalysis('skinNonMedicalLimits')}
+          </p>
+        </ProgressiveDisclosure>
       </div>
     </div>
   );

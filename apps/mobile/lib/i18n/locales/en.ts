@@ -1,168 +1,150 @@
 /**
- * English translations
+ * Mobile English catalog draft.
  *
- * ⚠️ 미배선 — en 지원 아님(ko 단독 선공개).
- * 왜: lib/i18n 모듈 자체를 화면에서 아무 곳도 호출하지 않는다(소비처 0).
- * 즉 이 사전은 현재 어떤 UI에도 반영되지 않으며, 앱 문구는 전부 한국어 하드코딩이다.
- * 이 파일을 근거로 "앱이 영어를 지원한다"고 판단하면 안 된다(스토어 리스팅 언어 포함).
- * 삭제하지 않는 이유: 향후 i18n 착수 시 재작성 비용을 아끼기 위한 보존.
+ * English remains disabled for users until the complete first-user journey passes language QA.
  */
-
-export default {
-  // Common
+const en = {
   common: {
-    loading: 'Loading...',
-    error: 'An error occurred',
-    retry: 'Retry',
-    cancel: 'Cancel',
-    confirm: 'Confirm',
-    save: 'Save',
-    delete: 'Delete',
-    edit: 'Edit',
-    done: 'Done',
-    next: 'Next',
-    back: 'Back',
     close: 'Close',
-    search: 'Search',
-    seeMore: 'See more',
-    noData: 'No data available',
   },
-
-  // Tabs
-  tabs: {
-    home: 'Home',
-    workout: 'Workout',
-    nutrition: 'Nutrition',
-    profile: 'Profile',
-  },
-
-  // Home
-  home: {
-    greeting: 'Hello, {{name}}!',
-    todayPlan: "Today's Plan",
-    startWorkout: 'Start Workout',
-    recordMeal: 'Record Meal',
-    addWater: 'Add Water',
-    streak: '{{count}} day streak',
-    todaySummary: 'Today Summary',
-    notifications: 'Notifications',
-  },
-
-  // Workout
-  workout: {
-    title: 'Workout',
-    session: 'Workout Session',
-    log: 'Workout Log',
-    history: 'History',
-    plan: 'Weekly Plan',
-    exercise: 'Exercise',
-    duration: 'Duration',
-    calories: 'Calories Burned',
-    sets: 'Sets',
-    reps: 'Reps',
-    rest: 'Rest',
-    complete: 'Complete',
-    skip: 'Skip',
-    pause: 'Pause',
-    resume: 'Resume',
-    finish: 'Finish Workout',
-    great: 'Great job!',
-    caloriesBurned: '{{calories}}kcal burned',
-    durationMinutes: '{{minutes}} min',
-    setCount: '{{current}}/{{total}} sets',
-  },
-
-  // Nutrition
-  nutrition: {
-    title: 'Nutrition',
-    dashboard: 'Nutrition Dashboard',
-    record: 'Record Meal',
-    camera: 'Take Photo',
-    search: 'Search Food',
-    water: 'Water Intake',
-    meal: {
-      breakfast: 'Breakfast',
-      lunch: 'Lunch',
-      dinner: 'Dinner',
-      snack: 'Snack',
+  auth: {
+    signIn: 'Sign In',
+    signUp: 'Sign Up',
+    mobileSignIn: {
+      brand: 'Yiroom',
+      tagline: 'Meet the whole you',
+      loginRequired: 'Sign in to start your analysis',
+      emailLabel: 'Email',
+      emailPlaceholder: 'Enter your email',
+      passwordLabel: 'Password',
+      passwordPlaceholder: 'Enter your password',
+      forgotPassword: 'Forgot your password?',
+      noAccount: 'New to Yiroom?',
+      emptyAlertTitle: 'Notice',
+      credentialsRequired: 'Please enter your email and password.',
+      additionalAuthTitle: 'Additional verification required',
+      additionalAuthMessage:
+        'This account needs additional verification. Please sign in on the web ({host}).',
+      openWeb: 'Sign in on the web',
+      verificationTitle: 'Verify your email',
+      verificationDescription: 'Enter the verification code sent to {email}',
+      verificationCodeLabel: 'Verification code',
+      verificationCodePlaceholder: 'Enter the 6-digit code',
+      verificationComplete: 'Complete verification',
+      codeRequired: 'Please enter the verification code.',
+      signInFailureTitle: 'Sign-in failed',
+      signInFailure: "We couldn't sign you in.",
+      verificationFailureTitle: 'Verification failed',
+      verificationFailure: "We couldn't verify your code.",
     },
-    calories: 'Calories',
-    carbs: 'Carbs',
-    protein: 'Protein',
-    fat: 'Fat',
-    goal: 'Goal',
-    remaining: 'Remaining',
-    waterGoal: 'Water Goal',
-    addWater: 'Add Water',
-    waterUnit: 'ml',
+    mobileSignUp: {
+      title: 'Sign Up',
+      tagline: 'Start your journey with Yiroom',
+      emailLabel: 'Email',
+      emailPlaceholder: 'Enter your email',
+      passwordLabel: 'Password',
+      passwordPlaceholder: 'Enter at least 8 characters',
+      confirmPasswordLabel: 'Confirm password',
+      confirmPasswordPlaceholder: 'Enter your password again',
+      birthdateLabel: 'Date of birth',
+      birthdatePlaceholder: 'YYYY-MM-DD',
+      birthdateHelp:
+        'We use this to confirm that you are 14 or older and eligible to use the service.',
+      ageConfirmation: 'I confirm that I am 14 or older',
+      signUpButton: 'Sign Up',
+      existingAccount: 'Already have an account?',
+      signIn: 'Sign In',
+      alertTitle: 'Notice',
+      credentialsRequired: 'Please enter your email and password.',
+      passwordMismatch: 'The passwords do not match.',
+      passwordTooShort: 'Your password must be at least 8 characters.',
+      ageCheckTitle: 'Confirm your age',
+      ageConfirmationRequired: 'Please confirm that you are 14 or older.',
+      signUpFailureTitle: 'Sign-up failed',
+      signUpFailure: "We couldn't create your account.",
+      verificationTitle: 'Verify your email',
+      verificationDescription: 'Enter the verification code sent to {email}',
+      verificationCodeLabel: 'Verification code',
+      verificationCodePlaceholder: 'Enter the 6-digit code',
+      verificationComplete: 'Complete verification',
+      codeRequired: 'Please enter the verification code.',
+      missingSession: "We couldn't confirm your sign-in information.",
+      birthdateSaveTitle: 'Date of birth not saved',
+      birthdateSaveFailure:
+        "Your account was created, but we couldn't save your date of birth. Please confirm it again before your first analysis.",
+      verificationFailureTitle: 'Verification failed',
+      verificationFailure: "We couldn't verify your code.",
+      resendNotice: 'A new code was sent to {email}',
+      resendFailureTitle: 'Code resend failed',
+      resendFailure: "We couldn't resend the verification code.",
+      resendAfter: 'Resend in {seconds}s',
+      resendCode: 'Resend code',
+      changeEmail: 'Change email',
+    },
+    mobileForgotPassword: {
+      title: 'Reset Password',
+      requestDescription: "We'll send a verification code to the email you signed up with",
+      verifyDescription: 'Enter the verification code sent to {email}',
+      emailLabel: 'Email',
+      emailPlaceholder: 'Enter your email',
+      codeLabel: 'Verification code',
+      codePlaceholder: 'Enter the 6-digit code',
+      newPasswordLabel: 'New password',
+      newPasswordPlaceholder: 'Enter a new password',
+      requestCode: 'Send verification code',
+      resetPassword: 'Reset Password',
+      alertTitle: 'Notice',
+      emailRequired: 'Please enter your email.',
+      resetFailureTitle: 'Reset failed',
+      requestFailure: "We couldn't send the verification code.",
+      fieldsRequired: 'Please enter the verification code and your new password.',
+      resetFailureRetry: "We couldn't reset your password. Please try again.",
+      resetFailure: "We couldn't reset your password.",
+    },
+    mobileAgeVerification: {
+      eyebrow: 'Age verification',
+      title: 'Enter your date of birth',
+      unavailableTitle: "We couldn't load your age verification information",
+      description:
+        'Yiroom is available only to users aged 14 or older. We use your date of birth to verify your age and eligibility to use the service.',
+      unavailableDescription:
+        'Check your network connection and try again. You can continue as soon as we confirm your saved adult status.',
+      birthdateLabel: 'Date of birth',
+      birthdatePlaceholder: 'YYYY-MM-DD',
+      ageConfirmation: 'I confirm that I am 14 or older',
+      ageConfirmationRequired: 'Please confirm that you are 14 or older.',
+      birthdateRequired: 'Please enter your date of birth to confirm that you are 14 or older.',
+      birthdateInvalid: 'Enter a valid date of birth. (Example: 2000-06-15)',
+      ageRestrictedMessage:
+        'Yiroom is available only to users aged 14 or older. Because users under 14 require consent from a legal guardian, we do not provide biometric analysis to them.',
+      saveFailure: "We couldn't save your date of birth. Please try again shortly.",
+      missingStoredBirthdate:
+        'No saved date of birth was found. Connect to the internet and enter it manually.',
+      invalidStoredBirthdate:
+        "We couldn't verify your saved date of birth. Please enter it manually.",
+      fetchFailure:
+        "We couldn't load your age verification information. Check your network connection.",
+      networkError: 'Check your network connection.',
+      recheckButton: 'Check again',
+      submitButton: 'Confirm and continue',
+      signOut: 'Sign in with another account',
+      restrictedTitle: 'Age verification required',
+      restrictedDescription:
+        'Some features are available only to users aged 14 or older.\nComplete age verification to continue.',
+      verifyButton: 'Verify age',
+      back: 'Go back',
+    },
   },
-
-  // Analysis
   analysis: {
-    title: 'Analysis',
-    personalColor: 'Personal Color',
-    skin: 'Skin Analysis',
-    body: 'Body Analysis',
-    takePhoto: 'Take Photo',
-    analyzing: 'Analyzing...',
-    result: 'Result',
-    recommendations: 'Recommendations',
-    retake: 'Retake',
-  },
-
-  // Products
-  products: {
-    title: 'Product Recommendations',
-    forYou: 'For You',
-    categories: {
-      skincare: 'Skincare',
-      makeup: 'Makeup',
-      supplement: 'Supplements',
-      equipment: 'Equipment',
-    },
-    matchScore: '{{score}}% Match',
-    reviews: '{{count}} reviews',
-    buyNow: 'Buy Now',
-  },
-
-  // Settings
-  settings: {
-    title: 'Settings',
-    notifications: 'Notification Settings',
-    goals: 'Goal Settings',
-    widgets: 'Widget Settings',
-    language: 'Language',
-    darkMode: 'Dark Mode',
-    privacy: 'Privacy Policy',
-    terms: 'Terms of Service',
-    support: 'Contact Support',
-    version: 'Version',
-    logout: 'Log Out',
-  },
-
-  // Profile
-  profile: {
-    title: 'Profile',
-    editProfile: 'Edit Profile',
-    achievements: 'Achievements',
-    friends: 'Friends',
-    challenges: 'Challenges',
-    stats: 'Stats',
-  },
-
-  // Errors
-  errors: {
-    network: 'Please check your network connection',
-    unknown: 'An unknown error occurred',
-    permission: 'Permission required',
-    camera: 'Camera access is required',
-    photos: 'Photo library access is required',
-  },
-
-  // Onboarding
-  onboarding: {
-    welcome: 'Welcome to Yiroom',
-    getStarted: 'Get Started',
-    skip: 'Skip',
+    skinNonMedicalDevice:
+      "Yiroom's skin analysis is not a medical device and does not provide medical services.",
+    skinNonMedicalPurpose:
+      'The results and guidance do not replace medical judgment, diagnosis, or treatment by a healthcare professional.',
+    skinNonMedicalLimitsTitle: 'Result limitations and professional advice',
+    skinNonMedicalLimitsSummary: 'Results may vary with the image and capture conditions',
+    skinNonMedicalLimits:
+      'Results may vary with the image and capture conditions, and accuracy or completeness is not guaranteed. Consult a healthcare professional if you have skin symptoms or discomfort.',
   },
 } as const;
+
+export default en;

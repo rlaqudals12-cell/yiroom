@@ -35,6 +35,7 @@
 
 1. [Play Console](https://play.google.com/console) → **앱 만들기**
    - 앱 이름: `이룸 (Yiroom)` / 기본 언어: 한국어 / 앱 · 무료
+   - ⚠️ **리스팅 언어는 한국어만 등록** — en/ja/zh 원고(`apps/mobile/store-metadata*`)는 준비물일 뿐, 모바일 `lib/i18n/types.ts`의 `ENABLED_LOCALES`에 해당 언어가 추가되기 전에는 Play Console에 등록 금지(한국어 단일 앱에 외국어 리스팅 = 오해 소지 정책 리스크). zh는 zh-CN/zh-TW 택일 미결(LISTING-DRAFT 남은 결정 #2).
 2. **테스트 → 내부 테스트** → 새 릴리스 → **AAB 업로드** (production 빌드 산출물)
    - "Google에서 서명 키 관리"(Play App Signing) 동의 → 업로드 키 = EAS 키스토어
 3. 테스터 이메일 목록 등록 → 릴리스 시작 → 옵트인 링크로 설치 검증

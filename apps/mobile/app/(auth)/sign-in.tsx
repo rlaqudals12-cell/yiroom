@@ -21,6 +21,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import { getApiBaseUrl, getWebHostLabel } from '@/lib/api/base-url';
+import { useTranslation } from '@/lib/i18n';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
 const ALLOWED_RETURN_TO_PREFIXES = ['/(analysis)', '/(scan)', '/(twin)'] as const;
@@ -40,6 +41,7 @@ export default function SignInScreen() {
   const router = useRouter();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string | string[] }>();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const postSignInDestination = resolveSignInReturnTo(returnTo);
 
   const [email, setEmail] = useState('');
@@ -57,16 +59,16 @@ export default function SignInScreen() {
   // 실제 웹 로그인 화면으로 이어지게 한다.
   const showWebSignInAlert = () => {
     Alert.alert(
-      '추가 인증 필요',
-      `추가 인증이 필요한 계정이에요. 웹(${getWebHostLabel()})에서 로그인해주세요.`,
+      t('auth.mobileSignIn.additionalAuthTitle'),
+      t('auth.mobileSignIn.additionalAuthMessage', { host: getWebHostLabel() }),
       [
         {
-          text: '웹에서 로그인',
+          text: t('auth.mobileSignIn.openWeb'),
           onPress: () => {
             void Linking.openURL(`${getApiBaseUrl()}/sign-in`);
           },
         },
-        { text: '닫기' },
+        { text: t('common.close') },
       ]
     );
   };
@@ -75,7 +77,10 @@ export default function SignInScreen() {
     if (!isLoaded) return;
 
     if (!email || !password) {
-      Alert.alert('알림', '이메일과 비밀번호를 입력해주세요.');
+      Alert.alert(
+        t('auth.mobileSignIn.emptyAlertTitle'),
+        t('auth.mobileSignIn.credentialsRequired')
+      );
       return;
     }
 
@@ -135,8 +140,8 @@ export default function SignInScreen() {
       showWebSignInAlert();
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage = clerkError.errors?.[0]?.message || '로그인에 실패했습니다.';
-      Alert.alert('로그인 실패', errorMessage);
+      const errorMessage = clerkError.errors?.[0]?.message || t('auth.mobileSignIn.signInFailure');
+      Alert.alert(t('auth.mobileSignIn.signInFailureTitle'), errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +152,7 @@ export default function SignInScreen() {
     if (!isLoaded) return;
 
     if (!code) {
-      Alert.alert('알림', '인증 코드를 입력해주세요.');
+      Alert.alert(t('auth.mobileSignIn.emptyAlertTitle'), t('auth.mobileSignIn.codeRequired'));
       return;
     }
 
@@ -169,8 +174,9 @@ export default function SignInScreen() {
       showWebSignInAlert();
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage = clerkError.errors?.[0]?.message || '인증에 실패했습니다.';
-      Alert.alert('인증 실패', errorMessage);
+      const errorMessage =
+        clerkError.errors?.[0]?.message || t('auth.mobileSignIn.verificationFailure');
+      Alert.alert(t('auth.mobileSignIn.verificationFailureTitle'), errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -190,16 +196,20 @@ export default function SignInScreen() {
       >
         <ScreenContainer backgroundGradient="home" contentContainerStyle={styles.scrollContent}>
           <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.header}>
-            <Text style={[styles.title, { color: colors.foreground }]}>이메일 인증</Text>
+            <Text style={[styles.title, { color: colors.foreground }]}>
+              {t('auth.mobileSignIn.verificationTitle')}
+            </Text>
             <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-              {email}로 전송된 인증 코드를 입력해주세요
+              {t('auth.mobileSignIn.verificationDescription', { email })}
             </Text>
           </Animated.View>
 
           <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
             <GlassCard shadowSize="md" style={styles.card}>
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: colors.foreground }]}>인증 코드</Text>
+                <Text style={[styles.label, { color: colors.foreground }]}>
+                  {t('auth.mobileSignIn.verificationCodeLabel')}
+                </Text>
                 <TextInput
                   testID="signin-code-input"
                   style={[
@@ -210,7 +220,8 @@ export default function SignInScreen() {
                       backgroundColor: colors.muted,
                     },
                   ]}
-                  placeholder="6자리 코드 입력"
+                  placeholder={t('auth.mobileSignIn.verificationCodePlaceholder')}
+                  accessibilityLabel={t('auth.mobileSignIn.verificationCodeLabel')}
                   placeholderTextColor={colors.mutedForeground}
                   value={code}
                   onChangeText={setCode}
@@ -227,11 +238,14 @@ export default function SignInScreen() {
               style={[styles.button, isLoading && styles.buttonDisabled]}
               onPress={handleVerifyCode}
               disabled={isLoading}
+              accessibilityRole="button"
+              accessibilityLabel={t('auth.mobileSignIn.verificationComplete')}
+              accessibilityState={{ disabled: isLoading }}
             >
               {isLoading ? (
                 <ActivityIndicator color={brand.primaryForeground} />
               ) : (
-                <Text style={styles.buttonText}>인증 완료</Text>
+                <Text style={styles.buttonText}>{t('auth.mobileSignIn.verificationComplete')}</Text>
               )}
             </Pressable>
           </Animated.View>
@@ -249,13 +263,15 @@ export default function SignInScreen() {
       <ScreenContainer backgroundGradient="home" contentContainerStyle={styles.scrollContent}>
         {/* 로고/타이틀 */}
         <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.header}>
-          <Text style={[styles.title, { color: colors.foreground }]}>이룸</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>
+            {t('auth.mobileSignIn.brand')}
+          </Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            온전한 나를 만나다
+            {t('auth.mobileSignIn.tagline')}
           </Text>
           {returnTo ? (
             <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-              분석을 시작하려면 로그인이 필요해요
+              {t('auth.mobileSignIn.loginRequired')}
             </Text>
           ) : null}
         </Animated.View>
@@ -264,7 +280,9 @@ export default function SignInScreen() {
         <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
           <GlassCard shadowSize="md" style={styles.card}>
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.foreground }]}>이메일</Text>
+              <Text style={[styles.label, { color: colors.foreground }]}>
+                {t('auth.mobileSignIn.emailLabel')}
+              </Text>
               <TextInput
                 testID="signin-email-input"
                 style={[
@@ -275,7 +293,8 @@ export default function SignInScreen() {
                     backgroundColor: colors.muted,
                   },
                 ]}
-                placeholder="이메일을 입력하세요"
+                placeholder={t('auth.mobileSignIn.emailPlaceholder')}
+                accessibilityLabel={t('auth.mobileSignIn.emailLabel')}
                 placeholderTextColor={colors.mutedForeground}
                 value={email}
                 onChangeText={setEmail}
@@ -286,7 +305,9 @@ export default function SignInScreen() {
             </View>
 
             <View style={[styles.inputContainer, { marginTop: spacing.md }]}>
-              <Text style={[styles.label, { color: colors.foreground }]}>비밀번호</Text>
+              <Text style={[styles.label, { color: colors.foreground }]}>
+                {t('auth.mobileSignIn.passwordLabel')}
+              </Text>
               <TextInput
                 testID="signin-password-input"
                 style={[
@@ -297,7 +318,8 @@ export default function SignInScreen() {
                     backgroundColor: colors.muted,
                   },
                 ]}
-                placeholder="비밀번호를 입력하세요"
+                placeholder={t('auth.mobileSignIn.passwordPlaceholder')}
+                accessibilityLabel={t('auth.mobileSignIn.passwordLabel')}
                 placeholderTextColor={colors.mutedForeground}
                 value={password}
                 onChangeText={setPassword}
@@ -306,9 +328,11 @@ export default function SignInScreen() {
               <Pressable
                 testID="signin-forgot-password-link"
                 onPress={() => router.push('/(auth)/forgot-password')}
+                accessibilityRole="button"
+                accessibilityLabel={t('auth.mobileSignIn.forgotPassword')}
               >
                 <Text style={[styles.linkText, styles.forgotPasswordLink]}>
-                  비밀번호를 잊으셨나요?
+                  {t('auth.mobileSignIn.forgotPassword')}
                 </Text>
               </Pressable>
             </View>
@@ -322,20 +346,27 @@ export default function SignInScreen() {
             style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleSignIn}
             disabled={isLoading}
+            accessibilityRole="button"
+            accessibilityLabel={t('auth.signIn')}
+            accessibilityState={{ disabled: isLoading }}
           >
             {isLoading ? (
               <ActivityIndicator color={brand.primaryForeground} />
             ) : (
-              <Text style={styles.buttonText}>로그인</Text>
+              <Text style={styles.buttonText}>{t('auth.signIn')}</Text>
             )}
           </Pressable>
 
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-              계정이 없으신가요?
+              {t('auth.mobileSignIn.noAccount')}
             </Text>
-            <Pressable onPress={handleSignUp}>
-              <Text style={styles.linkText}>회원가입</Text>
+            <Pressable
+              onPress={handleSignUp}
+              accessibilityRole="button"
+              accessibilityLabel={t('auth.signUp')}
+            >
+              <Text style={styles.linkText}>{t('auth.signUp')}</Text>
             </Pressable>
           </View>
         </Animated.View>

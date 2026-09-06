@@ -1,3 +1,5 @@
+/* global afterEach, jest */
+
 /**
  * Jest 셋업
  * 테스트 환경 초기화 및 모킹
@@ -353,14 +355,29 @@ jest.mock('@sentry/react-native', () => ({
 // =============================================================================
 jest.mock('@/lib/i18n', () => ({
   t: jest.fn((key) => key),
+  getLocale: jest.fn(() => 'ko'),
+  initI18n: jest.fn().mockResolvedValue('ko'),
+  setLocale: jest.fn().mockResolvedValue(undefined),
   i18n: {
     language: 'ko',
-    changeLanguage: jest.fn(),
+    resolvedLanguage: 'ko',
+    isInitialized: true,
+    changeLanguage: jest.fn().mockResolvedValue(undefined),
   },
   useTranslation: jest.fn(() => ({
     t: (key) => key,
-    i18n: { language: 'ko', changeLanguage: jest.fn() },
+    locale: 'ko',
+    ready: true,
+    i18n: {
+      language: 'ko',
+      resolvedLanguage: 'ko',
+      changeLanguage: jest.fn().mockResolvedValue(undefined),
+    },
   })),
+}));
+
+jest.mock('@/lib/i18n/provider', () => ({
+  MobileI18nProvider: ({ children }) => children,
 }));
 
 // =============================================================================

@@ -1,27 +1,24 @@
 {
   "app_name": {
     "ko": "이룸 - 온전한 나는?",
-    "en": "Yiroom - Know Yourself"
+    "en": "Yiroom - Know Yourself",
+    "ja": "Yiroom - 私らしさを知る",
+    "zh": "Yiroom - 认识真实的自己"
   },
   "subtitle": {
     "ko": "AI 퍼스널컬러·피부·스타일 분석",
-    "en": "AI Beauty and Style Analysis"
+    "en": "AI Beauty and Style Analysis",
+    "ja": "AIパーソナルカラー・肌・骨格診断",
+    "zh": "AI个人色彩·肌肤·风格分析"
   },
   "description": {
     "ko": "이룸은 만 14세 이상 사용자를 위한 AI 뷰티 분석 서비스입니다.\n\n• 퍼스널컬러 분석과 색상 가이드\n• 피부 상태 분석과 관리 가이드\n• 체형 분석과 스타일 가이드\n• 헤어 상태 분석과 관리 가이드\n• 메이크업 분석과 색상 가이드\n• 다섯 분석 결과를 모아 보는 통합 결과\n\n사진을 포함한 분석 정보는 암호화된 연결로 이룸 서버와 Google AI에 전송되어 처리됩니다. 분석 결과는 계정에 저장되며, 원본 분석 이미지는 사용자가 저장에 동의한 경우에만 최대 1년간 보관됩니다.",
-    "en": "Yiroom is an AI beauty analysis service for users age 14 and older.\n\n• Personal color analysis and color guidance\n• Skin analysis and care guidance\n• Body analysis and style guidance\n• Hair analysis and care guidance\n• Makeup analysis and color guidance\n• An integrated view of all five analysis results\n\nAnalysis information, including photos, is sent over encrypted connections to Yiroom servers and Google AI for processing. Analysis results are saved to your account, while original analysis images are retained for up to one year only when you consent to image storage."
+    "en": "Yiroom is an AI beauty analysis service for users age 14 and older.\n\n• Personal color analysis and color guidance\n• Skin analysis and care guidance\n• Body analysis and style guidance\n• Hair analysis and care guidance\n• Makeup analysis and color guidance\n• An integrated view of all five analysis results\n\nAnalysis information, including photos, is sent over encrypted connections to Yiroom servers and Google AI for processing. Analysis results are saved to your account, while original analysis images are retained for up to one year only when you consent to image storage.",
+    "ja": "Yiroomは14歳以上の方を対象としたAIビューティー分析サービスです。\n\n• パーソナルカラー分析とカラーガイド\n• 肌状態の分析とケアガイド\n• 骨格診断（体型分析）とスタイルガイド\n• 髪の状態分析とケアガイド\n• メイク分析とカラーガイド\n• 5つの分析結果をまとめて確認できる統合結果\n\n写真を含む分析情報は、暗号化された接続を通じてYiroomのサーバーとGoogle AIに送信され、処理されます。分析結果はアカウントに保存され、元の分析画像は画像保存に同意した場合に限り、最長1年間保管されます。",
+    "zh": "Yiroom是面向14岁及以上用户的AI美妆分析服务。\n\n• 个人色彩分析与配色指南\n• 肌肤状态分析与护理指南\n• 体型分析与穿搭指南\n• 发质状态分析与护理指南\n• 妆容分析与配色指南\n• 汇总五项分析结果的综合报告\n\n包括照片在内的分析信息会通过加密连接发送至Yiroom服务器和Google AI进行处理。分析结果会保存至您的账号；仅当您同意保存图片时，原始分析图片才会最多保存一年。"
   },
   "keywords": {
-    "ko": [
-      "퍼스널컬러",
-      "피부분석",
-      "체형분석",
-      "헤어분석",
-      "메이크업",
-      "스타일",
-      "AI분석",
-      "뷰티"
-    ],
+    "ko": ["퍼스널컬러", "피부분석", "체형분석", "헤어분석", "메이크업", "스타일", "AI", "뷰티"],
     "en": [
       "personal color",
       "skin analysis",
@@ -31,7 +28,18 @@
       "style",
       "AI",
       "beauty"
-    ]
+    ],
+    "ja": [
+      "パーソナルカラー",
+      "肌分析",
+      "骨格診断",
+      "ヘア分析",
+      "メイク",
+      "スタイル",
+      "AI",
+      "美容"
+    ],
+    "zh": ["个人色彩", "肌肤分析", "体型分析", "发质分析", "妆容", "穿搭", "AI", "美妆"]
   },
   "categories": {
     "primary": "Health & Fitness",
@@ -60,6 +68,8 @@
   "age_rating": "14+",
   "release_notes": {
     "ko": "• 첫 번째 릴리즈\n• 퍼스널컬러·피부·체형·헤어·메이크업 분석",
-    "en": "• First release\n• Personal color, skin, body, hair, and makeup analysis"
+    "en": "• First release\n• Personal color, skin, body, hair, and makeup analysis",
+    "ja": "• 初回リリース\n• パーソナルカラー・肌状態・骨格（体型）・髪の状態・メイク分析",
+    "zh": "• 首次发布\n• 个人色彩、肌肤状态、体型、发质状态与妆容分析"
   }
 }

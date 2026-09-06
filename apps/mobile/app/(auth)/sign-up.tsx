@@ -21,6 +21,7 @@ import { GlassCard, ScreenContainer } from '@/components/ui';
 import { formatBirthdateInput } from '@/lib/age-verification';
 import { TIMING } from '@/lib/animations';
 import { BirthdateApiError, evaluateBirthdateGate, saveBirthdate } from '@/lib/api/birthdate';
+import { useTranslation } from '@/lib/i18n';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -30,6 +31,7 @@ export default function SignUpScreen() {
   const { getToken, signOut } = useAuth();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,28 +55,37 @@ export default function SignUpScreen() {
     if (!isLoaded) return;
 
     if (!email || !password) {
-      Alert.alert('알림', '이메일과 비밀번호를 입력해주세요.');
+      Alert.alert(t('auth.mobileSignUp.alertTitle'), t('auth.mobileSignUp.credentialsRequired'));
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('알림', '비밀번호가 일치하지 않습니다.');
+      Alert.alert(t('auth.mobileSignUp.alertTitle'), t('auth.mobileSignUp.passwordMismatch'));
       return;
     }
 
     if (password.length < 8) {
-      Alert.alert('알림', '비밀번호는 8자 이상이어야 합니다.');
+      Alert.alert(t('auth.mobileSignUp.alertTitle'), t('auth.mobileSignUp.passwordTooShort'));
       return;
     }
 
     const birthdateGate = evaluateBirthdateGate(false, birthdate);
     if (!birthdateGate.ok) {
-      Alert.alert('가입 연령 확인', birthdateGate.message);
+      const birthdateErrorKey =
+        birthdate.trim() === ''
+          ? 'auth.mobileAgeVerification.birthdateRequired'
+          : birthdateGate.isMinor
+            ? 'auth.mobileAgeVerification.ageRestrictedMessage'
+            : 'auth.mobileAgeVerification.birthdateInvalid';
+      Alert.alert(t('auth.mobileSignUp.ageCheckTitle'), t(birthdateErrorKey));
       return;
     }
 
     if (!ageConfirmed) {
-      Alert.alert('가입 연령 확인', '만 14세 이상임을 확인해주세요.');
+      Alert.alert(
+        t('auth.mobileSignUp.ageCheckTitle'),
+        t('auth.mobileSignUp.ageConfirmationRequired')
+      );
       return;
     }
 
@@ -90,8 +101,8 @@ export default function SignUpScreen() {
       setPendingVerification(true);
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage = clerkError.errors?.[0]?.message || '회원가입에 실패했습니다.';
-      Alert.alert('회원가입 실패', errorMessage);
+      const errorMessage = clerkError.errors?.[0]?.message || t('auth.mobileSignUp.signUpFailure');
+      Alert.alert(t('auth.mobileSignUp.signUpFailureTitle'), errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -102,7 +113,7 @@ export default function SignUpScreen() {
     if (!isLoaded) return;
 
     if (!code) {
-      Alert.alert('알림', '인증 코드를 입력해주세요.');
+      Alert.alert(t('auth.mobileSignUp.alertTitle'), t('auth.mobileSignUp.codeRequired'));
       return;
     }
 
@@ -118,7 +129,7 @@ export default function SignUpScreen() {
         // 세션 전환 직후 토큰이 늦게 준비되면 통합 분석의 기존 fail-closed 게이트가 다시 받는다.
         try {
           const token = await getToken();
-          if (!token) throw new Error('로그인 정보를 확인하지 못했습니다.');
+          if (!token) throw new Error(t('auth.mobileSignUp.missingSession'));
           await saveBirthdate(birthdate.trim(), token);
         } catch (saveError) {
           // 서버가 만 14세 미만으로 판정한 경우(기기 시계 조작으로 클라 게이트를 통과) —
@@ -129,8 +140,8 @@ export default function SignUpScreen() {
             return;
           }
           Alert.alert(
-            '생년월일 저장 안내',
-            '가입은 완료됐지만 생년월일을 저장하지 못했어요. 첫 분석 전에 다시 확인해주세요.'
+            t('auth.mobileSignUp.birthdateSaveTitle'),
+            t('auth.mobileSignUp.birthdateSaveFailure')
           );
         }
         // 가입=첫 미팅(ADR-114): 신규 회원은 통합분석으로 이동 (웹 ?onboarding=1과 동일 의도)
@@ -138,8 +149,9 @@ export default function SignUpScreen() {
       }
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage = clerkError.errors?.[0]?.message || '인증에 실패했습니다.';
-      Alert.alert('인증 실패', errorMessage);
+      const errorMessage =
+        clerkError.errors?.[0]?.message || t('auth.mobileSignUp.verificationFailure');
+      Alert.alert(t('auth.mobileSignUp.verificationFailureTitle'), errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -153,11 +165,11 @@ export default function SignUpScreen() {
     try {
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
-      setResendNotice(`${email}로 새 코드를 보냈어요`);
+      setResendNotice(t('auth.mobileSignUp.resendNotice', { email }));
     } catch (error: unknown) {
       const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage = clerkError.errors?.[0]?.message || '인증 코드를 다시 보내지 못했어요.';
-      Alert.alert('인증 코드 재전송 실패', errorMessage);
+      const errorMessage = clerkError.errors?.[0]?.message || t('auth.mobileSignUp.resendFailure');
+      Alert.alert(t('auth.mobileSignUp.resendFailureTitle'), errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -183,16 +195,20 @@ export default function SignUpScreen() {
       >
         <ScreenContainer backgroundGradient="home" contentContainerStyle={styles.scrollContent}>
           <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.header}>
-            <Text style={[styles.title, { color: colors.foreground }]}>이메일 인증</Text>
+            <Text style={[styles.title, { color: colors.foreground }]}>
+              {t('auth.mobileSignUp.verificationTitle')}
+            </Text>
             <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-              {email}로 전송된 인증 코드를 입력해주세요
+              {t('auth.mobileSignUp.verificationDescription', { email })}
             </Text>
           </Animated.View>
 
           <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
             <GlassCard shadowSize="md" style={styles.card}>
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: colors.foreground }]}>인증 코드</Text>
+                <Text style={[styles.label, { color: colors.foreground }]}>
+                  {t('auth.mobileSignUp.verificationCodeLabel')}
+                </Text>
                 <TextInput
                   style={[
                     styles.input,
@@ -202,7 +218,7 @@ export default function SignUpScreen() {
                       backgroundColor: colors.muted,
                     },
                   ]}
-                  placeholder="6자리 코드 입력"
+                  placeholder={t('auth.mobileSignUp.verificationCodePlaceholder')}
                   placeholderTextColor={colors.mutedForeground}
                   value={code}
                   onChangeText={setCode}
@@ -242,7 +258,9 @@ export default function SignUpScreen() {
                       },
                     ]}
                   >
-                    {resendCooldown > 0 ? `${resendCooldown}초 후 다시 받기` : '코드 다시 받기'}
+                    {resendCooldown > 0
+                      ? t('auth.mobileSignUp.resendAfter', { seconds: resendCooldown })
+                      : t('auth.mobileSignUp.resendCode')}
                   </Text>
                 </Pressable>
                 <Pressable
@@ -252,7 +270,7 @@ export default function SignUpScreen() {
                   style={[styles.verificationAction, isLoading && styles.buttonDisabled]}
                   testID={'signup-change-email-button'}
                 >
-                  <Text style={styles.linkText}>이메일 바꾸기</Text>
+                  <Text style={styles.linkText}>{t('auth.mobileSignUp.changeEmail')}</Text>
                 </Pressable>
               </View>
             </GlassCard>
@@ -267,7 +285,7 @@ export default function SignUpScreen() {
               {isLoading ? (
                 <ActivityIndicator color={brand.primaryForeground} />
               ) : (
-                <Text style={styles.buttonText}>인증 완료</Text>
+                <Text style={styles.buttonText}>{t('auth.mobileSignUp.verificationComplete')}</Text>
               )}
             </Pressable>
           </Animated.View>
@@ -286,9 +304,11 @@ export default function SignUpScreen() {
       <ScreenContainer backgroundGradient="home" contentContainerStyle={styles.scrollContent}>
         {/* 로고/타이틀 */}
         <Animated.View entering={FadeInUp.delay(0).duration(TIMING.normal)} style={styles.header}>
-          <Text style={[styles.title, { color: colors.foreground }]}>회원가입</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>
+            {t('auth.mobileSignUp.title')}
+          </Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            이룸과 함께 시작하세요
+            {t('auth.mobileSignUp.tagline')}
           </Text>
         </Animated.View>
 
@@ -296,7 +316,9 @@ export default function SignUpScreen() {
         <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
           <GlassCard shadowSize="md" style={styles.card}>
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.foreground }]}>이메일</Text>
+              <Text style={[styles.label, { color: colors.foreground }]}>
+                {t('auth.mobileSignUp.emailLabel')}
+              </Text>
               <TextInput
                 style={[
                   styles.input,
@@ -307,7 +329,7 @@ export default function SignUpScreen() {
                   },
                 ]}
                 testID="signup-email-input"
-                placeholder="이메일을 입력하세요"
+                placeholder={t('auth.mobileSignUp.emailPlaceholder')}
                 placeholderTextColor={colors.mutedForeground}
                 value={email}
                 onChangeText={setEmail}
@@ -318,7 +340,9 @@ export default function SignUpScreen() {
             </View>
 
             <View style={[styles.inputContainer, { marginTop: spacing.md }]}>
-              <Text style={[styles.label, { color: colors.foreground }]}>비밀번호</Text>
+              <Text style={[styles.label, { color: colors.foreground }]}>
+                {t('auth.mobileSignUp.passwordLabel')}
+              </Text>
               <TextInput
                 style={[
                   styles.input,
@@ -329,7 +353,7 @@ export default function SignUpScreen() {
                   },
                 ]}
                 testID="signup-password-input"
-                placeholder="8자 이상 입력하세요"
+                placeholder={t('auth.mobileSignUp.passwordPlaceholder')}
                 placeholderTextColor={colors.mutedForeground}
                 value={password}
                 onChangeText={setPassword}
@@ -338,7 +362,9 @@ export default function SignUpScreen() {
             </View>
 
             <View style={[styles.inputContainer, { marginTop: spacing.md }]}>
-              <Text style={[styles.label, { color: colors.foreground }]}>비밀번호 확인</Text>
+              <Text style={[styles.label, { color: colors.foreground }]}>
+                {t('auth.mobileSignUp.confirmPasswordLabel')}
+              </Text>
               <TextInput
                 style={[
                   styles.input,
@@ -348,7 +374,7 @@ export default function SignUpScreen() {
                     backgroundColor: colors.muted,
                   },
                 ]}
-                placeholder="비밀번호를 다시 입력하세요"
+                placeholder={t('auth.mobileSignUp.confirmPasswordPlaceholder')}
                 placeholderTextColor={colors.mutedForeground}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
@@ -357,7 +383,9 @@ export default function SignUpScreen() {
             </View>
 
             <View style={[styles.inputContainer, { marginTop: spacing.md }]}>
-              <Text style={[styles.label, { color: colors.foreground }]}>생년월일</Text>
+              <Text style={[styles.label, { color: colors.foreground }]}>
+                {t('auth.mobileSignUp.birthdateLabel')}
+              </Text>
               <TextInput
                 testID="signup-birthdate-input"
                 style={[
@@ -368,7 +396,7 @@ export default function SignUpScreen() {
                     backgroundColor: colors.muted,
                   },
                 ]}
-                placeholder="YYYY-MM-DD"
+                placeholder={t('auth.mobileSignUp.birthdatePlaceholder')}
                 placeholderTextColor={colors.mutedForeground}
                 value={birthdate}
                 onChangeText={(value) => setBirthdate(formatBirthdateInput(value))}
@@ -377,7 +405,7 @@ export default function SignUpScreen() {
                 maxLength={10}
               />
               <Text style={[styles.helpText, { color: colors.mutedForeground }]}>
-                만 14세 이상 확인과 서비스 이용 자격 확인에 사용해요.
+                {t('auth.mobileSignUp.birthdateHelp')}
               </Text>
             </View>
 
@@ -387,7 +415,7 @@ export default function SignUpScreen() {
               onPress={() => setAgeConfirmed((current) => !current)}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: ageConfirmed }}
-              accessibilityLabel="만 14세 이상임을 확인합니다"
+              accessibilityLabel={t('auth.mobileSignUp.ageConfirmation')}
             >
               <View
                 style={[
@@ -401,7 +429,7 @@ export default function SignUpScreen() {
                 {ageConfirmed && <View style={styles.checkboxMark} />}
               </View>
               <Text style={[styles.ageConfirmationText, { color: colors.foreground }]}>
-                만 14세 이상임을 확인합니다
+                {t('auth.mobileSignUp.ageConfirmation')}
               </Text>
             </Pressable>
           </GlassCard>
@@ -418,16 +446,16 @@ export default function SignUpScreen() {
             {isLoading ? (
               <ActivityIndicator color={brand.primaryForeground} />
             ) : (
-              <Text style={styles.buttonText}>회원가입</Text>
+              <Text style={styles.buttonText}>{t('auth.mobileSignUp.signUpButton')}</Text>
             )}
           </Pressable>
 
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-              이미 계정이 있으신가요?
+              {t('auth.mobileSignUp.existingAccount')}
             </Text>
             <Pressable onPress={handleSignIn}>
-              <Text style={styles.linkText}>로그인</Text>
+              <Text style={styles.linkText}>{t('auth.mobileSignUp.signIn')}</Text>
             </Pressable>
           </View>
         </Animated.View>

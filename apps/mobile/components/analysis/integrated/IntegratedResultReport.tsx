@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ReportAttrRow,
   ReportColorBand,
+  ReportEvidenceDisclosure,
   ReportHero,
   ReportRowTable,
   REPORT_COLORS,
@@ -21,6 +22,7 @@ import {
 import { composeCrossInsights } from '@/lib/integrated/cross-insights';
 import { composeCuration } from '@/lib/integrated/curation';
 import { extractPalette } from '@/lib/integrated/palette';
+import { useTranslation } from '@/lib/i18n';
 import { radii, shadows, spacing, typography } from '@/lib/theme';
 
 import { IntegratedResultSections } from './IntegratedResultSections';
@@ -50,6 +52,7 @@ export function IntegratedResultReport({
   hasClosetItems,
   stale = false,
 }: IntegratedResultReportProps): React.JSX.Element {
+  const { t } = useTranslation();
   const palette = extractPalette(result.axes.personalColor);
   const persona = result.persona;
   const fallbackLabels = result.usedFallback.map((axis) => AXIS_LABELS[axis]).filter(Boolean);
@@ -149,9 +152,17 @@ export function IntegratedResultReport({
           {persona?.usedFallback ? (
             <Text style={styles.trustText}>AI 합성 대신 분석 요약으로 만든 프로필이에요.</Text>
           ) : null}
-          <Text style={styles.trustText}>
-            분석 결과는 참고 정보이며, 의학적 진단을 대체하지 않아요.
-          </Text>
+          <View style={styles.nonMedicalNotice} testID="integrated-non-medical-notice">
+            <Text style={styles.nonMedicalText}>{t('analysis.skinNonMedicalDevice')}</Text>
+            <Text style={styles.nonMedicalText}>{t('analysis.skinNonMedicalPurpose')}</Text>
+          </View>
+          <ReportEvidenceDisclosure
+            summary={t('analysis.skinNonMedicalLimitsSummary')}
+            testID="integrated-non-medical-limits"
+            title={t('analysis.skinNonMedicalLimitsTitle')}
+          >
+            <Text style={styles.nonMedicalText}>{t('analysis.skinNonMedicalLimits')}</Text>
+          </ReportEvidenceDisclosure>
         </View>
 
         <IntegratedShareCard result={result} />
@@ -218,5 +229,14 @@ const styles = StyleSheet.create({
     fontSize: typography.size.xs,
     lineHeight: 18,
     marginTop: spacing.md,
+  },
+  nonMedicalNotice: {
+    gap: spacing.xxs,
+    marginTop: spacing.md,
+  },
+  nonMedicalText: {
+    color: REPORT_COLORS.mutedInk,
+    fontSize: typography.size.xs,
+    lineHeight: 18,
   },
 });
