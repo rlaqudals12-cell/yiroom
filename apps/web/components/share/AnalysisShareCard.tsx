@@ -225,7 +225,7 @@ export const AnalysisShareCard = forwardRef<HTMLDivElement, AnalysisShareCardPro
             </div>
             <span className={cn('text-sm font-medium', ts.textSecondary)}>이룸</span>
           </div>
-          <span className={cn('text-xs', ts.textMuted)}>yiroom.app</span>
+          <span className={cn('text-xs', ts.textMuted)}>yiroom.vercel.app</span>
         </div>
 
         {/* 메인 콘텐츠 */}

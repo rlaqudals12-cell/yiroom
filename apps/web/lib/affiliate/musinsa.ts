@@ -229,26 +229,9 @@ export async function searchMusinsaProducts(
 /**
  * 무신사 딥링크 생성
  */
-export async function createMusinsaDeeplink(productUrl: string, subId?: string): Promise<string> {
-  const config = getConfig();
-
-  // Mock 모드
-  if (!config) {
-    // Mock: 원본 URL에 가상 tracking 파라미터 추가
-    const separator = productUrl.includes('?') ? '&' : '?';
-    const utmPart = subId ? `&utm_source=${subId}` : '';
-    return `${productUrl}${separator}curator=MOCK123${utmPart}`;
-  }
-
-  // 무신사 큐레이터 딥링크 생성
-  try {
-    const separator = productUrl.includes('?') ? '&' : '?';
-    const utmPart = subId ? `&utm_source=${subId}` : '';
-    return `${productUrl}${separator}curator=${config.curatorId}${utmPart}`;
-  } catch (error) {
-    affiliateLogger.error('Musinsa 딥링크 생성 에러:', error);
-    return productUrl;
-  }
+export async function createMusinsaDeeplink(productUrl: string, _subId?: string): Promise<string> {
+  // 미가입 판매처이므로 환경변수 유무와 관계없이 정보 URL만 반환한다.
+  return productUrl;
 }
 
 /**
@@ -331,10 +314,8 @@ function getMockProducts(
 /**
  * Mock 딥링크 생성
  */
-function createMockDeeplink(productUrl: string, subId?: string): string {
-  const separator = productUrl.includes('?') ? '&' : '?';
-  const utmPart = subId ? `&utm_source=${subId}` : '';
-  return `${productUrl}${separator}curator=MOCK123${utmPart}`;
+function createMockDeeplink(productUrl: string, _subId?: string): string {
+  return productUrl;
 }
 
 /**
@@ -342,13 +323,10 @@ function createMockDeeplink(productUrl: string, subId?: string): string {
  */
 function mapToAffiliateProduct(
   product: MusinsaProductFeed,
-  curatorId: string,
-  subId?: string
+  _curatorId: string,
+  _subId?: string
 ): AffiliateProduct {
-  // 무신사 큐레이터 딥링크 URL 생성
-  const separator = product.goodsUrl.includes('?') ? '&' : '?';
-  const utmPart = subId ? `&utm_source=${subId}` : '';
-  const affiliateUrl = `${product.goodsUrl}${separator}curator=${curatorId}${utmPart}`;
+  const affiliateUrl = product.goodsUrl;
 
   return {
     id: `musinsa-${product.goodsNo}`,

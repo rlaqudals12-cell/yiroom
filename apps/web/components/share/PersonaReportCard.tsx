@@ -145,6 +145,8 @@ interface PersonaReportCardProps {
   serialNo?: number | null;
   /** 초대 한 줄(로케일 값) */
   inviteText?: string;
+  /** AI 생성물 표기(AI 기본법) — 섹션이 i18n 문구를 주입하고, 카드는 뷰어 테마와 무관한 고정 hex 로즈 필로만 그린다 */
+  aiBadgeText?: string;
   className?: string;
 }
 
@@ -373,6 +375,7 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
       groupLabels,
       serialNo,
       inviteText,
+      aiBadgeText = 'AI 생성',
       className,
     },
     ref
@@ -665,6 +668,13 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
           <div className="flex items-baseline gap-2">
             <HexagonY size={16} className="self-center text-[#C56A84]" />
             <span className="font-serif text-[17px] tracking-tight">Yiroom</span>
+            {/* 캡처 대상 안에 고지를 두어 PNG 공유 후에도 AI 결과임을 알린다. */}
+            <span
+              data-testid="ai-badge"
+              className="shrink-0 rounded-full border border-[#EAD9D4] px-2 py-[1px] text-[9.5px] font-medium text-[#C56A84]"
+            >
+              {aiBadgeText}
+            </span>
             <span className="font-serif text-[13px] italic text-[#B6A9A1]">Identity Report</span>
             {serial && (
               // 레터프레스 압인 — 발급번호는 진단서의 인장(공유카드와 동일 처리)
@@ -774,7 +784,7 @@ export const PersonaReportCard = forwardRef<HTMLDivElement, PersonaReportCardPro
           <div className="mt-3 flex items-center justify-end gap-1.5 text-[11.5px] text-[#8C7F78]">
             <HexagonY size={13} className="text-[#C56A84]" />
             {inviteText && <span>{inviteText}</span>}
-            <span className="font-medium text-[#2B2320]">yiroom.app</span>
+            <span className="font-medium text-[#2B2320]">yiroom.vercel.app</span>
           </div>
         </div>
       </div>

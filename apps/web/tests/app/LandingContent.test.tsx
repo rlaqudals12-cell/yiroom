@@ -57,6 +57,21 @@ describe('LandingContent — 랜딩 구조', () => {
     paletteState.nullTone = null;
   });
 
+  it('옷장 배너는 5축 그리드 바로 다음이며 사진 없이 가입 CTA 하나를 제공한다', () => {
+    render(<LandingContent />);
+    const bridge = screen.getByTestId('landing-closet-bridge');
+    expect(screen.getByTestId('landing-module-grid').nextElementSibling).toBe(bridge);
+    expect(within(bridge).getByRole('heading', { level: 2 })).toHaveTextContent(
+      'closetBridgeTitle'
+    );
+    expect(within(bridge).getAllByRole('button')).toHaveLength(1);
+    expect(within(bridge).getByTestId('clerk-sign-up-button')).toHaveAttribute(
+      'data-force-redirect-url',
+      '/analysis/integrated?onboarding=1'
+    );
+    expect(bridge.querySelector('img, canvas')).toBeNull();
+  });
+
   it('히어로 카드에 정적 회전 클래스가 없다 (PhotocardTilt와 이중 회전 방지)', () => {
     render(<LandingContent />);
 
@@ -105,11 +120,11 @@ describe('LandingContent — 랜딩 구조', () => {
     expect(paletteCta.className).toContain('text-[#C56A84]');
   });
 
-  it('로그아웃 CTA 3곳은 가입 모달을 거쳐 온보딩으로 이동한다', () => {
+  it('로그아웃 CTA 4곳은 가입 모달을 거쳐 온보딩으로 이동한다', () => {
     render(<LandingContent />);
 
     const signUpCtas = screen.getAllByTestId('clerk-sign-up-button');
-    expect(signUpCtas).toHaveLength(3);
+    expect(signUpCtas).toHaveLength(4);
     signUpCtas.forEach((cta) => {
       expect(cta).toHaveAttribute('data-force-redirect-url', '/analysis/integrated?onboarding=1');
       // 가입 모달에서 기존 계정으로 전환한 사용자는 일반 분석 진입으로 보낸다.

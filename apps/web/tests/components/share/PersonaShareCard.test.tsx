@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { PersonaShareCard } from '@/components/share/PersonaShareCard';
 
 // 서명 뱃지 = 퍼컬 외 축(퍼컬은 toneName 히어로가 담당 — 중복 금지 계약)
@@ -15,6 +15,13 @@ const PALETTE = [
 ];
 
 describe('PersonaShareCard — V2 정체성 포토카드', () => {
+  it('PNG 캡처 대상 ref 안에 AI 생성 고지가 포함된다', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    render(<PersonaShareCard ref={ref} oneLine="한 줄" badges={[]} />);
+    expect(ref.current).toBe(screen.getByTestId('persona-share-card'));
+    expect(within(ref.current!).getByTestId('ai-badge')).toHaveTextContent('AI 생성');
+  });
+
   it('진단명이 히어로, 은유는 서브카피로 렌더한다 (자랑 위계 = 라벨 > 문장)', () => {
     render(
       <PersonaShareCard oneLine="차분한 빛을 품은 사람" toneName="뮤티드 서머" badges={BADGES} />
@@ -39,7 +46,7 @@ describe('PersonaShareCard — V2 정체성 포토카드', () => {
 
   it('워터마크(유입 경로)와 초대 문구를 렌더한다 (카드 = 테스트 초대장)', () => {
     render(<PersonaShareCard oneLine="한 줄" badges={[]} inviteText="너의 계절은?" />);
-    expect(screen.getByText(/yiroom\.app/)).toBeInTheDocument();
+    expect(screen.getByText(/yiroom\.vercel\.app/)).toBeInTheDocument();
     expect(screen.getByTestId('persona-share-invite')).toHaveTextContent('너의 계절은?');
   });
 

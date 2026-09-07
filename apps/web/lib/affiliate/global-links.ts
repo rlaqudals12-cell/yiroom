@@ -69,8 +69,7 @@ export const GLOBAL_PARTNER_CONFIG: Record<
     displayNameKo: '아이허브',
     baseUrl: 'https://kr.iherb.com',
     searchPath: '/search',
-    affiliateParam: 'pcode',
-    affiliateValue: process.env.IHERB_AFFILIATE_CODE || 'YIROOM',
+    // 미가입 상태이므로 정보 검색 링크만 제공한다.
   },
   amazon_us: {
     displayName: 'Amazon US',
@@ -135,7 +134,7 @@ export function createGlobalDeeplink(options: GlobalDeeplinkOptions): GlobalDeep
         url = createCoupangSearchLink(query, subId);
         break;
       case 'iherb':
-        url = createIHerbSearchLink(query, subId);
+        url = createIHerbSearchLink(query);
         break;
       case 'amazon_us':
       case 'amazon_jp':
@@ -216,16 +215,10 @@ function createCoupangSearchLink(query: string, subId?: string): string {
   return url.toString();
 }
 
-function createIHerbSearchLink(query: string, subId?: string): string {
+function createIHerbSearchLink(query: string): string {
   const config = GLOBAL_PARTNER_CONFIG.iherb;
   const url = new URL(`${config.baseUrl}${config.searchPath}`);
   url.searchParams.set('kw', query);
-  if (config.affiliateParam && config.affiliateValue) {
-    url.searchParams.set(config.affiliateParam, config.affiliateValue);
-  }
-  if (subId) {
-    url.searchParams.set('rcode', subId);
-  }
   return url.toString();
 }
 

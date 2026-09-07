@@ -16,7 +16,7 @@
  * 모든 처리는 이 기기(브라우저)에서만 — 이 컴포넌트에는 fetch/업로드 코드가 없다(PR 체크포인트).
  * (눈가림 밴드는 7/16 문화 검증으로 제거 — 검은 밴드 = 성형·의료 검열 코드라 브랜드 부정합.
  *  얼굴을 가리고 싶은 유저의 답은 이 카드가 아니라 얼굴 없는 기본 카드다.)
- * 생성형 AI가 아닌 캔버스 합성이므로 AI 라벨 대상 아님(정직 표기는 섹션 고지가 담당).
+ * 사진은 캔버스 합성이지만 AI 분석 색·진단이 포함되므로 캡처에도 AI 고지를 남긴다.
  */
 
 import { forwardRef, useEffect, useRef } from 'react';
@@ -38,6 +38,8 @@ export interface DrapingShareCardProps {
   serialNo?: number | null;
   /** 초대 한 줄(로케일 값 주입) */
   inviteText?: string;
+  /** AI 생성물 표기(AI 기본법) — 섹션이 i18n 문구를 주입하고, 카드는 뷰어 테마와 무관한 고정 hex 로즈 필로만 그린다 */
+  aiBadgeText?: string;
   /** 드레이핑 캡션 라벨(로케일 값, 예: "드레이핑") — 리포트 카드와 동일 i18n 키 재사용 */
   drapeLabel?: string;
   className?: string;
@@ -82,7 +84,17 @@ function HexagonY({ size, className }: { size: number; className?: string }): Re
 
 export const DrapingShareCard = forwardRef<HTMLDivElement, DrapingShareCardProps>(
   function DrapingShareCard(
-    { img, drapeHex, toneName, bestColors, serialNo, inviteText, drapeLabel, className },
+    {
+      img,
+      drapeHex,
+      toneName,
+      bestColors,
+      serialNo,
+      inviteText,
+      aiBadgeText = 'AI 생성',
+      drapeLabel,
+      className,
+    },
     ref
   ) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -112,6 +124,13 @@ export const DrapingShareCard = forwardRef<HTMLDivElement, DrapingShareCardProps
           <div className="flex items-baseline gap-2">
             <HexagonY size={16} className="self-center text-[#C56A84]" />
             <span className="font-serif text-[17px] tracking-tight">Yiroom</span>
+            {/* 캡처 대상 안에 고지를 두어 PNG 공유 후에도 AI 결과임을 알린다. */}
+            <span
+              data-testid="ai-badge"
+              className="shrink-0 rounded-full border border-[#EAD9D4] px-2 py-[1px] text-[9.5px] font-medium text-[#C56A84]"
+            >
+              {aiBadgeText}
+            </span>
             {toneName && (
               <span className="font-serif text-[13px] italic text-[#C56A84]">{toneName}</span>
             )}
@@ -168,7 +187,7 @@ export const DrapingShareCard = forwardRef<HTMLDivElement, DrapingShareCardProps
           <div className="mt-4 flex items-center justify-end gap-1.5 text-[11.5px] text-[#8C7F78]">
             <HexagonY size={13} className="text-[#C56A84]" />
             {inviteText && <span>{inviteText}</span>}
-            <span className="font-medium text-[#2B2320]">yiroom.app</span>
+            <span className="font-medium text-[#2B2320]">yiroom.vercel.app</span>
           </div>
         </div>
       </div>

@@ -84,6 +84,10 @@ const withPWA = withPWAInit({
  * - React Compiler (2026-01-02 활성화)
  */
 const nextConfig: NextConfig = {
+  // 모노레포 밖이 아닌 저장소 원리 문서를 방법론 페이지의 배포 산출물에 포함한다.
+  outputFileTracingIncludes: {
+    '/methodology': ['../../docs/principles/personal-contrast.md'],
+  },
   // React Compiler: 자동 메모이제이션 (Next.js 16에서 top-level로 이동)
   reactCompiler: true,
   // Turbopack 설정 (Next.js 16 필수 - PWA 플러그인 webpack 호환)

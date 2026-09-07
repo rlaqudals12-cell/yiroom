@@ -6,10 +6,10 @@ import { shareLogger } from '@/lib/utils/logger';
  * 왜 필요한가: 이미지만 공유하면 클릭 가능한 링크가 없어 **공유 100건 = 유입 0건**이 된다
  * (바이럴 루프 단절). 카드에 구운 워터마크는 텍스트라 클릭이 안 된다.
  *
- * 도메인은 코드베이스 정본 패턴(`NEXT_PUBLIC_SITE_URL || yiroom.app` — kakao/qr/metadata와 동일).
+ * 도메인은 코드베이스 정본 패턴(`NEXT_PUBLIC_SITE_URL || yiroom.vercel.app` — kakao/qr/metadata와 동일).
  * `?ref=card`로 카드발 유입을 귀속한다.
  */
-export const SHARE_LANDING_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app'}/?ref=card`;
+export const SHARE_LANDING_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.vercel.app'}/?ref=card`;
 
 /** 공유가 실제로 어떤 경로로 끝났는지 — 호출부가 정확히 고지하기 위한 결과 */
 export interface ShareOutcome {

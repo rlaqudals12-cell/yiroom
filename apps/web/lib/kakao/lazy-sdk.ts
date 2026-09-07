@@ -126,8 +126,8 @@ export async function initKakaoSDK(): Promise<void> {
  *   content: {
  *     title: '이룸 피부 분석 결과',
  *     description: '나의 피부 타입은 복합성 피부입니다.',
- *     imageUrl: 'https://yiroom.app/og-skin.png',
- *     link: { mobileWebUrl: 'https://yiroom.app', webUrl: 'https://yiroom.app' },
+ *     imageUrl: 'https://yiroom.vercel.app/og-skin.png',
+ *     link: { mobileWebUrl: 'https://yiroom.vercel.app', webUrl: 'https://yiroom.vercel.app' },
  *   },
  * });
  */
@@ -156,7 +156,7 @@ export async function shareAnalysisResult(
   shareUrl?: string
 ): Promise<void> {
   const url = shareUrl || (typeof window !== 'undefined' ? window.location.href : '');
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.vercel.app';
 
   await shareToKakao({
     objectType: 'feed',
@@ -185,7 +185,7 @@ export async function shareAnalysisResult(
  * 이룸 앱 공유하기 (간편 API)
  */
 export async function shareApp(): Promise<void> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.vercel.app';
 
   await shareToKakao({
     objectType: 'feed',

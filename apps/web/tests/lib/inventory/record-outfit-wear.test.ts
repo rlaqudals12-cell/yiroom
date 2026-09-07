@@ -24,10 +24,12 @@ const state = vi.hoisted(() => ({
   inventoryRows: [] as Array<Record<string, unknown>>,
   outfitUpdateError: null as unknown,
   ops: [] as Op[],
+  rpc: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClerkSupabaseClient: () => ({
+    rpc: state.rpc,
     from: (table: string) => {
       const op: Op = { table, kind: 'select', ids: [], userScoped: false };
       const builder: Record<string, unknown> = {};
@@ -74,7 +76,7 @@ vi.mock('@/lib/utils/logger', () => ({
   inventoryLogger: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
 }));
 
-const { recordOutfitWear } = await import('@/lib/inventory/repository');
+const { recordOutfitWear, recordItemsUsage } = await import('@/lib/inventory/repository');
 
 function inventoryRow(id: string, useCount: number) {
   return {
@@ -103,6 +105,7 @@ const updatesOn = (table: string): Op[] =>
 beforeEach(() => {
   vi.clearAllMocks();
   state.ops = [];
+  state.rpc.mockResolvedValue({ data: null, error: { code: 'PGRST202' } });
   state.outfitUpdateError = null;
   state.outfit = {
     id: 'outfit-1',
@@ -121,6 +124,28 @@ beforeEach(() => {
 });
 
 describe('recordOutfitWear', () => {
+  it('RPC 적용 환경은 한 호출로 기록하고 앱 UPDATE를 생략한다', async () => {
+    state.rpc.mockResolvedValue({ data: [{ outfit_wear_count: 3 }], error: null });
+    await recordOutfitWear('user-1', 'outfit-1');
+    expect(state.rpc).toHaveBeenCalledWith('record_outfit_wear', { p_outfit_id: 'outfit-1' });
+    expect(state.ops).toEqual([]);
+  });
+
+  it.each(['42501', '28000', 'XX000', '42883'])(
+    'RPC 실행 오류 %s는 폴백하지 않는다',
+    async (code) => {
+      const error = { code, message: 'internal failure' };
+      state.rpc.mockResolvedValue({ data: null, error });
+      await expect(recordOutfitWear('user-1', 'outfit-1')).rejects.toEqual(error);
+      expect(state.ops).toEqual([]);
+    }
+  );
+
+  it('RPC에서 없는 코디는 기존 not found 계약으로 전파한다', async () => {
+    state.rpc.mockResolvedValue({ error: { code: 'P0002' } });
+    await expect(recordOutfitWear('user-1', 'outfit-1')).rejects.toThrow('Outfit not found');
+    expect(state.ops).toEqual([]);
+  });
   it('코디와 구성 아이템의 카운트를 함께 올린다', async () => {
     await recordOutfitWear('user-1', 'outfit-1');
 
@@ -158,5 +183,54 @@ describe('recordOutfitWear', () => {
     const itemUpdate = updatesOn('user_inventory')[0];
     expect(itemUpdate.ids).toEqual([TOP]);
     expect(itemUpdate.patch).toMatchObject({ use_count: 6 });
+  });
+});
+
+describe('recordItemsUsage RPC', () => {
+  it('중복 ID를 제거하고 requireAll을 전달한다', async () => {
+    state.rpc.mockResolvedValue({ error: null });
+    await recordItemsUsage('user-1', [TOP, TOP], { requireAll: false });
+    expect(state.rpc).toHaveBeenCalledWith('record_inventory_usage', {
+      p_item_ids: [TOP],
+      p_require_all: false,
+    });
+    expect(state.ops).toEqual([]);
+  });
+
+  it('빈 입력은 DB에 접근하지 않는다', async () => {
+    await recordItemsUsage('user-1', []);
+    expect(state.rpc).not.toHaveBeenCalled();
+  });
+
+  it('RPC 없는 환경에서 직접 기록하며 소유자를 제한한다', async () => {
+    state.rpc.mockResolvedValue({
+      error: { code: '42883', message: 'function public.record_inventory_usage does not exist' },
+    });
+    await recordItemsUsage('user-1', [TOP]);
+    expect(updatesOn('user_inventory')[0]).toMatchObject({
+      userScoped: true,
+      patch: { use_count: 6 },
+    });
+  });
+
+  it.each(['42501', '28000', 'XX000', '42883'])(
+    'RPC 실행 오류 %s는 폴백하지 않는다',
+    async (code) => {
+      const error = { code, message: 'internal failure' };
+      state.rpc.mockResolvedValue({ error });
+      await expect(recordItemsUsage('user-1', [TOP])).rejects.toEqual(error);
+      expect(state.ops).toEqual([]);
+    }
+  );
+
+  it('RPC 미적용 환경도 요청한 아이템 전체 소유권을 확인한다', async () => {
+    await expect(recordItemsUsage('user-1', [TOP, GONE])).rejects.toThrow('Item not found');
+    expect(updatesOn('user_inventory')).toEqual([]);
+  });
+
+  it('RPC not found는 기존 오류 계약으로 변환한다', async () => {
+    state.rpc.mockResolvedValue({ error: { code: 'P0002' } });
+    await expect(recordItemsUsage('user-1', [TOP])).rejects.toThrow('Item not found');
+    expect(state.ops).toEqual([]);
   });
 });

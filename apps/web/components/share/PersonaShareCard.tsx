@@ -47,6 +47,8 @@ interface PersonaShareCardProps {
   serialNo?: number | null;
   /** 초대 한 줄(로케일 값 주입, 예: "너의 계절은?") — 카드=테스트 초대장 루프 */
   inviteText?: string;
+  /** AI 생성물 표기(AI 기본법) — 섹션이 i18n 문구를 주입하고, 카드는 뷰어 테마와 무관한 고정 hex 로즈 필로만 그린다 */
+  aiBadgeText?: string;
   format?: PersonaCardFormat;
   finish?: PersonaCardFinish;
   className?: string;
@@ -129,6 +131,7 @@ export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps
       worstPalette = [],
       serialNo,
       inviteText,
+      aiBadgeText = 'AI 생성',
       format = 'square',
       finish = 'matte',
       className,
@@ -188,6 +191,13 @@ export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps
           <div className="flex items-baseline gap-2">
             <HexagonY size={16} className="self-center text-[#C56A84]" />
             <span className="font-serif text-[17px] tracking-tight">Yiroom</span>
+            {/* 캡처 대상 안에 고지를 두어 PNG 공유 후에도 AI 결과임을 알린다. */}
+            <span
+              data-testid="ai-badge"
+              className="shrink-0 rounded-full border border-[#EAD9D4] px-2 py-[1px] text-[9.5px] font-medium text-[#C56A84]"
+            >
+              {aiBadgeText}
+            </span>
             {serial && (
               // 레터프레스 압인 — 크림 지면 아래 1px 밝은 섀도(활판 눌림의 하단 모서리 빛)
               <span
@@ -286,7 +296,7 @@ export const PersonaShareCard = forwardRef<HTMLDivElement, PersonaShareCardProps
             <span className="flex shrink-0 items-center gap-1.5">
               <HexagonY size={13} className="text-[#C56A84]" />
               {inviteText && <span data-testid="persona-share-invite">{inviteText}</span>}
-              <span className="font-medium text-[#2B2320]">yiroom.app</span>
+              <span className="font-medium text-[#2B2320]">yiroom.vercel.app</span>
             </span>
           </div>
         </div>

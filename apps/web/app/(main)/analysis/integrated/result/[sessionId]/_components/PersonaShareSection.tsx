@@ -86,10 +86,10 @@ const CARD_FORMATS: readonly ShareFormat[] = ['square', 'story'];
  * url + text 양쪽에 싣는 이유: Web Share에 `files`가 동반되면 `url`을 무시하고 text만
  * 전달하는 타깃이 실재한다. 링크가 중복 노출되는 손해보다 링크가 아예 없는 손해가 크다.
  *
- * 도메인은 코드베이스 정본 패턴(`NEXT_PUBLIC_SITE_URL || yiroom.app` — kakao/qr/metadata와 동일).
+ * 도메인은 코드베이스 정본 패턴(`NEXT_PUBLIC_SITE_URL || yiroom.vercel.app` — kakao/qr/metadata와 동일).
  * `?ref=card`로 카드발 유입을 귀속한다.
  */
-const SHARE_LANDING_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app'}/?ref=card`;
+const SHARE_LANDING_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.vercel.app'}/?ref=card`;
 
 /**
  * 페르소나 공유 섹션 — 결과 페이지에서 "자랑 카드"를 바로 보여주고 저장/공유하게 한다.
@@ -328,6 +328,7 @@ export function PersonaShareSection({
               }}
               serialNo={serialNo}
               inviteText={t('shareCard.invite')}
+              aiBadgeText={t('shareCard.aiGenerated')}
             />
           ) : (
             // 틸트 = 실물 포토카드를 손에 든 감각(포인터 추적 3D) — 캡처 PNG에는 무영향
@@ -341,6 +342,7 @@ export function PersonaShareSection({
                 worstPalette={worstPalette}
                 serialNo={serialNo}
                 inviteText={t('shareCard.invite')}
+                aiBadgeText={t('shareCard.aiGenerated')}
                 format={format === 'report' ? 'square' : format}
                 finish={finish}
               />

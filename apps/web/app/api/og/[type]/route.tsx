@@ -140,7 +140,9 @@ export async function GET(request: NextRequest, { params }: RouteParams): Promis
         }}
       >
         <div style={{ display: 'flex', fontSize: 28, color: MUTED }}>너의 계절은?</div>
-        <div style={{ display: 'flex', fontSize: 28, fontWeight: 600, color: INK }}>yiroom.app</div>
+        <div style={{ display: 'flex', fontSize: 28, fontWeight: 600, color: INK }}>
+          yiroom.vercel.app
+        </div>
       </div>
 
       {/* 팔레트 밴드 — 풀블리드 하드엣지(E+ 관습). 스와치 없으면 로즈 헤어라인만 */}

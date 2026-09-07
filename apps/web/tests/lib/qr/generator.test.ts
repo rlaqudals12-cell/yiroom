@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { generateQRCode, getQRUrl } from '@/lib/qr/generator';
 
 // Mock qrcode 라이브러리
@@ -75,5 +75,34 @@ describe('QR Generator', () => {
       const url = getQRUrl('result_share', { resultType: 'skin', resultId: '456' });
       expect(url).toContain('/share/skin/456');
     });
+  });
+});
+
+describe('배포 URL 환경변수 우선순위', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it.each([
+    ['https://site.example', 'https://legacy.example', 'https://site.example'],
+    ['', 'https://legacy.example', 'https://legacy.example'],
+    ['', '', 'https://yiroom.vercel.app'],
+  ])('SITE_URL=%s / APP_URL=%s이면 %s를 출력한다', async (site, app, expected) => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', site);
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', app);
+    vi.resetModules();
+    const { getQRUrl, generateQRCode, renderQRToCanvas } = await import('@/lib/qr/generator');
+    const { default: QRCode } = await import('qrcode');
+    expect(getQRUrl('referral', { referralCode: 'ABC' })).toBe(`${expected}/invite/ABC`);
+    await generateQRCode({ type: 'result_share', data: { resultType: 'skin', resultId: '123' } });
+    expect(QRCode.toDataURL).toHaveBeenCalledWith(`${expected}/share/skin/123`, expect.any(Object));
+    const canvas = document.createElement('canvas');
+    await renderQRToCanvas(canvas, { type: 'app_download', data: {} });
+    expect(QRCode.toCanvas).toHaveBeenCalledWith(
+      canvas,
+      `${expected}/download?utm_source=qr&utm_medium=offline`,
+      expect.any(Object)
+    );
   });
 });

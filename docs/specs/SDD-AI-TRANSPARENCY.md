@@ -1,5 +1,15 @@
 # SDD: AI 투명성 고지 (AIBadge & AITransparencyNotice)
 
+## 방법론 공개 (배치 R · 2026-09-08)
+
+- 목표: 검토된 원리 원문을 로그인 없이 읽는 `/methodology`. 초기 범위 목표는 허용 문서 공개·차단 계약 100%; 전체 원리 문서 공개는 의도적으로 보류한다.
+- 입력: 고정 허용 목록 `personal-contrast.md`와 `docs/principles/` 원문. URL·사용자 입력으로 파일을 선택하지 않는다.
+- 출력: 제목·목록·본문·표·코드가 포함된 읽기 전용 문서, 문서별 앵커 목차, `robots: { index: false, follow: false }`.
+- 차단: 치료·진단·질환·시술·의료·병원·의원·여드름·아토피·개선 효과 및 대응 영어 표현이 검출되면 문서 전체를 목록/본문에서 제외한다. 이는 보수적인 공개 필터이며 법적 적합성 판정을 대신하지 않는다.
+- 원문 HTML은 실행하지 않고 내부 참조 링크는 글자로만 표시한다. 공개 문서가 없으면 정직한 빈 상태와 홈 링크를 표시한다.
+- 배포: 서버 렌더링, 파일 추적에 허용 원문 포함. 루트 레이아웃의 Clerk 세션 확인에 필요한 요청 헤더를 보존한다. 신규 문서는 검토 후 허용 목록에 명시적으로 추가한다.
+- 원자/검증: (1) 허용 목록·표현 스캔·읽기 실패, (2) Markdown 안전 렌더·빈 상태, (3) 비로그인 공개 경로·noindex·sitemap 제외. 각 동작을 테스트한다.
+
 > **Status**: ✅ Implemented (Phase 1)
 > **Version**: 1.0
 > **Created**: 2026-01-16
@@ -22,21 +32,21 @@
 
 ### 물리적 한계
 
-| 항목 | 한계 |
-|------|------|
-| 표시 피로 | 과도한 배지는 UX 저하 |
+| 항목        | 한계                            |
+| ----------- | ------------------------------- |
+| 표시 피로   | 과도한 배지는 UX 저하           |
 | 콘텐츠 구분 | AI 개입 정도 명확한 기준 어려움 |
-| 실시간 | 스트리밍 응답 중 표시 타이밍 |
+| 실시간      | 스트리밍 응답 중 표시 타이밍    |
 
 ### 100점 기준
 
-| 항목 | 100점 기준 | 현재 | 달성률 |
-|------|-----------|------|--------|
-| 법적 준수 | AI 콘텐츠 100% 표시 | ✅ AIBadge | 100% |
-| 컴포넌트 | 4가지 variant | ✅ 완료 | 100% |
-| Mock 고지 | Fallback 시 알림 | ⏳ Phase 2 | 0% |
-| 분석 카드 통합 | 전 분석 모듈 적용 | ⏳ Phase 2 | 30% |
-| 접근성 | ARIA + 스크린리더 | ✅ 완료 | 100% |
+| 항목           | 100점 기준          | 현재       | 달성률 |
+| -------------- | ------------------- | ---------- | ------ |
+| 법적 준수      | AI 콘텐츠 100% 표시 | ✅ AIBadge | 100%   |
+| 컴포넌트       | 4가지 variant       | ✅ 완료    | 100%   |
+| Mock 고지      | Fallback 시 알림    | ⏳ Phase 2 | 0%     |
+| 분석 카드 통합 | 전 분석 모듈 적용   | ⏳ Phase 2 | 30%    |
+| 접근성         | ARIA + 스크린리더   | ✅ 완료    | 100%   |
 
 **종합 달성률**: **75%** (Phase 1 AI 투명성)
 
@@ -63,12 +73,12 @@
 
 ### 1.2 범위
 
-| 항목 | 우선순위 | 복잡도 | 구현 상태 |
-|------|----------|--------|----------|
-| AIBadge 컴포넌트 | 필수 | 낮음 | ✅ 완료 |
-| AITransparencyNotice 컴포넌트 | 필수 | 낮음 | ✅ 완료 |
-| Mock 사용 시 표시 | 필수 | 낮음 | ⏳ Phase 2 |
-| 분석 결과 카드 통합 | 필수 | 중간 | ⏳ Phase 2 |
+| 항목                          | 우선순위 | 복잡도 | 구현 상태  |
+| ----------------------------- | -------- | ------ | ---------- |
+| AIBadge 컴포넌트              | 필수     | 낮음   | ✅ 완료    |
+| AITransparencyNotice 컴포넌트 | 필수     | 낮음   | ✅ 완료    |
+| Mock 사용 시 표시             | 필수     | 낮음   | ⏳ Phase 2 |
+| 분석 결과 카드 통합           | 필수     | 중간   | ⏳ Phase 2 |
 
 ### 1.3 관련 문서
 
@@ -82,22 +92,22 @@
 
 ### 2.1 표시 필수 콘텐츠
 
-| 콘텐츠 | AI 역할 | 표시 유형 |
-|--------|--------|----------|
+| 콘텐츠               | AI 역할     | 표시 유형            |
+| -------------------- | ----------- | -------------------- |
 | 퍼스널컬러 분석 결과 | Gemini 판정 | AIBadge + Disclaimer |
-| 피부 분석 결과 | Gemini 판정 | AIBadge + Disclaimer |
-| 체형 분석 결과 | Gemini 판정 | AIBadge + Disclaimer |
-| 제품 추천 텍스트 | Gemini 생성 | AIBadge |
-| 운동/영양 조언 | Gemini 생성 | AIBadge + Disclaimer |
-| 음식 인식 결과 | Gemini 판정 | AIBadge |
+| 피부 분석 결과       | Gemini 판정 | AIBadge + Disclaimer |
+| 체형 분석 결과       | Gemini 판정 | AIBadge + Disclaimer |
+| 제품 추천 텍스트     | Gemini 생성 | AIBadge              |
+| 운동/영양 조언       | Gemini 생성 | AIBadge + Disclaimer |
+| 음식 인식 결과       | Gemini 판정 | AIBadge              |
 
 ### 2.2 표시 불필요 콘텐츠
 
-| 콘텐츠 | 이유 |
-|--------|------|
-| UI 레이블 | 정적 텍스트 |
-| 카테고리 명칭 | 사전 정의 |
-| 성분 정보 | DB 데이터 |
+| 콘텐츠        | 이유        |
+| ------------- | ----------- |
+| UI 레이블     | 정적 텍스트 |
+| 카테고리 명칭 | 사전 정의   |
+| 성분 정보     | DB 데이터   |
 
 ---
 
@@ -210,8 +220,9 @@ export function AITransparencyNotice({ className, compact = false }: AITranspare
         <div className="flex-1">
           <h3 className="font-semibold text-sm text-foreground mb-1">AI 기술 사용 안내</h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            이룸은 Google Gemini AI 기술을 사용하여 퍼스널컬러, 피부, 체형 등의 분석 결과를 제공합니다.
-            AI 분석 결과는 참고용이며, 정확한 진단이 필요한 경우 전문가 상담을 권장합니다.
+            이룸은 Google Gemini AI 기술을 사용하여 퍼스널컬러, 피부, 체형 등의 분석 결과를
+            제공합니다. AI 분석 결과는 참고용이며, 정확한 진단이 필요한 경우 전문가 상담을
+            권장합니다.
           </p>
         </div>
       </div>
@@ -250,9 +261,7 @@ export function MockDataNotice({ className }: MockDataNoticeProps) {
       <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
       <div>
         <p className="font-medium">임시 데이터 표시 중</p>
-        <p className="mt-0.5">
-          현재 AI 서비스를 이용할 수 없어 샘플 결과를 표시합니다.
-        </p>
+        <p className="mt-0.5">현재 AI 서비스를 이용할 수 없어 샘플 결과를 표시합니다.</p>
       </div>
     </div>
   );
@@ -282,10 +291,7 @@ interface AnalysisResultCardProps {
   children: React.ReactNode;
 }
 
-export function AnalysisResultCard({
-  usedMock = false,
-  children,
-}: AnalysisResultCardProps) {
+export function AnalysisResultCard({ usedMock = false, children }: AnalysisResultCardProps) {
   return (
     <div
       className="bg-white dark:bg-gray-900 rounded-xl shadow-sm overflow-hidden"
@@ -304,9 +310,7 @@ export function AnalysisResultCard({
       )}
 
       {/* 분석 결과 내용 */}
-      <div className="p-6">
-        {children}
-      </div>
+      <div className="p-6">{children}</div>
 
       {/* 푸터: AI 투명성 안내 */}
       <div className="px-6 pb-6">
@@ -319,12 +323,12 @@ export function AnalysisResultCard({
 
 ### 4.2 현재 적용 상태
 
-| 페이지 | AIBadge | AITransparencyNotice | MockDataNotice |
-|--------|---------|---------------------|----------------|
-| 퍼스널컬러 결과 | ⏳ | ⏳ | ⏳ |
-| 피부 분석 결과 | ⏳ | ⏳ | ⏳ |
-| 체형 분석 결과 | ⏳ | ⏳ | ⏳ |
-| 온보딩 | ⏳ | ⏳ | - |
+| 페이지          | AIBadge | AITransparencyNotice | MockDataNotice |
+| --------------- | ------- | -------------------- | -------------- |
+| 퍼스널컬러 결과 | ⏳      | ⏳                   | ⏳             |
+| 피부 분석 결과  | ⏳      | ⏳                   | ⏳             |
+| 체형 분석 결과  | ⏳      | ⏳                   | ⏳             |
+| 온보딩          | ⏳      | ⏳                   | -              |
 
 ---
 
@@ -407,13 +411,13 @@ describe('AITransparencyNotice', () => {
 
 ## 7. 접근성 (구현됨)
 
-| 요소 | 구현 | 설명 |
-|------|------|------|
-| `title` | ✅ | 툴팁 표시 |
-| `aria-label` | ✅ | 스크린 리더 지원 |
-| `aria-hidden` | ✅ | 아이콘에 적용 |
-| `data-testid` | ✅ | 테스트 자동화 |
-| 색상 대비 | ✅ | WCAG AA 준수 (바이올렛 테마) |
+| 요소          | 구현 | 설명                         |
+| ------------- | ---- | ---------------------------- |
+| `title`       | ✅   | 툴팁 표시                    |
+| `aria-label`  | ✅   | 스크린 리더 지원             |
+| `aria-hidden` | ✅   | 아이콘에 적용                |
+| `data-testid` | ✅   | 테스트 자동화                |
+| 색상 대비     | ✅   | WCAG AA 준수 (바이올렛 테마) |
 
 ---
 
@@ -458,21 +462,25 @@ graph TD
 ### ATOM-1: MockDataNotice 컴포넌트 생성
 
 #### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: 없음
 - **병렬 가능**: Yes (ATOM-2와 병렬)
 
 #### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| className | string | No | 추가 CSS 클래스 |
+
+| 항목      | 타입   | 필수 | 설명            |
+| --------- | ------ | ---- | --------------- |
+| className | string | No   | 추가 CSS 클래스 |
 
 #### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목           | 타입     | 설명               |
+| -------------- | -------- | ------------------ |
 | MockDataNotice | React.FC | 경고 알림 컴포넌트 |
 
 #### 성공 기준
+
 - [ ] AlertTriangle 아이콘 포함
 - [ ] 앰버 색상 테마 적용
 - [ ] data-testid="mock-data-notice" 속성
@@ -481,61 +489,71 @@ graph TD
 - [ ] lint 통과
 
 #### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/components/common/MockDataNotice.tsx` | create | 새 컴포넌트 |
+
+| 파일 경로                                       | 변경 유형 | 설명        |
+| ----------------------------------------------- | --------- | ----------- |
+| `apps/web/components/common/MockDataNotice.tsx` | create    | 새 컴포넌트 |
 
 ---
 
 ### ATOM-2: usedMock prop 타입 정의
 
 #### 메타데이터
+
 - **예상 소요시간**: 0.5시간
 - **의존성**: 없음
 - **병렬 가능**: Yes (ATOM-1과 병렬)
 
 #### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| 기존 분석 결과 타입 | type | Yes | 확장 대상 |
+
+| 항목                | 타입 | 필수 | 설명      |
+| ------------------- | ---- | ---- | --------- |
+| 기존 분석 결과 타입 | type | Yes  | 확장 대상 |
 
 #### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목     | 타입    | 설명                  |
+| -------- | ------- | --------------------- |
 | usedMock | boolean | Mock 사용 여부 플래그 |
 
 #### 성공 기준
+
 - [ ] SkinAnalysisResult에 usedMock 추가
 - [ ] PersonalColorResult에 usedMock 추가
 - [ ] BodyAnalysisResult에 usedMock 추가
 - [ ] typecheck 통과
 
 #### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/types/analysis.ts` | modify | 타입 확장 |
+
+| 파일 경로                    | 변경 유형 | 설명      |
+| ---------------------------- | --------- | --------- |
+| `apps/web/types/analysis.ts` | modify    | 타입 확장 |
 
 ---
 
 ### ATOM-3: AnalysisResultCard 통합 컴포넌트
 
 #### 메타데이터
+
 - **예상 소요시간**: 1.5시간
 - **의존성**: ATOM-1, ATOM-2
 - **병렬 가능**: No
 
 #### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| usedMock | boolean | No | Mock 사용 여부 (기본: false) |
-| children | ReactNode | Yes | 결과 내용 |
+
+| 항목     | 타입      | 필수 | 설명                         |
+| -------- | --------- | ---- | ---------------------------- |
+| usedMock | boolean   | No   | Mock 사용 여부 (기본: false) |
+| children | ReactNode | Yes  | 결과 내용                    |
 
 #### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목               | 타입     | 설명               |
+| ------------------ | -------- | ------------------ |
 | AnalysisResultCard | React.FC | 통합 래퍼 컴포넌트 |
 
 #### 성공 기준
+
 - [ ] AIBadge 헤더 포함
 - [ ] 조건부 MockDataNotice 표시
 - [ ] AITransparencyNotice 푸터 포함
@@ -544,31 +562,36 @@ graph TD
 - [ ] lint 통과
 
 #### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/components/analysis/AnalysisResultCard.tsx` | create | 새 컴포넌트 |
+
+| 파일 경로                                             | 변경 유형 | 설명        |
+| ----------------------------------------------------- | --------- | ----------- |
+| `apps/web/components/analysis/AnalysisResultCard.tsx` | create    | 새 컴포넌트 |
 
 ---
 
 ### ATOM-4: 피부 분석 결과 페이지 적용
 
 #### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: ATOM-3
 - **병렬 가능**: Yes (ATOM-5, ATOM-6과 병렬)
 
 #### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| AnalysisResultCard | Component | Yes | ATOM-3 출력 |
-| 기존 결과 페이지 | Page | Yes | 적용 대상 |
+
+| 항목               | 타입      | 필수 | 설명        |
+| ------------------ | --------- | ---- | ----------- |
+| AnalysisResultCard | Component | Yes  | ATOM-3 출력 |
+| 기존 결과 페이지   | Page      | Yes  | 적용 대상   |
 
 #### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목              | 타입 | 설명                |
+| ----------------- | ---- | ------------------- |
 | 업데이트된 페이지 | Page | AI 투명성 표시 적용 |
 
 #### 성공 기준
+
 - [ ] AnalysisResultCard로 결과 래핑
 - [ ] usedMock prop 전달
 - [ ] 기존 기능 유지
@@ -576,31 +599,36 @@ graph TD
 - [ ] lint 통과
 
 #### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/app/(main)/analysis/skin/result/[id]/page.tsx` | modify | 카드 적용 |
+
+| 파일 경로                                                | 변경 유형 | 설명      |
+| -------------------------------------------------------- | --------- | --------- |
+| `apps/web/app/(main)/analysis/skin/result/[id]/page.tsx` | modify    | 카드 적용 |
 
 ---
 
 ### ATOM-5: 퍼스널컬러 결과 페이지 적용
 
 #### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: ATOM-3
 - **병렬 가능**: Yes (ATOM-4, ATOM-6과 병렬)
 
 #### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| AnalysisResultCard | Component | Yes | ATOM-3 출력 |
-| 기존 결과 페이지 | Page | Yes | 적용 대상 |
+
+| 항목               | 타입      | 필수 | 설명        |
+| ------------------ | --------- | ---- | ----------- |
+| AnalysisResultCard | Component | Yes  | ATOM-3 출력 |
+| 기존 결과 페이지   | Page      | Yes  | 적용 대상   |
 
 #### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목              | 타입 | 설명                |
+| ----------------- | ---- | ------------------- |
 | 업데이트된 페이지 | Page | AI 투명성 표시 적용 |
 
 #### 성공 기준
+
 - [ ] AnalysisResultCard로 결과 래핑
 - [ ] usedMock prop 전달
 - [ ] 기존 기능 유지
@@ -608,31 +636,36 @@ graph TD
 - [ ] lint 통과
 
 #### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/app/(main)/analysis/personal-color/result/[id]/page.tsx` | modify | 카드 적용 |
+
+| 파일 경로                                                          | 변경 유형 | 설명      |
+| ------------------------------------------------------------------ | --------- | --------- |
+| `apps/web/app/(main)/analysis/personal-color/result/[id]/page.tsx` | modify    | 카드 적용 |
 
 ---
 
 ### ATOM-6: 체형 분석 결과 페이지 적용
 
 #### 메타데이터
+
 - **예상 소요시간**: 1시간
 - **의존성**: ATOM-3
 - **병렬 가능**: Yes (ATOM-4, ATOM-5와 병렬)
 
 #### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| AnalysisResultCard | Component | Yes | ATOM-3 출력 |
-| 기존 결과 페이지 | Page | Yes | 적용 대상 |
+
+| 항목               | 타입      | 필수 | 설명        |
+| ------------------ | --------- | ---- | ----------- |
+| AnalysisResultCard | Component | Yes  | ATOM-3 출력 |
+| 기존 결과 페이지   | Page      | Yes  | 적용 대상   |
 
 #### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목              | 타입 | 설명                |
+| ----------------- | ---- | ------------------- |
 | 업데이트된 페이지 | Page | AI 투명성 표시 적용 |
 
 #### 성공 기준
+
 - [ ] AnalysisResultCard로 결과 래핑
 - [ ] usedMock prop 전달
 - [ ] 기존 기능 유지
@@ -640,30 +673,35 @@ graph TD
 - [ ] lint 통과
 
 #### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/app/(main)/analysis/body/result/[id]/page.tsx` | modify | 카드 적용 |
+
+| 파일 경로                                                | 변경 유형 | 설명      |
+| -------------------------------------------------------- | --------- | --------- |
+| `apps/web/app/(main)/analysis/body/result/[id]/page.tsx` | modify    | 카드 적용 |
 
 ---
 
 ### ATOM-7: 테스트 작성
 
 #### 메타데이터
+
 - **예상 소요시간**: 1.5시간
 - **의존성**: ATOM-4, ATOM-5, ATOM-6
 - **병렬 가능**: No
 
 #### 입력 스펙
-| 항목 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| 컴포넌트 | Component[] | Yes | 테스트 대상 |
+
+| 항목     | 타입        | 필수 | 설명        |
+| -------- | ----------- | ---- | ----------- |
+| 컴포넌트 | Component[] | Yes  | 테스트 대상 |
 
 #### 출력 스펙
-| 항목 | 타입 | 설명 |
-|------|------|------|
+
+| 항목        | 타입      | 설명          |
+| ----------- | --------- | ------------- |
 | 테스트 파일 | .test.tsx | 테스트 케이스 |
 
 #### 성공 기준
+
 - [ ] AIBadge 테스트 (variant, label, custom props)
 - [ ] AITransparencyNotice 테스트 (full/compact)
 - [ ] MockDataNotice 테스트
@@ -671,35 +709,36 @@ graph TD
 - [ ] 테스트 통과율 100%
 
 #### 파일 배치
-| 파일 경로 | 변경 유형 | 설명 |
-|-----------|----------|------|
-| `apps/web/tests/components/common/AIBadge.test.tsx` | create | 테스트 파일 |
+
+| 파일 경로                                           | 변경 유형 | 설명        |
+| --------------------------------------------------- | --------- | ----------- |
+| `apps/web/tests/components/common/AIBadge.test.tsx` | create    | 테스트 파일 |
 
 ---
 
 ### 총 소요시간 요약
 
-| 원자 | 소요시간 | 병렬 가능 | 상태 |
-|------|----------|----------|------|
-| ATOM-1 | 1시간 | Yes | ⏳ 대기 |
-| ATOM-2 | 0.5시간 | Yes | ⏳ 대기 |
-| ATOM-3 | 1.5시간 | No | ⏳ 대기 |
-| ATOM-4 | 1시간 | Yes | ⏳ 대기 |
-| ATOM-5 | 1시간 | Yes | ⏳ 대기 |
-| ATOM-6 | 1시간 | Yes | ⏳ 대기 |
-| ATOM-7 | 1.5시간 | No | ⏳ 대기 |
-| **총합** | **7.5시간** | 병렬 시 **5시간** | |
+| 원자     | 소요시간    | 병렬 가능         | 상태    |
+| -------- | ----------- | ----------------- | ------- |
+| ATOM-1   | 1시간       | Yes               | ⏳ 대기 |
+| ATOM-2   | 0.5시간     | Yes               | ⏳ 대기 |
+| ATOM-3   | 1.5시간     | No                | ⏳ 대기 |
+| ATOM-4   | 1시간       | Yes               | ⏳ 대기 |
+| ATOM-5   | 1시간       | Yes               | ⏳ 대기 |
+| ATOM-6   | 1시간       | Yes               | ⏳ 대기 |
+| ATOM-7   | 1.5시간     | No                | ⏳ 대기 |
+| **총합** | **7.5시간** | 병렬 시 **5시간** |         |
 
 ---
 
 ## 10. 구현 파일 목록
 
-| 파일 | 설명 | 상태 |
-|------|------|------|
-| `components/common/AIBadge.tsx` | AIBadge + AITransparencyNotice | ✅ |
-| `components/common/MockDataNotice.tsx` | Mock 데이터 알림 | ⏳ |
-| `components/analysis/AnalysisResultCard.tsx` | 통합 카드 | ⏳ |
-| `tests/components/common/AIBadge.test.tsx` | 테스트 | ✅ |
+| 파일                                         | 설명                           | 상태 |
+| -------------------------------------------- | ------------------------------ | ---- |
+| `components/common/AIBadge.tsx`              | AIBadge + AITransparencyNotice | ✅   |
+| `components/common/MockDataNotice.tsx`       | Mock 데이터 알림               | ⏳   |
+| `components/analysis/AnalysisResultCard.tsx` | 통합 카드                      | ⏳   |
+| `tests/components/common/AIBadge.test.tsx`   | 테스트                         | ✅   |
 
 ---
 
@@ -708,8 +747,8 @@ graph TD
 
 ### 변경 이력
 
-| 버전 | 날짜 | 변경 내용 |
-|------|------|----------|
-| 1.0 | 2026-01-16 | 초기 버전 (제안) |
-| 2.0 | 2026-01-16 | 실제 구현 반영 - AIDisclaimer → AITransparencyNotice, Mock 기능 Phase 2 연기 |
-| 3.0 | 2026-01-19 | P3 원자 분해 고도화 - Phase 2 원자 분해, 의존성 그래프 추가 |
+| 버전 | 날짜       | 변경 내용                                                                    |
+| ---- | ---------- | ---------------------------------------------------------------------------- |
+| 1.0  | 2026-01-16 | 초기 버전 (제안)                                                             |
+| 2.0  | 2026-01-16 | 실제 구현 반영 - AIDisclaimer → AITransparencyNotice, Mock 기능 Phase 2 연기 |
+| 3.0  | 2026-01-19 | P3 원자 분해 고도화 - Phase 2 원자 분해, 의존성 그래프 추가                  |

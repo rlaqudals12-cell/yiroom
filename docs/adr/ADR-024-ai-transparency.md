@@ -1,5 +1,14 @@
 # ADR-024: AI 투명성 고지 (AIBadge)
 
+## 2026-09-08 추가 결정: 방법론 읽기 전용 공개
+
+- 근거: `c:/tmp/yiroom-competitor-recon-2026-09-02.md` §⑤, 원리 `personal-contrast.md` 및 `security-patterns.md`.
+- `/methodology`에서 저장소 원리 문서를 서버 렌더링한다. 초기 공개는 검토한 `personal-contrast.md`로 제한한다.
+- 명시적 허용 목록과 매 로드 시 의료 표현 스캔을 모두 통과해야 공개한다. 미등록 문서 자동 공개와 사용자 경로 입력은 허용하지 않는다.
+- 원문의 제목·문단·목록·표·코드·강조를 React로 렌더링하며 HTML 실행과 내부 문서 링크 이동은 허용하지 않는다.
+- 검색 노출은 noindex로 시작하고 sitemap에는 추가하지 않는다. 전체 문서 자동 공개보다 범위는 좁지만 미검토 표현 노출을 방지한다.
+- 입출력·검증 계약: [SDD-AI-TRANSPARENCY](../specs/SDD-AI-TRANSPARENCY.md)의 방법론 공개 절.
+
 ## 0. 궁극의 형태 (P1)
 
 ### 이상적 최종 상태
@@ -15,10 +24,10 @@
 
 ### 100점 기준
 
-| 지표 | 100점 기준 |
-|------|-----------|
-| 배지 적용 | AI 콘텐츠 100% 표시 |
-| 면책 고지 | 분석 결과 100% 포함 |
+| 지표      | 100점 기준            |
+| --------- | --------------------- |
+| 배지 적용 | AI 콘텐츠 100% 표시   |
+| 면책 고지 | 분석 결과 100% 포함   |
 | 법적 준수 | AI 기본법 제31조 100% |
 
 ### 현재 달성률
@@ -47,14 +56,14 @@ AI 기본법 제31조 (AI 생성물 표시 의무)
 
 ### 이룸에서 AI가 생성하는 콘텐츠
 
-| 콘텐츠 | AI 역할 | 표시 필요 |
-|--------|--------|----------|
-| 퍼스널컬러 분석 결과 | Gemini | ✅ 필수 |
-| 피부 분석 결과 | Gemini | ✅ 필수 |
-| 체형 분석 결과 | Gemini | ✅ 필수 |
-| 제품 추천 텍스트 | Gemini | ✅ 필수 |
-| 운동/영양 조언 | Gemini | ✅ 필수 |
-| UI 레이블 | 정적 텍스트 | ❌ 불필요 |
+| 콘텐츠               | AI 역할     | 표시 필요 |
+| -------------------- | ----------- | --------- |
+| 퍼스널컬러 분석 결과 | Gemini      | ✅ 필수   |
+| 피부 분석 결과       | Gemini      | ✅ 필수   |
+| 체형 분석 결과       | Gemini      | ✅ 필수   |
+| 제품 추천 텍스트     | Gemini      | ✅ 필수   |
+| 운동/영양 조언       | Gemini      | ✅ 필수   |
+| UI 레이블            | 정적 텍스트 | ❌ 불필요 |
 
 ## 결정 (Decision)
 
@@ -84,11 +93,11 @@ AI 기본법 제31조 (AI 생성물 표시 의무)
 
 ### 표시 요소
 
-| 요소 | 위치 | 내용 |
-|------|------|------|
-| **AIBadge** | 결과 카드 상단 | "AI 분석" 뱃지 |
-| **면책 고지** | 결과 카드 하단 | 참고 용도, 전문가 상담 권장 |
-| **모델 정보** | 상세 정보 (선택) | "Gemini 3 Flash 사용" |
+| 요소          | 위치             | 내용                        |
+| ------------- | ---------------- | --------------------------- |
+| **AIBadge**   | 결과 카드 상단   | "AI 분석" 뱃지              |
+| **면책 고지** | 결과 카드 하단   | 참고 용도, 전문가 상담 권장 |
+| **모델 정보** | 상세 정보 (선택) | "Gemini 3 Flash 사용"       |
 
 ### Mock Fallback 시 표시
 
@@ -100,11 +109,11 @@ AI 서비스 불가 시:
 
 ## 대안 (Alternatives Considered)
 
-| 대안 | 장점 | 단점 | 제외 사유 |
-|------|------|------|----------|
-| 표시 없음 | UX 깔끔 | 법적 위반 | `LEGAL_ISSUE` - AI 기본법 위반 |
+| 대안                 | 장점        | 단점        | 제외 사유                         |
+| -------------------- | ----------- | ----------- | --------------------------------- |
+| 표시 없음            | UX 깔끔     | 법적 위반   | `LEGAL_ISSUE` - AI 기본법 위반    |
 | 페이지 하단에만 표시 | 방해 최소화 | 인지도 낮음 | `LOW_ROI` - 법적 요건 미충족 가능 |
-| 팝업 경고 | 확실한 인지 | UX 방해 | `NOT_NEEDED` - 과도한 경고 |
+| 팝업 경고            | 확실한 인지 | UX 방해     | `NOT_NEEDED` - 과도한 경고        |
 
 ## 결과 (Consequences)
 
@@ -142,11 +151,7 @@ export function AIBadge({ variant = 'default', showDetails = false }: AIBadgePro
       <span className="font-medium">
         {variant === 'mock' ? 'AI 분석 (임시 데이터)' : 'AI 분석'}
       </span>
-      {showDetails && (
-        <span className="text-xs text-muted-foreground">
-          Gemini 3 Flash
-        </span>
-      )}
+      {showDetails && <span className="text-xs text-muted-foreground">Gemini 3 Flash</span>}
     </div>
   );
 }
@@ -174,9 +179,7 @@ export function AIDisclaimer({ type = 'default' }: AIDisclaimerProps) {
       <div className="flex items-start gap-2">
         <svg className="w-4 h-4 mt-0.5 text-amber-600" /* 경고 아이콘 */ />
         <div>
-          <p className="font-medium text-amber-800 dark:text-amber-200">
-            AI 생성 콘텐츠 안내
-          </p>
+          <p className="font-medium text-amber-800 dark:text-amber-200">AI 생성 콘텐츠 안내</p>
           <p className="text-amber-700 dark:text-amber-300">
             이 결과는 AI가 생성한 것입니다. {DISCLAIMERS[type]}
           </p>
@@ -207,17 +210,12 @@ export function AnalysisResultCard({ result, usedMock }: AnalysisResultCardProps
       {/* Mock 사용 시 추가 안내 */}
       {usedMock && (
         <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg text-sm">
-          <p>
-            현재 AI 서비스를 이용할 수 없어 샘플 결과를 표시합니다.
-            잠시 후 다시 시도해주세요.
-          </p>
+          <p>현재 AI 서비스를 이용할 수 없어 샘플 결과를 표시합니다. 잠시 후 다시 시도해주세요.</p>
         </div>
       )}
 
       {/* 분석 결과 내용 */}
-      <div className="space-y-4">
-        {/* 결과 표시 */}
-      </div>
+      <div className="space-y-4">{/* 결과 표시 */}</div>
 
       {/* 하단: AI 면책 고지 */}
       <AIDisclaimer type={result.type} />
@@ -240,9 +238,11 @@ await logAudit(supabase, 'ai.result_displayed', {
 ## 관련 문서
 
 ### 원리 문서 (과학적 기초)
+
 - [원리: 법적 준수](../principles/legal-compliance.md) - AI 투명성 고지 의무
 
 ### 관련 ADR/스펙
+
 - [ADR-003: AI 모델 선택](./ADR-003-ai-model-selection.md)
 - [ADR-007: Mock Fallback 전략](./ADR-007-mock-fallback-strategy.md)
 - [ADR-025: 감사 로그](./ADR-025-audit-logging.md)
@@ -251,8 +251,8 @@ await logAudit(supabase, 'ai.result_displayed', {
 
 이 ADR을 구현하는 스펙 문서:
 
-| 스펙 | 상태 | 설명 |
-|------|------|------|
+| 스펙                                                   | 상태      | 설명                                   |
+| ------------------------------------------------------ | --------- | -------------------------------------- |
 | [SDD-AI-TRANSPARENCY](../specs/SDD-AI-TRANSPARENCY.md) | ✅ 구현됨 | AIBadge 컴포넌트, 면책 고지, Mock 표시 |
 
 ### 핵심 구현 파일

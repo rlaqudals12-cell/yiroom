@@ -33,7 +33,7 @@ interface DrapingShareSectionProps {
 }
 
 // 유입 링크 — PersonaShareSection과 동일 정본 패턴(카드발 귀속은 ref=card로 통일)
-const SHARE_LANDING_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app'}/?ref=card`;
+const SHARE_LANDING_URL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.vercel.app'}/?ref=card`;
 
 export function DrapingShareSection({
   imageUrl,
@@ -187,6 +187,7 @@ export function DrapingShareSection({
                 bestColors={bestColors}
                 serialNo={serialNo}
                 inviteText={t('shareCard.invite')}
+                aiBadgeText={t('shareCard.aiGenerated')}
                 drapeLabel={t('reportCard.drapingLabel')}
               />
             </div>

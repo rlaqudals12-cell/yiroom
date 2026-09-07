@@ -53,14 +53,14 @@ describe('iHerb API Client', () => {
       expect(products.length).toBeLessThanOrEqual(3);
     });
 
-    it('subId를 딥링크에 포함시킨다', async () => {
+    it('subId를 정보 링크에 추가하지 않는다', async () => {
       const products = await searchIHerbProducts({
         keyword: '단백질',
         subId: 'test-campaign',
       });
 
       if (products.length > 0) {
-        expect(products[0].affiliateUrl).toContain('test-campaign');
+        expect(products[0].affiliateUrl).not.toContain('test-campaign');
       }
     });
 
@@ -78,26 +78,26 @@ describe('iHerb API Client', () => {
   });
 
   describe('createIHerbDeeplink', () => {
-    it('Mock 딥링크를 생성한다', async () => {
+    it('정보 URL을 그대로 반환한다', async () => {
       const url = 'https://kr.iherb.com/pr/test-product/12345';
       const deeplink = await createIHerbDeeplink(url);
 
       expect(deeplink).toContain('kr.iherb.com');
-      expect(deeplink).toContain('rcode=MOCK');
+      expect(deeplink).toBe(url);
     });
 
-    it('subId를 포함한 딥링크를 생성한다', async () => {
+    it('subId를 정보 링크에 추가하지 않는다', async () => {
       const url = 'https://kr.iherb.com/pr/test-product/12345';
       const deeplink = await createIHerbDeeplink(url, 'my-campaign');
 
-      expect(deeplink).toContain('pcode=my-campaign');
+      expect(deeplink).toBe(url);
     });
 
     it('쿼리 파라미터가 있는 URL도 처리한다', async () => {
       const url = 'https://kr.iherb.com/pr/test-product/12345?ref=popular';
       const deeplink = await createIHerbDeeplink(url);
 
-      expect(deeplink).toContain('rcode=MOCK');
+      expect(deeplink).toBe(url);
       expect(deeplink).toContain('ref=popular');
     });
   });
@@ -114,7 +114,7 @@ describe('iHerb API Client', () => {
       const products = await getIHerbCategoryProducts('vitamins', 5, 'category-test');
 
       if (products.length > 0) {
-        expect(products[0].affiliateUrl).toContain('category-test');
+        expect(products[0].affiliateUrl).not.toContain('category-test');
       }
     });
   });

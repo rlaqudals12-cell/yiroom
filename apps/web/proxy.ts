@@ -101,6 +101,7 @@ const isPublicRoute = createRouteMatcher([
   '/manifest.webmanifest',
   '/privacy',
   '/privacy-policy',
+  '/methodology',
   '/terms(.*)',
   '/robots.txt',
   '/sitemap.xml',

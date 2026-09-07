@@ -239,27 +239,9 @@ export async function searchIHerbProducts(
 /**
  * iHerb 딥링크 생성
  */
-export async function createIHerbDeeplink(productUrl: string, subId?: string): Promise<string> {
-  const config = getConfig();
-
-  // Mock 모드
-  if (!config) {
-    // Mock: 원본 URL에 가상 tracking 파라미터 추가
-    const baseUrl = productUrl.includes('?') ? productUrl : `${productUrl}?`;
-    const pcodePart = subId ? `&pcode=${subId}` : '';
-    return `${baseUrl}&rcode=MOCK123${pcodePart}`;
-  }
-
-  // Partnerize Click URL 생성
-  try {
-    const encodedUrl = encodeURIComponent(productUrl);
-    const clickUrl = `https://prf.hn/click/camref:${config.campaignId}/pubref:${subId || ''}/destination:${encodedUrl}`;
-    return clickUrl;
-  } catch (error) {
-    affiliateLogger.error('iHerb 딥링크 생성 에러:', error);
-    // Fallback
-    return productUrl;
-  }
+export async function createIHerbDeeplink(productUrl: string, _subId?: string): Promise<string> {
+  // 미가입 판매처이므로 환경변수 유무와 관계없이 정보 URL만 반환한다.
+  return productUrl;
 }
 
 /**
@@ -350,10 +332,8 @@ function getMockProducts(
 /**
  * Mock 딥링크 생성
  */
-function createMockDeeplink(productUrl: string, subId?: string): string {
-  const separator = productUrl.includes('?') ? '&' : '?';
-  const pcodePart = subId ? `&pcode=${subId}` : '';
-  return `${productUrl}${separator}rcode=MOCK123${pcodePart}`;
+function createMockDeeplink(productUrl: string, _subId?: string): string {
+  return productUrl;
 }
 
 /**
@@ -361,17 +341,15 @@ function createMockDeeplink(productUrl: string, subId?: string): string {
  */
 function mapToAffiliateProduct(
   product: IHerbProductFeed,
-  publisherId: string,
-  subId?: string
+  _publisherId: string,
+  _subId?: string
 ): AffiliateProduct {
   const priceKrw = Math.round(product.price * USD_TO_KRW);
   const priceOriginalKrw = product.discount_percent
     ? Math.round((product.price / (1 - product.discount_percent / 100)) * USD_TO_KRW)
     : undefined;
 
-  // Partnerize 딥링크 URL 생성
-  const encodedUrl = encodeURIComponent(product.product_url);
-  const affiliateUrl = `https://prf.hn/click/camref:${publisherId}/pubref:${subId || ''}/destination:${encodedUrl}`;
+  const affiliateUrl = product.product_url;
 
   return {
     id: `iherb-${product.product_id}`,

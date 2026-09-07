@@ -36,6 +36,15 @@ describe('ShareReportButton', () => {
     vi.unstubAllGlobals();
   });
 
+  it('공유 버튼 위에 전송 유도 리드를 제공하고 카카오 전송 라벨을 쓴다', () => {
+    render(<ShareReportButton sessionId="session-1" />);
+    const lead = screen.getByTestId('share-report-lead');
+    const button = screen.getByTestId('share-report-kakao-button');
+    expect(lead).toHaveTextContent('shareReport.lead');
+    expect(lead.nextElementSibling).toContainElement(button);
+    expect(button).toHaveAccessibleName('shareReport.sendKakao');
+  });
+
   it('공개 링크 생성 뒤 카카오 ref와 생성 이벤트를 배선한다', async () => {
     mocks.trackCreated.mockReturnValueOnce(new Promise(() => {}));
     render(<ShareReportButton sessionId="session-1" />);

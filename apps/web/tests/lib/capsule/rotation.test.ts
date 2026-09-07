@@ -4,9 +4,38 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { findDomainsNeedingRotation } from '@/lib/capsule/rotation';
+import { findDomainsNeedingRotation, rotateCapsule } from '@/lib/capsule/rotation';
 import { _clearRegistry, registerDomain } from '@/lib/capsule/registry';
-import type { Capsule, CapsuleItem } from '@/types/capsule';
+import type { BeautyProfile, Capsule, CapsuleItem } from '@/types/capsule';
+
+const db = vi.hoisted(() => {
+  const chain: Record<string, ReturnType<typeof vi.fn>> = {};
+  for (const key of ['from', 'insert', 'select', 'update', 'eq', 'delete', 'in']) {
+    chain[key] = vi.fn(() => chain);
+  }
+  chain.single = vi.fn(async () => ({ data: null, error: null }));
+  chain.then = vi.fn((resolve: (value: unknown) => void) =>
+    Promise.resolve({ data: [], error: null }).then(resolve)
+  );
+  return chain;
+});
+vi.mock('@/lib/supabase/service-role', () => ({ createServiceRoleClient: () => db }));
+
+describe('로테이션 아이템 소유권', () => {
+  it('새 아이템에 부모 캡슐의 사용자 ID를 저장한다', async () => {
+    _clearRegistry();
+    const engine = {
+      ...createMockEngine('skin', true),
+      rotate: vi.fn().mockResolvedValue([{ id: 'new' }]),
+    };
+    registerDomain(engine as unknown as Parameters<typeof registerDomain>[0]);
+    const capsule = createCapsule('skin', 40);
+    await rotateCapsule(capsule, {} as BeautyProfile);
+    expect(db.insert).toHaveBeenCalledWith([
+      expect.objectContaining({ capsule_id: capsule.id, clerk_user_id: capsule.userId }),
+    ]);
+  });
+});
 
 // =============================================================================
 // Mock 엔진

@@ -455,15 +455,16 @@ describe('i18n messages', () => {
     );
 
     it.each(['ko', 'en', 'ja', 'zh'])(
-      '%s 통합분석(/analysis/integrated)행 CTA 3곳 문구가 동일하다',
+      '%s 랜딩 CTA는 위치에 맞는 재현성 문구를 제공한다',
       (locale) => {
         const messages = Object.fromEntries(locales()) as Record<
           string,
           Record<string, Record<string, string>>
         >;
         const { startFree, paletteCta, bottomCtaSignUp } = messages[locale].landing;
-        expect(paletteCta).toBe(startFree);
-        expect(bottomCtaSignUp).toBe(startFree);
+        expect(paletteCta).not.toBe(startFree);
+        expect(bottomCtaSignUp).not.toBe(startFree);
+        expect(startFree.length).toBeGreaterThan(bottomCtaSignUp.length);
       }
     );
   });

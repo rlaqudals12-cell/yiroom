@@ -18,7 +18,11 @@ interface MetadataConfig {
   titleMapper?: Record<string, string>;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://yiroom.app';
+// 배포 도메인은 SITE_URL로 통일하고 기존 APP_URL 설정은 호환용으로 유지한다.
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  'https://yiroom.vercel.app';
 
 /**
  * 분석 결과 페이지 메타데이터 생성

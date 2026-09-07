@@ -50,6 +50,15 @@ describe('MultiChannelProductCard', () => {
     vi.clearAllMocks();
   });
 
+  it('마운트와 포인터 통과만으로 구매 링크를 열지 않는다', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+    render(<MultiChannelProductCard productName="테스트 상품" channels={mockChannels} />);
+    fireEvent.mouseEnter(screen.getByText('쿠팡'));
+    fireEvent.pointerEnter(screen.getByText('쿠팡'));
+    expect(open).not.toHaveBeenCalled();
+    open.mockRestore();
+  });
+
   it('제품 카드를 렌더링한다', () => {
     render(
       <MultiChannelProductCard

@@ -12,11 +12,12 @@ vi.mock('@/lib/affiliate', () => ({
     url: 'https://link.coupang.com/a/mock',
     partner: 'coupang',
     success: true,
+    linkType: 'affiliate',
   }),
   createMultipleDeeplinks: vi.fn().mockResolvedValue(
     new Map([
-      ['coupang', { url: 'https://link.coupang.com/a/1', success: true }],
-      ['iherb', { url: 'https://kr.iherb.com/pr/1?pcode=test', success: true }],
+      ['coupang', { url: 'https://link.coupang.com/a/1', success: true, linkType: 'affiliate' }],
+      ['iherb', { url: 'https://kr.iherb.com/pr/1', success: true, linkType: 'information' }],
     ])
   ),
 }));
@@ -43,6 +44,7 @@ describe('POST /api/affiliate/deeplink', () => {
     expect(data.success).toBe(true);
     expect(data.deeplink).toBeDefined();
     expect(data.partner).toBe('coupang');
+    expect(data.linkType).toBe('affiliate');
   });
 
   it('partner가 없으면 400 에러를 반환한다', async () => {
@@ -133,6 +135,10 @@ describe('PUT /api/affiliate/deeplink', () => {
     expect(data.deeplinks).toBeDefined();
     expect(data.deeplinks.coupang).toBeDefined();
     expect(data.deeplinks.iherb).toBeDefined();
+    expect(data.deeplinks.iherb).toMatchObject({
+      url: 'https://kr.iherb.com/pr/1',
+      linkType: 'information',
+    });
   });
 
   it('urls가 없으면 400 에러를 반환한다', async () => {

@@ -53,14 +53,14 @@ describe('Musinsa API Client', () => {
       expect(products.length).toBeLessThanOrEqual(3);
     });
 
-    it('subId를 딥링크에 포함시킨다', async () => {
+    it('subId를 정보 링크에 추가하지 않는다', async () => {
       const products = await searchMusinsaProducts({
         keyword: '티셔츠',
         subId: 'test-campaign',
       });
 
       if (products.length > 0) {
-        expect(products[0].affiliateUrl).toContain('test-campaign');
+        expect(products[0].affiliateUrl).not.toContain('test-campaign');
       }
     });
 
@@ -90,26 +90,26 @@ describe('Musinsa API Client', () => {
   });
 
   describe('createMusinsaDeeplink', () => {
-    it('Mock 딥링크를 생성한다', async () => {
+    it('정보 URL을 그대로 반환한다', async () => {
       const url = 'https://www.musinsa.com/app/goods/12345';
       const deeplink = await createMusinsaDeeplink(url);
 
       expect(deeplink).toContain('musinsa.com');
-      expect(deeplink).toContain('curator=MOCK');
+      expect(deeplink).toBe(url);
     });
 
-    it('subId를 포함한 딥링크를 생성한다', async () => {
+    it('subId를 정보 링크에 추가하지 않는다', async () => {
       const url = 'https://www.musinsa.com/app/goods/12345';
       const deeplink = await createMusinsaDeeplink(url, 'my-campaign');
 
-      expect(deeplink).toContain('utm_source=my-campaign');
+      expect(deeplink).toBe(url);
     });
 
     it('쿼리 파라미터가 있는 URL도 처리한다', async () => {
       const url = 'https://www.musinsa.com/app/goods/12345?size=M';
       const deeplink = await createMusinsaDeeplink(url);
 
-      expect(deeplink).toContain('curator=MOCK');
+      expect(deeplink).toBe(url);
       expect(deeplink).toContain('size=M');
     });
   });
@@ -126,7 +126,7 @@ describe('Musinsa API Client', () => {
       const products = await getMusinsaCategoryProducts('shoes', 5, 'category-test');
 
       if (products.length > 0) {
-        expect(products[0].affiliateUrl).toContain('category-test');
+        expect(products[0].affiliateUrl).not.toContain('category-test');
       }
     });
   });

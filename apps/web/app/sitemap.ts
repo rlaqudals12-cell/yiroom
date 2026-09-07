@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.vercel.app';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 정적 페이지

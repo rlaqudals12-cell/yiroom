@@ -31,6 +31,8 @@ export interface DeeplinkResult {
   partner: AffiliatePartnerName;
   /** 생성 성공 여부 */
   success: boolean;
+  /** 정보 링크 생성 성공을 수익 귀속 성공으로 오인하지 않도록 구분한다. */
+  linkType: 'affiliate' | 'information';
   /** 에러 메시지 */
   error?: string;
 }
@@ -44,29 +46,34 @@ export interface DeeplinkResult {
  * @description 각 파트너의 규격에 맞는 어필리에이트 딥링크 생성
  */
 export async function createDeeplink(options: DeeplinkOptions): Promise<DeeplinkResult> {
-  const { partner, productUrl, productId, subId, campaignId } = options;
+  const { partner, productUrl, subId, campaignId } = options;
 
   try {
     let url: string;
 
     switch (partner) {
-      case 'coupang':
-        url = await createCoupangDeeplink(productUrl, subId || campaignId);
+      case 'coupang': {
+        const deeplink = await createCoupangDeeplink(productUrl, subId || campaignId);
+        // OPEN API 미해금(키 없음)이면 Mock URL이 돌아온다 — 수익 링크로 표기하면 거짓이므로 정보 링크로 강등
+        if (deeplink.includes('link.coupang.com/a/mock')) {
+          return { url: productUrl, partner, success: true, linkType: 'information' };
+        }
+        url = deeplink;
         break;
+      }
 
       case 'iherb':
-        url = createIherbDeeplink(productUrl, productId, subId);
-        break;
-
       case 'musinsa':
-        url = createMusinsaDeeplink(productUrl, productId, subId);
-        break;
+      case 'oliveyoung':
+        // 미가입·승인 대기 판매처에는 추측한 수익 추적 파라미터를 붙이지 않는다.
+        return { url: productUrl, partner, success: true, linkType: 'information' };
 
       default:
         return {
           url: productUrl,
           partner,
           success: false,
+          linkType: 'information',
           error: `지원하지 않는 파트너: ${partner}`,
         };
     }
@@ -75,6 +82,7 @@ export async function createDeeplink(options: DeeplinkOptions): Promise<Deeplink
       url,
       partner,
       success: true,
+      linkType: url.startsWith('https://link.coupang.com/') ? 'affiliate' : 'information',
     };
   } catch (error) {
     affiliateLogger.error(`${partner} 딥링크 생성 실패:`, error);
@@ -82,6 +90,7 @@ export async function createDeeplink(options: DeeplinkOptions): Promise<Deeplink
       url: productUrl,
       partner,
       success: false,
+      linkType: 'information',
       error: error instanceof Error ? error.message : '딥링크 생성 실패',
     };
   }
@@ -108,36 +117,6 @@ export async function createMultipleDeeplinks(
   await Promise.all(promises);
 
   return results;
-}
-
-// ============================================
-// 파트너별 딥링크 생성
-// ============================================
-
-/**
- * iHerb 딥링크 생성
- * @description Partnerize 트래킹 파라미터 포함
- */
-function createIherbDeeplink(productUrl: string, productId?: string, subId?: string): string {
-  // iHerb는 pcode 파라미터로 어필리에이트 추적
-  const affiliateCode = process.env.IHERB_AFFILIATE_CODE || 'YIROOM';
-  const trackingSubId = subId || 'default';
-
-  // URL에 이미 파라미터가 있는지 확인
-  const separator = productUrl.includes('?') ? '&' : '?';
-
-  return `${productUrl}${separator}pcode=${affiliateCode}&rcode=${trackingSubId}`;
-}
-
-/**
- * 무신사 딥링크 생성
- * @description 큐레이터 트래킹 파라미터 포함
- */
-function createMusinsaDeeplink(productUrl: string, productId?: string, subId?: string): string {
-  const curatorId = process.env.MUSINSA_CURATOR_ID || 'yiroom';
-  const separator = productUrl.includes('?') ? '&' : '?';
-
-  return `${productUrl}${separator}utm_source=curator&utm_medium=${curatorId}&utm_campaign=${subId || 'general'}`;
 }
 
 // ============================================
@@ -206,9 +185,9 @@ export function getDeeplinkFormat(partner: AffiliatePartnerName): string {
     case 'coupang':
       return 'https://link.coupang.com/a/{productId}?subId={subId}';
     case 'iherb':
-      return 'https://kr.iherb.com/pr/{slug}/{productId}?pcode={code}&rcode={subId}';
+      return 'https://kr.iherb.com/pr/{slug}/{productId}';
     case 'musinsa':
-      return 'https://www.musinsa.com/app/goods/{productId}?utm_source=curator&utm_medium={curatorId}';
+      return 'https://www.musinsa.com/app/goods/{productId}';
     default:
       return '';
   }

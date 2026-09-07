@@ -4,7 +4,7 @@
  */
 
 // 실서빙 도메인 기준 절대 URL — layout.tsx metadataBase와 동일 규칙 (하드코딩 금지, 2026-07 브랜드 감사)
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.vercel.app';
 
 interface OrganizationJsonLdProps {
   name?: string;

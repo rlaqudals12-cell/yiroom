@@ -97,13 +97,16 @@ export function ShareReportButton({ sessionId }: ShareReportButtonProps) {
       data-testid="share-report-actions"
     >
       <p className="text-sm font-semibold text-foreground">{t('shareReport.idle')}</p>
+      <p className="text-sm text-muted-foreground" data-testid="share-report-lead">
+        {t('shareReport.lead')}
+      </p>
       <div className="grid grid-cols-2 gap-2">
         <Button
           type="button"
           variant="outline"
           onClick={handleKakaoShare}
           disabled={state === 'loading'}
-          aria-label={tShare('shareOnKakao')}
+          aria-label={t('shareReport.sendKakao')}
           data-testid="share-report-kakao-button"
         >
           {loadingChannel === 'kakao' ? (
@@ -111,7 +114,7 @@ export function ShareReportButton({ sessionId }: ShareReportButtonProps) {
           ) : (
             <MessageCircle className="mr-2 h-4 w-4" />
           )}
-          {tShare('shareOnKakao')}
+          {t('shareReport.sendKakao')}
         </Button>
         <Button
           type="button"

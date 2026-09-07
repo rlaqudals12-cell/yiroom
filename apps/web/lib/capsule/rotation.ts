@@ -78,7 +78,13 @@ export async function rotateCapsule(
   // 제거
   if (itemsToRemove.length > 0) {
     const removeIds = itemsToRemove.map((i) => i.id);
-    await supabase.from('capsule_items').delete().in('id', removeIds);
+    const { error: removeError } = await supabase
+      .from('capsule_items')
+      .delete()
+      .in('id', removeIds);
+    if (removeError) {
+      throw new Error(`캡슐 아이템 제거 실패: ${removeError.message}`);
+    }
   }
 
   // 추가
@@ -86,11 +92,16 @@ export async function rotateCapsule(
   if (newItems.length > 0) {
     const rows = newItems.map((item) => ({
       capsule_id: capsule.id,
+      clerk_user_id: capsule.userId,
       item: item as unknown,
       profile_fit_score: 0,
     }));
 
-    const { data } = await supabase.from('capsule_items').insert(rows).select();
+    const { data, error: insertError } = await supabase.from('capsule_items').insert(rows).select();
+    // 제거 후 삽입 실패 = 비원자(트랜잭션 없음) 한계. 무음 성공·허위 이력 대신 실패를 전파한다.
+    if (insertError) {
+      throw new Error(`캡슐 아이템 추가 실패: ${insertError.message}`);
+    }
 
     if (data) {
       for (const row of data) {

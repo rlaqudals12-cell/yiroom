@@ -82,7 +82,8 @@ describe('Global Affiliate Links', () => {
         subId: 'campaign123',
       });
 
-      expect(result.url).toContain('rcode=campaign123');
+      expect(new URL(result.url).searchParams.has('rcode')).toBe(false);
+      expect(new URL(result.url).searchParams.has('pcode')).toBe(false);
     });
 
     it('지원하지 않는 파트너는 실패', () => {

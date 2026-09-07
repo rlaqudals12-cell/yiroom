@@ -143,6 +143,9 @@ describe('createCapsule', () => {
     expect(result.domainId).toBe('skin');
     expect(result.status).toBe('active');
     expect(result.ccs).toBe(85);
+    expect(mockChain.insert).toHaveBeenCalledWith([
+      expect.objectContaining({ capsule_id: 'capsule_1', clerk_user_id: 'user_123' }),
+    ]);
   });
 
   it('CCS 점수를 0-100으로 클램핑한다', async () => {
@@ -181,6 +184,9 @@ describe('addItemToCapsule', () => {
     mockChain.then.mockImplementation((resolve: (v: unknown) => void) => {
       callCount++;
       if (callCount === 1) {
+        return Promise.resolve({ data: { clerk_user_id: 'user_123' }, error: null }).then(resolve);
+      }
+      if (callCount === 2) {
         return Promise.resolve({ data: mockItemRow, error: null }).then(resolve);
       }
       // updated_at 갱신
@@ -193,6 +199,9 @@ describe('addItemToCapsule', () => {
     expect(result.capsuleId).toBe('capsule_1');
     expect(result.profileFitScore).toBe(90);
     expect(mockChain.from).toHaveBeenCalledWith('capsule_items');
+    expect(mockChain.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ clerk_user_id: 'user_123' })
+    );
   });
 
   it('추가 실패 시 에러를 던진다', async () => {
@@ -201,6 +210,7 @@ describe('addItemToCapsule', () => {
     await expect(addItemToCapsule('capsule_1', { id: 'p1' }, 0)).rejects.toThrow(
       '아이템 추가 실패'
     );
+    expect(mockChain.insert).not.toHaveBeenCalled();
   });
 });
 

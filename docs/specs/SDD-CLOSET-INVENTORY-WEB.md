@@ -6,6 +6,13 @@
 > **선행 의존**: 모바일 옷장 인벤토리 UI `implemented` (ADR-098 시점 이미 존재)
 > **트리거 플래그**: `FEATURE_FLAGS.CLOSET_INTEGRATION`
 
+> **착용 기록 계약 보완 (배치 R, 2026-09-08)**: `recordItemsUsage`와
+> `recordOutfitWear`는 SECURITY INVOKER RPC를 우선 호출한다. JWT 소유권 검사와
+> 카운트 증가는 DB 트랜잭션 안에서 수행하며, 코디의 삭제된 구성 아이템은 건너뛴다.
+> RPC 미적용 오류(PGRST202 또는 해당 RPC의 42883)에서만 기존 갱신으로 폴백한다.
+> 권한·실행 오류는 재시도 없이 전파하고 P0002는 기존 not-found 오류로 변환한다.
+> 폴백은 동시 증가 유실·부분 성공 위험이 있으므로 실사용 전 수동 gap-apply가 필요하다.
+
 ---
 
 ## 0. 궁극의 형태 (P1)

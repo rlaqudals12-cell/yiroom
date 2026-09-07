@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { PersonaReportCard } from '@/components/share/PersonaReportCard';
 
 const GROUP_LABELS = {
@@ -26,6 +26,13 @@ const BASE = {
 };
 
 describe('PersonaReportCard — 진단지 리포트 (채점표 없는 신뢰 장치)', () => {
+  it('PNG 캡처 대상 ref 안에 AI 생성 고지가 포함된다', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    render(<PersonaReportCard ref={ref} {...BASE} attrs={[]} />);
+    expect(ref.current).toBe(screen.getByTestId('persona-report-card'));
+    expect(within(ref.current!).getByTestId('ai-badge')).toHaveTextContent('AI 생성');
+  });
+
   it('진단명이 히어로, 은유가 서브카피로 렌더된다', () => {
     render(<PersonaReportCard {...BASE} toneName="뮤티드 서머" attrs={[]} />);
     expect(screen.getByTestId('report-hero')).toHaveTextContent('뮤티드 서머');

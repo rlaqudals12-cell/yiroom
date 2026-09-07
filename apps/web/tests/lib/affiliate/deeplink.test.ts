@@ -10,13 +10,11 @@ import {
   isValidDeeplink,
   getDeeplinkFormat,
 } from '@/lib/affiliate/deeplink';
-import type { AffiliatePartnerName } from '@/types/affiliate';
+import { AFFILIATE_PARTNER_STATUS, type AffiliatePartnerName } from '@/types/affiliate';
 
 // coupang 모듈 모킹
 vi.mock('@/lib/affiliate/coupang', () => ({
-  createCoupangDeeplink: vi.fn().mockResolvedValue(
-    'https://link.coupang.com/a/mock?subId=test'
-  ),
+  createCoupangDeeplink: vi.fn().mockResolvedValue('https://link.coupang.com/a/abc123?subId=test'),
 }));
 
 describe('deeplink', () => {
@@ -35,6 +33,7 @@ describe('deeplink', () => {
       expect(result.success).toBe(true);
       expect(result.partner).toBe('coupang');
       expect(result.url).toContain('link.coupang.com');
+      expect(result.linkType).toBe('affiliate');
     });
 
     it('iHerb 딥링크를 생성한다', async () => {
@@ -46,8 +45,8 @@ describe('deeplink', () => {
 
       expect(result.success).toBe(true);
       expect(result.partner).toBe('iherb');
-      expect(result.url).toContain('pcode=');
-      expect(result.url).toContain('rcode=campaign1');
+      expect(result.url).toBe('https://kr.iherb.com/pr/product/12345');
+      expect(result.linkType).toBe('information');
     });
 
     it('무신사 딥링크를 생성한다', async () => {
@@ -59,8 +58,42 @@ describe('deeplink', () => {
 
       expect(result.success).toBe(true);
       expect(result.partner).toBe('musinsa');
-      expect(result.url).toContain('utm_source=curator');
+      expect(result.url).toBe('https://www.musinsa.com/app/goods/123456');
+      expect(result.linkType).toBe('information');
     });
+
+    it('승인 전 올리브영은 원본 정보 링크와 대기 상태를 유지한다', async () => {
+      const productUrl = 'https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A1';
+      const result = await createDeeplink({ partner: 'oliveyoung', productUrl, subId: 'test' });
+      expect(result).toMatchObject({ url: productUrl, success: true, linkType: 'information' });
+      expect(AFFILIATE_PARTNER_STATUS).toEqual({
+        coupang: 'registered',
+        oliveyoung: 'pending_approval',
+        iherb: 'information_only',
+        musinsa: 'information_only',
+      });
+    });
+
+    it.each(['iherb', 'musinsa'] as const)(
+      '미가입 %s는 환경변수와 기존 쿼리가 있어도 원본을 보존한다',
+      async (partner) => {
+        vi.stubEnv('IHERB_AFFILIATE_CODE', 'pretend-issued');
+        vi.stubEnv('MUSINSA_CURATOR_ID', 'pretend-issued');
+        const productUrl =
+          partner === 'iherb'
+            ? 'https://kr.iherb.com/pr/item/1?size=M#detail'
+            : 'https://www.musinsa.com/app/goods/1?size=M#detail';
+        try {
+          expect(await createDeeplink({ partner, productUrl, subId: 'campaign' })).toMatchObject({
+            url: productUrl,
+            linkType: 'information',
+          });
+          expect(getDeeplinkFormat(partner)).not.toMatch(/pcode|rcode|utm_|curator/);
+        } finally {
+          vi.unstubAllEnvs();
+        }
+      }
+    );
 
     it('지원하지 않는 파트너는 실패를 반환한다', async () => {
       const result = await createDeeplink({
@@ -90,26 +123,17 @@ describe('deeplink', () => {
 
   describe('extractProductId', () => {
     it('쿠팡 URL에서 제품 ID를 추출한다', () => {
-      const id = extractProductId(
-        'https://www.coupang.com/vp/products/123456789',
-        'coupang'
-      );
+      const id = extractProductId('https://www.coupang.com/vp/products/123456789', 'coupang');
       expect(id).toBe('123456789');
     });
 
     it('iHerb URL에서 제품 ID를 추출한다', () => {
-      const id = extractProductId(
-        'https://kr.iherb.com/pr/product-name/12345',
-        'iherb'
-      );
+      const id = extractProductId('https://kr.iherb.com/pr/product-name/12345', 'iherb');
       expect(id).toBe('12345');
     });
 
     it('무신사 URL에서 제품 ID를 추출한다', () => {
-      const id = extractProductId(
-        'https://www.musinsa.com/app/goods/123456',
-        'musinsa'
-      );
+      const id = extractProductId('https://www.musinsa.com/app/goods/123456', 'musinsa');
       expect(id).toBe('123456');
     });
 
@@ -119,10 +143,7 @@ describe('deeplink', () => {
     });
 
     it('패턴이 맞지 않으면 null을 반환한다', () => {
-      const id = extractProductId(
-        'https://www.coupang.com/other/path',
-        'coupang'
-      );
+      const id = extractProductId('https://www.coupang.com/other/path', 'coupang');
       expect(id).toBeNull();
     });
   });

@@ -26,10 +26,12 @@ const state = vi.hoisted(() => ({
   selectError: null as unknown,
   updateError: null as unknown,
   ops: [] as RecordedOp[],
+  rpc: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClerkSupabaseClient: () => ({
+    rpc: state.rpc,
     from: () => {
       const op: RecordedOp = { kind: 'select', ids: [], userScoped: false };
       const builder: Record<string, unknown> = {};
@@ -100,9 +102,27 @@ beforeEach(() => {
   state.selectError = null;
   state.updateError = null;
   state.ops = [];
+  state.rpc.mockResolvedValue({ data: null, error: { code: 'PGRST202' } });
 });
 
 describe('PATCH /api/inventory — 코디 배치 착용 기록', () => {
+  it('RPC 적용 환경은 원자 기록 후 성공을 반환한다', async () => {
+    state.rpc.mockResolvedValue({ error: null });
+    const response = await BATCH_PATCH(batchRequest({ action: 'recordUsage', itemIds: [TOP] }));
+    expect(response.status).toBe(200);
+    expect(state.rpc).toHaveBeenCalledWith('record_inventory_usage', {
+      p_item_ids: [TOP],
+      p_require_all: true,
+    });
+    expect(state.ops).toEqual([]);
+  });
+
+  it('RPC 소유권 실패는 갱신 없이 404를 반환한다', async () => {
+    state.rpc.mockResolvedValue({ error: { code: 'P0002' } });
+    const response = await BATCH_PATCH(batchRequest({ action: 'recordUsage', itemIds: [TOP] }));
+    expect(response.status).toBe(404);
+    expect(state.ops).toEqual([]);
+  });
   it('여러 아이템의 use_count를 각각 1 올리고 last_used_at을 갱신한다', async () => {
     state.rows = [
       { id: TOP, use_count: 5 },

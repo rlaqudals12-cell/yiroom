@@ -168,9 +168,7 @@ export function LandingContent(): React.JSX.Element {
                 — xl(1280+)은 컬럼 ~544px로 안전. 그 아래는 검증된 하단 스택 유지 */}
             <div className="relative grid items-center gap-10 xl:grid-cols-[1fr_auto]">
               <div className="min-w-0">
-                <p className="font-serif text-[13px] italic text-[#C56A84]">
-                  Identity Report · Beta
-                </p>
+                <p className="font-serif text-[13px] italic text-[#C56A84]">{t('heroEyebrow')}</p>
                 <h1 className="mt-5 whitespace-pre-line break-keep font-serif text-4xl font-semibold leading-[1.16] tracking-tight xl:text-[56px]">
                   {t('heroTitle')}
                 </h1>
@@ -359,7 +357,10 @@ export function LandingContent(): React.JSX.Element {
           <h2 className="pb-3 pt-12 font-serif text-2xl font-semibold tracking-tight md:text-3xl">
             {t('modulesTitle')}
           </h2>
-          <div className="grid grid-cols-1 gap-4 pb-4 sm:grid-cols-2 md:grid-cols-5">
+          <div
+            data-testid="landing-module-grid"
+            className="grid grid-cols-1 gap-4 pb-4 sm:grid-cols-2 md:grid-cols-5"
+          >
             {MODULE_META.map((module, i) => (
               <Link key={module.id} href={module.href} className="group h-full">
                 <div
@@ -376,6 +377,29 @@ export function LandingContent(): React.JSX.Element {
               </Link>
             ))}
           </div>
+
+          {/* 분석에서 실제 옷 활용으로 이어지는 여정은 사진·점수 없이 안내한다. */}
+          <section
+            data-testid="landing-closet-bridge"
+            className="mt-6 rounded-3xl bg-[#FBF3F1] px-6 py-8 md:px-10"
+          >
+            <h2 className="break-keep font-serif text-2xl font-semibold leading-snug md:text-3xl">
+              {t('closetBridgeTitle')}
+            </h2>
+            <SignUpButton
+              mode="modal"
+              forceRedirectUrl="/analysis/integrated?onboarding=1"
+              signInForceRedirectUrl="/analysis/integrated"
+            >
+              <Button
+                variant="ghost"
+                className="mt-4 h-auto px-0 text-sm text-[#C56A84] hover:bg-transparent"
+              >
+                {t('bottomCtaSignUp')}
+                <ChevronRight className="ml-1 h-4 w-4" aria-hidden="true" />
+              </Button>
+            </SignUpButton>
+          </section>
 
           {/* [5] 결과물 미리보기 — 실카드 부유 + 게이트 카피(미리보기→가입 보상 프레이밍) */}
           <h2 className="pb-1 pt-12 font-serif text-2xl font-semibold tracking-tight md:text-3xl">

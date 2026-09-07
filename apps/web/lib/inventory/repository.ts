@@ -295,11 +295,8 @@ export const ITEM_NOT_FOUND = 'Item not found';
  * (`increment_inventory_use_count`)를 먼저 호출하고, 실패하면 폴백에서
  * `use_count: supabase.rpc(...)`—즉 **Promise 객체**를 숫자 컬럼에 넣는 UPDATE를 던졌다.
  * 그 UPDATE도 실패하면 에러를 통째로 삼켜, 호출측은 성공으로 알고 아무것도 기록되지 않았다.
- * 여기서는 소유권을 검사한 뒤(=RLS에만 기대지 않음) 배치 UPDATE로 갱신하고,
- * 실패는 반드시 호출측으로 전파한다.
- *
- * 왕복 최소화: 같은 use_count를 가진 아이템끼리 묶어 한 문장으로 갱신한다
- * (아이템별 UPDATE = N회 왕복 + 부분 성공 위험).
+ * 배치 R: JWT 소유권을 검사하는 RPC에서 원자 증가한다. RPC 미적용 환경만
+ * 기존 배치 UPDATE를 사용하며, 이 폴백에는 동시 수정 유실 가능성이 남는다.
  *
  * @param options.requireAll 기본 true — 요청한 아이템 중 하나라도 내 것이 아니면 실패시킨다.
  *   저장된 코디처럼 **이미 지워진 아이템을 참조할 수 있는** 호출자만 false로 낮춘다.
@@ -314,6 +311,19 @@ export async function recordItemsUsage(
   if (uniqueIds.length === 0) return;
 
   const supabase = createClerkSupabaseClient();
+
+  const { error: rpcError } = await supabase.rpc('record_inventory_usage', {
+    p_item_ids: uniqueIds,
+    p_require_all: requireAll,
+  });
+  if (!rpcError) return;
+  if (rpcError.code === 'P0002') throw new Error(ITEM_NOT_FOUND);
+  // 미적용 환경만 기존 경로를 쓴다. 권한·실행 오류를 재시도하면 중복 기록될 수 있다.
+  if (!isUsageRpcMissing(rpcError, 'record_inventory_usage')) throw rpcError;
+  // RPC 미적용 환경(gap-apply 전) — 비원자 폴백이 돌고 있음을 운영 로그로 드러낸다
+  inventoryLogger.warn(
+    ' recordItemsUsage: record_inventory_usage RPC 미적용 → 비원자 폴백 경로 사용'
+  );
 
   const { data, error } = await supabase
     .from('user_inventory')
@@ -578,10 +588,18 @@ export async function deleteOutfit(userId: string, outfitId: string): Promise<vo
  *
  * 코디 카운트와 구성 아이템 카운트를 함께 올린다. 예전에는 코디 UPDATE 결과를 확인하지 않고
  * 아이템도 한 벌씩 순차 기록해, 중간에 실패하면 "일부만 기록된" 상태로 성공을 반환했다.
- * 지금은 소유권 확인 → 코디 갱신(에러 전파) → 아이템 배치 갱신(에러 전파) 순으로 진행한다.
+ * RPC가 코디와 아이템을 한 트랜잭션에서 갱신한다. 미적용 환경만 기존 순차 경로를 쓴다.
  */
 export async function recordOutfitWear(userId: string, outfitId: string): Promise<void> {
   const supabase = createClerkSupabaseClient();
+
+  const { error: rpcError } = await supabase.rpc('record_outfit_wear', {
+    p_outfit_id: outfitId,
+  });
+  if (!rpcError) return;
+  if (rpcError.code === 'P0002') throw new Error('Outfit not found');
+  if (!isUsageRpcMissing(rpcError, 'record_outfit_wear')) throw rpcError;
+  inventoryLogger.warn(' recordOutfitWear: record_outfit_wear RPC 미적용 → 비원자 폴백 경로 사용');
 
   // 코디 소유권 확인 (없으면 남의 코디이거나 삭제된 코디)
   const outfit = await getSavedOutfitById(userId, outfitId);
@@ -605,6 +623,13 @@ export async function recordOutfitWear(userId: string, outfitId: string): Promis
   // 저장된 코디는 나중에 옷장에서 지운 옷을 계속 가리킬 수 있다 — 그 한 벌 때문에
   // 코디 착용 기록 전체를 실패시키지 않는다(남아 있는 옷만 갱신).
   await recordItemsUsage(userId, outfit.itemIds, { requireAll: false });
+}
+
+function isUsageRpcMissing(error: { code?: string; message?: string }, name: string): boolean {
+  // 42883은 함수 내부의 다른 함수 누락일 수도 있어 호출 대상 이름도 확인한다.
+  return (
+    error.code === 'PGRST202' || (error.code === '42883' && Boolean(error.message?.includes(name)))
+  );
 }
 
 // =====================================================

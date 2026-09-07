@@ -58,7 +58,7 @@ const notoSerifKR = Noto_Serif_KR({
   preload: false,
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.vercel.app';
 
 // 현재 OG 제목·설명은 한국어 정본이다. 언어별 고유 URL과 메타 카피를 함께
 // 마련하기 전에는 요청 UI 로케일을 OG 로케일인 것처럼 표시하지 않는다.

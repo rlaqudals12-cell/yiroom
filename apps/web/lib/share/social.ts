@@ -122,7 +122,9 @@ export async function shareToKakao(content: ShareContent): Promise<boolean> {
       content: {
         title: content.title,
         description: content.description,
-        imageUrl: content.imageUrl || `${process.env.NEXT_PUBLIC_APP_URL || ''}/og-image.png`,
+        imageUrl:
+          content.imageUrl ||
+          `${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://yiroom.vercel.app'}/og-image.png`,
         link: {
           mobileWebUrl: shareTargetUrl,
           webUrl: shareTargetUrl,

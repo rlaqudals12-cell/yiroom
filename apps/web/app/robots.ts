@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.app';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yiroom.vercel.app';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -13,27 +13,16 @@ export default function robots(): MetadataRoute.Robots {
           '/beauty/',
           '/analysis/',
           '/products/',
-          '/workout/',
-          '/nutrition/',
-          '/record/',
           '/style/',
           '/chat/',
           '/closet/',
           '/challenges/',
           '/friends/',
           '/leaderboard/',
-          '/wellness/',
           '/reports/',
           '/dashboard/',
         ],
-        disallow: [
-          '/api/',
-          '/auth-test/',
-          '/storage-test/',
-          '/_next/',
-          '/sign-in/',
-          '/sign-up/',
-        ],
+        disallow: ['/api/', '/auth-test/', '/storage-test/', '/_next/', '/sign-in/', '/sign-up/'],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

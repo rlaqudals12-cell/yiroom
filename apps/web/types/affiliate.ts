@@ -11,8 +11,20 @@ import type { ProductType } from './product';
 // 파트너 관련 타입 (v2.0 추가)
 // ================================================
 
-/** 파트너 식별자 */
-export type AffiliatePartnerName = 'iherb' | 'coupang' | 'musinsa' | 'oliveyoung';
+/** 수익 귀속 대상: 올리브영은 앱 내 사용·정산 승인 후 활성화한다. */
+export type RevenueAffiliatePartnerName = 'coupang' | 'oliveyoung';
+export type InformationPartnerName = 'iherb' | 'musinsa';
+export type AffiliatePartnerStatus = 'registered' | 'pending_approval' | 'information_only';
+
+/** 기존 DB 식별자는 보존하고 정보 판매처와 수익 파트너를 구분한다. */
+export type AffiliatePartnerName = RevenueAffiliatePartnerName | InformationPartnerName;
+
+export const AFFILIATE_PARTNER_STATUS: Record<AffiliatePartnerName, AffiliatePartnerStatus> = {
+  coupang: 'registered',
+  oliveyoung: 'pending_approval',
+  iherb: 'information_only',
+  musinsa: 'information_only',
+};
 
 /** API 타입 */
 export type AffiliateApiType = 'csv_feed' | 'rest_api' | 'manual';

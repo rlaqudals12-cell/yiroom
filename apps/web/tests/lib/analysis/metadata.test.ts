@@ -2,7 +2,7 @@
  * 분석 결과 메타데이터 헬퍼 테스트
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const mockSingle = vi.fn();
 const mockEq = vi.fn(() => ({ single: mockSingle }));
@@ -95,5 +95,35 @@ describe('generateAnalysisMetadata', () => {
     const metadata = await generateAnalysisMetadata('test-id', PERSONAL_COLOR_META);
 
     expect(metadata.title).toBe('퍼스널컬러 분석 결과 | 이룸');
+  });
+});
+
+describe('배포 URL 환경변수 우선순위', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it.each([
+    ['https://site.example', 'https://legacy.example', 'https://site.example'],
+    ['', 'https://legacy.example', 'https://legacy.example'],
+    ['', '', 'https://yiroom.vercel.app'],
+  ])('SITE_URL=%s / APP_URL=%s이면 %s를 출력한다', async (site, app, expected) => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', site);
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', app);
+    vi.resetModules();
+    const { generateAnalysisMetadata, PERSONAL_COLOR_META } =
+      await import('@/lib/analysis/metadata');
+    mockSingle.mockResolvedValue({ data: { season: 'spring' }, error: null });
+    const metadata = await generateAnalysisMetadata('test-id', PERSONAL_COLOR_META);
+    expect(metadata.openGraph?.url).toBe(`${expected}/analysis/personal-color/result/test-id`);
+    expect(metadata.openGraph?.images).toEqual([
+      expect.objectContaining({
+        url: `${expected}/api/og/personal-color?label=${encodeURIComponent('봄 웜톤')}`,
+      }),
+    ]);
+    mockSingle.mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
+    const fallback = await generateAnalysisMetadata('test-id', PERSONAL_COLOR_META);
+    expect(fallback.openGraph?.url).toBe(`${expected}/analysis/personal-color/result/test-id`);
   });
 });

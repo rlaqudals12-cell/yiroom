@@ -12,6 +12,12 @@ import {
 } from '@/components/affiliate/AffiliateDisclosure';
 
 describe('AffiliateDisclosure', () => {
+  it('쿠팡 가이드 원문을 변형 없이 노출한다', () => {
+    render(<AffiliateDisclosure />);
+    expect(screen.getByTestId('affiliate-disclosure').textContent).toBe(
+      '이 게시물은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.'
+    );
+  });
   describe('inline variant', () => {
     it('인라인 형태로 렌더링한다', () => {
       render(<AffiliateDisclosure variant="inline" />);

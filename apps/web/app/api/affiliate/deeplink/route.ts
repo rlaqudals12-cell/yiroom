@@ -23,17 +23,11 @@ export async function POST(request: NextRequest) {
 
     // 필수 파라미터 검증
     if (!partner) {
-      return NextResponse.json(
-        { error: 'partner가 필요합니다' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'partner가 필요합니다' }, { status: 400 });
     }
 
     if (!productUrl) {
-      return NextResponse.json(
-        { error: 'productUrl이 필요합니다' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'productUrl이 필요합니다' }, { status: 400 });
     }
 
     // 지원 파트너 검증
@@ -49,10 +43,7 @@ export async function POST(request: NextRequest) {
     try {
       new URL(productUrl);
     } catch {
-      return NextResponse.json(
-        { error: '유효하지 않은 URL입니다' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '유효하지 않은 URL입니다' }, { status: 400 });
     }
 
     // 딥링크 생성
@@ -68,14 +59,12 @@ export async function POST(request: NextRequest) {
       success: result.success,
       deeplink: result.url,
       partner: result.partner,
+      linkType: result.linkType,
       error: result.error,
     });
   } catch (error) {
     console.error('[API] 딥링크 생성 에러:', error);
-    return NextResponse.json(
-      { error: '딥링크 생성 중 오류가 발생했습니다' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '딥링크 생성 중 오류가 발생했습니다' }, { status: 500 });
   }
 }
 
@@ -91,10 +80,7 @@ export async function PUT(request: NextRequest) {
     };
 
     if (!urls || Object.keys(urls).length === 0) {
-      return NextResponse.json(
-        { error: 'urls가 필요합니다' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'urls가 필요합니다' }, { status: 400 });
     }
 
     // Map으로 변환
@@ -107,11 +93,15 @@ export async function PUT(request: NextRequest) {
     const results = await createMultipleDeeplinks(urlMap, subId);
 
     // Map을 객체로 변환
-    const response: Record<string, { url: string; success: boolean; error?: string }> = {};
+    const response: Record<
+      string,
+      { url: string; success: boolean; linkType: 'affiliate' | 'information'; error?: string }
+    > = {};
     for (const [partner, result] of results) {
       response[partner] = {
         url: result.url,
         success: result.success,
+        linkType: result.linkType,
         error: result.error,
       };
     }
@@ -122,9 +112,6 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     console.error('[API] 다중 딥링크 생성 에러:', error);
-    return NextResponse.json(
-      { error: '딥링크 생성 중 오류가 발생했습니다' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '딥링크 생성 중 오류가 발생했습니다' }, { status: 500 });
   }
 }

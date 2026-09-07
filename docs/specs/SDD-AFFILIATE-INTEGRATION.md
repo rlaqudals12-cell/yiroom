@@ -8,6 +8,13 @@
 
 > 멀티 파트너 어필리에이트 + 5모듈 완전 커버 (PC-1, S-1, C-1, H-1, M-1)
 
+## 2026-09-08 정직성 계약 정정 (배치 R)
+
+- 기존 ADR-054의 미가입 파트너 제외 원칙과 9/2 인박스 L1 판정을 적용한다.
+- `RevenueAffiliatePartnerName = 'coupang' | 'oliveyoung'`. 상태는 쿠팡 `registered`, 올리브영 `pending_approval`, iHerb·무신사 `information_only`다. 기존 DB 판매처 식별자는 호환성을 위해 보존한다.
+- `createDeeplink`는 `linkType: 'affiliate' | 'information'`을 함께 반환한다. iHerb·무신사·승인 전 올리브영은 입력 URL을 그대로 반환하고 가상 추적 코드를 생성하지 않는다. 링크 생성 성공은 수익 귀속 보장이 아니다.
+- 쿠팡 고지는 가이드 원문을 그대로 사용한다. 올리브영은 앱 내 사용·정산 승인 확인 후 공식 수동 발급 링크만 사용할 수 있으며 현재는 활성화하지 않는다.
+
 ## 관련 문서
 
 ### 원리 문서
@@ -600,7 +607,7 @@ describe('POST /api/affiliate/deeplink', () => {
     expect(data.trackingId).toBeDefined();
   });
 
-  it('should generate iherb deeplink with rcode', async () => {
+  it('should return iherb information link without tracking params (9/2 판정: 미가입 파트너)', async () => {
     const response = await POST(
       createMockRequest({
         body: { productId: 'prod_456', partnerId: 'iherb' },
@@ -609,7 +616,8 @@ describe('POST /api/affiliate/deeplink', () => {
     const data = await response.json();
 
     expect(data.url).toContain('iherb.com');
-    expect(data.url).toContain('rcode=YIROOM');
+    expect(data.url).not.toContain('rcode=');
+    expect(data.linkType).toBe('information');
   });
 });
 

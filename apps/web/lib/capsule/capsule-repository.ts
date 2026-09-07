@@ -119,7 +119,7 @@ export async function createCapsule<T>(
   }
 
   // 아이템 삽입
-  const capsuleItems = await insertItems<T>(supabase, capsuleRow.id, items);
+  const capsuleItems = await insertItems<T>(supabase, capsuleRow.id, userId, items);
 
   return {
     id: capsuleRow.id,
@@ -144,10 +144,21 @@ export async function addItemToCapsule<T>(
 ): Promise<CapsuleItem<T>> {
   const supabase = createServiceRoleClient();
 
+  // 서비스 역할 삽입도 부모 캡슐의 소유자를 그대로 기록해야 RLS 계약을 지킨다.
+  const { data: capsule, error: capsuleError } = await supabase
+    .from('capsules')
+    .select('clerk_user_id')
+    .eq('id', capsuleId)
+    .single();
+  if (capsuleError || !capsule?.clerk_user_id) {
+    throw new Error(`아이템 추가 실패: ${capsuleError?.message ?? '캡슐을 찾을 수 없습니다'}`);
+  }
+
   const { data: row, error } = await supabase
     .from('capsule_items')
     .insert({
       capsule_id: capsuleId,
+      clerk_user_id: capsule.clerk_user_id,
       item: item as unknown,
       profile_fit_score: Math.max(0, Math.min(100, profileFitScore)),
     })
@@ -260,12 +271,14 @@ export async function getCrossDomainRules(): Promise<import('./types').CrossDoma
 async function insertItems<T>(
   supabase: ReturnType<typeof createServiceRoleClient>,
   capsuleId: string,
+  userId: string,
   items: T[]
 ): Promise<CapsuleItem<T>[]> {
   if (items.length === 0) return [];
 
   const rows = items.map((item) => ({
     capsule_id: capsuleId,
+    clerk_user_id: userId,
     item: item as unknown,
     profile_fit_score: 0,
   }));
