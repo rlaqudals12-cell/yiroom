@@ -20,7 +20,8 @@
       "noData": "暂无数据",
       "startFirst": "开始你的第一条记录吧",
       "encouragement": "小小的开始能带来巨大的变化"
-    }
+    },
+    "translationUnavailable": "未能加载提示文字，请稍后重试。"
   },
   "nav": {
     "home": "首页",
@@ -159,6 +160,7 @@
     },
     "mobileAgeVerification": {
       "eyebrow": "年龄验证",
+      "restrictedEyebrow": "使用年龄说明",
       "title": "请输入出生日期",
       "unavailableTitle": "无法加载年龄验证信息",
       "description": "Yiroom 仅限年满14周岁的用户使用。出生日期用于验证您的年龄和服务使用资格。",
@@ -181,7 +183,18 @@
       "restrictedTitle": "需要验证年龄",
       "restrictedDescription": "部分功能仅限年满14周岁的用户使用。\n请完成年龄验证后继续。",
       "verifyButton": "验证年龄",
-      "back": "返回"
+      "back": "返回",
+      "birthdateInputLabel": "输入出生日期"
+    },
+    "mobileClerkErrors": {
+      "passwordIncorrect": "密码不正确。",
+      "identifierNotFound": "未找到使用此邮箱的账号。",
+      "identifierExists": "此邮箱已被使用。",
+      "invalidInput": "请检查您输入的信息。",
+      "codeIncorrect": "验证码不正确。",
+      "credentialsIncorrect": "邮箱或密码不正确。",
+      "passwordUnsafe": "为了您的安全，请使用其他密码。",
+      "tooManyRequests": "请求过于频繁，请稍后重试。"
     }
   },
   "home": {
@@ -771,6 +784,34 @@
         "error": "请重试",
         "idle": "分享风格报告"
       }
+    },
+    "mobileHairInput": {
+      "title": "AI发质分析",
+      "subtitle": "分析您的头发状态，\n推荐个性化护理方案",
+      "featuresTitle": "分析项目",
+      "features": {
+        "texture": {
+          "title": "发质分析",
+          "description": "识别直发、波浪发、卷发等头发类型"
+        },
+        "scalp": {
+          "title": "头皮健康检查",
+          "description": "检查头皮状态及水油平衡"
+        },
+        "routine": {
+          "title": "个性化护理方案",
+          "description": "AI推荐适合您的头发护理方法"
+        },
+        "style": {
+          "title": "发型推荐",
+          "description": "推荐适合您头发特点的发型"
+        }
+      },
+      "guideTitle": "拍摄指南",
+      "guideLighting": "• 请在自然光下拍摄，确保头发清晰可见",
+      "guideLooseHair": "• 请将头发自然放下，不要扎起",
+      "guideAngles": "• 拍摄正面、侧面和背面可提高分析准确度",
+      "start": "开始发质分析"
     }
   },
   "emptyState": {

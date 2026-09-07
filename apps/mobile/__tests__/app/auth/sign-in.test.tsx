@@ -328,7 +328,7 @@ describe('SignInScreen', () => {
     it('로그인 실패 시 에러 알림을 표시한다', async () => {
       const alertSpy = jest.spyOn(Alert, 'alert');
       mockSignInCreate.mockRejectedValueOnce({
-        errors: [{ message: '잘못된 비밀번호입니다.' }],
+        errors: [{ code: 'form_password_incorrect', message: 'Incorrect password.' }],
       });
 
       const { getByTestId } = renderWithTheme(<SignInScreen />);
@@ -601,5 +601,62 @@ describe('SignInScreen', () => {
       const emailInput = getByTestId('signin-email-input');
       expect(emailInput.props.autoCapitalize).toBe('none');
     });
+  });
+});
+
+describe('Clerk 오류 현지화 행동', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  it.each([
+    ['ko', 'password', true],
+    ['ko', 'password', false],
+    ['ko', 'verify', true],
+    ['ko', 'verify', false],
+    ['en', 'password', true],
+    ['en', 'password', false],
+    ['en', 'verify', true],
+    ['en', 'verify', false],
+  ])('%s / %s / known code %s', async (locale, route, known) => {
+    await i18n.changeLanguage(locale as string);
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    const rawMessage = 'Untranslated Clerk message with private details';
+    const error = {
+      errors: [
+        { code: known ? 'form_code_incorrect' : 'future_unknown_code', message: rawMessage },
+      ],
+    };
+
+    if (route === 'password') mockSignInCreate.mockRejectedValueOnce(error);
+    else {
+      mockSignInCreate.mockResolvedValueOnce({
+        status: 'needs_first_factor',
+        supportedFirstFactors: [{ strategy: 'email_code', emailAddressId: 'email_1' }],
+      });
+      mockPrepareFirstFactor.mockResolvedValueOnce({});
+    }
+    const screen = renderWithTheme(<SignInScreen />);
+    fireEvent.changeText(screen.getByTestId('signin-email-input'), 'test@example.com');
+    fireEvent.changeText(screen.getByTestId('signin-password-input'), 'password123');
+    fireEvent.press(screen.getByTestId('signin-submit-button'));
+    if (route === 'verify') {
+      await waitFor(() => expect(screen.getByTestId('signin-code-input')).toBeTruthy());
+      mockAttemptFirstFactor.mockRejectedValueOnce(error);
+      fireEvent.changeText(screen.getByTestId('signin-code-input'), '000000');
+      fireEvent.press(screen.getByTestId('signin-verify-button'));
+    }
+    const fallback = route === 'password' ? 'signInFailure' : 'verificationFailure';
+    const namespace = 'auth.mobileSignIn.';
+    await waitFor(() =>
+      expect(alertSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        known
+          ? locale === 'ko'
+            ? '잘못된 인증 코드입니다.'
+            : 'Incorrect verification code.'
+          : i18n.t(namespace + fallback)
+      )
+    );
+    expect(JSON.stringify(alertSpy.mock.calls)).not.toContain(rawMessage);
   });
 });

@@ -435,7 +435,7 @@ describe('SignUpScreen', () => {
     it('회원가입 실패 시 에러 알림을 표시한다', async () => {
       const alertSpy = jest.spyOn(Alert, 'alert');
       mockSignUpCreate.mockRejectedValueOnce({
-        errors: [{ message: '이미 사용 중인 이메일입니다.' }],
+        errors: [{ code: 'form_identifier_exists', message: 'Email already exists.' }],
       });
 
       const { getByTestId, getByPlaceholderText } = renderWithTheme(<SignUpScreen />);
@@ -585,7 +585,7 @@ describe('SignUpScreen', () => {
     it('인증 실패 시 에러 알림을 표시한다', async () => {
       const alertSpy = jest.spyOn(Alert, 'alert');
       mockAttemptEmailVerification.mockRejectedValueOnce({
-        errors: [{ message: '잘못된 인증 코드입니다.' }],
+        errors: [{ code: 'form_code_incorrect', message: 'Incorrect verification code.' }],
       });
 
       const { getByPlaceholderText, getByText } = await renderVerificationScreen();
@@ -628,5 +628,82 @@ describe('SignUpScreen', () => {
       const emailInput = getByTestId('signup-email-input');
       expect(emailInput.props.autoCapitalize).toBe('none');
     });
+  });
+});
+
+describe('Clerk 오류 현지화 행동', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockSignUpCreate.mockReset();
+    mockPrepareEmailVerification.mockReset();
+    mockAttemptEmailVerification.mockReset();
+  });
+  it.each([
+    ['ko', 'create', true],
+    ['ko', 'create', false],
+    ['ko', 'verify', true],
+    ['ko', 'verify', false],
+    ['ko', 'resend', true],
+    ['ko', 'resend', false],
+    ['en', 'create', true],
+    ['en', 'create', false],
+    ['en', 'verify', true],
+    ['en', 'verify', false],
+    ['en', 'resend', true],
+    ['en', 'resend', false],
+  ])('%s / %s / known code %s', async (locale, route, known) => {
+    await i18n.changeLanguage(locale as string);
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    const rawMessage = 'Untranslated Clerk message with private details';
+    const error = {
+      errors: [
+        { code: known ? 'form_code_incorrect' : 'future_unknown_code', message: rawMessage },
+      ],
+    };
+
+    mockSignUpCreate.mockResolvedValueOnce({});
+    mockPrepareEmailVerification.mockResolvedValueOnce({});
+    if (route === 'create') mockSignUpCreate.mockReset().mockRejectedValueOnce(error);
+    const screen = renderWithTheme(<SignUpScreen />);
+    fireEvent.changeText(screen.getByTestId('signup-email-input'), 'test@example.com');
+    fireEvent.changeText(screen.getByTestId('signup-password-input'), 'password123');
+    fireEvent.changeText(
+      screen.getByPlaceholderText(i18n.t('auth.mobileSignUp.confirmPasswordPlaceholder')),
+      'password123'
+    );
+    fillEligibleAgeGate(screen);
+    fireEvent.press(screen.getByTestId('signup-submit-button'));
+    if (route !== 'create') {
+      await waitFor(() => expect(screen.getByTestId('signup-resend-code-button')).toBeTruthy());
+      if (route === 'resend') {
+        mockPrepareEmailVerification.mockRejectedValueOnce(error);
+        fireEvent.press(screen.getByTestId('signup-resend-code-button'));
+      } else {
+        mockAttemptEmailVerification.mockRejectedValueOnce(error);
+        fireEvent.changeText(
+          screen.getByPlaceholderText(i18n.t('auth.mobileSignUp.verificationCodePlaceholder')),
+          '000000'
+        );
+        fireEvent.press(screen.getByText(i18n.t('auth.mobileSignUp.verificationComplete')));
+      }
+    }
+    const fallback =
+      route === 'create'
+        ? 'signUpFailure'
+        : route === 'verify'
+          ? 'verificationFailure'
+          : 'resendFailure';
+    const namespace = 'auth.mobileSignUp.';
+    await waitFor(() =>
+      expect(alertSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        known
+          ? locale === 'ko'
+            ? '잘못된 인증 코드입니다.'
+            : 'Incorrect verification code.'
+          : i18n.t(namespace + fallback)
+      )
+    );
+    expect(JSON.stringify(alertSpy.mock.calls)).not.toContain(rawMessage);
   });
 });

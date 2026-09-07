@@ -21,7 +21,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { GlassCard, ScreenContainer } from '@/components/ui';
 import { TIMING } from '@/lib/animations';
 import { getApiBaseUrl, getWebHostLabel } from '@/lib/api/base-url';
-import { useTranslation } from '@/lib/i18n';
+import { getClerkErrorKey, useTranslation } from '@/lib/i18n';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
 const ALLOWED_RETURN_TO_PREFIXES = ['/(analysis)', '/(scan)', '/(twin)'] as const;
@@ -139,8 +139,7 @@ export default function SignInScreen() {
       //    무반응(조용한 무시) 대신 정직하게 웹 로그인으로 안내한다.
       showWebSignInAlert();
     } catch (error: unknown) {
-      const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage = clerkError.errors?.[0]?.message || t('auth.mobileSignIn.signInFailure');
+      const errorMessage = t(getClerkErrorKey(error, 'auth.mobileSignIn.signInFailure'));
       Alert.alert(t('auth.mobileSignIn.signInFailureTitle'), errorMessage);
     } finally {
       setIsLoading(false);
@@ -173,9 +172,7 @@ export default function SignInScreen() {
       // 코드는 맞았지만 여전히 추가 인증이 남은 경우 — 정직하게 웹 로그인 안내
       showWebSignInAlert();
     } catch (error: unknown) {
-      const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage =
-        clerkError.errors?.[0]?.message || t('auth.mobileSignIn.verificationFailure');
+      const errorMessage = t(getClerkErrorKey(error, 'auth.mobileSignIn.verificationFailure'));
       Alert.alert(t('auth.mobileSignIn.verificationFailureTitle'), errorMessage);
     } finally {
       setIsLoading(false);

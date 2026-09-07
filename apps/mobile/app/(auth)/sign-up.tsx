@@ -21,7 +21,7 @@ import { GlassCard, ScreenContainer } from '@/components/ui';
 import { formatBirthdateInput } from '@/lib/age-verification';
 import { TIMING } from '@/lib/animations';
 import { BirthdateApiError, evaluateBirthdateGate, saveBirthdate } from '@/lib/api/birthdate';
-import { useTranslation } from '@/lib/i18n';
+import { getClerkErrorKey, useTranslation } from '@/lib/i18n';
 import { brand, useTheme, typography, spacing, radii } from '@/lib/theme';
 
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -100,8 +100,7 @@ export default function SignUpScreen() {
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setPendingVerification(true);
     } catch (error: unknown) {
-      const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage = clerkError.errors?.[0]?.message || t('auth.mobileSignUp.signUpFailure');
+      const errorMessage = t(getClerkErrorKey(error, 'auth.mobileSignUp.signUpFailure'));
       Alert.alert(t('auth.mobileSignUp.signUpFailureTitle'), errorMessage);
     } finally {
       setIsLoading(false);
@@ -148,9 +147,7 @@ export default function SignUpScreen() {
         router.replace('/(analysis)/integrated?onboarding=1');
       }
     } catch (error: unknown) {
-      const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage =
-        clerkError.errors?.[0]?.message || t('auth.mobileSignUp.verificationFailure');
+      const errorMessage = t(getClerkErrorKey(error, 'auth.mobileSignUp.verificationFailure'));
       Alert.alert(t('auth.mobileSignUp.verificationFailureTitle'), errorMessage);
     } finally {
       setIsLoading(false);
@@ -167,8 +164,7 @@ export default function SignUpScreen() {
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
       setResendNotice(t('auth.mobileSignUp.resendNotice', { email }));
     } catch (error: unknown) {
-      const clerkError = error as { errors?: { message: string }[] };
-      const errorMessage = clerkError.errors?.[0]?.message || t('auth.mobileSignUp.resendFailure');
+      const errorMessage = t(getClerkErrorKey(error, 'auth.mobileSignUp.resendFailure'));
       Alert.alert(t('auth.mobileSignUp.resendFailureTitle'), errorMessage);
     } finally {
       setIsLoading(false);

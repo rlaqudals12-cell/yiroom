@@ -20,7 +20,8 @@
       "noData": "データがありません",
       "startFirst": "最初の記録を始めましょう",
       "encouragement": "小さな一歩が大きな変化を生みます"
-    }
+    },
+    "translationUnavailable": "案内文を読み込めませんでした。しばらくしてからもう一度お試しください。"
   },
   "nav": {
     "home": "ホーム",
@@ -62,7 +63,7 @@
     "wishlist": "ウィッシュリスト",
     "mainMenu": "メインメニュー",
     "me": "マイ",
-    "homeAria": "イルームホームへ"
+    "homeAria": "Yiroomホームへ"
   },
   "auth": {
     "signIn": "ログイン",
@@ -70,7 +71,7 @@
     "signUp": "新規登録",
     "myPage": "マイページ",
     "mobileSignIn": {
-      "brand": "イルーム",
+      "brand": "Yiroom",
       "tagline": "ありのままの自分に出会う",
       "loginRequired": "分析を始めるにはログインが必要です",
       "emailLabel": "メールアドレス",
@@ -97,7 +98,7 @@
     },
     "mobileSignUp": {
       "title": "新規登録",
-      "tagline": "イルームと一緒に始めましょう",
+      "tagline": "Yiroomと一緒に始めましょう",
       "emailLabel": "メールアドレス",
       "emailPlaceholder": "メールアドレスを入力",
       "passwordLabel": "パスワード",
@@ -159,9 +160,10 @@
     },
     "mobileAgeVerification": {
       "eyebrow": "年齢確認",
+      "restrictedEyebrow": "利用年齢のご案内",
       "title": "生年月日を入力してください",
       "unavailableTitle": "年齢確認情報を取得できませんでした",
-      "description": "イルームは14歳以上の方のみご利用いただけます。入力した生年月日は、年齢とサービスの利用資格を確認するために使用します。",
+      "description": "Yiroomは14歳以上の方のみご利用いただけます。入力した生年月日は、年齢とサービスの利用資格を確認するために使用します。",
       "unavailableDescription": "ネットワーク接続を確認して、もう一度お試しください。保存済みの成人情報を確認でき次第、そのまま続けられます。",
       "birthdateLabel": "生年月日",
       "birthdatePlaceholder": "YYYY-MM-DD",
@@ -169,7 +171,7 @@
       "ageConfirmationRequired": "14歳以上であることを確認してください。",
       "birthdateRequired": "14歳以上であることを確認するため、生年月日を入力してください。",
       "birthdateInvalid": "正しい形式で生年月日を入力してください。（例：2000-06-15）",
-      "ageRestrictedMessage": "イルームは14歳以上の方のみご利用いただけます。14歳未満の方は法定代理人の同意が必要なため、生体情報分析を提供していません。",
+      "ageRestrictedMessage": "Yiroomは14歳以上の方のみご利用いただけます。14歳未満の方は法定代理人の同意が必要なため、生体情報分析を提供していません。",
       "saveFailure": "生年月日を保存できませんでした。しばらくしてからもう一度お試しください。",
       "missingStoredBirthdate": "保存された生年月日がありません。ネットワークに接続して直接入力してください。",
       "invalidStoredBirthdate": "保存された生年月日を確認できません。直接入力してください。",
@@ -181,7 +183,18 @@
       "restrictedTitle": "年齢確認が必要です",
       "restrictedDescription": "一部の機能は14歳以上の方のみご利用いただけます。\n年齢確認後にご利用ください。",
       "verifyButton": "年齢を確認",
-      "back": "戻る"
+      "back": "戻る",
+      "birthdateInputLabel": "生年月日を入力"
+    },
+    "mobileClerkErrors": {
+      "passwordIncorrect": "パスワードが正しくありません。",
+      "identifierNotFound": "このメールアドレスのアカウントが見つかりません。",
+      "identifierExists": "このメールアドレスはすでに使用されています。",
+      "invalidInput": "入力内容をご確認ください。",
+      "codeIncorrect": "認証コードが正しくありません。",
+      "credentialsIncorrect": "メールアドレスまたはパスワードが正しくありません。",
+      "passwordUnsafe": "安全のため、別のパスワードをご使用ください。",
+      "tooManyRequests": "リクエストが多すぎます。しばらくしてからもう一度お試しください。"
     }
   },
   "home": {
@@ -771,6 +784,34 @@
         "error": "もう一度お試しください",
         "idle": "スタイルレポートを共有"
       }
+    },
+    "mobileHairInput": {
+      "title": "AIヘア分析",
+      "subtitle": "髪の状態を分析し、\nあなたに合ったケアルーティンをご提案します",
+      "featuresTitle": "分析項目",
+      "features": {
+        "texture": {
+          "title": "髪質の分析",
+          "description": "ストレート・ウェーブ・カーリーなどの髪質を確認"
+        },
+        "scalp": {
+          "title": "頭皮の健康チェック",
+          "description": "頭皮の状態と油分・水分のバランスを確認"
+        },
+        "routine": {
+          "title": "あなたに合ったケアルーティン",
+          "description": "AIが一人ひとりに合ったヘアケアをご提案"
+        },
+        "style": {
+          "title": "スタイル提案",
+          "description": "髪の特徴に合ったヘアスタイルをご提案"
+        }
+      },
+      "guideTitle": "撮影ガイド",
+      "guideLighting": "• 自然光の下で髪がよく見えるように撮影してください",
+      "guideLooseHair": "• 髪を結ばず、自然な状態で撮影してください",
+      "guideAngles": "• 正面・横・後ろから撮影すると、より正確に分析できます",
+      "start": "ヘア分析を始める"
     }
   },
   "emptyState": {

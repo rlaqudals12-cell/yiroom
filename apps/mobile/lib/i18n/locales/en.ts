@@ -5,9 +5,20 @@
  */
 const en = {
   common: {
+    translationUnavailable: 'We could not load this text. Please try again shortly.',
     close: 'Close',
   },
   auth: {
+    mobileClerkErrors: {
+      passwordIncorrect: 'Incorrect password.',
+      identifierNotFound: 'No account was found with this email.',
+      identifierExists: 'This email is already in use.',
+      invalidInput: 'Please check your information.',
+      codeIncorrect: 'Incorrect verification code.',
+      credentialsIncorrect: 'The email or password is incorrect.',
+      passwordUnsafe: 'Please use a different password for your security.',
+      tooManyRequests: 'Too many requests. Please try again shortly.',
+    },
     signIn: 'Sign In',
     signUp: 'Sign Up',
     mobileSignIn: {
@@ -102,7 +113,9 @@ const en = {
       resetFailure: "We couldn't reset your password.",
     },
     mobileAgeVerification: {
+      birthdateInputLabel: 'Enter your date of birth',
       eyebrow: 'Age verification',
+      restrictedEyebrow: 'Age eligibility notice',
       title: 'Enter your date of birth',
       unavailableTitle: "We couldn't load your age verification information",
       description:
@@ -136,6 +149,34 @@ const en = {
     },
   },
   analysis: {
+    mobileHairInput: {
+      title: 'AI Hair Analysis',
+      subtitle: 'Analyze your hair condition\nand get a personalized care routine',
+      featuresTitle: 'What we analyze',
+      features: {
+        texture: {
+          title: 'Hair texture analysis',
+          description: 'Identify straight, wavy, curly, and other hair types',
+        },
+        scalp: {
+          title: 'Scalp health check',
+          description: 'Check scalp condition and oil/moisture balance',
+        },
+        routine: {
+          title: 'Personalized care routine',
+          description: 'AI-based recommendations for your hair care',
+        },
+        style: {
+          title: 'Style recommendations',
+          description: 'Explore hairstyles suited to your hair',
+        },
+      },
+      guideTitle: 'Photo guide',
+      guideLighting: '• Take a photo in natural light with your hair clearly visible',
+      guideLooseHair: '• Leave your hair down in its natural state',
+      guideAngles: '• Capture front, side, and back views for better accuracy',
+      start: 'Start hair analysis',
+    },
     skinNonMedicalDevice:
       "Yiroom's skin analysis is not a medical device and does not provide medical services.",
     skinNonMedicalPurpose:

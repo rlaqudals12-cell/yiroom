@@ -31,6 +31,7 @@ function initI18n(): Promise<SupportedLocale>;
 ```text
 apps/mobile/lib/i18n/
 ├── index.ts
+├── runtime.ts
 ├── provider.tsx
 ├── types.ts
 └── locales/
@@ -62,15 +63,17 @@ apps/mobile/lib/i18n/
 4. 영어 카탈로그 렌더 테스트 1개 이상
 5. 해당 화면에 새 한국어 literal이 남지 않았는지 정적 검사
 
-이번 배치 단위는 `(auth)/sign-in.tsx`부터 가입·비밀번호 복구·기존 계정 연령 확인·연령
-제한 안내까지이며, 각 화면을 독립 테스트와 함께 진행한다.
+전환된 단위는 `(auth)/sign-in.tsx`부터 가입·비밀번호 복구·기존 계정 연령 확인·연령
+제한 안내, `(analysis)/hair/index.tsx` 헤어 분석 입력 화면이다. 각 화면을 독립 테스트와
+함께 진행한다. 피부 결과는 통합 결과와 같은 비의료 고지 키를 재사용하며 나머지 결과
+문구 전체 전환은 후속 화면 단위로 남긴다.
 
 ## 6. 테스트 계약
 
 - `lib/i18n`: 저장 복원, 전역 변경 전파, 한국어 폴백, interpolation, 저장소 1초 timeout과
   늦은 응답 무효화
 - 카탈로그: `ko/en` leaf key parity와 placeholder parity
-- 정본: 모바일로 투영한 공용 한국어가 웹 정본과 동일
+- 정본: 모바일로 투영한 전체 `ko/en` leaf 값이 각각 웹 `messages/ko.json`, `en.json`과 동일
 - 화면: 한국어 기본 렌더 + 명시적 영어 카탈로그 렌더
 - 회귀: 지원하지 않는 locale 저장값에서 한국어 화면 렌더
 
@@ -78,7 +81,13 @@ apps/mobile/lib/i18n/
 
 - 번역 누락을 사용자에게 key 문자열로 노출하지 않는다. 개발·테스트에서는 누락을
   실패로 드러내고 운영에서는 한국어로 폴백한다.
+  `saveMissing` + `missingKeyHandler`로 한국어 폴백에도 없는 키를 즉시 실패시킨다.
+  운영에서 한국어 정본에도 없는 키는 `common.translationUnavailable` 한국어 안내로
+  대체한다. 누락 키는 리소스에 저장하지 않는다.
+- Provider와 어댑터는 공개 `index.ts`에서 내보내고 Provider는 `runtime.ts`만 참조해
+  순환 의존성을 만들지 않는다.
 - 카탈로그 전체를 네트워크에서 받아오지 않는다. 앱 시작은 오프라인에서도 가능해야 한다.
 - locale 변경은 분석 데이터·enum·API payload의 정본 값을 바꾸지 않고 표시 문구만 바꾼다.
-- 웹 API의 한국어 `userMessage`와 Clerk 원문 오류의 현지화는 영어 공개 활성화 전 별도
-  완주 조건이다.
+- Clerk 오류는 첫 오류의 알려진 `code`만 번역 키에 매핑하고, 미지 코드·잘못된 구조는
+  각 작업의 일반 오류 키로 안내한다. 서버 `message` 원문은 Alert에 노출하지 않는다.
+- 웹 API의 한국어 `userMessage` 현지화는 영어 공개 활성화 전 별도 완주 조건이다.

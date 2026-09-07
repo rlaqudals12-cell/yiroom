@@ -179,6 +179,7 @@ describe('CompleteProfileScreen', () => {
     const { getByLabelText, getByPlaceholderText, getByText } = render(<CompleteProfileScreen />);
 
     expect(getByText('생년월일을 입력해주세요')).toBeTruthy();
+    expect(getByLabelText('생년월일 입력')).toBeTruthy();
     expect(getByPlaceholderText('YYYY-MM-DD')).toBeTruthy();
     expect(getByLabelText('만 14세 이상임을 확인합니다')).toBeTruthy();
   });
@@ -188,6 +189,7 @@ describe('CompleteProfileScreen', () => {
     const screen = render(<CompleteProfileScreen />);
 
     expect(screen.getByText('Enter your date of birth')).toBeTruthy();
+    expect(screen.getByLabelText('Enter your date of birth')).toBeTruthy();
     expect(screen.getByPlaceholderText('YYYY-MM-DD')).toBeTruthy();
     expect(screen.getByLabelText('I confirm that I am 14 or older')).toBeTruthy();
     expect(screen.getByText('Confirm and continue')).toBeTruthy();

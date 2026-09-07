@@ -8,21 +8,18 @@ import { router } from 'expo-router';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
+import { useTranslation } from '@/lib/i18n';
 import { useTheme, typography, radii, spacing } from '@/lib/theme';
 
 import { GlassCard, ScreenContainer } from '../../../components/ui';
 import { TIMING } from '../../../lib/animations';
 
-const FEATURES = [
-  { icon: '💇', title: '모발 질감 분석', desc: '직모/웨이브/컬리 등 모발 유형 파악' },
-  { icon: '🔬', title: '두피 건강 체크', desc: '두피 상태와 유분/수분 밸런스 확인' },
-  { icon: '✨', title: '맞춤 케어 루틴', desc: 'AI 기반 개인 맞춤 헤어 관리법 추천' },
-  { icon: '💈', title: '스타일 추천', desc: '모발 특성에 맞는 헤어스타일 제안' },
-];
+const FEATURES = ['texture', 'scalp', 'routine', 'style'] as const;
 
 const GRADIENT_COLORS = ['#FBBF24', '#F59E0B'] as const;
 
 export default function HairAnalysisScreen() {
+  const { t } = useTranslation();
   const { colors, module: moduleColors } = useTheme();
   const accent = moduleColors.hair;
 
@@ -44,9 +41,11 @@ export default function HairAnalysisScreen() {
           <GlassCard shadowSize="xl" glowColor={accent.base} style={{ ...styles.hero }}>
             <View style={styles.heroContent}>
               <Text style={styles.iconText}>💇</Text>
-              <Text style={[styles.title, { color: colors.foreground }]}>AI 헤어 분석</Text>
+              <Text style={[styles.title, { color: colors.foreground }]}>
+                {t('analysis.mobileHairInput.title')}
+              </Text>
               <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-                모발 상태를 분석하고{'\n'}맞춤 케어 루틴을 추천해 드려요
+                {t('analysis.mobileHairInput.subtitle')}
               </Text>
             </View>
           </GlassCard>
@@ -55,17 +54,19 @@ export default function HairAnalysisScreen() {
         {/* 분석 항목 카드 */}
         <Animated.View entering={FadeInUp.delay(80).duration(TIMING.normal)}>
           <GlassCard shadowSize="md" glowColor={accent.base} style={{ ...styles.card }}>
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>분석 항목</Text>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+              {t('analysis.mobileHairInput.featuresTitle')}
+            </Text>
             <View style={styles.features}>
-              {FEATURES.map((feature, index) => (
-                <View key={index} style={styles.featureItem}>
+              {FEATURES.map((feature) => (
+                <View key={feature} style={styles.featureItem}>
                   <View style={[styles.bullet, { backgroundColor: accent.base }]} />
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.featureTitle, { color: colors.foreground }]}>
-                      {feature.title}
+                      {t(`analysis.mobileHairInput.features.${feature}.title`)}
                     </Text>
                     <Text style={[styles.featureDesc, { color: colors.mutedForeground }]}>
-                      {feature.desc}
+                      {t(`analysis.mobileHairInput.features.${feature}.description`)}
                     </Text>
                   </View>
                 </View>
@@ -77,16 +78,18 @@ export default function HairAnalysisScreen() {
         {/* 촬영 가이드 카드 */}
         <Animated.View entering={FadeInUp.delay(160).duration(TIMING.normal)}>
           <GlassCard shadowSize="md" glowColor={accent.base} style={{ ...styles.card }}>
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>촬영 가이드</Text>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+              {t('analysis.mobileHairInput.guideTitle')}
+            </Text>
             <View style={styles.guideList}>
               <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
-                • 자연광에서 헤어가 잘 보이게 촬영해주세요
+                {t('analysis.mobileHairInput.guideLighting')}
               </Text>
               <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
-                • 묶지 않은 자연스러운 상태가 좋아요
+                {t('analysis.mobileHairInput.guideLooseHair')}
               </Text>
               <Text style={[styles.guideItem, { color: colors.mutedForeground }]}>
-                • 앞·옆·뒤 다양한 각도를 촬영하면 정확해요
+                {t('analysis.mobileHairInput.guideAngles')}
               </Text>
             </View>
           </GlassCard>
@@ -103,7 +106,7 @@ export default function HairAnalysisScreen() {
         <Pressable
           onPress={handleStart}
           accessibilityRole="button"
-          accessibilityLabel="헤어 분석 시작하기"
+          accessibilityLabel={t('analysis.mobileHairInput.start')}
           style={[styles.startButton, { overflow: 'hidden' }]}
         >
           <LinearGradient
@@ -112,7 +115,7 @@ export default function HairAnalysisScreen() {
             end={{ x: 1, y: 0 }}
             style={styles.startButtonGradient}
           >
-            <Text style={styles.startButtonText}>헤어 분석 시작하기</Text>
+            <Text style={styles.startButtonText}>{t('analysis.mobileHairInput.start')}</Text>
           </LinearGradient>
         </Pressable>
       </View>

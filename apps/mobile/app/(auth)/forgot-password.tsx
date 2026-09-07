@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 
 import { GlassCard, ScreenContainer } from '@/components/ui';
-import { useTranslation } from '@/lib/i18n';
+import { getClerkErrorKey, useTranslation } from '@/lib/i18n';
 import { brand, radii, spacing, typography, useTheme } from '@/lib/theme';
 
 export default function ForgotPasswordScreen() {
@@ -51,10 +51,9 @@ export default function ForgotPasswordScreen() {
       });
       setPendingCode(true);
     } catch (error: unknown) {
-      const clerkError = error as { errors?: { message: string }[] };
       Alert.alert(
         t('auth.mobileForgotPassword.resetFailureTitle'),
-        clerkError.errors?.[0]?.message || t('auth.mobileForgotPassword.requestFailure')
+        t(getClerkErrorKey(error, 'auth.mobileForgotPassword.requestFailure'))
       );
     } finally {
       setIsLoading(false);
@@ -88,10 +87,9 @@ export default function ForgotPasswordScreen() {
         t('auth.mobileForgotPassword.resetFailureRetry')
       );
     } catch (error: unknown) {
-      const clerkError = error as { errors?: { message: string }[] };
       Alert.alert(
         t('auth.mobileForgotPassword.resetFailureTitle'),
-        clerkError.errors?.[0]?.message || t('auth.mobileForgotPassword.resetFailure')
+        t(getClerkErrorKey(error, 'auth.mobileForgotPassword.resetFailure'))
       );
     } finally {
       setIsLoading(false);

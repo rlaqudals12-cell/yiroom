@@ -75,6 +75,8 @@ interface AppConfig {
 }
 
 interface SubmissionMetadata {
+  _source: string;
+  _note: string;
   app_name: Record<StoreLocale, string>;
   subtitle: Record<StoreLocale, string>;
   description: Record<StoreLocale, string>;
@@ -112,6 +114,17 @@ function readListing(locale: StoreLocale): string {
 }
 
 describe('store metadata privacy contract', () => {
+  it('제출 JSON은 정본의 파생물임을 밝히고 공개 URL도 정본을 따른다', () => {
+    const canonical = readStoreMetadata();
+    const submission = readSubmissionMetadata();
+
+    expect(submission._source).toBe('../store-metadata.json');
+    expect(submission._note).toContain('파생물');
+    expect(submission.privacy_url).toBe(canonical.ios.privacyPolicyUrl);
+    expect(submission.support_url).toBe(canonical.ios.supportUrl);
+    expect(submission.marketing_url).toBe(canonical.ios.marketingUrl);
+  });
+
   it('4개 로케일의 정본·제출 JSON·리스팅이 같은 공개 문구를 사용한다', () => {
     const metadata = readStoreMetadata();
     const submission = readSubmissionMetadata();
@@ -136,6 +149,7 @@ describe('store metadata privacy contract', () => {
       expect(submission.subtitle[locale]).toBe(canonical.subtitle);
       expect(submission.description[locale]).toBe(canonical.description);
       expect(submission.keywords[locale].join(',')).toBe(canonical.keywords);
+      expect(submission.release_notes[locale]).toBe(canonical.whatsNew);
       expect(listing).toContain(canonical.name);
       expect(listing).toContain(canonical.subtitle);
       expect(listing).toContain(canonical.description);
@@ -144,6 +158,23 @@ describe('store metadata privacy contract', () => {
       expect(canonical.name.length).toBeLessThanOrEqual(30);
       expect(canonical.subtitle.length).toBeLessThanOrEqual(30);
     }
+  });
+
+  it('일본어 부제는 피부 분석과 골격 진단을 구분하고 브랜드 표기를 통일한다', () => {
+    const canonical = readStoreMetadata().localization.ja;
+    const submission = readSubmissionMetadata();
+    const webCatalog = readFileSync(
+      join(process.cwd(), '..', 'web', 'messages', 'ja.json'),
+      'utf8'
+    );
+
+    expect(canonical.subtitle).toBe('AIパーソナルカラー・肌分析・骨格診断');
+    expect(submission.subtitle.ja).toBe(canonical.subtitle);
+    expect(readListing('ja')).toContain(canonical.subtitle);
+    expect(webCatalog).not.toContain('イルーム');
+    expect(webCatalog).toContain('Yiroomホームへ');
+    expect(webCatalog).toContain('Yiroomと一緒に始めましょう');
+    expect(webCatalog).toContain('Yiroomは14歳以上の方のみご利用いただけます。');
   });
 
   it('모든 로케일이 14세·5축·Google AI·선택 저장 최대 1년 계약을 고지한다', () => {

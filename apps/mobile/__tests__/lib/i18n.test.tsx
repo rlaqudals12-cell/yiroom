@@ -7,11 +7,19 @@ import { Text } from 'react-native';
 jest.mock('@/lib/i18n', () => jest.requireActual('@/lib/i18n'));
 jest.mock('@/lib/i18n/provider', () => jest.requireActual('@/lib/i18n/provider'));
 
-import { getLocale, i18n, initI18n, setLocale, t, useTranslation } from '../../lib/i18n';
+import {
+  getLocale,
+  i18n,
+  initI18n,
+  MobileI18nProvider,
+  setLocale,
+  t,
+  useTranslation,
+} from '../../lib/i18n';
 import en from '../../lib/i18n/locales/en';
 import ko from '../../lib/i18n/locales/ko';
-import { MobileI18nProvider } from '../../lib/i18n/provider';
 import webKo from '../../../web/messages/ko.json';
+import webEn from '../../../web/messages/en.json';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -51,6 +59,65 @@ describe('mobile i18n runtime', () => {
         params: { email: 'hello@example.com' },
       })
     ).toBe('hello@example.com로 전송된 인증 코드를 입력해주세요');
+  });
+
+  it.each(['ko', 'en'])(
+    '%s에서 없는 키는 반복 호출해도 실패하며 카탈로그를 오염시키지 않는다',
+    async (locale) => {
+      await i18n.changeLanguage(locale);
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        expect(() => t('test.missing')).toThrow(
+          '[i18n] Missing translation: translation:test.missing'
+        );
+        expect(() => i18n.t('test.missing', { defaultValue: 'Raw fallback' })).toThrow(
+          'Missing translation'
+        );
+      }
+      expect(i18n.exists('test.missing')).toBe(false);
+    }
+  );
+
+  it('훅에서 사용하는 번역 함수도 누락 키를 실패로 드러낸다', () => {
+    let translate: ReturnType<typeof useTranslation>['t'] | undefined;
+    function HookProbe() {
+      translate = useTranslation().t;
+      return null;
+    }
+    render(<HookProbe />);
+    expect(() => translate?.('test.missingHook')).toThrow('Missing translation');
+  });
+
+  it('개발 환경에서는 NODE_ENV가 test가 아니어도 누락을 실패로 드러낸다', () => {
+    const previousEnv = process.env.NODE_ENV;
+    const previousDev = __DEV__;
+    try {
+      Object.assign(process.env, { NODE_ENV: 'development' });
+      Object.assign(globalThis, { __DEV__: true });
+      expect(() => t('test.missingDevelopment')).toThrow('Missing translation');
+    } finally {
+      Object.assign(process.env, { NODE_ENV: previousEnv });
+      Object.assign(globalThis, { __DEV__: previousDev });
+    }
+  });
+
+  it('운영에서는 한국어 폴백을 사용하고 정본에도 없는 키를 그대로 노출하지 않는다', async () => {
+    const previousEnv = process.env.NODE_ENV;
+    const previousDev = __DEV__;
+    try {
+      Object.assign(process.env, { NODE_ENV: 'production' });
+      Object.assign(globalThis, { __DEV__: false });
+      await i18n.changeLanguage('en');
+      i18n.addResource('ko', 'translation', 'test.productionKoOnly', '한국어 안내');
+      expect(t('test.productionKoOnly')).toBe('한국어 안내');
+      expect(t('test.productionMissing')).toBe(ko.common.translationUnavailable);
+      expect(t('test.productionMissing', { defaultValue: 'Raw fallback' })).toBe(
+        ko.common.translationUnavailable
+      );
+      expect(i18n.exists('test.productionMissing')).toBe(false);
+    } finally {
+      Object.assign(process.env, { NODE_ENV: previousEnv });
+      Object.assign(globalThis, { __DEV__: previousDev });
+    }
   });
 
   it('영문 카탈로그 누락 시 한국어 리소스로 폴백한다', async () => {
@@ -121,6 +188,15 @@ describe('mobile i18n runtime', () => {
 describe('mobile catalog contract', () => {
   const koLeaves = flattenLeaves(ko as JsonRecord);
   const enLeaves = flattenLeaves(en as JsonRecord);
+
+  it.each([
+    ['ko', koLeaves, flattenLeaves(webKo)],
+    ['en', enLeaves, flattenLeaves(webEn)],
+  ])('%s 모바일 전체 투영 문구가 웹 정본과 일치한다', (_locale, mobileLeaves, webLeaves) => {
+    for (const [key, value] of Object.entries(mobileLeaves)) {
+      expect({ key, value }).toEqual({ key, value: webLeaves[key] });
+    }
+  });
 
   it('ko/en의 전체 leaf key와 interpolation 변수가 일치한다', () => {
     expect(Object.keys(enLeaves).sort()).toEqual(Object.keys(koLeaves).sort());

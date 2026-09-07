@@ -8,9 +8,16 @@ import ts from 'typescript';
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 
-jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, back: mockBack }),
-}));
+jest.mock('expo-router', () => {
+  const ReactModule = jest.requireActual<typeof import('react')>('react');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  const Stack = ({ children }: { children: React.ReactNode }) => children;
+  Stack.Screen = ({ name, options }: { name: string; options: { title: string } }) =>
+    name === 'age-restricted'
+      ? ReactModule.createElement(Text, { testID: 'age-restricted-stack-title' }, options.title)
+      : null;
+  return { Stack, useRouter: () => ({ push: mockPush, back: mockBack }) };
+});
 
 jest.mock('@/lib/i18n', () => jest.requireActual('@/lib/i18n'));
 
@@ -32,6 +39,7 @@ jest.mock('@/lib/theme', () => ({
 }));
 
 import AgeRestrictedScreen from '@/app/(auth)/age-restricted';
+import AuthLayout from '@/app/(auth)/_layout';
 import { i18n } from '@/lib/i18n';
 
 function findUiKoreanLiterals(relativePath: string): string[] {
@@ -77,6 +85,21 @@ describe('AgeRestrictedScreen', () => {
 
     fireEvent.press(getByLabelText('뒤로 가기'));
     expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['ko', '이용 연령 안내', '연령 확인이 필요합니다'],
+    ['en', 'Age eligibility notice', 'Age verification required'],
+  ])('%s Stack 헤더는 짧은 탐색 라벨이며 H1을 중복하지 않는다', async (locale, header, title) => {
+    await i18n.changeLanguage(locale);
+    const screen = render(
+      <>
+        <AuthLayout />
+        <AgeRestrictedScreen />
+      </>
+    );
+    expect(screen.getByTestId('age-restricted-stack-title').props.children).toBe(header);
+    expect(screen.getAllByText(title)).toHaveLength(1);
   });
 
   it('검수용 영문 카탈로그로 전환하면 제한 안내가 영어로만 렌더링된다', async () => {

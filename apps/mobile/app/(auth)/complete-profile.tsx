@@ -174,7 +174,7 @@ export default function CompleteProfileScreen(): React.JSX.Element {
           {t('auth.mobileAgeVerification.birthdateLabel')}
         </Text>
         <TextInput
-          accessibilityLabel={t('auth.mobileAgeVerification.birthdateLabel')}
+          accessibilityLabel={t('auth.mobileAgeVerification.birthdateInputLabel')}
           autoCapitalize="none"
           keyboardType="number-pad"
           maxLength={10}

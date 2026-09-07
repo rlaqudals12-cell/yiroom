@@ -50,7 +50,7 @@ export default function AuthLayout() {
       <Stack.Screen
         name="age-restricted"
         options={{
-          title: t('auth.mobileAgeVerification.restrictedTitle'),
+          title: t('auth.mobileAgeVerification.restrictedEyebrow'),
           headerBackVisible: false,
         }}
       />

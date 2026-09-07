@@ -6,9 +6,9 @@ import { act, render } from '@testing-library/react-native';
 import { getLocales } from 'expo-localization';
 import React from 'react';
 import { Text } from 'react-native';
+import ts from 'typescript';
 
-import { i18n } from '../../lib/i18n';
-import { MobileI18nProvider } from '../../lib/i18n/provider';
+import { i18n, MobileI18nProvider } from '../../lib/i18n';
 
 jest.mock('@/lib/i18n', () => jest.requireActual('@/lib/i18n'));
 jest.mock('@/lib/i18n/provider', () => jest.requireActual('@/lib/i18n/provider'));
@@ -133,11 +133,37 @@ describe('mobile i18n startup timeout', () => {
   it('루트 레이아웃이 실제 앱 트리를 MobileI18nProvider로 감싼다', () => {
     const rootLayoutSource = fs.readFileSync(path.join(process.cwd(), 'app/_layout.tsx'), 'utf8');
 
-    expect(rootLayoutSource).toContain(
-      "import { MobileI18nProvider } from '../lib/i18n/provider';"
-    );
+    expect(rootLayoutSource).toContain("import { MobileI18nProvider } from '../lib/i18n';");
     expect(rootLayoutSource).toMatch(
       /<MobileI18nProvider>[\s\S]*<SentryErrorBoundary[\s\S]*<\/MobileI18nProvider>/
     );
+  });
+
+  it('i18n 공개 API와 내부 모듈의 의존 그래프에 순환이 없다', () => {
+    const directory = path.join(process.cwd(), 'lib/i18n');
+    const completed = new Set<string>();
+    function visit(filename: string, ancestors: string[]): void {
+      expect(ancestors).not.toContain(filename);
+      if (completed.has(filename)) return;
+      const source = ts.createSourceFile(
+        filename,
+        fs.readFileSync(filename, 'utf8'),
+        ts.ScriptTarget.Latest,
+        true
+      );
+      for (const statement of source.statements) {
+        if (!ts.isImportDeclaration(statement) && !ts.isExportDeclaration(statement)) continue;
+        const specifier = statement.moduleSpecifier;
+        if (!specifier || !ts.isStringLiteral(specifier) || !specifier.text.startsWith('.'))
+          continue;
+        const base = path.resolve(path.dirname(filename), specifier.text);
+        const dependency = [base + '.ts', base + '.tsx', path.join(base, 'index.ts')].find(
+          fs.existsSync
+        );
+        if (dependency) visit(dependency, [...ancestors, filename]);
+      }
+      completed.add(filename);
+    }
+    visit(path.join(directory, 'index.ts'), []);
   });
 });

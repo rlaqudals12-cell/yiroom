@@ -35,6 +35,7 @@ import {
   SkinApiError,
   type SkinHomeCareBoundary,
 } from '@/lib/api/skin';
+import { useTranslation } from '@/lib/i18n';
 import { downscaleToBase64 } from '@/lib/image/downscale';
 import { captureError } from '@/lib/monitoring/sentry';
 import { SKIN_TYPE_DATA, type SkinMetrics, type SkinMetricsDelta } from '@/lib/skincare';
@@ -76,6 +77,7 @@ export default function SkinResultScreen(): React.JSX.Element {
 }
 
 function SkinResultContent(): React.JSX.Element {
+  const { t } = useTranslation();
   const { getToken, userId } = useAuth();
   const supabase = useClerkSupabaseClient();
   const { imageUri, historyId } = useLocalSearchParams<{
@@ -336,14 +338,9 @@ function SkinResultContent(): React.JSX.Element {
       : []),
     {
       key: 'non-medical-limits',
-      title: '결과 한계와 상담 안내',
-      summary: '사진과 촬영 환경에 따라 결과가 달라질 수 있어요.',
-      content: (
-        <Text style={styles.evidenceText}>
-          사진과 촬영 환경에 따라 결과가 달라질 수 있으며 정확성·완전성을 보장하지 않아요. 피부
-          증상이나 불편이 있다면 의료 전문가와 상담해 주세요.
-        </Text>
-      ),
+      title: t('analysis.skinNonMedicalLimitsTitle'),
+      summary: t('analysis.skinNonMedicalLimitsSummary'),
+      content: <Text style={styles.evidenceText}>{t('analysis.skinNonMedicalLimits')}</Text>,
     },
   ];
 
@@ -387,10 +384,7 @@ function SkinResultContent(): React.JSX.Element {
           <>
             <ReportActionList actions={topActions} testID="skin-report-actions" />
             <ReportTextList
-              items={[
-                '이룸의 피부 분석은 의료기기가 아니며 의료 서비스를 제공하지 않아요.',
-                '분석 결과와 안내 정보는 의학적 판단이나 의료인의 진단·치료를 대신하지 않아요.',
-              ]}
+              items={[t('analysis.skinNonMedicalDevice'), t('analysis.skinNonMedicalPurpose')]}
               testID="skin-non-medical-notice"
             />
           </>

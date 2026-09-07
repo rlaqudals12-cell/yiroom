@@ -6,8 +6,19 @@
 const ko = {
   common: {
     close: '닫기',
+    translationUnavailable: '안내 문구를 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
   },
   auth: {
+    mobileClerkErrors: {
+      passwordIncorrect: '잘못된 비밀번호입니다.',
+      identifierNotFound: '등록된 이메일을 찾을 수 없습니다.',
+      identifierExists: '이미 사용 중인 이메일입니다.',
+      invalidInput: '입력 정보를 확인해주세요.',
+      codeIncorrect: '잘못된 인증 코드입니다.',
+      credentialsIncorrect: '이메일 또는 비밀번호가 올바르지 않습니다.',
+      passwordUnsafe: '보안을 위해 다른 비밀번호를 사용해주세요.',
+      tooManyRequests: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.',
+    },
     signIn: '로그인',
     signUp: '회원가입',
     mobileSignIn: {
@@ -100,7 +111,9 @@ const ko = {
       resetFailure: '비밀번호를 재설정하지 못했습니다.',
     },
     mobileAgeVerification: {
+      birthdateInputLabel: '생년월일 입력',
       eyebrow: '연령 확인',
+      restrictedEyebrow: '이용 연령 안내',
       title: '생년월일을 입력해주세요',
       unavailableTitle: '연령 확인 정보를 불러오지 못했어요',
       description:
@@ -131,6 +144,34 @@ const ko = {
     },
   },
   analysis: {
+    mobileHairInput: {
+      title: 'AI 헤어 분석',
+      subtitle: '모발 상태를 분석하고\n맞춤 케어 루틴을 추천해 드려요',
+      featuresTitle: '분석 항목',
+      features: {
+        texture: {
+          title: '모발 질감 분석',
+          description: '직모/웨이브/컬리 등 모발 유형 파악',
+        },
+        scalp: {
+          title: '두피 건강 체크',
+          description: '두피 상태와 유분/수분 밸런스 확인',
+        },
+        routine: {
+          title: '맞춤 케어 루틴',
+          description: 'AI 기반 개인 맞춤 헤어 관리법 추천',
+        },
+        style: {
+          title: '스타일 추천',
+          description: '모발 특성에 맞는 헤어스타일 제안',
+        },
+      },
+      guideTitle: '촬영 가이드',
+      guideLighting: '• 자연광에서 헤어가 잘 보이게 촬영해주세요',
+      guideLooseHair: '• 묶지 않은 자연스러운 상태가 좋아요',
+      guideAngles: '• 앞·옆·뒤 다양한 각도를 촬영하면 정확해요',
+      start: '헤어 분석 시작하기',
+    },
     skinNonMedicalDevice: '이룸의 피부 분석은 의료기기가 아니며 의료 서비스를 제공하지 않아요.',
     skinNonMedicalPurpose:
       '분석 결과와 안내 정보는 의학적 판단이나 의료인의 진단·치료를 대신하지 않아요.',

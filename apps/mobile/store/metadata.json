@@ -1,4 +1,6 @@
 {
+  "_source": "../store-metadata.json",
+  "_note": "스토어 제출용 파생물입니다. 공개 문구와 URL은 정본에서 복사하고, 변경 후 store-metadata-contract.test.ts로 동등성을 검증합니다. 스크린샷 파일명은 제출용 자산 목록입니다.",
   "app_name": {
     "ko": "이룸 - 온전한 나는?",
     "en": "Yiroom - Know Yourself",
@@ -8,7 +10,7 @@
   "subtitle": {
     "ko": "AI 퍼스널컬러·피부·스타일 분석",
     "en": "AI Beauty and Style Analysis",
-    "ja": "AIパーソナルカラー・肌・骨格診断",
+    "ja": "AIパーソナルカラー・肌分析・骨格診断",
     "zh": "AI个人色彩·肌肤·风格分析"
   },
   "description": {
@@ -67,9 +69,9 @@
   },
   "age_rating": "14+",
   "release_notes": {
-    "ko": "• 첫 번째 릴리즈\n• 퍼스널컬러·피부·체형·헤어·메이크업 분석",
-    "en": "• First release\n• Personal color, skin, body, hair, and makeup analysis",
-    "ja": "• 初回リリース\n• パーソナルカラー・肌状態・骨格（体型）・髪の状態・メイク分析",
-    "zh": "• 首次发布\n• 个人色彩、肌肤状态、体型、发质状态与妆容分析"
+    "ko": "• 첫 번째 릴리즈\n• 퍼스널컬러 분석\n• 피부 분석\n• 체형 분석\n• 헤어 분석\n• 메이크업 분석",
+    "en": "• First Release\n• Personal Color Analysis\n• Skin Analysis\n• Body Analysis\n• Hair Analysis\n• Makeup Analysis",
+    "ja": "• 初回リリース\n• パーソナルカラー分析\n• 肌状態の分析\n• 骨格診断（体型分析）\n• 髪の状態分析\n• メイク分析",
+    "zh": "• 首次发布\n• 个人色彩分析\n• 肌肤状态分析\n• 体型分析\n• 发质状态分析\n• 妆容分析"
   }
 }

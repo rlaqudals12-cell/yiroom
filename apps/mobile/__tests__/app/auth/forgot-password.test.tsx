@@ -210,7 +210,7 @@ describe('ForgotPasswordScreen', () => {
     const alertSpy = jest.spyOn(Alert, 'alert');
     mockSignInCreate.mockResolvedValueOnce({ status: 'needs_first_factor' });
     mockAttemptFirstFactor.mockRejectedValueOnce({
-      errors: [{ message: '인증 코드가 만료되었습니다.' }],
+      errors: [{ code: 'form_code_incorrect', message: 'Incorrect code.' }],
     });
     const { getByTestId } = renderScreen();
 
@@ -222,7 +222,7 @@ describe('ForgotPasswordScreen', () => {
     fireEvent.press(getByTestId('forgot-password-submit-button'));
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith('재설정 실패', '인증 코드가 만료되었습니다.');
+      expect(alertSpy).toHaveBeenCalledWith('재설정 실패', '잘못된 인증 코드입니다.');
       expect(mockSetActive).not.toHaveBeenCalled();
       expect(mockReplace).not.toHaveBeenCalled();
     });
@@ -231,7 +231,7 @@ describe('ForgotPasswordScreen', () => {
   it('Clerk 오류를 사용자에게 알림으로 표시한다', async () => {
     const alertSpy = jest.spyOn(Alert, 'alert');
     mockSignInCreate.mockRejectedValueOnce({
-      errors: [{ message: '등록된 이메일을 찾을 수 없습니다.' }],
+      errors: [{ code: 'form_identifier_not_found', message: 'Identifier not found.' }],
     });
     const { getByTestId } = renderScreen();
 
@@ -241,5 +241,56 @@ describe('ForgotPasswordScreen', () => {
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith('재설정 실패', '등록된 이메일을 찾을 수 없습니다.');
     });
+  });
+});
+
+describe('Clerk 오류 현지화 행동', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  it.each([
+    ['ko', 'request', true],
+    ['ko', 'request', false],
+    ['ko', 'reset', true],
+    ['ko', 'reset', false],
+    ['en', 'request', true],
+    ['en', 'request', false],
+    ['en', 'reset', true],
+    ['en', 'reset', false],
+  ])('%s / %s / known code %s', async (locale, route, known) => {
+    await i18n.changeLanguage(locale as string);
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    const rawMessage = 'Untranslated Clerk message with private details';
+    const error = {
+      errors: [
+        { code: known ? 'form_code_incorrect' : 'future_unknown_code', message: rawMessage },
+      ],
+    };
+
+    if (route === 'request') mockSignInCreate.mockRejectedValueOnce(error);
+    else mockSignInCreate.mockResolvedValueOnce({ status: 'needs_first_factor' });
+    const screen = renderScreen();
+    fireEvent.changeText(screen.getByTestId('forgot-password-email-input'), 'test@example.com');
+    fireEvent.press(screen.getByTestId('forgot-password-request-button'));
+    if (route === 'reset') {
+      await waitFor(() => expect(screen.getByTestId('forgot-password-code-input')).toBeTruthy());
+      mockAttemptFirstFactor.mockRejectedValueOnce(error);
+      fireEvent.changeText(screen.getByTestId('forgot-password-code-input'), '000000');
+      fireEvent.changeText(screen.getByTestId('forgot-password-new-password-input'), 'password123');
+      fireEvent.press(screen.getByTestId('forgot-password-submit-button'));
+    }
+    const fallback = route === 'request' ? 'requestFailure' : 'resetFailure';
+    const namespace = 'auth.mobileForgotPassword.';
+    await waitFor(() =>
+      expect(alertSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        known
+          ? locale === 'ko'
+            ? '잘못된 인증 코드입니다.'
+            : 'Incorrect verification code.'
+          : i18n.t(namespace + fallback)
+      )
+    );
+    expect(JSON.stringify(alertSpy.mock.calls)).not.toContain(rawMessage);
   });
 });

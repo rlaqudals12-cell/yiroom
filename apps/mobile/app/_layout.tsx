@@ -14,12 +14,12 @@ import { AgeVerificationGate } from '../components/common/AgeVerificationGate';
 import { OfflineBanner } from '../components/common/OfflineBanner';
 import { useAnalyticsLifecycle } from '../lib/analytics/lifecycle';
 import { tokenCache, CLERK_PUBLISHABLE_KEY } from '../lib/clerk';
+import { MobileI18nProvider } from '../lib/i18n';
 import { initSentry, SentryErrorBoundary, sentryWrap } from '../lib/monitoring/sentry';
 import { cleanupHiddenWellnessNotificationsOnce } from '../lib/notifications/hidden-wellness-cleanup';
 import { useNotificationResponse } from '../lib/notifications/useNotifications';
 import { ThemeProvider, useTheme, lightColors, typography, spacing } from '../lib/theme';
 import { resultSerifFonts } from '../lib/theme/fonts';
-import { MobileI18nProvider } from '../lib/i18n/provider';
 import { appLogger } from '../lib/utils/logger';
 
 // Expo Go에서 expo-notifications 경고 억제 (SDK 53+ 제한)

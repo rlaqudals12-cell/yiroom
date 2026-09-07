@@ -2,7 +2,10 @@ import { fireEvent, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 import SkinResultScreen from '../../../app/(analysis)/skin/result';
+import { i18n } from '../../../lib/i18n';
 import { renderWithTheme } from '../../helpers/test-utils';
+
+jest.mock('@/lib/i18n', () => jest.requireActual('@/lib/i18n'));
 
 jest.mock('../../../components/analysis/BiometricRouteGate', () => ({
   BiometricResultRouteGate: ({ children }: { children: React.ReactNode }) => children,
@@ -98,7 +101,8 @@ const RESULT = {
 };
 
 describe('피부 결과 진단지 표현', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('ko');
     jest.clearAllMocks();
     mockGetToken.mockResolvedValue('token-1');
     mockRequestSkinAnalysis.mockResolvedValue(RESULT);
@@ -132,6 +136,19 @@ describe('피부 결과 진단지 표현', () => {
     expect(screen.getByText('70')).toBeTruthy();
     expect(screen.getByText('20')).toBeTruthy();
     expect(screen.getByText('30')).toBeTruthy();
+  });
+
+  it('영어에서도 비의료 고지와 펼친 결과 한계를 같은 카탈로그로 표시한다', async () => {
+    await i18n.changeLanguage('en');
+    const screen = renderWithTheme(<SkinResultScreen />);
+    await waitFor(() => expect(screen.getByTestId('skin-non-medical-notice')).toBeTruthy());
+    expect(screen.getByText(i18n.t('analysis.skinNonMedicalDevice'))).toBeTruthy();
+    expect(screen.getByText(i18n.t('analysis.skinNonMedicalPurpose'))).toBeTruthy();
+    expect(screen.queryByText(/의료기기가 아니며/)).toBeNull();
+    expect(screen.getByText(i18n.t('analysis.skinNonMedicalLimitsTitle'))).toBeTruthy();
+    expect(screen.getByText(i18n.t('analysis.skinNonMedicalLimitsSummary'))).toBeTruthy();
+    fireEvent.press(screen.getByTestId('skin-analysis-result-section-non-medical-limits-trigger'));
+    expect(screen.getByText(i18n.t('analysis.skinNonMedicalLimits'))).toBeTruthy();
   });
 
   it('서버 폴백은 예시 결과·낮은 신뢰도로 고지한다', async () => {

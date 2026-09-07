@@ -92,3 +92,8 @@ ui*.xml
 ss*.png
 screen-*.png
 emulator-screenshot*.png
+
+# Codex CLI가 .claude 설정을 자동 이식한 산출물(정본은 .claude/ + AGENTS.md) 및 로컬 로그
+.codex/
+.agents/
+debug.log

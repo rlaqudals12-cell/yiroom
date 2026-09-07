@@ -354,6 +354,7 @@ jest.mock('@sentry/react-native', () => ({
 // i18n 모킹
 // =============================================================================
 jest.mock('@/lib/i18n', () => ({
+  MobileI18nProvider: ({ children }) => children,
   t: jest.fn((key) => key),
   getLocale: jest.fn(() => 'ko'),
   initI18n: jest.fn().mockResolvedValue('ko'),
