@@ -213,9 +213,7 @@ describe('generateRoutine', () => {
     expect(cleanserStep).toBeDefined();
 
     // 지성 피부용 팁이 포함되어야 함
-    const oilyModifier = SKIN_TYPE_MODIFIERS.oily;
-    const expectedTip = oilyModifier.adjustTips.cleanser[0];
-    expect(cleanserStep!.tips).toContain(expectedTip);
+    expect(cleanserStep!.tips.join(' ')).toContain('pH만으로 저자극을 보장할 수 없어요');
   });
 
   it('includes personalization note with skin type', () => {
@@ -236,7 +234,8 @@ describe('generateRoutine', () => {
     });
 
     // 여드름 고민에 대한 성분 추천이 포함되어야 함
-    expect(result.personalizationNote).toContain('BHA');
+    expect(result.personalizationNote).not.toContain('BHA');
+    expect(result.personalizationNote).toContain('일반 세안');
   });
 
   it('includes warning in personalization note', () => {
@@ -480,10 +479,10 @@ describe('generateRoutine — specName 부착 (U2)', () => {
     const toner = routine.find((s) => s.category === 'toner');
     const cream = routine.find((s) => s.category === 'cream');
     const sun = routine.find((s) => s.category === 'sunscreen');
-    expect(cleanser?.specName).toBe('촉촉한 약산성 클렌저(크림·로션 제형)');
-    expect(toner?.specName).toBe('보습 토너');
-    expect(cream?.specName).toBe('세라마이드 크림');
-    expect(sun?.specName).toBe('SPF50+ PA+++');
+    expect(cleanser?.specName).toBe('촉촉한 클렌저(크림·로션 제형)');
+    expect(toner?.specName).toBe('보습 토너(선택)');
+    expect(cream?.specName).toBe('보습 크림');
+    expect(sun?.specName).toBe('자외선 차단제');
     // 왜 한 줄도 함께
     expect(cleanser?.specReason).toBeTruthy();
   });
@@ -495,7 +494,7 @@ describe('generateRoutine — specName 부착 (U2)', () => {
       timeOfDay: 'evening',
     });
     const serum = routine.find((s) => s.category === 'serum');
-    expect(serum?.specName).toBe('레티놀 세럼(저녁)');
+    expect(serum?.specName).toBe('보습 관리');
   });
 
   it('barrier 단계면 세럼을 진정·보습으로 강제한다 (목표 무시)', () => {
@@ -506,7 +505,7 @@ describe('generateRoutine — specName 부착 (U2)', () => {
       carePhase: 'barrier',
     });
     const serum = routine.find((s) => s.category === 'serum');
-    expect(serum?.specName).toBe('히알루론산 세럼');
+    expect(serum?.specName).toBe('보습 관리');
   });
 
   it('더블클렌징 1단계 "오일 클렌저"는 약산성 스펙으로 바꾸지 않는다', () => {
@@ -519,7 +518,7 @@ describe('generateRoutine — specName 부착 (U2)', () => {
     const foamCleanser = routine.find((s) => s.name.includes('폼') && s.category === 'cleanser');
     expect(oilCleanser?.specName).toBeUndefined(); // 원 명칭 유지
     // 저녁 2차 세안은 시간대 정체성(2차 세안)을 앞세운다 — 아침 클렌저와 같은 이름이 되지 않도록
-    expect(foamCleanser?.specName).toBe('2차 세안 · 약산성 젤 클렌저'); // 지성 = 젤 제형 안내
+    expect(foamCleanser?.specName).toBe('2차 세안 · 순한 클렌저');
   });
 
   // ── 아침/저녁 이름 중복 수리 (2026-08-17 리뷰 #4) ─────────────────────────
@@ -537,11 +536,11 @@ describe('generateRoutine — specName 부착 (U2)', () => {
       const eveningCream = evening.routine.find((s) => s.category === 'cream');
 
       // 아침은 스펙명 그대로
-      expect(displayName(morningCleanser!)).toBe('촉촉한 약산성 클렌저(크림·로션 제형)');
-      expect(displayName(morningCream!)).toBe('세라마이드 크림');
+      expect(displayName(morningCleanser!)).toBe('촉촉한 클렌저(크림·로션 제형)');
+      expect(displayName(morningCream!)).toBe('보습 크림');
       // 저녁은 정체성 라벨이 앞에 — 같은 이름이 두 번 뜨지 않는다
-      expect(displayName(eveningCleanser!)).toBe('2차 세안 · 촉촉한 약산성 클렌저(크림·로션 제형)');
-      expect(displayName(eveningCream!)).toBe('나이트 크림 · 세라마이드');
+      expect(displayName(eveningCleanser!)).toBe('2차 세안 · 촉촉한 클렌저(크림·로션 제형)');
+      expect(displayName(eveningCream!)).toBe('나이트 크림 · 보습');
       expect(displayName(eveningCleanser!)).not.toBe(displayName(morningCleanser!));
       expect(displayName(eveningCream!)).not.toBe(displayName(morningCream!));
     });
@@ -552,8 +551,8 @@ describe('generateRoutine — specName 부착 (U2)', () => {
 
       const morningCream = morning.routine.find((s) => s.category === 'cream');
       const eveningCream = evening.routine.find((s) => s.category === 'cream');
-      expect(morningCream?.specName).toBeUndefined();
-      expect(eveningCream?.specName).toBeUndefined();
+      expect(morningCream?.specName).toBe('보습 크림');
+      expect(eveningCream?.specName).toBe('나이트 크림 · 보습');
       expect(morningCream?.name).toBe('크림');
       expect(eveningCream?.name).toBe('나이트 크림');
     });

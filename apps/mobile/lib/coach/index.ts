@@ -1,3 +1,4 @@
+import type { CoachResponseMetadata } from '@yiroom/shared';
 /**
  * AI 웰니스 코치 API 클라이언트
  * 웹 API를 호출하여 AI 코치 기능 제공
@@ -9,6 +10,7 @@
 
 import { getApiBaseUrl } from '@/lib/api/base-url';
 
+import { getLocale } from '../i18n';
 // RAG 모듈
 import { getRAGContext, classifyQuestion } from './rag';
 
@@ -26,7 +28,7 @@ export {
 } from './hallucination-filter';
 export type { FilterResult, FilterViolation } from './hallucination-filter';
 
-export interface CoachMessage {
+export interface CoachMessage extends CoachResponseMetadata {
   id: string;
   role: 'user' | 'assistant';
   content: string;
@@ -79,7 +81,7 @@ export interface UserContext {
   closetItemCount?: number;
 }
 
-export interface CoachChatResponse {
+export interface CoachChatResponse extends CoachResponseMetadata {
   message: string;
   suggestedQuestions?: string[];
 }
@@ -157,6 +159,7 @@ export async function sendCoachMessage(
     },
     body: JSON.stringify({
       message,
+      locale: getLocale(),
       chatHistory: chatHistory.map((msg) => ({
         id: msg.id,
         role: msg.role,
@@ -171,7 +174,8 @@ export async function sendCoachMessage(
     throw new Error(`Coach API error: ${response.status}`);
   }
 
-  return response.json();
+  const payload = await response.json();
+  return payload.data ?? payload;
 }
 
 // ============================================
@@ -340,6 +344,11 @@ export function getMockResponse(message: string, userContext?: UserContext): Coa
 
   return {
     message: responseMessage,
-    suggestedQuestions: suggestedByDomain[domain] ?? suggestedByDomain.general,
+    usedFallback: true,
+    confidence: 'low',
+    fallbackReason: 'error',
+    suggestedQuestions: filterBeautyTeamSuggestedQuestions(
+      suggestedByDomain[domain] ?? suggestedByDomain.general
+    ),
   };
 }

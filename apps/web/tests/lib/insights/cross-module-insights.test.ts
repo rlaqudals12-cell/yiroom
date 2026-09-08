@@ -33,14 +33,16 @@ const createMockSupabase = (responses: Record<string, unknown>) => {
   };
 };
 
-// Mock 데이터
+// Mock 데이터 — **정본 컬럼 이름만 쓴다**.
+// 과거 mock이 sub_type·color_palette·concerns·hydration_level 같은 유령 컬럼을 공급해
+// 실제로는 select 전체가 400으로 실패하는 결함을 테스트가 가려줬다.
 const mockPersonalColorData = {
   data: {
     season: '봄 웜톤',
     undertone: 'warm',
     confidence: 85,
-    sub_type: 'bright',
-    color_palette: ['#FF6B6B', '#4ECDC4'],
+    season_subtype: 'bright',
+    best_colors: ['#FF6B6B', '#4ECDC4'],
   },
   error: null,
 };
@@ -48,10 +50,10 @@ const mockPersonalColorData = {
 const mockSkinData = {
   data: {
     skin_type: '복합성',
-    concerns: ['모공', '피지'],
-    hydration_level: 65,
+    problem_areas: [{ type: '모공' }, { label: '피지' }],
+    hydration: 65,
     oil_level: 70,
-    sensitivity_level: 30,
+    sensitivity: 30,
   },
   error: null,
 };
@@ -59,8 +61,8 @@ const mockSkinData = {
 const mockBodyData = {
   data: {
     body_type: '직사각형',
-    shoulder_type: '보통',
-    proportions: { shoulder: 40, waist: 30, hip: 38 },
+    shoulder: '보통',
+    body_ratios: { shoulderToHip: 1.05, legToTorso: 1.2 },
   },
   error: null,
 };
@@ -68,7 +70,9 @@ const mockBodyData = {
 const mockFaceData = {
   data: {
     face_shape: '계란형',
-    facial_features: { eyeShape: '쌍꺼풀', noseShape: '보통' },
+    eye_shape: '쌍꺼풀',
+    nose_type: '보통',
+    eyebrow_shape: '아치형',
   },
   error: null,
 };
@@ -76,17 +80,16 @@ const mockFaceData = {
 const mockHairData = {
   data: {
     hair_type: '직모',
-    hair_condition: '건강',
-    scalp_condition: '정상',
+    damage_level: '건강',
+    scalp_health: '정상',
   },
   error: null,
 };
 
 const mockOralHealthData = {
   data: {
-    gum_health_status: '양호',
+    gum_health: '양호',
     tooth_shade: 'A2',
-    inflammation_score: 10,
   },
   error: null,
 };

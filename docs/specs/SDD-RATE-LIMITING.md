@@ -1,5 +1,18 @@
 # SDD-RATE-LIMITING: Rate Limiting 스펙
 
+## 배치 S 코치 공통 계약 (2026-09-08)
+
+- 목표: 같은 사용자 웹/모바일 AI상담 턴의 일20·월100 동시성 계약 100%. KST 자정/매월 1일 리셋. DB 운영 변경 없이 기존 Upstash 사용.
+- 입력: auth에서 얻은 userId, 서버 예약 ID, 서버 시각(테스트만 주입), AbortSignal. 채널은 키에 넣지 않는다.
+- `reserveCoachTurn`: 두 한도가 모두 남으면 한 번에 +1 및 영수증 생성. 한도 초과·중복 ID·저장소 장애는 예약 거절. 거절 시 모델0호출/무료 일반 안내.
+- `settleCoachTurn`: modelCalled=true면 소진 확정 및 SDK usage/모델버전 기록. false만 -1. 동일 영수증 정산 중복은 무효. 일/월 경계 이후 정산해도 새 기간을 건드리지 않는다.
+- 저장소: Redis EVAL 원자 연산. 예약 영수증은 해당 월 종료+1일까지 보존. Redis 오류 및 운영 미설정은 fail-closed. 개발/테스트만 메모리 폴백.
+- 네트워크 경계: 저장소 응답에도 상한 적용. 예약 응답 유실 시 보수적으로 소진을 유지하여 초과 호출을 막는다. 모델 시작 전 확인된 늦은 예약은 환급 가능하다.
+- 구정책과의 관계: **요청 제한과 모델 턴 예약은 다른 축**이다. 코치 두 전송 경로는 전용 카테고리 `coachTurn`(분 20·일 400 요청)으로 버스트를 계속 막고, 모델 호출 횟수만 위 예약이 일20·월100으로 관리한다. 두 경로를 요청 제한에서 통째로 빼면 인증 사용자가 RAG·DB 조회를 무제한으로 태울 수 있어 되돌렸다. 다른 분석·제품 Q&A·인증 보호는 보존한다.
+- 예약 거절 표기: 한도 소진(daily/monthly)은 정상 안내(`usedFallback:false`)지만, 저장소 미설정·장애(`quota_unavailable`)와 중복 요청은 인프라 실패이므로 `usedFallback:true`·`confidence:'low'`·`fallbackReason:'error'`로 정직하게 구분한다.
+- 운영 전제: `UPSTASH_REDIS_REST_URL`·`UPSTASH_REDIS_REST_TOKEN`은 **운영 필수**다. 미설정 시 fail-closed로 코치 상담이 전면 중단되며, 서버 로그에 원인을 남긴다.
+- 검증: 웹/모바일 동시 요청 21개 중20개, 일/월경계, 월100, 사용자 격리, 중복예약·중복정산, 모델호출후 abort 소진, 미호출 환급, Redis 실패시 모델 차단.
+
 > **Phase**: Phase -1 (기술부채 P0)
 > **Priority**: P0-6 (보안)
 > **Status**: 📝 Draft
@@ -22,21 +35,21 @@
 
 ### 물리적 한계
 
-| 한계 | 설명 |
-|------|------|
-| Redis 비용 | 분산 Redis 비용 증가 |
-| 네트워크 지연 | Redis 호출당 ~1-5ms 추가 |
+| 한계            | 설명                               |
+| --------------- | ---------------------------------- |
+| Redis 비용      | 분산 Redis 비용 증가               |
+| 네트워크 지연   | Redis 호출당 ~1-5ms 추가           |
 | Fallback 정확도 | 인메모리 Fallback 시 서버별 불일치 |
 
 ### 100점 기준
 
-| 항목 | 100점 기준 | 현재 | 달성률 |
-|------|-----------|------|--------|
-| 분당 한도 | 구현 | ✅ 구현 | 100% |
-| 일일 한도 | 구현 | ✅ 신규 | 100% |
-| 사용자 등급별 | 차등 | ❌ 제외 | 0% |
-| 동적 조정 | 자동 | ❌ 제외 | 0% |
-| Redis | 분산 멀티리전 | 단일 리전 | 50% |
+| 항목          | 100점 기준    | 현재      | 달성률 |
+| ------------- | ------------- | --------- | ------ |
+| 분당 한도     | 구현          | ✅ 구현   | 100%   |
+| 일일 한도     | 구현          | ✅ 신규   | 100%   |
+| 사용자 등급별 | 차등          | ❌ 제외   | 0%     |
+| 동적 조정     | 자동          | ❌ 제외   | 0%     |
+| Redis         | 분산 멀티리전 | 단일 리전 | 50%    |
 
 ### 현재 목표
 
@@ -50,16 +63,16 @@
 
 #### 📊 구현 현황
 
-| 기능 | 상태 | 위치 |
-|------|------|------|
-| Upstash Redis 설정 | ✅ 완료 | `lib/rate-limit/redis-client.ts` |
-| Sliding Window 구현 | ✅ 완료 | `lib/rate-limit/sliding-window.ts` |
-| AI 분석 Rate Limit | ✅ 완료 | `lib/rate-limit/analysis-limiter.ts` |
-| 인증 Rate Limit | ✅ 완료 | `lib/rate-limit/auth-limiter.ts` |
-| Rate Limit 미들웨어 | ✅ 완료 | `lib/rate-limit/middleware.ts` |
-| 응답 헤더 설정 | ✅ 완료 | `lib/rate-limit/headers.ts` |
-| 429 에러 UI | ✅ 완료 | `components/common/RateLimitError.tsx` |
-| Rate Limit 타입 | ✅ 완료 | `types/rate-limit.ts` |
+| 기능                | 상태    | 위치                                   |
+| ------------------- | ------- | -------------------------------------- |
+| Upstash Redis 설정  | ✅ 완료 | `lib/rate-limit/redis-client.ts`       |
+| Sliding Window 구현 | ✅ 완료 | `lib/rate-limit/sliding-window.ts`     |
+| AI 분석 Rate Limit  | ✅ 완료 | `lib/rate-limit/analysis-limiter.ts`   |
+| 인증 Rate Limit     | ✅ 완료 | `lib/rate-limit/auth-limiter.ts`       |
+| Rate Limit 미들웨어 | ✅ 완료 | `lib/rate-limit/middleware.ts`         |
+| 응답 헤더 설정      | ✅ 완료 | `lib/rate-limit/headers.ts`            |
+| 429 에러 UI         | ✅ 완료 | `components/common/RateLimitError.tsx` |
+| Rate Limit 타입     | ✅ 완료 | `types/rate-limit.ts`                  |
 
 ---
 
@@ -71,13 +84,13 @@ API 남용 방지, DDoS 방어, 공정한 리소스 분배를 위한 Rate Limiti
 
 ### 1.2 현재 상태 vs 목표
 
-| 항목 | 현재 | 목표 |
-|------|------|------|
-| 저장소 | 인메모리 Map | Upstash Redis |
-| 분당 한도 | ✅ 구현됨 | 유지 |
-| 일일 한도 | ❌ 미구현 | **신규 구현** |
-| 헤더 | 일부 | 표준 준수 |
-| Fallback | ❌ 없음 | 인메모리 |
+| 항목      | 현재         | 목표          |
+| --------- | ------------ | ------------- |
+| 저장소    | 인메모리 Map | Upstash Redis |
+| 분당 한도 | ✅ 구현됨    | 유지          |
+| 일일 한도 | ❌ 미구현    | **신규 구현** |
+| 헤더      | 일부         | 표준 준수     |
+| Fallback  | ❌ 없음      | 인메모리      |
 
 ### 1.3 범위
 
@@ -102,13 +115,13 @@ API 남용 방지, DDoS 방어, 공정한 리소스 분배를 위한 Rate Limiti
 
 ### 2.2 현재 목표 (85%)
 
-| 항목 | 100% | 현재 목표 | 비고 |
-|------|------|----------|------|
-| 분당 한도 | 구현 | ✅ 구현 | 기존 코드 활용 |
-| 일일 한도 | 구현 | ✅ 신규 | Upstash |
-| 사용자 등급별 | 차등 | ❌ 제외 | Phase 2 |
-| 동적 조정 | 자동 | ❌ 제외 | Phase 3 |
-| Redis | 분산 | 단일 리전 | 비용 최적화 |
+| 항목          | 100% | 현재 목표 | 비고           |
+| ------------- | ---- | --------- | -------------- |
+| 분당 한도     | 구현 | ✅ 구현   | 기존 코드 활용 |
+| 일일 한도     | 구현 | ✅ 신규   | Upstash        |
+| 사용자 등급별 | 차등 | ❌ 제외   | Phase 2        |
+| 동적 조정     | 자동 | ❌ 제외   | Phase 3        |
+| Redis         | 분산 | 단일 리전 | 비용 최적화    |
 
 ---
 
@@ -159,13 +172,7 @@ export interface RateLimitResult {
   headers: Record<string, string>;
 }
 
-export type RateLimitCategory =
-  | 'analyze'
-  | 'auth'
-  | 'upload'
-  | 'coach'
-  | 'feedback'
-  | 'default';
+export type RateLimitCategory = 'analyze' | 'auth' | 'upload' | 'coach' | 'feedback' | 'default';
 
 export const RATE_LIMIT_CONFIGS: Record<RateLimitCategory, RateLimitConfig> = {
   analyze: { minuteLimit: 10, dailyLimit: 50, identifier: 'userId' },
@@ -188,11 +195,7 @@ export const RATE_LIMIT_CONFIGS: Record<RateLimitCategory, RateLimitConfig> = {
 // lib/security/rate-limit.ts
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import {
-  RateLimitCategory,
-  RateLimitResult,
-  RATE_LIMIT_CONFIGS,
-} from '@/types/rate-limit';
+import { RateLimitCategory, RateLimitResult, RATE_LIMIT_CONFIGS } from '@/types/rate-limit';
 
 // Redis 클라이언트 (싱글톤)
 let redis: Redis | null = null;
@@ -325,10 +328,7 @@ setInterval(() => {
   }
 }, 60000);
 
-function createDefaultResult(
-  category: RateLimitCategory,
-  success: boolean
-): RateLimitResult {
+function createDefaultResult(category: RateLimitCategory, success: boolean): RateLimitResult {
   const config = RATE_LIMIT_CONFIGS[category];
   const now = Date.now();
   return {
@@ -489,11 +489,7 @@ export async function middleware(request: NextRequest) {
 ```typescript
 // tests/lib/security/rate-limit.test.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-  checkRateLimit,
-  getRateLimitCategory,
-  getIdentifier,
-} from '@/lib/security/rate-limit';
+import { checkRateLimit, getRateLimitCategory, getIdentifier } from '@/lib/security/rate-limit';
 import { checkRateLimitWithFallback } from '@/lib/security/rate-limit-fallback';
 
 // Mock Upstash
@@ -610,18 +606,18 @@ export function logRateLimitExceeded(
 
 ## 5. 테스트 케이스
 
-| ID | 시나리오 | 입력 | 예상 결과 |
-|----|---------|------|----------|
-| TC-1 | 분당 한도 내 | 10 req/min | 모두 성공 |
-| TC-2 | 분당 한도 초과 | 11 req/min | 11번째 429 |
-| TC-3 | 일일 한도 초과 | 51 req/day | 51번째 429 |
-| TC-4 | 헤더 확인 | 성공 응답 | X-RateLimit-* 헤더 |
-| TC-5 | 429 응답 | 한도 초과 | Retry-After 헤더 |
-| TC-6 | IP 식별 | /api/auth/* | IP 기반 제한 |
-| TC-7 | userId 식별 | /api/analyze/* | userId 기반 제한 |
-| TC-8 | Redis 장애 | 연결 실패 | 인메모리 fallback |
-| TC-9 | 윈도우 리셋 | 1분 경과 | 카운트 리셋 |
-| TC-10 | 일일 리셋 | 24시간 경과 | 카운트 리셋 |
+| ID    | 시나리오       | 입력            | 예상 결과           |
+| ----- | -------------- | --------------- | ------------------- |
+| TC-1  | 분당 한도 내   | 10 req/min      | 모두 성공           |
+| TC-2  | 분당 한도 초과 | 11 req/min      | 11번째 429          |
+| TC-3  | 일일 한도 초과 | 51 req/day      | 51번째 429          |
+| TC-4  | 헤더 확인      | 성공 응답       | X-RateLimit-\* 헤더 |
+| TC-5  | 429 응답       | 한도 초과       | Retry-After 헤더    |
+| TC-6  | IP 식별        | /api/auth/\*    | IP 기반 제한        |
+| TC-7  | userId 식별    | /api/analyze/\* | userId 기반 제한    |
+| TC-8  | Redis 장애     | 연결 실패       | 인메모리 fallback   |
+| TC-9  | 윈도우 리셋    | 1분 경과        | 카운트 리셋         |
+| TC-10 | 일일 리셋      | 24시간 경과     | 카운트 리셋         |
 
 ---
 
@@ -661,14 +657,14 @@ X-RateLimit-Remaining-Minute: 0
 
 ## 7. 엔드포인트별 한도 표
 
-| 카테고리 | 엔드포인트 | 분당 | 일일 | 식별자 |
-|---------|-----------|------|------|--------|
-| analyze | `/api/analyze/*`, `/api/gemini/*` | 10 | 50 | userId |
-| auth | `/api/auth/*` | 20 | 100 | IP |
-| upload | `/api/upload/*` | 5 | 30 | userId |
-| coach | `/api/coach/*`, `/api/chat/*` | 30 | 200 | userId |
-| feedback | `/api/feedback/*` | 5 | 20 | userId |
-| default | `/api/*` (기타) | 100 | 1000 | userId |
+| 카테고리 | 엔드포인트                        | 분당 | 일일 | 식별자 |
+| -------- | --------------------------------- | ---- | ---- | ------ |
+| analyze  | `/api/analyze/*`, `/api/gemini/*` | 10   | 50   | userId |
+| auth     | `/api/auth/*`                     | 20   | 100  | IP     |
+| upload   | `/api/upload/*`                   | 5    | 30   | userId |
+| coach    | `/api/coach/*`, `/api/chat/*`     | 30   | 200  | userId |
+| feedback | `/api/feedback/*`                 | 5    | 20   | userId |
+| default  | `/api/*` (기타)                   | 100  | 1000 | userId |
 
 ---
 

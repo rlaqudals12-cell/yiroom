@@ -13,7 +13,8 @@ export type RateLimitCategory =
   | 'analyze' // AI 분석 API (/api/analyze/*, /api/gemini/*)
   | 'auth' // 인증 API (/api/auth/*)
   | 'upload' // 업로드 API (/api/upload/*, /api/inventory/upload)
-  | 'coach' // 코치/채팅 API (/api/coach/*, /api/chat/*)
+  | 'coach' // 코치/채팅 API (/api/chat/*, /api/products/qa)
+  | 'coachTurn' // 코치 상담 턴 경로 (/api/coach/chat, /api/coach/stream)
   | 'feedback' // 피드백 API (/api/feedback/*)
   | 'nutrition' // 영양 API (/api/nutrition/*)
   | 'workout' // 운동 API (/api/workout/*)
@@ -71,6 +72,7 @@ export interface RateLimitResult {
  * - auth: 분당 20회, 일일 100회 (IP 기반)
  * - upload: 분당 30회, 일일 200회 (옷장 일괄 등록 실측 기준 — 아래 주석 참조)
  * - coach: 분당 30회, 일일 200회
+ * - coachTurn: 분당 20회, 일일 400회 (요청 상한. 실제 모델 호출은 일 20/월 100으로 별도 예약)
  * - feedback: 분당 5회, 일일 20회
  * - nutrition/workout: 분당 30회, 일일 300회
  * - affiliate: 분당 50회, 일일 500회
@@ -99,6 +101,14 @@ export const RATE_LIMIT_CONFIGS: Record<RateLimitCategory, RateLimitConfig> = {
   coach: {
     minuteLimit: 30,
     dailyLimit: 200,
+    identifier: 'userId',
+  },
+  // 요청 상한이며 모델 호출 한도가 아니다.
+  // 모델 턴은 lib/security/coach-turn-quota가 일 20/월 100으로 원자 예약한다.
+  // 일일 상한을 넉넉히 두는 이유: 한도 초과 뒤에도 무료 안내 응답은 계속 받을 수 있어야 한다.
+  coachTurn: {
+    minuteLimit: 20,
+    dailyLimit: 400,
     identifier: 'userId',
   },
   feedback: {

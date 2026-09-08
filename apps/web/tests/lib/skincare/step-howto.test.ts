@@ -1,97 +1,58 @@
-/**
- * 스텝별 사용법(how-to) 상수 테스트 (T1)
- * @see lib/skincare/step-howto.ts
- */
 import { describe, it, expect } from 'vitest';
 import {
   STEP_HOWTO,
+  HOWTO_SOURCE_AUDIT,
+  getApprovedSkincareClaims,
   getStepHowTo,
   HAND_WASH_PRESTEP,
-  type StepHowToKey,
 } from '@/lib/skincare/step-howto';
-import type { ProductCategory } from '@/types/skincare-routine';
+import ko from '@/messages/ko.json';
+import en from '@/messages/en.json';
+import ja from '@/messages/ja.json';
+import zh from '@/messages/zh.json';
 
-// 루틴에서 쓰이는 모든 제품 카테고리 — STEP_HOWTO가 전부 커버해야 한다
-const ALL_CATEGORIES: ProductCategory[] = [
-  'cleanser',
-  'toner',
-  'essence',
-  'serum',
-  'ampoule',
-  'cream',
-  'sunscreen',
-  'mask',
-  'eye_cream',
-  'oil',
-  'spot_treatment',
-];
-
-// 의학적 단정·과장 금지 (ADR-117 용어 안전)
-const FORBIDDEN_PHRASES = ['치료', '처방', '완치', '의약품'];
-
-describe('STEP_HOWTO', () => {
-  it('should 모든 제품 카테고리 + handWash 프리스텝을 커버한다', () => {
-    for (const category of ALL_CATEGORIES) {
-      expect(STEP_HOWTO[category]).toBeDefined();
-      expect(STEP_HOWTO[category].amount).toBeTruthy();
-      expect(STEP_HOWTO[category].method).toBeTruthy();
-    }
-    expect(STEP_HOWTO.handWash).toBeDefined();
-    expect(STEP_HOWTO.handWash.method).toBeTruthy();
+describe('승인 사용법 근거 계약', () => {
+  it('D3 원판정 50개와 unsupported 21개를 보존한다', () => {
+    expect(HOWTO_SOURCE_AUDIT).toHaveLength(50);
+    expect(HOWTO_SOURCE_AUDIT.filter((c) => c.evidence === 'unsupported')).toHaveLength(21);
+    expect(HOWTO_SOURCE_AUDIT.filter((c) => c.evidence === 'hygiene')).toHaveLength(5);
   });
-
-  it('should 손 씻기(cleanser) 사용법이 적당량·방법·미온수 헹굼을 담는다', () => {
-    const cleanser = STEP_HOWTO.cleanser;
-    expect(cleanser.amount).toContain('동전');
-    expect(cleanser.method).toContain('미온수');
-  });
-
-  it('should 선크림은 덧바르기 안내를 포함한다', () => {
-    expect(STEP_HOWTO.sunscreen.waitTime).toContain('덧발라');
-  });
-
-  it('should 클렌저 팁에 약산성 pH 4.5~6.5 풀이를 담는다', () => {
-    const tipsText = (STEP_HOWTO.cleanser.tips ?? []).join(' ');
-    expect(tipsText).toContain('약산성');
-    expect(tipsText).toContain('pH 4.5~6.5');
-  });
-
-  it('should 금지 문구(치료·처방 등)를 포함하지 않는다', () => {
-    for (const key of Object.keys(STEP_HOWTO) as StepHowToKey[]) {
-      const howTo = STEP_HOWTO[key];
-      const allText = [
-        howTo.amount,
-        howTo.method,
-        howTo.waitTime ?? '',
-        ...(howTo.tips ?? []),
-      ].join(' ');
-      for (const phrase of FORBIDDEN_PHRASES) {
-        expect(allText).not.toContain(phrase);
-      }
+  it.each(Object.keys(STEP_HOWTO))('%s 가시 문장에 unsupported가 없다', (key) => {
+    const how = getStepHowTo(key as keyof typeof STEP_HOWTO)!;
+    const claims = [
+      how.claims.amount,
+      how.claims.method,
+      how.claims.waitTime,
+      ...how.claims.tips,
+    ].filter(Boolean);
+    expect(claims.length).toBeGreaterThan(1);
+    for (const claim of claims) {
+      expect(claim?.evidence).not.toBe('unsupported');
+      expect(claim?.sourceId).toBeTruthy();
+      expect(claim?.scope).toBeTruthy();
     }
   });
-
-  it('should 수치는 범위 표기로 단정을 피한다 (예: "30초~1분")', () => {
-    // 대기시간이 있는 스텝들은 물결(~) 범위 표기를 쓴다
-    const withWait = (Object.keys(STEP_HOWTO) as StepHowToKey[])
-      .map((k) => STEP_HOWTO[k].waitTime)
-      .filter((w): w is string => Boolean(w) && /\d/.test(w!));
-    expect(withWait.length).toBeGreaterThan(0);
+  it('수치가 있는 승인 문장은 AAD 선크림/CDC 손씻기 출처에만 있다', () => {
+    const numeric = getApprovedSkincareClaims().filter((c) => /[0-9]/.test(c.text));
+    expect(numeric.map((c) => c.id).sort()).toEqual(['handTime', 'sunBefore', 'sunRepeat']);
+    expect(numeric.every((c) => ['A2', 'C1'].includes(c.sourceId))).toBe(true);
   });
-});
-
-describe('getStepHowTo', () => {
-  it('should 카테고리로 사용법을 반환한다', () => {
-    expect(getStepHowTo('serum')).toEqual(STEP_HOWTO.serum);
-    expect(getStepHowTo('handWash')).toEqual(STEP_HOWTO.handWash);
+  it('선크림은 약15분/야외2시간/땀·수영 조건을 유지한다', () => {
+    expect(STEP_HOWTO.sunscreen.method).toContain('15분');
+    expect(STEP_HOWTO.sunscreen.waitTime).toMatch(/야외.*2시간.*땀.*수영/);
+    expect(STEP_HOWTO.sunscreen.amount).toContain('충분');
   });
-});
-
-describe('HAND_WASH_PRESTEP', () => {
-  it('should 0단계 손 씻기 라벨·안내 문구를 제공한다', () => {
+  it('4언어 모든 승인 ID가 존재하고 수치의 강도가 같다', () => {
+    for (const messages of [ko, en, ja, zh]) {
+      const texts = messages.skincareClaims as Record<string, string>;
+      for (const claim of getApprovedSkincareClaims()) expect(texts[claim.id]).toBeTruthy();
+      expect(texts.sunBefore.match(/[0-9]+/g)).toEqual(['15']);
+      expect(texts.sunRepeat.match(/[0-9]+/g)).toEqual(['2']);
+      expect(texts.handTime.match(/[0-9]+/g)).toEqual(['20']);
+    }
+  });
+  it('위생 프리스텝은 효능 주장을 하지 않는다', () => {
     expect(HAND_WASH_PRESTEP.label).toBe('손 씻기');
-    expect(HAND_WASH_PRESTEP.note).toBeTruthy();
-    // 손 씻기 근거(세균 → 얼굴)를 담는다
-    expect(HAND_WASH_PRESTEP.note).toContain('세균');
+    expect(HAND_WASH_PRESTEP.note).toContain('위생');
   });
 });

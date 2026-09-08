@@ -1,125 +1,302 @@
-/**
- * 스텝별 사용법(how-to) 상수 — 루틴 초보자용 (T1)
- *
- * @module lib/skincare/step-howto
- * @description
- *   "완전 무지한 초보자"는 적당량·바르는 법·흡수 대기 시간을 모른다는 창업자 피드백에서 출발.
- *   각 카테고리(그리고 시작 전 손 씻기 프리스텝)에 대해 정직한 피부과 상식 수준의 안내를 담는다.
- *
- *   용어 안전(리서치 §7.3, ADR-117): "치료·처방·완치" 등 의학적 단정 금지.
- *   수치는 단정 대신 범위("30초~1분")로, 효능은 근거 없는 과장 없이 "~에 도움이 될 수 있어요" 톤.
- *   개인차 존재를 전제로 한다.
- */
-
+/** 승인 사용법 정본. 근거: 상담 시뮬레이션 D-2/D-3, ADR-117. */
 import type { ProductCategory } from '@/types/skincare-routine';
-
-/** 스텝 사용법 — 적당량 / 방법 / (선택)흡수 대기 / (선택)추가 팁 */
-export interface StepHowTo {
-  /** 적당량 (예: "500원 동전 크기 거품") */
-  amount: string;
-  /** 바르는 방법 */
-  method: string;
-  /** 다음 단계 전 흡수 대기 시간 (선택) */
-  waitTime?: string;
-  /** 추가 팁 (선택) — 개인차·주의 등 */
-  tips?: string[];
+export type ClaimEvidence = 'established' | 'conventional' | 'unsupported' | 'hygiene';
+export interface SkincareClaim {
+  id: string;
+  text: string;
+  evidence: ClaimEvidence;
+  sourceId: string;
+  scope: string;
 }
-
-/** how-to 키 — 제품 카테고리 + 시작 전 손 씻기 프리스텝 */
 export type StepHowToKey = ProductCategory | 'handWash';
-
-/**
- * 카테고리별 사용법 정본.
- * 모든 ProductCategory + handWash를 포함해, 어떤 스텝이든 조회하면 안내가 나온다.
- */
+export interface StepHowTo {
+  amount: string;
+  method: string;
+  waitTime?: string;
+  tips?: string[];
+  claims: {
+    amount: SkincareClaim;
+    method: SkincareClaim;
+    waitTime?: SkincareClaim;
+    tips: SkincareClaim[];
+  };
+}
+// 원문 50개 판정은 감사용으로 보존한다. unsupported를 승인 목록으로 승격하지 않는다.
+export const HOWTO_SOURCE_AUDIT: ReadonlyArray<{ id: string; evidence: ClaimEvidence }> = [
+  { id: 'D3-1', evidence: 'hygiene' },
+  { id: 'D3-2', evidence: 'hygiene' },
+  { id: 'D3-3', evidence: 'hygiene' },
+  { id: 'D3-4', evidence: 'conventional' },
+  { id: 'D3-5', evidence: 'unsupported' },
+  { id: 'D3-6', evidence: 'established' },
+  { id: 'D3-7', evidence: 'unsupported' },
+  { id: 'D3-8', evidence: 'conventional' },
+  { id: 'D3-9', evidence: 'established' },
+  { id: 'D3-10', evidence: 'conventional' },
+  { id: 'D3-11', evidence: 'unsupported' },
+  { id: 'D3-12', evidence: 'unsupported' },
+  { id: 'D3-13', evidence: 'unsupported' },
+  { id: 'D3-14', evidence: 'conventional' },
+  { id: 'D3-15', evidence: 'conventional' },
+  { id: 'D3-16', evidence: 'unsupported' },
+  { id: 'D3-17', evidence: 'conventional' },
+  { id: 'D3-18', evidence: 'unsupported' },
+  { id: 'D3-19', evidence: 'unsupported' },
+  { id: 'D3-20', evidence: 'conventional' },
+  { id: 'D3-21', evidence: 'unsupported' },
+  { id: 'D3-22', evidence: 'unsupported' },
+  { id: 'D3-23', evidence: 'unsupported' },
+  { id: 'D3-24', evidence: 'established' },
+  { id: 'D3-25', evidence: 'conventional' },
+  { id: 'D3-26', evidence: 'unsupported' },
+  { id: 'D3-27', evidence: 'unsupported' },
+  { id: 'D3-28', evidence: 'conventional' },
+  { id: 'D3-29', evidence: 'unsupported' },
+  { id: 'D3-30', evidence: 'established' },
+  { id: 'D3-31', evidence: 'unsupported' },
+  { id: 'D3-32', evidence: 'established' },
+  { id: 'D3-33', evidence: 'conventional' },
+  { id: 'D3-34', evidence: 'conventional' },
+  { id: 'D3-35', evidence: 'unsupported' },
+  { id: 'D3-36', evidence: 'conventional' },
+  { id: 'D3-37', evidence: 'unsupported' },
+  { id: 'D3-38', evidence: 'unsupported' },
+  { id: 'D3-39', evidence: 'conventional' },
+  { id: 'D3-40', evidence: 'conventional' },
+  { id: 'D3-41', evidence: 'unsupported' },
+  { id: 'D3-42', evidence: 'conventional' },
+  { id: 'D3-43', evidence: 'conventional' },
+  { id: 'D3-44', evidence: 'unsupported' },
+  { id: 'D3-45', evidence: 'conventional' },
+  { id: 'D3-46', evidence: 'conventional' },
+  { id: 'D3-47', evidence: 'unsupported' },
+  { id: 'D3-48', evidence: 'established' },
+  { id: 'D3-49', evidence: 'hygiene' },
+  { id: 'D3-50', evidence: 'hygiene' },
+];
+export const APPROVED_SKINCARE_CLAIMS: readonly SkincareClaim[] = [
+  {
+    id: 'labelAmount',
+    text: '제품 라벨의 사용량을 기준으로 선택해주세요.',
+    evidence: 'conventional',
+    sourceId: 'LABEL',
+    scope: '제품 라벨·화장품 사용 습관',
+  },
+  {
+    id: 'gentleApply',
+    text: '사용 습관에 따라 가볍게 펴 바르는 방법을 선택할 수 있어요. 흡수 효과의 차이를 뜻하지 않아요.',
+    evidence: 'conventional',
+    sourceId: 'LABEL',
+    scope: '제품 라벨·화장품 사용 습관',
+  },
+  {
+    id: 'labelWait',
+    text: '다음 단계까지의 대기는 제품 라벨과 사용감을 기준으로 선택해주세요.',
+    evidence: 'conventional',
+    sourceId: 'LABEL',
+    scope: '제품 라벨·화장품 사용 습관',
+  },
+  {
+    id: 'labelArea',
+    text: '제품 라벨에 표시된 사용 부위와 방법을 확인해 선택해주세요.',
+    evidence: 'conventional',
+    sourceId: 'LABEL',
+    scope: '제품 라벨·화장품 사용 습관',
+  },
+  {
+    id: 'handSoap',
+    text: '비누와 물을 사용해주세요.',
+    evidence: 'hygiene',
+    sourceId: 'C1',
+    scope: '비누와 물을 사용해주세요.',
+  },
+  {
+    id: 'handWash',
+    text: '시작 전 손을 씻어주세요. 손에서 얼굴로 옮는 오염을 줄이기 위한 위생 안내예요.',
+    evidence: 'hygiene',
+    sourceId: 'C1',
+    scope: '시작 전 손을 씻어주세요. 손에서 얼굴로 옮는 오염을 줄이기 위한 위생 안내예요.',
+  },
+  {
+    id: 'handTime',
+    text: '비누로 20초 이상 꼼꼼히 손 씻기를 권장해요.',
+    evidence: 'hygiene',
+    sourceId: 'C1',
+    scope: '비누로 20초 이상 꼼꼼히 손 씻기를 권장해요.',
+  },
+  {
+    id: 'cleanse',
+    text: '세안할 때 미온수와 손끝으로 부드럽게 씻고 헹구는 것을 권장해요.',
+    evidence: 'established',
+    sourceId: 'A1',
+    scope: '세안할 때 미온수와 손끝으로 부드럽게 씻고 헹구는 것을 권장해요.',
+  },
+  {
+    id: 'dryTowel',
+    text: '세안 후 부드러운 수건으로 가볍게 물기를 닦는 것을 권장해요.',
+    evidence: 'established',
+    sourceId: 'A1',
+    scope: '세안 후 부드러운 수건으로 가볍게 물기를 닦는 것을 권장해요.',
+  },
+  {
+    id: 'noScrub',
+    text: '세안할 때 세게 문지르지 않는 것을 권장해요.',
+    evidence: 'established',
+    sourceId: 'A1',
+    scope: '세안할 때 세게 문지르지 않는 것을 권장해요.',
+  },
+  {
+    id: 'ph',
+    text: '클렌저는 사용감과 제품 라벨을 보고 선택해주세요. pH만으로 저자극을 보장할 수 없어요.',
+    evidence: 'conventional',
+    sourceId: 'LABEL',
+    scope: '제품 라벨·화장품 사용 습관',
+  },
+  {
+    id: 'tonerOptional',
+    text: '토너와 도포 도구는 사용 습관에 따라 선택하는 단계예요.',
+    evidence: 'conventional',
+    sourceId: 'LABEL',
+    scope: '제품 라벨·화장품 사용 습관',
+  },
+  {
+    id: 'testProduct',
+    text: '새 화장품은 작은 부위에서 반복 시험을 권장해요. 한 번 반응이 없다고 안전이 보장되지는 않아요.',
+    evidence: 'established',
+    sourceId: 'A4',
+    scope:
+      '새 화장품은 작은 부위에서 반복 시험을 권장해요. 한 번 반응이 없다고 안전이 보장되지는 않아요.',
+  },
+  {
+    id: 'moisture',
+    text: '건조한 피부는 씻은 뒤 촉촉할 때 보습제를 부드럽게 바르는 것을 권장해요.',
+    evidence: 'established',
+    sourceId: 'A8',
+    scope: '건조한 피부는 씻은 뒤 촉촉할 때 보습제를 부드럽게 바르는 것을 권장해요.',
+  },
+  {
+    id: 'adjust',
+    text: '제품 라벨 범위에서 사용감에 따라 양을 선택해주세요.',
+    evidence: 'conventional',
+    sourceId: 'LABEL',
+    scope: '제품 라벨·화장품 사용 습관',
+  },
+  {
+    id: 'sunAmount',
+    text: '노출되는 피부 전체를 덮을 충분한 양의 선크림을 권장해요. 제품 라벨도 확인해주세요.',
+    evidence: 'established',
+    sourceId: 'A2',
+    scope: '노출되는 피부 전체를 덮을 충분한 양의 선크림을 권장해요. 제품 라벨도 확인해주세요.',
+  },
+  {
+    id: 'sunBefore',
+    text: '외출 약 15분 전, 노출되는 피부에 고르게 바르는 것을 권장해요.',
+    evidence: 'established',
+    sourceId: 'A2',
+    scope: '외출 약 15분 전, 노출되는 피부에 고르게 바르는 것을 권장해요.',
+  },
+  {
+    id: 'sunRepeat',
+    text: '야외에서는 약 2시간마다, 땀을 흘리거나 수영한 뒤에는 다시 바르는 것을 권장해요.',
+    evidence: 'established',
+    sourceId: 'A2',
+    scope: '야외에서는 약 2시간마다, 땀을 흘리거나 수영한 뒤에는 다시 바르는 것을 권장해요.',
+  },
+  {
+    id: 'sunEnough',
+    text: '선크림은 양이 부족하면 표기된 차단 효과를 기대하기 어려워 충분량을 권장해요.',
+    evidence: 'established',
+    sourceId: 'A2',
+    scope: '선크림은 양이 부족하면 표기된 차단 효과를 기대하기 어려워 충분량을 권장해요.',
+  },
+  {
+    id: 'sunOrder',
+    text: '아침에는 스킨케어 마지막, 메이크업 전에 바르는 사용 습관을 선택할 수 있어요.',
+    evidence: 'conventional',
+    sourceId: 'A3',
+    scope: '아침에는 스킨케어 마지막, 메이크업 전에 바르는 사용 습관을 선택할 수 있어요.',
+  },
+  {
+    id: 'mask',
+    text: '마스크는 선택 단계예요. 사용 시간과 횟수는 제품 라벨을 따라주세요.',
+    evidence: 'conventional',
+    sourceId: 'A6',
+    scope: '마스크는 선택 단계예요. 사용 시간과 횟수는 제품 라벨을 따라주세요.',
+  },
+  {
+    id: 'maskRemaining',
+    text: '남은 제형은 제품이 허용하는 부위에만 바르는 방법을 선택해주세요.',
+    evidence: 'conventional',
+    sourceId: 'LABEL',
+    scope: '제품 라벨·화장품 사용 습관',
+  },
+  {
+    id: 'eye',
+    text: '눈가용 제품은 라벨에 따라 약지로 가볍게 바르는 사용 습관을 선택할 수 있어요.',
+    evidence: 'conventional',
+    sourceId: 'A3',
+    scope: '눈가용 제품은 라벨에 따라 약지로 가볍게 바르는 사용 습관을 선택할 수 있어요.',
+  },
+  {
+    id: 'oil',
+    text: '오일은 사용감에 따라 생략할 수 있는 선택 단계예요. 아침에는 선크림 전에 사용해주세요.',
+    evidence: 'conventional',
+    sourceId: 'A3',
+    scope: '오일은 사용감에 따라 생략할 수 있는 선택 단계예요. 아침에는 선크림 전에 사용해주세요.',
+  },
+  {
+    id: 'stop',
+    text: '화장품 사용 후 자극이 생기면 중단을 권장해요. 심하거나 지속되면 의료인과 상의해주세요. 처방약은 처방 지시를 따라주세요.',
+    evidence: 'established',
+    sourceId: 'A4',
+    scope:
+      '화장품 사용 후 자극이 생기면 중단을 권장해요. 심하거나 지속되면 의료인과 상의해주세요. 처방약은 처방 지시를 따라주세요.',
+  },
+];
+function claim(id: string): SkincareClaim {
+  const found = APPROVED_SKINCARE_CLAIMS.find((item) => item.id === id);
+  if (!found || found.evidence === 'unsupported') throw new Error('Unapproved skincare claim');
+  return found;
+}
+function howTo(
+  amountId: string,
+  methodId: string,
+  waitId?: string,
+  tipIds: string[] = []
+): StepHowTo {
+  const amount = claim(amountId),
+    method = claim(methodId);
+  const waitTime = waitId ? claim(waitId) : undefined;
+  const tips = tipIds.map(claim);
+  return {
+    amount: amount.text,
+    method: method.text,
+    ...(waitTime ? { waitTime: waitTime.text } : {}),
+    tips: tips.map((tip) => tip.text),
+    claims: { amount, method, waitTime, tips },
+  };
+}
 export const STEP_HOWTO: Record<StepHowToKey, StepHowTo> = {
-  // 시작 전 공통 프리스텝 — 손의 세균이 얼굴에 옮을 수 있어요
-  handWash: {
-    amount: '비누 적당량',
-    method: '시작 전 손을 씻어주세요. 씻지 않은 손의 세균이 얼굴에 옮을 수 있어요.',
-    tips: ['20초 이상 비누로 꼼꼼히 씻어주세요'],
-  },
-  cleanser: {
-    amount: '500원 동전 크기 거품',
-    method:
-      '거품을 충분히 낸 뒤 30초~1분간 얼굴 위에서 부드럽게 원을 그리며 세안하고, 미온수로 헹궈주세요.',
-    waitTime: '물기는 수건으로 톡톡 눌러 닦아주세요',
-    tips: [
-      '약산성 = pH 4.5~6.5 (피부 본래 산도와 비슷해 자극이 적은 편이에요)',
-      '너무 뜨겁거나 찬물은 자극이 될 수 있어요',
-      '세게 문지르지 말고 부드럽게',
-    ],
-  },
-  toner: {
-    amount: '화장솜에 적시거나 손바닥에 2~3방울',
-    method: '피부 결을 따라 안에서 바깥으로 가볍게 발라주세요.',
-    waitTime: '10~20초 흡수 후 다음 단계',
-    tips: ['화장솜으로 닦아내듯 쓰면 각질 정돈에, 손바닥으로 누르면 수분감에 도움이 될 수 있어요'],
-  },
-  essence: {
-    amount: '손바닥에 2~3방울',
-    method: '얼굴 전체에 얇게 펴 바르고 손바닥으로 가볍게 눌러 흡수시켜주세요.',
-    waitTime: '20~30초 흡수 후 다음 단계',
-  },
-  serum: {
-    amount: '2~3방울',
-    method:
-      '손바닥으로 얼굴을 감싸듯 눌러(패팅) 흡수시켜주세요. 문지르기보다 눌러 담는 느낌으로요.',
-    waitTime: '30초~1분 흡수 후 다음 단계',
-    tips: ['고민 부위에 조금 더 신경 써서 발라도 좋아요'],
-  },
-  ampoule: {
-    amount: '2~3방울 (세럼보다 소량)',
-    method: '고농축 제형이라 소량으로 충분해요. 손바닥으로 눌러(패팅) 흡수시켜주세요.',
-    waitTime: '30초~1분 흡수 후 다음 단계',
-    tips: ['새 제품은 팔 안쪽에 먼저 발라 자극이 없는지 확인해도 좋아요'],
-  },
-  cream: {
-    amount: '완두콩~체리 크기',
-    method: '얼굴 안쪽에서 바깥쪽으로 부드럽게 굴리듯(롤링) 펴 발라주세요.',
-    waitTime: '1~2분 흡수 후 다음 단계',
-    tips: ['건조하면 조금 더, 유분이 많으면 얇게 — 개인차가 있어요'],
-  },
-  sunscreen: {
-    amount: '검지 한 마디 반 (얼굴 기준)',
-    method: '외출 15~20분 전, 얼굴 전체에 고르게 펴 발라주세요.',
-    waitTime: '자외선이 강한 날은 2~3시간마다 덧발라주세요',
-    tips: ['양이 적으면 표기된 차단 효과를 기대하기 어려워요', '아침 마지막 단계예요'],
-  },
-  mask: {
-    amount: '시트 1장 (또는 팩 적당량)',
-    method: '토너 뒤에 시트를 얼굴에 밀착시키고 15~20분 후 떼어내주세요.',
-    waitTime: '남은 에센스는 목·팔에 펴 바르거나 얼굴에 가볍게 눌러주세요',
-    tips: ['매일보다 주 2~3회가 적당해요', '너무 오래 붙이면 오히려 수분이 날아갈 수 있어요'],
-  },
-  eye_cream: {
-    amount: '쌀알~팥알 크기',
-    method: '약지로 눈가에 톡톡 두드리듯 발라주세요. 피부가 얇은 부위라 문지르지 않아요.',
-    waitTime: '30초~1분 흡수 후 다음 단계',
-  },
-  oil: {
-    amount: '1~2방울',
-    method: '손바닥에 덜어 체온으로 데운 뒤 얼굴을 감싸듯 눌러 발라주세요. 보통 마지막 단계예요.',
-    waitTime: '1~2분 흡수',
-    tips: ['유분이 많은 피부는 생략하거나 아주 소량만 써도 괜찮아요'],
-  },
-  spot_treatment: {
-    amount: '트러블 부위에만 소량',
-    method: '고민 부위에만 점을 찍듯 얇게 발라주세요. 얼굴 전체에 바르지 않아요.',
-    tips: ['자극이 느껴지면 사용을 잠시 멈추고 상태를 지켜봐주세요'],
-  },
+  handWash: howTo('handSoap', 'handWash', undefined, ['handTime']),
+  cleanser: howTo('labelAmount', 'cleanse', 'dryTowel', ['ph', 'noScrub']),
+  toner: howTo('labelAmount', 'gentleApply', 'labelWait', ['tonerOptional']),
+  essence: howTo('labelAmount', 'gentleApply', 'labelWait', []),
+  serum: howTo('labelAmount', 'gentleApply', 'labelWait', ['labelArea']),
+  ampoule: howTo('labelAmount', 'gentleApply', 'labelWait', ['testProduct']),
+  cream: howTo('labelAmount', 'moisture', 'labelWait', ['adjust']),
+  sunscreen: howTo('sunAmount', 'sunBefore', 'sunRepeat', ['sunEnough', 'sunOrder']),
+  mask: howTo('labelAmount', 'mask', undefined, ['maskRemaining']),
+  eye_cream: howTo('labelAmount', 'eye', 'labelWait', []),
+  oil: howTo('labelAmount', 'oil', 'labelWait', []),
+  spot_treatment: howTo('labelAmount', 'labelArea', undefined, ['stop']),
 };
-
-/** 스텝 사용법 조회 (없는 키는 undefined) */
 export function getStepHowTo(category: StepHowToKey): StepHowTo | undefined {
   return STEP_HOWTO[category];
 }
-
-/**
- * 루틴 목록 최상단 0단계 "손 씻기" 고정 행 표시용 (체크 불요).
- * label = 행 제목, note = 한 줄 안내.
- */
-export const HAND_WASH_PRESTEP = {
-  label: '손 씻기',
-  note: '시작 전 손을 씻어주세요 — 손의 세균이 얼굴에 옮을 수 있어요',
-} as const;
+/** 모델과 렌더러에 동일한 승인 문장만 제공한다. */
+export function getApprovedSkincareClaims(): SkincareClaim[] {
+  return APPROVED_SKINCARE_CLAIMS.filter((item) => item.evidence !== 'unsupported').map((item) => ({
+    ...item,
+  }));
+}
+export const HAND_WASH_PRESTEP = { label: '손 씻기', note: claim('handWash').text } as const;

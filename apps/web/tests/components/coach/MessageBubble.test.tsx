@@ -23,3 +23,20 @@ describe('MessageBubble AI 생성물 신고', () => {
     expect(screen.queryByTestId('coach-message-report-trigger')).not.toBeInTheDocument();
   });
 });
+
+it('shows a low-confidence badge for fallback messages', () => {
+  render(
+    <MessageBubble
+      message={{
+        id: 'fallback',
+        role: 'assistant',
+        content: '일반 안내',
+        timestamp: new Date(),
+        usedFallback: true,
+        confidence: 'low',
+        fallbackReason: 'timeout',
+      }}
+    />
+  );
+  expect(screen.getByTestId('coach-fallback-badge')).toBeInTheDocument();
+});

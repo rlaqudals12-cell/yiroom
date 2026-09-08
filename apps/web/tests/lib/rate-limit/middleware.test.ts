@@ -197,12 +197,28 @@ describe('Rate Limit Middleware', () => {
       expect(result.headers['X-RateLimit-Limit-Day']).toBe('50');
     });
 
-    it('should apply correct limits for coach category', async () => {
-      const request = createMockRequest('/api/coach/message');
+    it('should preserve product Q&A limits', async () => {
+      const request = createMockRequest('/api/products/qa');
       const result = await applyRateLimitMiddleware(request, 'user_cat_coach');
 
       expect(result.headers['X-RateLimit-Limit-Minute']).toBe('30');
       expect(result.headers['X-RateLimit-Limit-Day']).toBe('200');
+    });
+
+    // 웹 SSE와 모바일 JSON 턴은 같은 버킷을 쓰되(경로가 달라도 사용자 단위 공유),
+    // 모델 턴 예약(일 20/월 100)과는 별개의 '요청' 상한이다.
+    it('웹 SSE·모바일 JSON 턴이 같은 요청 버킷을 공유하고 버스트를 막는다', async () => {
+      const results = [];
+      for (let i = 0; i < 21; i++) {
+        const route = i % 2 === 0 ? '/api/coach/chat' : '/api/coach/stream';
+        results.push(await applyRateLimitMiddleware(createMockRequest(route), 'shared-user'));
+      }
+
+      expect(results[0].headers['X-RateLimit-Limit-Minute']).toBe('20');
+      expect(results[0].headers['X-RateLimit-Limit-Day']).toBe('400');
+      expect(results.slice(0, 20).every((r) => r.allowed)).toBe(true);
+      // 21번째 요청은 분당 상한을 넘어 차단된다 — 두 경로가 한 버킷을 공유한다는 증거.
+      expect(results[20].allowed).toBe(false);
     });
 
     it('should apply correct limits for nutrition category', async () => {

@@ -1,0 +1,242 @@
+[
+  {
+    "question": "그냥 뭐 사야 해?",
+    "locale": "ko"
+  },
+  {
+    "question": "내 피부 타입은 뭐야?",
+    "locale": "ko"
+  },
+  {
+    "question": "사진 없이도 추천해줘",
+    "locale": "ko"
+  },
+  {
+    "question": "루틴 너무 복잡해요",
+    "locale": "ko"
+  },
+  {
+    "question": "추천 이유를 폰으로 볼 수 있어?",
+    "locale": "ko"
+  },
+  {
+    "question": "좁쌀 여드름에 뭐 사야 해?",
+    "locale": "ko"
+  },
+  {
+    "question": "T존은 번들거리고 볼은 건조해요",
+    "locale": "ko"
+  },
+  {
+    "question": "지금 쓰는 토너 다 쓰면 뭘로?",
+    "locale": "ko"
+  },
+  {
+    "question": "살리실산 매일 써도 돼?",
+    "locale": "ko"
+  },
+  {
+    "question": "이 피부 루틴 친구에게 보내줘",
+    "locale": "ko"
+  },
+  {
+    "question": "건조하고 따가워요",
+    "locale": "ko"
+  },
+  {
+    "question": "내 크림 성분이 맞나요?",
+    "locale": "ko"
+  },
+  {
+    "question": "토너 꼭 써야 하나요?",
+    "locale": "ko"
+  },
+  {
+    "question": "크림은 안에서 밖으로 굴려요?",
+    "locale": "ko"
+  },
+  {
+    "question": "이 제품 바르고 붓는데 계속 써요?",
+    "locale": "ko"
+  },
+  {
+    "question": "남자도 토너 써야 해?",
+    "locale": "ko"
+  },
+  {
+    "question": "세안하고 뭘 발라?",
+    "locale": "ko"
+  },
+  {
+    "question": "선크림 하나만 사면 돼?",
+    "locale": "ko"
+  },
+  {
+    "question": "면도하고 따가워요",
+    "locale": "ko"
+  },
+  {
+    "question": "두 단계로 줄여줘",
+    "locale": "ko"
+  },
+  {
+    "question": "私の肌に合うものは？",
+    "locale": "ja"
+  },
+  {
+    "question": "ニキビには何を買えばいい？",
+    "locale": "ja"
+  },
+  {
+    "question": "高すぎます",
+    "locale": "ja"
+  },
+  {
+    "question": "この化粧水と一緒に使える？",
+    "locale": "ja"
+  },
+  {
+    "question": "結果を日本語で保存できますか？",
+    "locale": "ja"
+  },
+  {
+    "question": "我的皮肤适合什么？",
+    "locale": "zh"
+  },
+  {
+    "question": "小红书推荐的这款适合我吗？",
+    "locale": "zh"
+  },
+  {
+    "question": "太贵了",
+    "locale": "zh"
+  },
+  {
+    "question": "我怀孕了，可以用视黄醇吗？",
+    "locale": "zh"
+  },
+  {
+    "question": "可以用中文查看结果吗？",
+    "locale": "zh"
+  },
+  {
+    "question": "What should I buy for my skin?",
+    "locale": "en"
+  },
+  {
+    "question": "Can I use retinol while pregnant?",
+    "locale": "en"
+  },
+  {
+    "question": "This is too expensive",
+    "locale": "en"
+  },
+  {
+    "question": "Can I scan this ingredient list?",
+    "locale": "en"
+  },
+  {
+    "question": "Can I share my routine in English?",
+    "locale": "en"
+  },
+  {
+    "question": "내 제품 10개로 루틴 짜줘",
+    "locale": "ko"
+  },
+  {
+    "question": "토너 세 개 중 뭐부터 써?",
+    "locale": "ko"
+  },
+  {
+    "question": "이 세럼 곧 다 쓰는데 대체해줘",
+    "locale": "ko"
+  },
+  {
+    "question": "레티놀과 각질 제거제 같이 써?",
+    "locale": "ko"
+  },
+  {
+    "question": "새로 사지 말고 가진 것만 써줘",
+    "locale": "ko"
+  },
+  {
+    "question": "예산 3만원으로 피부 루틴 짜줘",
+    "locale": "ko"
+  },
+  {
+    "question": "너무 비싸요",
+    "locale": "ko"
+  },
+  {
+    "question": "이 크림보다 싼 걸로",
+    "locale": "ko"
+  },
+  {
+    "question": "배송비 포함 3만원 맞아?",
+    "locale": "ko"
+  },
+  {
+    "question": "아직 중학생인데 분석해도 돼?",
+    "locale": "ko"
+  },
+  {
+    "question": "LED 마스크 어떻게 써요?",
+    "locale": "ko"
+  },
+  {
+    "question": "매일 20분 해도 돼?",
+    "locale": "ko"
+  },
+  {
+    "question": "세럼 바르고 LED 써요?",
+    "locale": "ko"
+  },
+  {
+    "question": "LED면 선크림 안 발라도 돼?",
+    "locale": "ko"
+  },
+  {
+    "question": "광과민 약 먹는데 써도 돼?",
+    "locale": "ko"
+  },
+  {
+    "question": "임신 중 피부 관리 어떻게 해?",
+    "locale": "ko"
+  },
+  {
+    "question": "레티놀 써도 돼?",
+    "locale": "ko"
+  },
+  {
+    "question": "살리실산 제품 써도 돼?",
+    "locale": "ko"
+  },
+  {
+    "question": "기미 없애는 시술 추천해줘",
+    "locale": "ko"
+  },
+  {
+    "question": "가진 화장품 성분 확인해줘",
+    "locale": "ko"
+  },
+  {
+    "question": "레티놀 처음인데 매일 써?",
+    "locale": "ko"
+  },
+  {
+    "question": "얼마나 발라?",
+    "locale": "ko"
+  },
+  {
+    "question": "각질이 생기면 더 발라?",
+    "locale": "ko"
+  },
+  {
+    "question": "아침에 써도 돼?",
+    "locale": "ko"
+  },
+  {
+    "question": "다음 주에 횟수 늘려도 돼?",
+    "locale": "ko"
+  }
+]

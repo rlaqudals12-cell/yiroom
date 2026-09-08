@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, Suspense } from 'react';
+import { useLocale } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { ChatInterface } from '@/components/coach';
 import type { CoachMessage } from '@/lib/coach';
@@ -14,6 +15,7 @@ import { QUICK_QUESTIONS_BY_CATEGORY } from '@/lib/coach/client';
  * (기존엔 CTA가 쿼리를 보내는데 페이지가 읽지 않아 미배선이던 결함 — 2026-07-08)
  */
 function CoachPageInner() {
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const initialQuestion = searchParams.get('q') ?? undefined;
   const categoryParam = searchParams.get('category');
@@ -31,7 +33,7 @@ function CoachPageInner() {
       const response = await fetch('/api/coach/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, chatHistory: history }),
+        body: JSON.stringify({ message, chatHistory: history, locale }),
       });
 
       if (!response.ok) {
@@ -39,12 +41,9 @@ function CoachPageInner() {
       }
 
       const data = await response.json();
-      return {
-        message: data.message,
-        suggestedQuestions: data.suggestedQuestions,
-      };
+      return data.data ?? data;
     },
-    []
+    [locale]
   );
 
   return (

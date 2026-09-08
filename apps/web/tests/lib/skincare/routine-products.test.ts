@@ -21,7 +21,15 @@ vi.mock('@/lib/supabase/client', () => ({
   supabase: { from: (table: string) => fromMock(table) },
 }));
 
-import { getRoutineProductsByCategory } from '@/lib/skincare/routine-products';
+import { getRoutineProductsByCategory as getProducts } from '@/lib/skincare/routine-products';
+const assessed = {
+  safetyProfile: { consentGiven: true, conditions: [], medications: [] },
+  timeOfDay: 'evening' as const,
+};
+const getRoutineProductsByCategory = (
+  ...args: Parameters<typeof getProducts>
+): ReturnType<typeof getProducts> =>
+  getProducts(args[0], args[1], args[2], args[3], args[4] ?? assessed);
 
 function setRows(newRows: Array<Record<string, unknown>>): void {
   rows.length = 0;
@@ -29,6 +37,38 @@ function setRows(newRows: Array<Record<string, unknown>>): void {
 }
 
 describe('getRoutineProductsByCategory', () => {
+  it.each([
+    undefined,
+    { ...assessed.safetyProfile, conditions: ['pregnancy'] },
+    { ...assessed.safetyProfile, conditions: ['breastfeeding'] },
+    { ...assessed.safetyProfile, medications: ['isotretinoin'] },
+  ])('미문진/주의 상태 %j 에서 신규 상품 조회 없이 보류한다', async (safetyProfile) => {
+    const result = await getProducts('serum', 'normal', ['wrinkles'], 3, {
+      safetyProfile,
+      timeOfDay: 'evening',
+    });
+    expect(result).toEqual([]);
+    expect(fromMock).not.toHaveBeenCalled();
+  });
+
+  it('오전에는 제품명과 성분 양쪽의 레티노이드를 제외한다', async () => {
+    setRows([
+      { id: 'r1', name: '레티놀 세럼', brand: 'A', category: 'serum' },
+      {
+        id: 'r2',
+        name: '나이트 세럼',
+        brand: 'B',
+        category: 'serum',
+        key_ingredients: ['Retinyl Palmitate'],
+      },
+      { id: 'm', name: '보습 세럼', brand: 'C', category: 'serum', key_ingredients: ['Glycerin'] },
+    ]);
+    const result = await getProducts('serum', 'normal', ['wrinkles'], 3, {
+      ...assessed,
+      timeOfDay: 'morning',
+    });
+    expect(result.map((product) => product.id)).toEqual(['m']);
+  });
   beforeEach(() => {
     vi.clearAllMocks();
     setRows([]);

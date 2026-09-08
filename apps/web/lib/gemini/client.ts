@@ -56,6 +56,14 @@ export interface GeminiCallParams {
 
 export interface GeminiResponse {
   text: string;
+  modelVersion?: string;
+  usage?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    cachedContentTokenCount?: number;
+    thoughtsTokenCount?: number;
+    totalTokenCount?: number;
+  };
 }
 
 // --- 상수 ---
@@ -142,7 +150,11 @@ export async function generateContent(params: GeminiCallParams): Promise<GeminiR
     } as Parameters<typeof client.models.generateContent>[0]['config'],
   });
 
-  return { text: response.text ?? '' };
+  return {
+    text: response.text ?? '',
+    modelVersion: response.modelVersion,
+    usage: response.usageMetadata,
+  };
 }
 
 /** 스트리밍 콘텐츠 생성 */

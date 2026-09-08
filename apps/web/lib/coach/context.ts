@@ -8,10 +8,10 @@ import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import { coachLogger } from '@/lib/utils/logger';
 import { calculateBiorhythm } from '@/lib/wellness/biorhythm';
 import { getShelfItems } from '@/lib/scan/product-shelf';
-import type { UserContext, SkinScores } from './types';
+import type { UserContext } from './types';
 
 // 타입은 types.ts에서 re-export
-export type { UserContext, SkinScores } from './types';
+export type { UserContext } from './types';
 export { summarizeContext } from './types';
 
 /**
@@ -61,27 +61,32 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
       shelfResult, // 고객 노트: 보유 제품(제품함 owned)
     ] = await Promise.all([
       // 퍼스널 컬러
+      // ⚠️ 정본 컬럼은 season·undertone·season_subtype (DATABASE-SCHEMA §2).
+      // 과거 'result' 단일 컬럼 조회는 실재하지 않는 컬럼이라 항상 실패 → 코치가 PC를 영영 못 읽었다.
       supabase
         .from('personal_color_assessments')
-        .select('result')
+        .select('season, undertone, season_subtype')
         .eq('clerk_user_id', clerkUserId)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle(),
 
       // 피부 분석
+      // ⚠️ 정본 컬럼은 개별 지표(hydration/oil_level/sensitivity)와 problem_areas.
+      // 과거 'concerns, scores'는 실재하지 않아 select 전체가 실패했다 → 코치가 피부를 못 읽었다.
       supabase
         .from('skin_analyses')
-        .select('skin_type, concerns, scores')
+        .select('skin_type, hydration, oil_level, sensitivity, problem_areas')
         .eq('clerk_user_id', clerkUserId)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle(),
 
       // 체형 분석
+      // ⚠️ bmi 컬럼은 실재하지 않는다(정본은 height/weight). 조회에서 빼고 파생 계산한다.
       supabase
         .from('body_analyses')
-        .select('body_type, bmi, height, weight')
+        .select('body_type, height, weight')
         .eq('clerk_user_id', clerkUserId)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -210,23 +215,52 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
       })),
     ]);
 
-    // 퍼스널 컬러
-    if (personalColorResult.data?.result) {
-      const result = personalColorResult.data.result as { season?: string; tone?: string };
-      if (result.season) {
+    // 퍼스널 컬러 — 정본 컬럼(season/undertone/season_subtype) 직접 매핑.
+    // tone은 언더톤(Warm/Cool/Neutral)을 쓰되, 세부 유형이 있으면 그쪽이 더 구체적이라 우선한다.
+    if (personalColorResult.data) {
+      const pc = personalColorResult.data as {
+        season?: string | null;
+        undertone?: string | null;
+        season_subtype?: string | null;
+      };
+      if (pc.season) {
         context.personalColor = {
-          season: result.season,
-          tone: result.tone,
+          season: pc.season,
+          tone: pc.season_subtype ?? pc.undertone ?? undefined,
         };
       }
     }
 
     // 피부 분석
     if (skinResult.data) {
+      // 정본 컬럼 → 코치 컨텍스트 매핑.
+      // concerns는 별도 컬럼이 없으므로 problem_areas의 라벨에서 중복 없이 뽑는다.
+      const skinRow = skinResult.data as {
+        skin_type?: string | null;
+        hydration?: number | null;
+        oil_level?: number | null;
+        sensitivity?: number | null;
+        problem_areas?: unknown;
+      };
+      const problemAreas = Array.isArray(skinRow.problem_areas)
+        ? (skinRow.problem_areas as { type?: string; label?: string }[])
+        : [];
+      const derivedConcerns = Array.from(
+        new Set(
+          problemAreas
+            .map((area) => area?.label || area?.type)
+            .filter((label): label is string => typeof label === 'string' && label.length > 0)
+        )
+      );
+
       context.skinAnalysis = {
-        skinType: skinResult.data.skin_type || '알 수 없음',
-        concerns: skinResult.data.concerns as string[] | undefined,
-        scores: skinResult.data.scores as SkinScores | undefined,
+        skinType: skinRow.skin_type || '알 수 없음',
+        concerns: derivedConcerns.length > 0 ? derivedConcerns : undefined,
+        scores: {
+          moisture: skinRow.hydration ?? undefined,
+          oil: skinRow.oil_level ?? undefined,
+          sensitivity: skinRow.sensitivity ?? undefined,
+        },
       };
 
       // Phase D: 피부 일기 데이터 추가
@@ -283,11 +317,23 @@ export async function getUserContext(clerkUserId: string): Promise<UserContext |
 
     // 체형 분석
     if (bodyResult.data) {
+      // bmi 컬럼은 없다. 키·몸무게가 모두 있을 때만 파생 계산(소수 첫째 자리).
+      const bodyRow = bodyResult.data as {
+        body_type?: string | null;
+        height?: number | null;
+        weight?: number | null;
+      };
+      const heightM = bodyRow.height ? bodyRow.height / 100 : undefined;
+      const derivedBmi =
+        heightM && heightM > 0 && bodyRow.weight
+          ? Math.round((bodyRow.weight / (heightM * heightM)) * 10) / 10
+          : undefined;
+
       context.bodyAnalysis = {
-        bodyType: bodyResult.data.body_type || '알 수 없음',
-        bmi: bodyResult.data.bmi,
-        height: bodyResult.data.height,
-        weight: bodyResult.data.weight,
+        bodyType: bodyRow.body_type || '알 수 없음',
+        bmi: derivedBmi,
+        height: bodyRow.height ?? undefined,
+        weight: bodyRow.weight ?? undefined,
       };
     }
 

@@ -1,3 +1,4 @@
+import type { CoachResponseMetadata } from '@yiroom/shared';
 /**
  * AI 웰니스 코치 모듈 - 클라이언트 전용 exports
  * @description 클라이언트 컴포넌트에서 사용 가능한 타입과 유틸리티
@@ -11,7 +12,7 @@ export { summarizeContext } from './types';
 export { QUICK_QUESTIONS, QUICK_QUESTIONS_BY_CATEGORY, getQuestionHint } from './prompts';
 
 // 채팅 타입 (클라이언트에서 사용 가능)
-export interface CoachMessage {
+export interface CoachMessage extends CoachResponseMetadata {
   id: string;
   role: 'user' | 'assistant';
   content: string;
@@ -20,7 +21,7 @@ export interface CoachMessage {
   imageUrl?: string;
 }
 
-export interface CoachChatResponse {
+export interface CoachChatResponse extends CoachResponseMetadata {
   message: string;
   suggestedQuestions?: string[];
 }

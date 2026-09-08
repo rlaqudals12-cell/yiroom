@@ -142,3 +142,7 @@ export {
   EXCLUDED_MEDICAL_ACTS,
 } from './treatment-recommender';
 export type { HomeCareBoundaryInfo } from './treatment-recommender';
+export { allowsActiveRecommendations, isRecommendationAllowed } from './recommendation-safety';
+export type { RecommendationSafetyContext } from './recommendation-safety';
+export { getApprovedSkincareClaims } from './step-howto';
+export type { SkincareClaim, ClaimEvidence } from './step-howto';

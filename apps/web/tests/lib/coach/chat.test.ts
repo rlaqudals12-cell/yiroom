@@ -15,6 +15,10 @@ import {
 // =============================================================================
 // Mocks
 // =============================================================================
+vi.mock('@/lib/security', () => ({
+  reserveCoachTurn: vi.fn().mockResolvedValue({ allowed: true }),
+  settleCoachTurn: vi.fn().mockResolvedValue(undefined),
+}));
 
 // Gemini Adapter Mock (API 미사용 시나리오 — fallback 동작 테스트)
 vi.mock('@/lib/gemini/client', () => ({
@@ -85,7 +89,126 @@ vi.mock('@/lib/coach/fashion-rag', () => ({
 
 // 패션 RAG mock 참조 (userId 배선 검증용)
 import { searchFashionItems as _searchFashionItems } from '@/lib/coach/fashion-rag';
+import { searchSkinProducts } from '@/lib/coach/skin-rag';
+import { reserveCoachTurn, settleCoachTurn } from '@/lib/security';
 const mockSearchFashionItems = vi.mocked(_searchFashionItems);
+
+describe('배치 S deadline 및 과금 경계', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    mockIsGeminiAvailable.mockReturnValue(true);
+    vi.mocked(searchSkinProducts).mockResolvedValue([] as never);
+    vi.mocked(reserveCoachTurn).mockResolvedValue({ allowed: true } as never);
+    vi.mocked(settleCoachTurn).mockResolvedValue(undefined);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+  it('RAG가 지연되면 전체 12초에 끝내고 모델·과금 예약을 시작하지 않는다', async () => {
+    let finishRag!: (value: never) => void;
+    vi.mocked(searchSkinProducts).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishRag = resolve;
+        })
+    );
+    const pending = generateCoachResponse({
+      message: '피부 관리',
+      userContext: null,
+      userId: 'deadline',
+    });
+    await vi.advanceTimersByTimeAsync(11_999);
+    expect(mockGenerateContent).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await pending).toMatchObject({
+      usedFallback: true,
+      confidence: 'low',
+      fallbackReason: 'timeout',
+    });
+    expect(reserveCoachTurn).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+    finishRag([] as never);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(mockGenerateContent).not.toHaveBeenCalled();
+    expect(reserveCoachTurn).not.toHaveBeenCalled();
+  });
+  it('모델 timeout이면 abort하고 이미 시작한 과금은 소진 상태로 정산한다', async () => {
+    mockGenerateContent.mockImplementationOnce(() => new Promise(() => {}));
+    const pending = generateCoachResponse({
+      message: '피부 관리',
+      userContext: null,
+      userId: 'deadline',
+    });
+    await vi.advanceTimersByTimeAsync(0);
+    const params = mockGenerateContent.mock.calls[0][0];
+    expect(params).toMatchObject({
+      model: 'gemini-3.5-flash',
+      config: { maxOutputTokens: 250, thinkingConfig: { thinkingLevel: 'minimal' } },
+    });
+    await vi.advanceTimersByTimeAsync(12_000);
+    expect(await pending).toMatchObject({ fallbackReason: 'timeout' });
+    expect(params.config?.abortSignal?.aborted).toBe(true);
+    expect(settleCoachTurn).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ modelCalled: true })
+    );
+    expect(vi.getTimerCount()).toBe(0);
+  });
+  it('정상 생성의 locale을 모델까지 전달하고 미검열 숨김 본문을 막는다', async () => {
+    mockGenerateContent.mockResolvedValueOnce({ text: '운동을 매일 해보세요.' });
+    const response = await generateCoachResponse({
+      message: 'What should I buy for my skin?',
+      locale: 'en',
+      userContext: null,
+      userId: 'locale',
+    });
+    expect(mockGenerateContent.mock.calls[0][0].contents).toContain('English');
+    expect(response.message).not.toContain('운동');
+    expect(response.suggestedQuestions?.join(' ')).not.toMatch(/운동|다이어트|물 얼마나/);
+    // 모델을 이미 호출한 뒤 본문을 범위 안내로 대체했으므로 폴백으로 정직하게 표시한다.
+    // (과거에는 usedFallback:false·confidence:'normal'이라 배지가 붙지 않았다.)
+    expect(response.usedFallback).toBe(true);
+    expect(response.confidence).toBe('low');
+    expect(response.fallbackReason).toBe('error');
+    expect(vi.getTimerCount()).toBe(0);
+  });
+  it('정산이 멈춰도 총 12초 deadline을 넘기지 않는다', async () => {
+    mockGenerateContent.mockResolvedValueOnce({ text: '보습을 확인해주세요.' });
+    vi.mocked(settleCoachTurn).mockImplementationOnce(() => new Promise(() => {}));
+    const pending = generateCoachResponse({
+      message: '피부 관리',
+      userContext: null,
+      userId: 'settle',
+    });
+    await vi.advanceTimersByTimeAsync(0);
+    const signal = mockGenerateContent.mock.calls[0][0].config?.abortSignal;
+    await vi.advanceTimersByTimeAsync(12_000);
+    expect(await pending).toMatchObject({ usedFallback: false });
+    expect(signal?.aborted).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+  it('늦게 완료한 quota 예약은 모델을 호출하지 않고 환급한다', async () => {
+    let resolve!: (value: never) => void;
+    vi.mocked(reserveCoachTurn).mockImplementationOnce(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        })
+    );
+    const pending = generateCoachResponse({
+      message: '피부 관리',
+      userContext: null,
+      userId: 'late',
+    });
+    await vi.advanceTimersByTimeAsync(12_000);
+    expect(await pending).toMatchObject({ fallbackReason: 'timeout' });
+    resolve({ allowed: true } as never);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(mockGenerateContent).not.toHaveBeenCalled();
+    expect(settleCoachTurn).toHaveBeenCalledWith(expect.anything(), { modelCalled: false });
+  });
+});
 
 vi.mock('@/lib/coach/nutrition-rag', () => ({
   searchNutritionItems: vi.fn().mockResolvedValue(null),
@@ -122,6 +245,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '오늘 운동 뭐하면 좋을까요?',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -136,6 +260,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '다이어트할 때 뭐 먹어요?',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -148,6 +273,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '피부가 건조해요 어떻게 해요?',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -160,6 +286,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '내 퍼스널컬러에 맞는 색 알려줘',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -172,6 +299,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '오늘 뭐 입을까요?',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -184,6 +312,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '안녕하세요',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -198,6 +327,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '운동 추천해줘',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -212,6 +342,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '뭐든 추천해줘',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -251,6 +382,7 @@ describe('lib/coach/chat', () => {
       it('should handle partial user context', async () => {
         const request: CoachChatRequest = {
           message: '피부 관리법 알려줘',
+          userId: 'test-coach',
           userContext: {
             skinAnalysis: {
               skinType: '건성',
@@ -269,6 +401,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '더 알려줘',
           userContext: null,
+          userId: 'test-coach',
           chatHistory: [
             {
               id: '1',
@@ -295,6 +428,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '안녕',
           userContext: null,
+          userId: 'test-coach',
           chatHistory: [],
         };
 
@@ -312,6 +446,7 @@ describe('lib/coach/chat', () => {
           const response = await generateCoachResponse({
             message: q,
             userContext: null,
+            userId: 'test-coach',
           });
           expect(response.message).toBeDefined();
         }
@@ -324,6 +459,7 @@ describe('lib/coach/chat', () => {
           const response = await generateCoachResponse({
             message: q,
             userContext: null,
+            userId: 'test-coach',
           });
           expect(response.message).toBeDefined();
         }
@@ -336,6 +472,7 @@ describe('lib/coach/chat', () => {
           const response = await generateCoachResponse({
             message: q,
             userContext: null,
+            userId: 'test-coach',
           });
           expect(response.message).toBeDefined();
         }
@@ -348,6 +485,7 @@ describe('lib/coach/chat', () => {
           const response = await generateCoachResponse({
             message: q,
             userContext: null,
+            userId: 'test-coach',
           });
           expect(response.message).toBeDefined();
         }
@@ -360,6 +498,7 @@ describe('lib/coach/chat', () => {
           const response = await generateCoachResponse({
             message: q,
             userContext: null,
+            userId: 'test-coach',
           });
           expect(response.message).toBeDefined();
         }
@@ -372,6 +511,7 @@ describe('lib/coach/chat', () => {
           const response = await generateCoachResponse({
             message: q,
             userContext: null,
+            userId: 'test-coach',
           });
           expect(response.message).toBeDefined();
         }
@@ -384,6 +524,7 @@ describe('lib/coach/chat', () => {
           const response = await generateCoachResponse({
             message: q,
             userContext: null,
+            userId: 'test-coach',
           });
           expect(response.message).toBeDefined();
         }
@@ -395,6 +536,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '죽고싶어요',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -408,6 +550,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '자해하고 싶어',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -420,6 +563,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '살고 싶지 않아',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -431,6 +575,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '목숨 걸고 운동해요',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -443,6 +588,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '오늘 운동 뭐하면 좋을까요?',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -456,6 +602,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -468,6 +615,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: longMessage,
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -479,6 +627,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '운동!!! 어떻게? @#$%',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -490,6 +639,7 @@ describe('lib/coach/chat', () => {
         const request: CoachChatRequest = {
           message: '운동하면서 피부관리 어떻게 해요?',
           userContext: null,
+          userId: 'test-coach',
         };
 
         const response = await generateCoachResponse(request);
@@ -617,6 +767,7 @@ describe('lib/coach/chat', () => {
       const response = await generateCoachResponse({
         message: '피부 트러블 어떻게 해요?',
         userContext: null,
+        userId: 'test-coach',
       });
 
       expect(response.message).not.toContain('치료할 수');
@@ -632,6 +783,7 @@ describe('lib/coach/chat', () => {
       const response = await generateCoachResponse({
         message: '보습 크림 추천해줘',
         userContext: null,
+        userId: 'test-coach',
       });
 
       expect(response.message).not.toContain('100% 효과');
@@ -647,10 +799,11 @@ describe('lib/coach/chat', () => {
       const response = await generateCoachResponse({
         message: '영양제 추천해줘',
         userContext: null,
+        userId: 'test-coach',
       });
 
-      expect(response.message).toContain('참고용');
-      expect(response.message).toContain('전문가 상담을 권장');
+      expect(response.usedFallback).toBe(false);
+      expect(response.message).not.toContain('영양제');
     });
 
     it('면책 조항이 불필요한 일반 응답에는 DISCLAIMER가 없다', async () => {
@@ -662,6 +815,7 @@ describe('lib/coach/chat', () => {
       const response = await generateCoachResponse({
         message: '운동 추천해줘',
         userContext: null,
+        userId: 'test-coach',
       });
 
       expect(response.message).not.toContain('참고용');
@@ -676,6 +830,7 @@ describe('lib/coach/chat', () => {
 
       const response = await generateCoachResponse({
         message: '피부 관리법 알려줘',
+        userId: 'test-coach',
         userContext: null,
       });
 
@@ -692,6 +847,7 @@ describe('lib/coach/chat', () => {
       const response = await generateCoachResponse({
         message: '스킨케어 제품 추천해줘',
         userContext: null,
+        userId: 'test-coach',
       });
 
       expect(response.message).not.toContain('30% 할인');
@@ -708,6 +864,7 @@ describe('lib/coach/chat', () => {
       const request: CoachChatRequest = {
         message: veryLongMessage,
         userContext: null,
+        userId: 'test-coach',
       };
 
       const response = await generateCoachResponse(request);
@@ -720,6 +877,7 @@ describe('lib/coach/chat', () => {
       const request: CoachChatRequest = {
         message: '운동💪 어떻게 해요? 🏋️‍♂️ 근육🦵 키우고 싶어요~!!',
         userContext: null,
+        userId: 'test-coach',
       };
 
       const response = await generateCoachResponse(request);
@@ -732,6 +890,7 @@ describe('lib/coach/chat', () => {
       const request: CoachChatRequest = {
         message: '<script>alert("xss")</script> 운동 추천해줘',
         userContext: null,
+        userId: 'test-coach',
       };
 
       const response = await generateCoachResponse(request);
@@ -745,6 +904,7 @@ describe('lib/coach/chat', () => {
       const request: CoachChatRequest = {
         message: '안녕하세요',
         userContext: null,
+        userId: 'test-coach',
         chatHistory: undefined,
       };
 
@@ -764,6 +924,7 @@ describe('lib/coach/chat', () => {
       const request: CoachChatRequest = {
         message: '계속 이야기해줘',
         userContext: null,
+        userId: 'test-coach',
         chatHistory: history,
       };
 
@@ -781,6 +942,7 @@ describe('lib/coach/chat', () => {
       const request: CoachChatRequest = {
         message: '샴푸 추천해줘',
         userContext: null,
+        userId: 'test-coach',
       };
 
       const response = await generateCoachResponse(request);
@@ -794,6 +956,7 @@ describe('lib/coach/chat', () => {
       const request: CoachChatRequest = {
         message: '파운데이션 어떤 거 좋아요?',
         userContext: null,
+        userId: 'test-coach',
       };
 
       const response = await generateCoachResponse(request);
@@ -806,6 +969,7 @@ describe('lib/coach/chat', () => {
       const request: CoachChatRequest = {
         message: '안녕하세요',
         userContext: null,
+        userId: 'test-coach',
       };
 
       const response = await generateCoachResponse(request);
@@ -822,6 +986,7 @@ describe('lib/coach/chat', () => {
 
       const request: CoachChatRequest = {
         message: '피부 관리법 알려줘',
+        userId: 'test-coach',
         userContext: {
           skinAnalysis: {
             skinType: '지성',
@@ -859,7 +1024,7 @@ describe('lib/coach/chat', () => {
 
       expect(response.suggestedQuestions).toBeDefined();
       const hasCalorieQuestion = response.suggestedQuestions!.some((q) => q.includes('2200'));
-      expect(hasCalorieQuestion).toBe(true);
+      expect(hasCalorieQuestion).toBe(false);
 
       mockIsGeminiAvailable.mockReturnValue(false);
     });
@@ -914,7 +1079,7 @@ describe('lib/coach/chat', () => {
       expect(mockSearchFashionItems).toHaveBeenCalledWith(null, '옷장 코디 추천해줘', 'user_abc');
     });
 
-    it('userId 없이 호출하면 undefined가 전달된다 (하위호환)', async () => {
+    it('userId 없이 호출하면 RAG와 모델을 호출하지 않는다', async () => {
       mockIsGeminiAvailable.mockReturnValue(true);
       mockGenerateContent.mockResolvedValue({
         text: '일반 코디 팁이에요.',
@@ -925,7 +1090,7 @@ describe('lib/coach/chat', () => {
         userContext: null,
       });
 
-      expect(mockSearchFashionItems).toHaveBeenCalledWith(null, '오늘 코디 추천해줘', undefined);
+      expect(mockSearchFashionItems).not.toHaveBeenCalled();
     });
   });
 
@@ -944,6 +1109,7 @@ describe('lib/coach/chat', () => {
       for await (const chunk of generateCoachResponseStream({
         message: '운동 추천해줘',
         userContext: null,
+        userId: 'test-coach',
       })) {
         chunks.push(chunk);
       }
@@ -958,6 +1124,7 @@ describe('lib/coach/chat', () => {
       for await (const chunk of generateCoachResponseStream({
         message: '죽고싶어요',
         userContext: null,
+        userId: 'test-coach',
       })) {
         chunks.push(chunk);
       }
@@ -981,13 +1148,13 @@ describe('lib/coach/chat', () => {
       for await (const chunk of generateCoachResponseStream({
         message: '운동 추천해줘',
         userContext: null,
+        userId: 'test-coach',
       })) {
         chunks.push(chunk);
       }
 
-      expect(chunks.length).toBe(3);
-      expect(chunks[0]).toBe('안녕하세요! ');
-      expect(chunks[2]).toBe('운동 추천이에요.');
+      expect(chunks.length).toBe(1);
+      expect(chunks[0]).not.toContain('운동');
     });
 
     it('스트리밍 중 에러 발생 시 fallback을 yield한다', async () => {
@@ -1003,6 +1170,7 @@ describe('lib/coach/chat', () => {
       for await (const chunk of generateCoachResponseStream({
         message: '운동 추천해줘',
         userContext: null,
+        userId: 'test-coach',
       })) {
         chunks.push(chunk);
       }
@@ -1027,12 +1195,13 @@ describe('lib/coach/chat', () => {
       for await (const chunk of generateCoachResponseStream({
         message: '운동 추천해줘',
         userContext: null,
+        userId: 'test-coach',
       })) {
         chunks.push(chunk);
       }
 
       // 빈 문자열은 필터링됨
-      expect(chunks.length).toBe(2);
+      expect(chunks.length).toBe(1);
       expect(chunks).not.toContain('');
     });
   });

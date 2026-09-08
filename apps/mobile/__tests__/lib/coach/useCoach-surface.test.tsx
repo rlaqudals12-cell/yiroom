@@ -10,7 +10,13 @@ const mockUseNutritionData = jest.fn(() => ({
   streak: { currentStreak: 5 },
 }));
 const mockSendCoachMessage = jest.fn<
-  Promise<{ message: string; suggestedQuestions: string[] }>,
+  Promise<{
+    message: string;
+    suggestedQuestions: string[];
+    usedFallback?: boolean;
+    confidence?: 'low';
+    fallbackReason?: 'timeout';
+  }>,
   [string, unknown[], string | undefined, Record<string, unknown>]
 >(async () => ({
   message: '뷰티 답변입니다.',
@@ -133,5 +139,24 @@ describe('useBeautyTeamCoach 컨텍스트 경계', () => {
     );
     expect(result.current.currentSessionId).toBeNull();
     expect(result.current.error).toBe('이 대화 기록을 불러올 수 없어요.');
+  });
+});
+
+it('preserves API fallback metadata in message state', async () => {
+  mockSendCoachMessage.mockResolvedValueOnce({
+    message: '일반 안내',
+    suggestedQuestions: [],
+    usedFallback: true,
+    confidence: 'low',
+    fallbackReason: 'timeout',
+  });
+  const { result } = renderHook(() => useBeautyTeamCoach());
+  await act(async () => {
+    await result.current.sendMessage('보습');
+  });
+  expect(result.current.messages.at(-1)).toMatchObject({
+    usedFallback: true,
+    confidence: 'low',
+    fallbackReason: 'timeout',
   });
 });

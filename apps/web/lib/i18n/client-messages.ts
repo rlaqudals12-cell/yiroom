@@ -21,6 +21,7 @@ export const CLIENT_MESSAGE_NAMESPACES = [
   'share',
   'skinAnalysisUI',
   'skinUI',
+  'skincareClaims',
   'smartMatchingUI',
   'stylingUI',
   'visualAnalysisUI',

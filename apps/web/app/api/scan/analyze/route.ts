@@ -108,8 +108,9 @@ export async function POST(request: NextRequest) {
       // 병렬로 피부 분석과 퍼스널 컬러 조회
       const [skinResult, colorResult] = await Promise.all([
         supabase
+          // ⚠️ concerns 컬럼은 실재하지 않는다(정본은 problem_areas). 과거 조회는 select 전체가 실패했다.
           .from('skin_analyses')
-          .select('skin_type, concerns, sensitivity')
+          .select('skin_type, sensitivity, problem_areas')
           .eq('clerk_user_id', userId)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -124,9 +125,21 @@ export async function POST(request: NextRequest) {
       ]);
 
       if (skinResult.data) {
+        // 고민 라벨은 problem_areas에서 중복 없이 파생한다.
+        const problemAreas = Array.isArray(skinResult.data.problem_areas)
+          ? (skinResult.data.problem_areas as { type?: string; label?: string }[])
+          : [];
+        const derivedConcerns = Array.from(
+          new Set(
+            problemAreas
+              .map((area) => area?.label || area?.type)
+              .filter((label): label is string => typeof label === 'string' && label.length > 0)
+          )
+        );
+
         userAnalysis.skinAnalysis = {
           skinType: mapSkinType(skinResult.data.skin_type),
-          concerns: skinResult.data.concerns || [],
+          concerns: derivedConcerns,
           sensitivity: mapSensitivity(skinResult.data.sensitivity),
         };
       }

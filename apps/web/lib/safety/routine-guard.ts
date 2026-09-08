@@ -129,7 +129,9 @@ export function getRoutineSafetyNotice(reason: RetinoidRestrictionReason): strin
     case 'isotretinoin':
       return '이소트레티노인 복용 중에는 레티노이드 제품과 일정을 제외했어요. 병용 전 처방 의료인과 상의해주세요.';
     case 'unassessed':
-      return '안전 문진이 완료되지 않아 레티노이드 제품과 일정은 제안하지 않아요.';
+      // 실제 억제 범위와 문구를 일치시킨다.
+      // 레티노이드뿐 아니라 AHA/BHA·고농도 비타민C 같은 활성 성분 제품과 세럼·앰플 추천이 함께 보류된다.
+      return '안전 문진 전에는 레티노이드·각질제거 성분 같은 활성 성분 제품과 세럼·앰플 추천을 보류해요. 클렌징·보습·자외선 차단은 그대로 안내해 드려요.';
     default:
       return '';
   }

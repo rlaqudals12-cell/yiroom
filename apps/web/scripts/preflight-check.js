@@ -102,12 +102,26 @@ if (!fs.existsSync(envFile)) {
     'GOOGLE_GENERATIVE_AI_API_KEY',
   ];
 
+  // 운영 배포 필수 (미설정 시 코치 턴 예약이 fail-closed로 전면 차단)
+  const productionRequiredVars = ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'];
+
   // 선택적 (경고만)
   const optionalVars = [
     'CLERK_WEBHOOK_SECRET',
     'NEXT_PUBLIC_CLERK_SIGN_IN_URL',
     'NEXT_PUBLIC_CLERK_SIGN_UP_URL',
   ];
+
+  const missingProduction = productionRequiredVars.filter((v) => !envContent.includes(v));
+  if (missingProduction.length > 0) {
+    console.log(
+      '   ⚠️  운영 배포 필수 환경 변수 누락:',
+      missingProduction.join(', '),
+      '— 운영에서 코치 상담이 전면 중단됩니다.'
+    );
+  } else {
+    console.log('   ✅ 운영 필수 환경 변수 존재');
+  }
 
   const missing = requiredVars.filter((v) => !envContent.includes(v));
   if (missing.length > 0) {

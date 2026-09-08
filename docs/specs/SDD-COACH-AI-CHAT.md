@@ -1,5 +1,14 @@
 # SDD: AI 웰니스 코치 채팅
 
+## 배치 S 보강 계약 (2026-09-08)
+
+- 근거: `c:/tmp/yiroom-codex-reports/2026-09-07-skincare-consultation-sim.md` §A/B/E; 기존 ADR-027/ADR-003 및 AI 추론 원리 적용.
+- JSON/SSE는 같은 생성·검열 결과를 사용한다. SSE에는 검열 완료된 본문만 전송한다.
+- RAG 포함 전체 12초 deadline, AbortController, 모든 종료 경로 timer 정리. Gemini 호출은 gemini-3.5-flash / minimal / maxOutputTokens 250 고정이며 usage·캐시 토큰·모델 버전을 보존한다.
+- 정상/위기/숨김 도메인/한도 안내는 usedFallback=false. 모델 사용불가·timeout·error는 usedFallback=true, confidence=low, fallbackReason을 전달한다.
+- 피부 동의어를 먼저 분류하고 한국어 조사 경계를 허용한다. 단일 글자 부분문자열로 패션/영양을 추론하지 않는다. 외국어 15문항은 default를 유지하며 locale을 모델까지 전달한다.
+- 숨김 도메인 질문·응답·후속 질문은 서버에서 제한하고, 승인된 피부 claim ID와 등급만 프롬프트에 넣는다.
+
 > **Status**: ✅ Implemented
 > **Version**: 1.0
 > **Created**: 2026-01-19
@@ -11,10 +20,12 @@
 ## 관련 문서
 
 ### 원리 문서 (과학적 기초)
+
 - [원리: AI 추론](../principles/ai-inference.md) - 프롬프트 엔지니어링, 컨텍스트 주입
 - [원리: 크로스 도메인 시너지](../principles/cross-domain-synergy.md) - 모듈 간 데이터 연계
 
 ### ADR
+
 - [ADR-027: Coach AI 스트리밍](../adr/ADR-027-coach-ai-streaming.md) - SSE 아키텍처
 - [ADR-003: AI 모델 선택](../adr/ADR-003-ai-model-selection.md) - Gemini 3 Flash
 
@@ -34,21 +45,21 @@
 
 ### 물리적 한계
 
-| 한계 | 설명 |
-|------|------|
+| 한계      | 설명                         |
+| --------- | ---------------------------- |
 | 초기 지연 | 스트리밍 시작까지 1-2초 지연 |
-| 토큰 한도 | 컨텍스트 윈도우 제한 |
-| 비용 | 긴 대화 시 API 비용 증가 |
+| 토큰 한도 | 컨텍스트 윈도우 제한         |
+| 비용      | 긴 대화 시 API 비용 증가     |
 
 ### 100점 기준
 
-| 항목 | 100점 기준 | 현재 | 달성률 |
-|------|-----------|------|--------|
-| SSE 스트리밍 | 완벽 | ✅ 완료 | 100% |
-| 세션 관리 | 완벽 | ✅ 완료 | 100% |
-| 컨텍스트 주입 | 8개 모듈 | 4개 모듈 | 50% |
-| 맥락 유지 | 10턴 | 5턴 | 50% |
-| 추천 질문 | 지능형 | 기본 | 60% |
+| 항목          | 100점 기준 | 현재     | 달성률 |
+| ------------- | ---------- | -------- | ------ |
+| SSE 스트리밍  | 완벽       | ✅ 완료  | 100%   |
+| 세션 관리     | 완벽       | ✅ 완료  | 100%   |
+| 컨텍스트 주입 | 8개 모듈   | 4개 모듈 | 50%    |
+| 맥락 유지     | 10턴       | 5턴      | 50%    |
+| 추천 질문     | 지능형     | 기본     | 60%    |
 
 ### 현재 목표
 
@@ -65,6 +76,7 @@
 ## 1. 비즈니스 목표
 
 ### 핵심 가치
+
 - 분석 결과 기반 개인화 웰니스 상담
 - 실시간 스트리밍으로 자연스러운 대화 경험
 - 맥락 유지 다중 턴 대화
@@ -83,30 +95,30 @@ SO THAT 맞춤형 웰니스 조언을 받을 수 있다
 
 ### 2.1 구현 현황
 
-| 기능 | 상태 | 위치 |
-|------|------|------|
-| SSE 스트리밍 | ✅ 완료 | `/api/coach/stream/route.ts` |
-| 세션 관리 | ✅ 완료 | `/api/coach/sessions/` |
-| 컨텍스트 주입 | ✅ 완료 | `lib/coach/context.ts` |
-| 추천 질문 | ✅ 완료 | `generateSuggestedQuestions()` |
+| 기능          | 상태    | 위치                           |
+| ------------- | ------- | ------------------------------ |
+| SSE 스트리밍  | ✅ 완료 | `/api/coach/stream/route.ts`   |
+| 세션 관리     | ✅ 완료 | `/api/coach/sessions/`         |
+| 컨텍스트 주입 | ✅ 완료 | `lib/coach/context.ts`         |
+| 추천 질문     | ✅ 완료 | `generateSuggestedQuestions()` |
 
 ### 2.2 API 엔드포인트
 
-| 엔드포인트 | 메서드 | 설명 |
-|-----------|--------|------|
-| `/api/coach/stream` | POST | SSE 스트리밍 응답 |
-| `/api/coach/chat` | POST | 일반 응답 (폴백) |
-| `/api/coach/sessions` | GET | 세션 목록 |
-| `/api/coach/sessions` | POST | 새 세션 생성 |
-| `/api/coach/sessions/[id]` | GET | 세션 상세 |
-| `/api/coach/sessions/[id]` | DELETE | 세션 삭제 |
+| 엔드포인트                 | 메서드 | 설명              |
+| -------------------------- | ------ | ----------------- |
+| `/api/coach/stream`        | POST   | SSE 스트리밍 응답 |
+| `/api/coach/chat`          | POST   | 일반 응답 (폴백)  |
+| `/api/coach/sessions`      | GET    | 세션 목록         |
+| `/api/coach/sessions`      | POST   | 새 세션 생성      |
+| `/api/coach/sessions/[id]` | GET    | 세션 상세         |
+| `/api/coach/sessions/[id]` | DELETE | 세션 삭제         |
 
 ### 2.3 입력 스펙
 
 ```typescript
 // POST /api/coach/stream
 interface CoachStreamRequest {
-  message: string;           // 사용자 메시지
+  message: string; // 사용자 메시지
   chatHistory?: CoachMessage[]; // 이전 대화 (선택)
 }
 
@@ -137,13 +149,13 @@ type SSEEvent =
 interface UserContext {
   // 분석 결과
   personalColor?: {
-    season: string;         // 'spring' | 'summer' | 'autumn' | 'winter'
-    subtype: string;        // 'light' | 'true' | 'bright' ...
+    season: string; // 'spring' | 'summer' | 'autumn' | 'winter'
+    subtype: string; // 'light' | 'true' | 'bright' ...
     confidence: number;
   };
   skinAnalysis?: {
-    skinType: string;       // 'dry' | 'oily' | 'combination' ...
-    concerns: string[];     // ['acne', 'wrinkle', ...]
+    skinType: string; // 'dry' | 'oily' | 'combination' ...
+    concerns: string[]; // ['acne', 'wrinkle', ...]
   };
   bodyAnalysis?: {
     bodyType: string;
@@ -237,12 +249,12 @@ export async function* generateCoachResponseStream(options: {
 
 ## 5. 에러 처리
 
-| 에러 코드 | 상황 | 처리 |
-|----------|------|------|
-| 401 | 미인증 | 로그인 리다이렉트 |
-| 400 | 메시지 누락 | 에러 메시지 표시 |
-| 500 | Gemini 오류 | 폴백 메시지 표시 |
-| timeout | 3초 초과 | 스트림 종료 + 재시도 버튼 |
+| 에러 코드 | 상황        | 처리                      |
+| --------- | ----------- | ------------------------- |
+| 401       | 미인증      | 로그인 리다이렉트         |
+| 400       | 메시지 누락 | 에러 메시지 표시          |
+| 500       | Gemini 오류 | 폴백 메시지 표시          |
+| timeout   | 3초 초과    | 스트림 종료 + 재시도 버튼 |
 
 ---
 
@@ -269,12 +281,12 @@ tests/api/coach/
 
 ## 7. 성공 기준
 
-| 지표 | 목표 |
-|------|------|
-| 첫 청크 응답 | < 500ms |
-| 전체 응답 완료 | < 5s |
-| 스트리밍 안정성 | 99.5% |
-| 컨텍스트 적용률 | 100% |
+| 지표            | 목표    |
+| --------------- | ------- |
+| 첫 청크 응답    | < 500ms |
+| 전체 응답 완료  | < 5s    |
+| 스트리밍 안정성 | 99.5%   |
+| 컨텍스트 적용률 | 100%    |
 
 ---
 
@@ -319,19 +331,22 @@ graph TD
 
 #### ATOM-1: 타입 정의
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 0.5시간 |
-| **의존성** | 없음 |
-| **병렬 가능** | Yes |
+| 항목          | 값      |
+| ------------- | ------- |
+| **소요시간**  | 0.5시간 |
+| **의존성**    | 없음    |
+| **병렬 가능** | Yes     |
 
 **입력**:
+
 - 기능 요구사항 분석
 
 **출력**:
+
 - `types/coach.ts` - CoachMessage, CoachSession, UserContext 타입
 
 **성공 기준**:
+
 - [ ] typecheck 통과
 - [ ] 모든 API 입출력 타입 커버
 
@@ -339,20 +354,23 @@ graph TD
 
 #### ATOM-2: 컨텍스트 빌더
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1.5시간 |
-| **의존성** | ATOM-1 |
-| **병렬 가능** | No |
+| 항목          | 값      |
+| ------------- | ------- |
+| **소요시간**  | 1.5시간 |
+| **의존성**    | ATOM-1  |
+| **병렬 가능** | No      |
 
 **입력**:
+
 - clerk_user_id
 - 분석 결과 테이블 (personal_color_assessments, skin_analyses, body_analyses)
 
 **출력**:
+
 - `lib/coach/context.ts` - getUserContext(), buildSystemPrompt()
 
 **성공 기준**:
+
 - [ ] 모든 분석 결과 수집
 - [ ] 시스템 프롬프트 템플릿 적용
 - [ ] 누락된 데이터 안전 처리
@@ -361,20 +379,23 @@ graph TD
 
 #### ATOM-3: 세션 CRUD API
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1.5시간 |
-| **의존성** | ATOM-1 |
+| 항목          | 값                  |
+| ------------- | ------------------- |
+| **소요시간**  | 1.5시간             |
+| **의존성**    | ATOM-1              |
 | **병렬 가능** | Yes (ATOM-4와 병렬) |
 
 **입력**:
+
 - clerk_user_id, session_id
 
 **출력**:
+
 - `app/api/coach/sessions/route.ts` - GET, POST
 - `app/api/coach/sessions/[sessionId]/route.ts` - GET, DELETE
 
 **성공 기준**:
+
 - [ ] RLS 정책 적용
 - [ ] 401/404 에러 처리
 - [ ] typecheck 통과
@@ -383,20 +404,23 @@ graph TD
 
 #### ATOM-4: SSE 스트리밍 API
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 2시간 |
-| **의존성** | ATOM-1, ATOM-2 |
+| 항목          | 값                  |
+| ------------- | ------------------- |
+| **소요시간**  | 2시간               |
+| **의존성**    | ATOM-1, ATOM-2      |
 | **병렬 가능** | Yes (ATOM-3와 병렬) |
 
 **입력**:
+
 - message, chatHistory, userContext
 
 **출력**:
+
 - `app/api/coach/stream/route.ts` - POST (SSE)
 - `lib/coach/streaming.ts` - generateCoachResponseStream()
 
 **성공 기준**:
+
 - [ ] 첫 청크 < 500ms
 - [ ] 3초 타임아웃 적용
 - [ ] 추천 질문 생성
@@ -406,19 +430,22 @@ graph TD
 
 #### ATOM-5: MessageBubble 컴포넌트
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1시간 |
-| **의존성** | 없음 |
+| 항목          | 값                  |
+| ------------- | ------------------- |
+| **소요시간**  | 1시간               |
+| **의존성**    | 없음                |
 | **병렬 가능** | Yes (ATOM-6과 병렬) |
 
 **입력**:
+
 - message: CoachMessage
 
 **출력**:
+
 - `components/coach/MessageBubble.tsx`
 
 **성공 기준**:
+
 - [ ] user/assistant 구분 렌더링
 - [ ] 스트리밍 텍스트 표시
 - [ ] data-testid 적용
@@ -427,20 +454,23 @@ graph TD
 
 #### ATOM-6: SuggestedQuestions 컴포넌트
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 0.5시간 |
-| **의존성** | 없음 |
+| 항목          | 값                  |
+| ------------- | ------------------- |
+| **소요시간**  | 0.5시간             |
+| **의존성**    | 없음                |
 | **병렬 가능** | Yes (ATOM-5와 병렬) |
 
 **입력**:
+
 - questions: string[]
 - onSelect: (question: string) => void
 
 **출력**:
+
 - `components/coach/SuggestedQuestions.tsx`
 
 **성공 기준**:
+
 - [ ] 클릭 시 onSelect 호출
 - [ ] 접근성 지원 (키보드)
 
@@ -448,19 +478,22 @@ graph TD
 
 #### ATOM-7: ChatInterface 통합
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 2시간 |
-| **의존성** | ATOM-3, ATOM-4, ATOM-5, ATOM-6 |
-| **병렬 가능** | No |
+| 항목          | 값                             |
+| ------------- | ------------------------------ |
+| **소요시간**  | 2시간                          |
+| **의존성**    | ATOM-3, ATOM-4, ATOM-5, ATOM-6 |
+| **병렬 가능** | No                             |
 
 **입력**:
+
 - 모든 하위 컴포넌트 및 API
 
 **출력**:
+
 - `components/coach/ChatInterface.tsx`
 
 **성공 기준**:
+
 - [ ] SSE 스트리밍 연결
 - [ ] 메시지 히스토리 관리
 - [ ] 로딩 상태 표시
@@ -470,21 +503,24 @@ graph TD
 
 #### ATOM-8: 테스트 작성
 
-| 항목 | 값 |
-|------|-----|
-| **소요시간** | 1.5시간 |
-| **의존성** | ATOM-7 |
-| **병렬 가능** | No |
+| 항목          | 값      |
+| ------------- | ------- |
+| **소요시간**  | 1.5시간 |
+| **의존성**    | ATOM-7  |
+| **병렬 가능** | No      |
 
 **입력**:
+
 - 구현된 모든 컴포넌트 및 API
 
 **출력**:
+
 - `tests/api/coach/stream.test.ts`
 - `tests/api/coach/sessions.test.ts`
 - `tests/components/coach/ChatInterface.test.tsx`
 
 **성공 기준**:
+
 - [ ] API 테스트 커버리지 90%+
 - [ ] 컴포넌트 렌더링 테스트
 - [ ] 스트리밍 Mock 테스트
@@ -493,25 +529,25 @@ graph TD
 
 ### 총 소요시간
 
-| Phase | ATOMs | 시간 |
-|-------|-------|------|
-| Phase 1 | ATOM-1, ATOM-2 | 2시간 |
-| Phase 2 | ATOM-3, ATOM-4 | 3.5시간 (병렬 시 2시간) |
-| Phase 3 | ATOM-5, ATOM-6, ATOM-7 | 3.5시간 (병렬 시 3시간) |
-| Phase 4 | ATOM-8 | 1.5시간 |
-| **총합** | 8개 | **8.5시간** (병렬 최적화 시) |
+| Phase    | ATOMs                  | 시간                         |
+| -------- | ---------------------- | ---------------------------- |
+| Phase 1  | ATOM-1, ATOM-2         | 2시간                        |
+| Phase 2  | ATOM-3, ATOM-4         | 3.5시간 (병렬 시 2시간)      |
+| Phase 3  | ATOM-5, ATOM-6, ATOM-7 | 3.5시간 (병렬 시 3시간)      |
+| Phase 4  | ATOM-8                 | 1.5시간                      |
+| **총합** | 8개                    | **8.5시간** (병렬 최적화 시) |
 
 ### P3 점수 검증
 
-| 항목 | 배점 | 달성 |
-|------|------|------|
-| 소요시간 명시 | 20점 | ✅ 20점 |
-| 입출력 스펙 | 20점 | ✅ 20점 |
-| 성공 기준 | 20점 | ✅ 20점 |
-| 의존성 그래프 | 20점 | ✅ 20점 |
-| 파일 배치 | 10점 | ✅ 10점 |
-| 테스트 케이스 | 10점 | ✅ 10점 |
-| **총점** | **100점** | **100점** |
+| 항목          | 배점      | 달성      |
+| ------------- | --------- | --------- |
+| 소요시간 명시 | 20점      | ✅ 20점   |
+| 입출력 스펙   | 20점      | ✅ 20점   |
+| 성공 기준     | 20점      | ✅ 20점   |
+| 의존성 그래프 | 20점      | ✅ 20점   |
+| 파일 배치     | 10점      | ✅ 10점   |
+| 테스트 케이스 | 10점      | ✅ 10점   |
+| **총점**      | **100점** | **100점** |
 
 ---
 

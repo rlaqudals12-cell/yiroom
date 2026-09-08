@@ -22,6 +22,7 @@ import {
   type HeatmapStatus,
 } from '@/lib/analysis/skin-v2/zone-heatmap-data';
 import { generateZoneProductRecommendations } from '@/lib/analysis/skin-v2/zone-product-targeting';
+import type { RecommendationSafetyContext } from '@/lib/skincare/recommendation-safety';
 
 // =============================================================================
 // 타입
@@ -34,6 +35,7 @@ export interface TwelveZoneSummaryProps {
   zoneMetrics: Record<DetailedZoneId, ZoneMetricsV2>;
   /** 히트맵 상세 보기 클릭 핸들러 */
   onViewHeatmap?: () => void;
+  safetyContext?: RecommendationSafetyContext;
 }
 
 // =============================================================================
@@ -79,6 +81,7 @@ export function TwelveZoneSummary({
   zoneScores,
   zoneMetrics,
   onViewHeatmap,
+  safetyContext,
 }: TwelveZoneSummaryProps): React.JSX.Element {
   // 점수 기준 정렬 (낮은 점수 = 문제 존)
   const sortedZones = useMemo(() => {
@@ -89,8 +92,8 @@ export function TwelveZoneSummary({
 
   // 존별 제품 추천
   const recommendations = useMemo(
-    () => generateZoneProductRecommendations(zoneScores, zoneMetrics),
-    [zoneScores, zoneMetrics]
+    () => generateZoneProductRecommendations(zoneScores, zoneMetrics, safetyContext),
+    [zoneScores, zoneMetrics, safetyContext]
   );
 
   // 상위 3개 추천만 표시

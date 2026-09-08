@@ -32,9 +32,11 @@ async function fetchPersonalColorData(
   supabase: SupabaseClient,
   userId: string
 ): Promise<PersonalColorData | null> {
+  // ⚠️ sub_type·color_palette는 실재하지 않는 컬럼이었다(정본은 season_subtype·best_colors).
+  // 그 탓에 select 전체가 실패해 주간 인사이트가 늘 빈손이었다.
   const { data, error } = await supabase
     .from('personal_color_assessments')
-    .select('season, undertone, confidence, sub_type, color_palette')
+    .select('season, undertone, confidence, season_subtype, best_colors')
     .eq('clerk_user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -46,21 +48,22 @@ async function fetchPersonalColorData(
     season: data.season,
     undertone: data.undertone,
     confidence: data.confidence ?? 70,
-    subType: data.sub_type,
-    colorPalette: data.color_palette,
+    subType: data.season_subtype ?? undefined,
+    colorPalette: Array.isArray(data.best_colors)
+      ? (data.best_colors as unknown[]).filter((c): c is string => typeof c === 'string')
+      : undefined,
   };
 }
 
 /**
  * 최신 피부 분석 결과 조회
  */
-async function fetchSkinData(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<SkinData | null> {
+async function fetchSkinData(supabase: SupabaseClient, userId: string): Promise<SkinData | null> {
+  // ⚠️ concerns·hydration_level·sensitivity_level은 실재하지 않는 컬럼이었다
+  // (정본은 problem_areas·hydration·sensitivity).
   const { data, error } = await supabase
     .from('skin_analyses')
-    .select('skin_type, concerns, hydration_level, oil_level, sensitivity_level')
+    .select('skin_type, problem_areas, hydration, oil_level, sensitivity')
     .eq('clerk_user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -68,25 +71,34 @@ async function fetchSkinData(
 
   if (error || !data) return null;
 
+  const problemAreas = Array.isArray(data.problem_areas)
+    ? (data.problem_areas as { type?: string; label?: string }[])
+    : [];
+  const concerns = Array.from(
+    new Set(
+      problemAreas
+        .map((area) => area?.label || area?.type)
+        .filter((label): label is string => typeof label === 'string' && label.length > 0)
+    )
+  );
+
   return {
     skinType: data.skin_type,
-    concerns: data.concerns,
-    hydrationLevel: data.hydration_level,
-    oilLevel: data.oil_level,
-    sensitivityLevel: data.sensitivity_level,
+    concerns: concerns.length > 0 ? concerns : undefined,
+    hydrationLevel: data.hydration ?? undefined,
+    oilLevel: data.oil_level ?? undefined,
+    sensitivityLevel: data.sensitivity ?? undefined,
   };
 }
 
 /**
  * 최신 체형 분석 결과 조회
  */
-async function fetchBodyData(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<BodyData | null> {
+async function fetchBodyData(supabase: SupabaseClient, userId: string): Promise<BodyData | null> {
+  // ⚠️ shoulder_type·proportions는 실재하지 않는 컬럼이었다(정본은 shoulder·body_ratios).
   const { data, error } = await supabase
     .from('body_analyses')
-    .select('body_type, shoulder_type, proportions')
+    .select('body_type, shoulder, body_ratios')
     .eq('clerk_user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -94,23 +106,28 @@ async function fetchBodyData(
 
   if (error || !data) return null;
 
+  const ratios = (data.body_ratios ?? undefined) as
+    | { shoulderToHip?: number; legToTorso?: number }
+    | undefined;
+
   return {
     bodyType: data.body_type,
-    shoulderType: data.shoulder_type,
-    proportions: data.proportions,
+    shoulderType: data.shoulder != null ? String(data.shoulder) : undefined,
+    proportions:
+      ratios && typeof ratios.shoulderToHip === 'number' && typeof ratios.legToTorso === 'number'
+        ? { shoulderToHip: ratios.shoulderToHip, legToTorso: ratios.legToTorso }
+        : undefined,
   };
 }
 
 /**
  * 최신 얼굴형 분석 결과 조회
  */
-async function fetchFaceData(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<FaceData | null> {
+async function fetchFaceData(supabase: SupabaseClient, userId: string): Promise<FaceData | null> {
+  // ⚠️ facial_features는 실재하지 않는 컬럼이었다. 정본의 개별 특징 컬럼에서 조합한다.
   const { data, error } = await supabase
     .from('face_analyses')
-    .select('face_shape, facial_features')
+    .select('face_shape, eye_shape, nose_type, eyebrow_shape')
     .eq('clerk_user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -118,22 +135,24 @@ async function fetchFaceData(
 
   if (error || !data) return null;
 
+  const facialFeatures = [data.eye_shape, data.nose_type, data.eyebrow_shape].filter(
+    (feature): feature is string => typeof feature === 'string' && feature.length > 0
+  );
+
   return {
     faceShape: data.face_shape,
-    facialFeatures: data.facial_features,
+    facialFeatures: facialFeatures.length > 0 ? facialFeatures : undefined,
   };
 }
 
 /**
  * 최신 모발 분석 결과 조회
  */
-async function fetchHairData(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<HairData | null> {
+async function fetchHairData(supabase: SupabaseClient, userId: string): Promise<HairData | null> {
+  // ⚠️ hair_condition·scalp_condition은 실재하지 않는 컬럼이었다(정본은 damage_level·scalp_health).
   const { data, error } = await supabase
     .from('hair_analyses')
-    .select('hair_type, hair_condition, scalp_condition')
+    .select('hair_type, damage_level, scalp_health')
     .eq('clerk_user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -143,8 +162,8 @@ async function fetchHairData(
 
   return {
     hairType: data.hair_type,
-    hairCondition: data.hair_condition,
-    scalpCondition: data.scalp_condition,
+    hairCondition: data.damage_level != null ? String(data.damage_level) : undefined,
+    scalpCondition: data.scalp_health != null ? String(data.scalp_health) : undefined,
   };
 }
 
@@ -155,9 +174,11 @@ async function fetchOralHealthData(
   supabase: SupabaseClient,
   userId: string
 ): Promise<OralHealthData | null> {
+  // ⚠️ gum_health_status·inflammation_score는 실재하지 않는 컬럼이었다(정본은 gum_health).
+  // 염증 점수에 대응하는 정본 컬럼이 없으므로 지어내지 않고 비워 둔다.
   const { data, error } = await supabase
     .from('oral_health_assessments')
-    .select('gum_health_status, tooth_shade, inflammation_score')
+    .select('gum_health, tooth_shade')
     .eq('clerk_user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -166,9 +187,9 @@ async function fetchOralHealthData(
   if (error || !data) return null;
 
   return {
-    gumHealthStatus: data.gum_health_status,
-    toothShade: data.tooth_shade,
-    inflammationScore: data.inflammation_score,
+    gumHealthStatus: data.gum_health,
+    toothShade: data.tooth_shade ?? undefined,
+    inflammationScore: undefined,
   };
 }
 

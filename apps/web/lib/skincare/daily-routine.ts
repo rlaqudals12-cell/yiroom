@@ -112,6 +112,7 @@ export async function assembleDailyRoutine(input: DailyRoutineInput): Promise<Da
     timeOfDay: 'morning',
     includeOptional: true,
     carePhase: carePhase.phase,
+    safetyProfile: input.safetyProfile,
   });
   const eveningResult = generateRoutine({
     skinType,
@@ -119,12 +120,19 @@ export async function assembleDailyRoutine(input: DailyRoutineInput): Promise<Da
     timeOfDay: 'evening',
     includeOptional: true,
     carePhase: carePhase.phase,
+    safetyProfile: input.safetyProfile,
   });
 
   // 4) shelf-우선 제품 배치 (보유 없으면 카탈로그 추천 — enrich 내부에서 처리)
   const [morning, evening] = await Promise.all([
-    enrichRoutineWithProducts(morningResult.routine, skinType, concerns, safeShelfItems),
-    enrichRoutineWithProducts(eveningResult.routine, skinType, concerns, safeShelfItems),
+    enrichRoutineWithProducts(morningResult.routine, skinType, concerns, safeShelfItems, {
+      safetyProfile: input.safetyProfile,
+      timeOfDay: 'morning',
+    }),
+    enrichRoutineWithProducts(eveningResult.routine, skinType, concerns, safeShelfItems, {
+      safetyProfile: input.safetyProfile,
+      timeOfDay: 'evening',
+    }),
   ]);
 
   // 5) 스킨 사이클링 — 보유 활성·민감도·케어 단계 기준
@@ -136,6 +144,7 @@ export async function assembleDailyRoutine(input: DailyRoutineInput): Promise<Da
     weekly: composeWeeklyCycle(ownedActives, sensitivity, carePhase, cyclingSafety),
   };
   const hasAppliedRestriction =
+    safetyFilter.safety.reason !== null ||
     safetyFilter.removedCount > 0 ||
     (!safetyFilter.safety.retinoidAllowed && originalOwnedActives.has('retinoid'));
 

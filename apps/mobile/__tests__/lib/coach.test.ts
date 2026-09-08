@@ -84,7 +84,9 @@ describe('getMockResponse', () => {
     const response = getMockResponse('오늘 운동 뭐하면 좋을까?');
     expect(response.message).toContain('운동');
     expect(response.suggestedQuestions).toBeDefined();
-    expect(response.suggestedQuestions?.length).toBeGreaterThan(0);
+    expect(response.suggestedQuestions).not.toEqual(
+      expect.arrayContaining([expect.stringMatching(/운동|다이어트|수분 섭취/)])
+    );
   });
 
   it('영양 관련 질문에 영양 응답을 반환해야 함', () => {

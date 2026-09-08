@@ -116,10 +116,12 @@ describe('lib/coach/context', () => {
       expect(result).toBeNull();
     });
 
+    // 회귀 방지: 과거 mock이 실재하지 않는 'result' 컬럼 모양을 공급해
+    // 코치가 PC를 못 읽는 결함을 테스트가 가려줬다. 정본 컬럼 모양으로 고정한다.
     it('should return personal color context when available', async () => {
       const mockSupabase = createSupabaseMock({
         personal_color_assessments: {
-          data: { result: { season: '봄 웜톤', tone: 'bright' } },
+          data: { season: 'Spring', undertone: 'Warm', season_subtype: '봄 브라이트' },
           error: null,
         },
       });
@@ -129,18 +131,36 @@ describe('lib/coach/context', () => {
 
       expect(result).not.toBeNull();
       expect(result?.personalColor).toEqual({
-        season: '봄 웜톤',
-        tone: 'bright',
+        season: 'Spring',
+        tone: '봄 브라이트',
       });
     });
 
+    it('세부 유형이 없으면 언더톤을 tone으로 쓴다', async () => {
+      const mockSupabase = createSupabaseMock({
+        personal_color_assessments: {
+          data: { season: 'Winter', undertone: 'Cool', season_subtype: null },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      expect(result?.personalColor).toEqual({ season: 'Winter', tone: 'Cool' });
+    });
+
+    // 회귀 방지: 과거 mock이 실재하지 않는 concerns·scores 컬럼을 공급해
+    // select 전체가 실패하는 결함을 가려줬다. 정본 컬럼 모양으로 고정한다.
     it('should return skin analysis context when available', async () => {
       const mockSupabase = createSupabaseMock({
         skin_analyses: {
           data: {
             skin_type: '복합성',
-            concerns: ['모공', '피지'],
-            scores: { hydration: 65, oiliness: 70 },
+            hydration: 65,
+            oil_level: 70,
+            sensitivity: 30,
+            problem_areas: [{ type: '모공' }, { label: '피지' }, { type: '모공' }],
           },
           error: null,
         },
@@ -152,14 +172,35 @@ describe('lib/coach/context', () => {
       expect(result).not.toBeNull();
       expect(result?.skinAnalysis?.skinType).toBe('복합성');
       expect(result?.skinAnalysis?.concerns).toEqual(['모공', '피지']);
+      expect(result?.skinAnalysis?.scores).toEqual({ moisture: 65, oil: 70, sensitivity: 30 });
     });
 
+    it('문제 영역이 비면 피부 고민을 만들어내지 않는다', async () => {
+      const mockSupabase = createSupabaseMock({
+        skin_analyses: {
+          data: {
+            skin_type: '건성',
+            hydration: 40,
+            oil_level: 20,
+            sensitivity: 50,
+            problem_areas: [],
+          },
+          error: null,
+        },
+      });
+      (createClerkSupabaseClient as Mock).mockReturnValue(mockSupabase);
+
+      const result = await getUserContext(mockUserId);
+
+      expect(result?.skinAnalysis?.concerns).toBeUndefined();
+    });
+
+    // bmi 컬럼은 DB에 없다. 키·몸무게에서 파생 계산됨을 고정한다(170cm·65kg → 22.5).
     it('should return body analysis context when available', async () => {
       const mockSupabase = createSupabaseMock({
         body_analyses: {
           data: {
             body_type: '직사각형',
-            bmi: 22.5,
             height: 170,
             weight: 65,
           },
@@ -512,7 +553,7 @@ describe('lib/coach/context', () => {
     it('should handle personal color without tone', async () => {
       const mockSupabase = createSupabaseMock({
         personal_color_assessments: {
-          data: { result: { season: '여름 쿨톤' } },
+          data: { season: '여름 쿨톤', undertone: null, season_subtype: null },
           error: null,
         },
       });
@@ -528,7 +569,7 @@ describe('lib/coach/context', () => {
     it('should return null when personal color result has no season', async () => {
       const mockSupabase = createSupabaseMock({
         personal_color_assessments: {
-          data: { result: {} },
+          data: { season: null, undertone: null, season_subtype: null },
           error: null,
         },
       });
@@ -536,7 +577,7 @@ describe('lib/coach/context', () => {
 
       const result = await getUserContext(mockUserId);
 
-      // result에 season이 없으면 personalColor가 설정되지 않음
+      // season이 비어 있으면 personalColor를 설정하지 않는다
       expect(result?.personalColor).toBeUndefined();
     });
 
@@ -617,13 +658,13 @@ describe('lib/coach/context', () => {
       expect(result?.makeupAnalysis?.recommendedStyles).toBeUndefined();
     });
 
-    it('should handle body analysis without BMI', async () => {
+    it('키·몸무게가 없으면 BMI를 만들지 않는다', async () => {
       const mockSupabase = createSupabaseMock({
         body_analyses: {
           data: {
             body_type: '역삼각형',
-            height: 180,
-            weight: 75,
+            height: null,
+            weight: null,
           },
           error: null,
         },

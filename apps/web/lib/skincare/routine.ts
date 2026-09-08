@@ -25,6 +25,13 @@ import {
 import { getRoutineProductsByCategory } from './routine-products';
 import { detectProductCategory } from './shelf-routine-sync';
 import { getStepSpec } from './step-spec';
+import { getStepHowTo } from './step-howto';
+import {
+  allowsActiveRecommendations,
+  isRecommendationAllowed,
+  type RecommendationSafetyContext,
+} from './recommendation-safety';
+import { filterRoutineShelfItems } from '@/lib/safety/routine-guard';
 
 // ================================================
 // 루틴 생성 함수
@@ -94,7 +101,7 @@ export function generateRoutine(input: RoutineGenerationInput): RoutineGeneratio
   // 더블클렌징 1단계 "오일 클렌저"는 스펙(약산성) 대상이 아니라 원 명칭 유지.
   adjustedSteps = adjustedSteps.map((step) => {
     if (step.category === 'cleanser' && step.name.includes('오일')) return step;
-    const spec = getStepSpec(step.category, skinType, concerns, carePhase);
+    const spec = getStepSpec(step.category, skinType, concerns, carePhase, input);
     if (!spec) return step;
     // 저녁 스텝은 시간대 정체성을 앞세워 아침 스텝과 이름이 겹치지 않게 한다
     const label = timeIdentityLabel(step, timeOfDay);
@@ -102,6 +109,9 @@ export function generateRoutine(input: RoutineGenerationInput): RoutineGeneratio
       ...step,
       specName: label ? composeSpecName(label, spec.specName) : spec.specName,
       specReason: spec.specReason,
+      specClaimId: spec.claimId,
+      specEvidence: spec.evidence,
+      specSourceId: spec.sourceId,
     };
   });
 
@@ -109,7 +119,17 @@ export function generateRoutine(input: RoutineGenerationInput): RoutineGeneratio
   const estimatedTime = calculateEstimatedTime(adjustedSteps);
 
   // 7. 개인화 노트 생성
-  const personalizationNote = generatePersonalizationNote(skinType, concerns, modifier.warnings);
+  // 고민 기반 성분 문장은 안전 문진을 통과했을 때만 붙인다.
+  // (두 분기 모두 빈 배열을 넘기던 탓에 고민 문장이 어떤 입력에서도 나오지 않았다.)
+  const personalizationNote = allowsActiveRecommendations(input)
+    ? generatePersonalizationNote(skinType, concerns, modifier.warnings)
+    : generatePersonalizationNote(skinType, [], modifier.warnings) +
+      ' 안전 문진과 제품 성분을 확인하기 전에는 일반 세안·보습·자외선 차단 관리만 안내해요.';
+  // 모바일 등 다른 렌더러로도 원문 팁이 우회 전달되지 않도록 정본에서 교체한다.
+  adjustedSteps = adjustedSteps.map((step) => ({
+    ...step,
+    tips: getStepHowTo(step.category)?.tips ?? [],
+  }));
 
   return {
     routine: adjustedSteps,
@@ -288,12 +308,26 @@ export async function enrichRoutineWithProducts(
   steps: RoutineStep[],
   skinType: SkinTypeId,
   concerns: SkinConcernId[],
-  shelfItems?: ShelfItem[]
+  shelfItems?: ShelfItem[],
+  context: RecommendationSafetyContext = {}
 ): Promise<RoutineStep[]> {
   // 1. shelf-우선 배치 (동기·결정론) — 스텝 인덱스별 보유 제품 매핑
   const ownedByStep = new Map<number, { shelfItemId: string; name: string; brand?: string }>();
   if (shelfItems?.length) {
-    const shelfByCategory = groupShelfByCategory(shelfItems);
+    const safeItems = filterRoutineShelfItems(shelfItems, context.safetyProfile).items.filter(
+      (item) =>
+        isRecommendationAllowed(
+          [
+            item.productName,
+            ...item.productIngredients.flatMap((ingredient) => [
+              ingredient.inciName,
+              ingredient.nameKo,
+            ]),
+          ].join(' '),
+          context
+        )
+    );
+    const shelfByCategory = groupShelfByCategory(safeItems);
     const usedShelf = new Set<string>();
     steps.forEach((step, index) => {
       const candidates = shelfByCategory.get(normalizeRoutineCategory(step.category));
@@ -320,7 +354,8 @@ export async function enrichRoutineWithProducts(
           step.category,
           skinType,
           concerns,
-          3 // 각 스텝당 최대 3개
+          3, // 각 스텝당 최대 3개
+          context
         );
         return {
           ...step,

@@ -4,7 +4,6 @@ import { memo } from 'react';
 import { Droplets } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import RoutineStepItem from './RoutineStepItem';
-import { HAND_WASH_PRESTEP } from '@/lib/skincare/step-howto';
 import type { RoutineStepListProps } from '@/types/skincare-routine';
 import { useTranslations } from 'next-intl';
 
@@ -20,6 +19,9 @@ const RoutineStepList = memo(function RoutineStepList({
   className,
 }: RoutineStepListProps) {
   const t = useTranslations('skinUI');
+  // 0단계 프리스텝도 승인 문구 카탈로그를 쓴다.
+  // 상수(HAND_WASH_PRESTEP)를 그대로 렌더하면 다른 로케일에서 이 줄만 한국어로 남는다.
+  const claimText = useTranslations('skincareClaims');
   // 순서대로 정렬
   const sortedSteps = [...steps].sort((a, b) => a.order - b.order);
 
@@ -46,8 +48,9 @@ const RoutineStepList = memo(function RoutineStepList({
         </div>
         <Droplets className="h-4 w-4 flex-shrink-0 text-sky-500" aria-hidden="true" />
         <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground">{HAND_WASH_PRESTEP.label}</p>
-          <p className="truncate text-xs text-muted-foreground">{HAND_WASH_PRESTEP.note}</p>
+          <p className="text-sm font-medium text-foreground">{claimText('handWashLabel')}</p>
+          {/* 위생 근거까지 읽혀야 하므로 한 줄 자르기 대신 두 줄까지 허용한다. */}
+          <p className="line-clamp-2 text-xs text-muted-foreground">{claimText('handWash')}</p>
         </div>
       </div>
 

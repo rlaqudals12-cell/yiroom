@@ -11,3 +11,4 @@ export * from './styling-principles';
 export * from './analysis-cadence';
 export * from './skin-trend';
 export * from './tone-palettes';
+export * from './coach-history';

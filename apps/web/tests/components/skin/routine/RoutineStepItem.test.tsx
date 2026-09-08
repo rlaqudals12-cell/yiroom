@@ -22,6 +22,26 @@ vi.mock('next-intl', async () => {
 });
 
 describe('RoutineStepItem', () => {
+  it('기존 tips의 미승인 문구는 두 렌더 경로에 재유입되지 않는다', () => {
+    render(
+      <RoutineStepItem
+        step={{
+          order: 1,
+          category: 'sunscreen',
+          name: '선크림',
+          purpose: '자외선 차단',
+          isOptional: false,
+          tips: ['강한 날만 2~3시간', '검지 한 마디 반', '30초 흡수'],
+        }}
+      />
+    );
+    fireEvent.click(screen.getByTestId('routine-step-item').querySelector('[role="button"]')!);
+    fireEvent.click(screen.getByText('어떻게 사용하나요?'));
+    expect(screen.getByTestId('routine-step-item').textContent).not.toMatch(
+      /강한 날만|한 마디|30초/
+    );
+    expect(screen.getByTestId('step-howto').textContent).toMatch(/야외.*2시간.*땀.*수영/);
+  });
   const baseStep: RoutineStep = {
     order: 1,
     category: 'cleanser',
@@ -69,13 +89,18 @@ describe('RoutineStepItem', () => {
       ...baseStep,
       specName: '약산성 클렌저',
       specReason: '약산성 세안은 피부 장벽을 덜 자극해요',
+      specClaimId: 'spec-cleanser',
+      specEvidence: 'established',
+      specSourceId: 'A1',
     };
     render(<RoutineStepItem step={stepWithSpec} />);
+    // 서버가 조립한 스펙명이 정본이다. 승인 claim 문구만 쓰면 피부 타입·시간대 변주가
+    // 사라지고 모바일(specName 그대로 렌더)과 표기가 갈린다.
     expect(screen.getByText('약산성 클렌저')).toBeInTheDocument();
     // 일반 명칭("클렌저")은 스펙명으로 대체됨
     expect(screen.queryByText('클렌저')).not.toBeInTheDocument();
     expect(screen.getByTestId('routine-step-spec-reason')).toHaveTextContent(
-      '약산성 세안은 피부 장벽을 덜 자극해요'
+      'pH만으로 저자극을 보장하지 않아요'
     );
   });
 
@@ -108,8 +133,9 @@ describe('RoutineStepItem', () => {
     // 클릭하면 확장
     fireEvent.click(screen.getByTestId('routine-step-item').querySelector('[role="button"]')!);
 
-    expect(screen.getByText('미온수 사용')).toBeInTheDocument();
-    expect(screen.getByText('거품 충분히 내기')).toBeInTheDocument();
+    expect(screen.queryByText('미온수 사용')).not.toBeInTheDocument();
+    expect(screen.queryByText('거품 충분히 내기')).not.toBeInTheDocument();
+    expect(screen.getByText('세안할 때 세게 문지르지 않는 것을 권장해요.')).toBeInTheDocument();
   });
 
   it('shows "사용 팁" label when expanded', () => {
@@ -203,12 +229,12 @@ describe('RoutineStepItem', () => {
     // 1) 스텝 아이템 확장
     fireEvent.click(screen.getByTestId('routine-step-item').querySelector('[role="button"]')!);
     // 2) "어떻게 하나요?" 접이식 열기
-    fireEvent.click(screen.getByText('어떻게 하나요?'));
+    fireEvent.click(screen.getByText('어떻게 사용하나요?'));
 
     const howTo = screen.getByTestId('step-howto');
     expect(howTo).toBeInTheDocument();
     // 클렌저 적당량("동전")·미온수 방법이 나온다
-    expect(howTo.textContent).toContain('동전');
+    expect(howTo.textContent).toContain('제품 라벨');
     expect(howTo.textContent).toContain('미온수');
   });
 
@@ -218,7 +244,7 @@ describe('RoutineStepItem', () => {
 
     // 사용법 때문에 확장 버튼이 존재
     fireEvent.click(screen.getByTestId('routine-step-item').querySelector('[role="button"]')!);
-    fireEvent.click(screen.getByText('어떻게 하나요?'));
+    fireEvent.click(screen.getByText('어떻게 사용하나요?'));
     expect(screen.getByTestId('step-howto')).toBeInTheDocument();
   });
 });

@@ -24,7 +24,9 @@ import {
   getCycleChange,
   detectOwnedActives,
   mergeGoalsIntoConcerns,
+  isRecommendationAllowed,
 } from '@/lib/skincare';
+import type { RoutineSafetyProfile } from '@/lib/safety';
 import type {
   TodaySkinCondition,
   EveningCycle,
@@ -156,7 +158,12 @@ export async function generateDailyCapsule(userId: string): Promise<DailyCapsule
 
   // 피부 루틴 = 정본 루틴 엔진(lib/skincare)에서 파생 — 아침/저녁 필수 스텝 + 피부타입 개인화.
   // 먼저 push해야 아침 그룹에서 스킨케어 → 메이크업 → 코디 순서가 됨 (정렬은 timeOfDay만 봄).
-  dailyItems.push(...buildSkinRoutineItems(profile, { eveningFocus }));
+  // 성분 힌트도 안전 문맥을 받아야 한다. 문진 전/주의 상태에 '레티놀 성분 권장'이
+  // 오전 토너·크림 아이템에 붙던 잔존 경로를 닫는다.
+  const skinSafetyProfile = await getSafetyProfileSafely(userId);
+  dailyItems.push(
+    ...buildSkinRoutineItems(profile, { eveningFocus, safetyProfile: skinSafetyProfile })
+  );
 
   for (const engine of domains) {
     // 제외 사유는 DAILY_EXCLUDED_DOMAINS 정의 주석 참조 (PC = 행동 없음, skin = 루틴 엔진 파생)
@@ -570,6 +577,16 @@ async function applySafetyFilter(userId: string, items: DailyItem[]): Promise<Da
   }
 }
 
+/** 안전 프로필 조회 실패를 '해당 없음'으로 추측하지 않는다(실패 시 null = 미문진 취급). */
+async function getSafetyProfileSafely(userId: string): Promise<RoutineSafetyProfile | null> {
+  try {
+    const { getSafetyProfile } = await import('@/lib/safety');
+    return await getSafetyProfile(userId);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * 피부 데일리 아이템 — 정본 루틴 엔진(lib/skincare generateRoutine) 파생
  *
@@ -587,7 +604,7 @@ function buildSkinRoutineItems(
       userGoals?: SkinGoalId[];
     };
   },
-  opts?: { eveningFocus?: EveningCycle }
+  opts?: { eveningFocus?: EveningCycle; safetyProfile?: RoutineSafetyProfile | null }
 ): DailyItem[] {
   // 피부 분석이 없는 사용자는 피부 루틴 없음 (다른 축은 정상 생성)
   if (!profile.skin?.type) return [];
@@ -644,10 +661,17 @@ function buildSkinRoutineItems(
     adjustedRoutine.forEach((step, index) => {
       // 초보자용 하우투: 팁 2개까지 노출 (제형 선택 + 바르는 방법이 함께 담기도록)
       const tip = step.tips?.slice(0, 2).filter(Boolean).join(' · ') || undefined;
+      // 성분 힌트는 시간대·문진을 통과한 성분만 남긴다(오전 레티놀 차단 포함).
+      const safeIngredients = ingredients.filter((ingredient) =>
+        isRecommendationAllowed(ingredient, {
+          safetyProfile: opts?.safetyProfile ?? null,
+          timeOfDay,
+        })
+      );
       const ingredientHint =
         (step.category === 'cream' || step.category === 'serum' || step.category === 'toner') &&
-        ingredients.length > 0
-          ? `${ingredients.slice(0, 2).join('·')} 성분 권장`
+        safeIngredients.length > 0
+          ? `${safeIngredients.slice(0, 2).join('·')} 성분 권장`
           : undefined;
       const solution = [tip, ingredientHint].filter(Boolean).join(' · ') || undefined;
 

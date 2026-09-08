@@ -218,6 +218,7 @@ function useCoachState(
         const assistantMessage: CoachMessage = {
           id: `assistant-${Date.now()}`,
           role: 'assistant',
+          ...response,
           content: response.message,
           timestamp: new Date(),
         };
@@ -230,7 +231,8 @@ function useCoachState(
             sessionId,
             'assistant',
             response.message,
-            response.suggestedQuestions
+            response.suggestedQuestions,
+            response
           );
         }
 
@@ -245,6 +247,7 @@ function useCoachState(
         const fallbackMessage: CoachMessage = {
           id: `assistant-${Date.now()}`,
           role: 'assistant',
+          ...fallbackResponse,
           content: fallbackResponse.message,
           timestamp: new Date(),
         };

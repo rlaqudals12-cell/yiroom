@@ -12,6 +12,11 @@ import type { DetailedZoneId } from '@/types/skin-zones';
 import { DETAILED_ZONE_LABELS } from '@/types/skin-zones';
 import type { ZoneMetricsV2 } from './types';
 import { analyzeDetailedZoneConcerns } from './twelve-zone-extractor';
+import {
+  allowsActiveRecommendations,
+  isRecommendationAllowed,
+  type RecommendationSafetyContext,
+} from '@/lib/skincare/recommendation-safety';
 
 // =============================================================================
 // 타입
@@ -167,7 +172,21 @@ function determinePriority(score: number): 'high' | 'medium' | 'low' {
 /**
  * 관심사에 대한 추천 제품 생성
  */
-function getProductsForConcerns(zoneId: DetailedZoneId, concerns: string[]): RecommendedProduct[] {
+function getProductsForConcerns(
+  zoneId: DetailedZoneId,
+  concerns: string[],
+  context: RecommendationSafetyContext
+): RecommendedProduct[] {
+  // 미문진/주의 상태의 사진 관찰을 활성 성분 개인추천으로 확대하지 않는다.
+  if (!allowsActiveRecommendations(context))
+    return [
+      {
+        category: '일반 보습 관리',
+        concern: concerns.join(', '),
+        description:
+          '제품 성분과 안전 상태를 확인하기 전에는 일반 세안·보습·자외선 차단 관리만 안내해요.',
+      },
+    ];
   const products: RecommendedProduct[] = [];
 
   for (const concern of concerns) {
@@ -175,6 +194,7 @@ function getProductsForConcerns(zoneId: DetailedZoneId, concerns: string[]): Rec
     if (!mappings) continue;
 
     for (const mapping of mappings) {
+      if (!isRecommendationAllowed(mapping.category + ' ' + mapping.description, context)) continue;
       // 중복 카테고리 방지
       if (products.some((p) => p.category === mapping.category)) continue;
 
@@ -204,7 +224,8 @@ function getProductsForConcerns(zoneId: DetailedZoneId, concerns: string[]): Rec
  */
 export function generateZoneProductRecommendations(
   zoneScores: Record<DetailedZoneId, number>,
-  zoneMetrics: Record<DetailedZoneId, ZoneMetricsV2>
+  zoneMetrics: Record<DetailedZoneId, ZoneMetricsV2>,
+  context: RecommendationSafetyContext = {}
 ): ZoneProductRecommendation[] {
   const recommendations: ZoneProductRecommendation[] = [];
 
@@ -222,7 +243,7 @@ export function generateZoneProductRecommendations(
     if (concerns.length === 0) continue;
 
     const priority = determinePriority(score);
-    const products = getProductsForConcerns(zoneId, concerns);
+    const products = getProductsForConcerns(zoneId, concerns, context);
 
     // 추천 제품이 있는 경우만 포함
     if (products.length === 0) continue;

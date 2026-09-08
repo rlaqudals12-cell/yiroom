@@ -137,7 +137,8 @@ export const rateLimitConfigs: Record<string, RateLimitConfig> = {
   '/api/analyze': { windowMs: 60 * 1000, maxRequests: 10, dailyMaxRequests: 50 },
   '/api/gemini': { windowMs: 60 * 1000, maxRequests: 10, dailyMaxRequests: 50 },
   '/api/chat': { windowMs: 60 * 1000, maxRequests: 30, dailyMaxRequests: 200 },
-  '/api/coach': { windowMs: 60 * 1000, maxRequests: 30, dailyMaxRequests: 200 },
+  // 코치 모델 턴의 일20/월100은 coach-turn-quota에서만 예약한다.
+  '/api/coach': { windowMs: 60 * 1000, maxRequests: 30 },
 
   // 영양/운동 API - 분당 30회
   '/api/nutrition': { windowMs: 60 * 1000, maxRequests: 30 },

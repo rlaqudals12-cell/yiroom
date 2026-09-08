@@ -37,8 +37,25 @@ vi.mock('@/components/coach/ChatHistoryPanel', () => ({
 
 // 메시지 버블은 content만 노출(role별 testid)해 최종 확정 텍스트를 검증
 vi.mock('@/components/coach/MessageBubble', () => ({
-  MessageBubble: ({ message }: { message: { role: string; content: string } }) => (
-    <div data-testid={`msg-${message.role}`}>{message.content}</div>
+  MessageBubble: ({
+    message,
+  }: {
+    message: {
+      role: string;
+      content: string;
+      usedFallback?: boolean;
+      confidence?: string;
+      fallbackReason?: string;
+    };
+  }) => (
+    <div
+      data-testid={`msg-${message.role}`}
+      data-fallback={String(message.usedFallback)}
+      data-confidence={message.confidence}
+      data-reason={message.fallbackReason}
+    >
+      {message.content}
+    </div>
   ),
 }));
 
@@ -148,4 +165,38 @@ describe('ChatInterface 스트리밍 처리', () => {
       expect(screen.getByTestId('msg-assistant')).toHaveTextContent('정상 응답이에요.');
     });
   });
+});
+
+it('preserves metadata even when SSE frames split across network reads', async () => {
+  const text =
+    'data: ' +
+    JSON.stringify({ type: 'chunk', content: '일반 안내' }) +
+    '\n\ndata: ' +
+    JSON.stringify({
+      type: 'done',
+      usedFallback: true,
+      confidence: 'low',
+      fallbackReason: 'timeout',
+    }) +
+    '\n\n';
+  const bytes = new TextEncoder().encode(text);
+  global.fetch = vi.fn().mockResolvedValue(
+    new Response(
+      new ReadableStream({
+        start(controller) {
+          for (let i = 0; i < bytes.length; i += 7) controller.enqueue(bytes.slice(i, i + 7));
+          controller.close();
+        },
+      })
+    )
+  );
+  const { container } = render(
+    <ChatInterface userContext={null} onSendMessage={noop} useStreaming />
+  );
+  sendMessage(container, '보습');
+  await waitFor(() =>
+    expect(screen.getByTestId('msg-assistant')).toHaveAttribute('data-reason', 'timeout')
+  );
+  expect(screen.getByTestId('msg-assistant')).toHaveAttribute('data-fallback', 'true');
+  expect(screen.getByTestId('msg-assistant')).toHaveAttribute('data-confidence', 'low');
 });

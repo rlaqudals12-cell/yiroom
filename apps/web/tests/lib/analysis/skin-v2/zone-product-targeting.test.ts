@@ -4,11 +4,19 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  generateZoneProductRecommendations,
+  generateZoneProductRecommendations as generateRecommendations,
   getZoneApplicationTip,
 } from '@/lib/analysis/skin-v2/zone-product-targeting';
 import type { DetailedZoneId } from '@/types/skin-zones';
 import type { ZoneMetricsV2 } from '@/lib/analysis/skin-v2/types';
+const assessed = {
+  safetyProfile: { consentGiven: true, conditions: [], medications: [] },
+  timeOfDay: 'evening' as const,
+};
+const generateZoneProductRecommendations = (
+  ...args: Parameters<typeof generateRecommendations>
+): ReturnType<typeof generateRecommendations> =>
+  generateRecommendations(args[0], args[1], args[2] ?? assessed);
 
 // =============================================================================
 // 헬퍼
@@ -118,6 +126,32 @@ function makeAllZones(
 // =============================================================================
 
 describe('generateZoneProductRecommendations', () => {
+  it.each([
+    undefined,
+    { ...assessed.safetyProfile, conditions: ['pregnancy'] },
+    { ...assessed.safetyProfile, conditions: ['breastfeeding'] },
+    { ...assessed.safetyProfile, medications: ['isotretinoin'] },
+  ])('12존 미문진/주의 상태 %j 에서 일반 관리만 제공한다', (safetyProfile) => {
+    const { scores, metrics } = makeAllZones(severeMetrics(), 25);
+    const result = generateRecommendations(scores, metrics, {
+      safetyProfile,
+      timeOfDay: 'evening',
+    });
+    expect(result).toHaveLength(12);
+    for (const zone of result) {
+      expect(zone.products).toHaveLength(1);
+      expect(zone.products[0].category).toBe('일반 보습 관리');
+      expect(JSON.stringify(zone.products)).not.toMatch(/레티놀|BHA|AHA|살리실/);
+    }
+  });
+
+  it('12존 오전 추천에 레티놀 크림이 없다', () => {
+    const { scores, metrics } = makeAllZones({ ...healthyMetrics(), elasticity: 20 }, 40);
+    const morning = generateRecommendations(scores, metrics, { ...assessed, timeOfDay: 'morning' });
+    const evening = generateRecommendations(scores, metrics, assessed);
+    expect(JSON.stringify(morning)).not.toContain('레티놀');
+    expect(JSON.stringify(evening)).toContain('레티놀');
+  });
   it('건강한 존은 추천을 생성하지 않는다', () => {
     const { scores, metrics } = makeAllZones(healthyMetrics(), 85);
     const result = generateZoneProductRecommendations(scores, metrics);

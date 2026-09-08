@@ -12,6 +12,7 @@ import {
   RATE_LIMIT_HEADERS,
 } from '@/types/rate-limit';
 import { getMinuteLimiter, getDailyLimiter, isUpstashAvailable } from './upstash';
+import { isCoachTurnPath } from '../security/coach-policy';
 
 /**
  * 경로에서 Rate Limit 카테고리 추출
@@ -33,8 +34,10 @@ export function getRateLimitCategory(pathname: string): RateLimitCategory {
   // /api/upload는 존재하지 않는 경로다(스펙 잔재). 실제 업로드 라우트인
   // /api/inventory/upload가 여기 걸리지 않아 default(100/분) 버킷으로 새던 것을 수리.
   if (/^\/api\/(upload|inventory\/upload)/.test(pathname)) return 'upload';
-  // 제품 Q&A는 Gemini 대화형이므로 coach 버킷(일일 한도 적용)으로 분류
-  if (/^\/api\/(coach|chat)/.test(pathname) || pathname === '/api/products/qa') return 'coach';
+  // 코치 턴 경로는 별도 카테고리로 두어, 요청 버스트는 막되
+  // 일일 상한이 모델 턴 한도(일 20)와 혼동되지 않게 한다.
+  if (isCoachTurnPath(pathname)) return 'coachTurn';
+  if (/^\/api\/chat/.test(pathname) || pathname === '/api/products/qa') return 'coach';
   if (/^\/api\/feedback/.test(pathname)) return 'feedback';
   if (/^\/api\/nutrition/.test(pathname)) return 'nutrition';
   if (/^\/api\/workout/.test(pathname)) return 'workout';
@@ -167,6 +170,10 @@ export async function checkRateLimit(
  * @param pathname URL 경로
  */
 export function isRateLimitedPath(pathname: string): boolean {
+  // 코치 턴 경로도 요청 제한 대상이다.
+  // 요청 제한(분당 버스트·일일 요청)과 모델 턴 예약(일 20/월 100)은 **다른 축**이다.
+  // 전자는 인증 사용자가 RAG·DB 조회를 무한히 태우는 것을 막고,
+  // 후자는 실제 모델 호출 비용을 막는다. 하나가 다른 하나를 대신하지 못한다.
   // API 경로만 Rate Limit 적용
   if (!pathname.startsWith('/api')) {
     return false;

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Send,
   Loader2,
@@ -32,7 +32,12 @@ interface ChatInterfaceProps {
   onSendMessage: (
     message: string,
     history: CoachMessage[]
-  ) => Promise<{ message: string; suggestedQuestions?: string[] }>;
+  ) => Promise<
+    { message: string; suggestedQuestions?: string[] } & Pick<
+      CoachMessage,
+      'usedFallback' | 'confidence' | 'fallbackReason'
+    >
+  >;
   /** 스트리밍 응답 사용 여부 (기본: false) */
   useStreaming?: boolean;
   /** 진입 시 자동 전송할 질문 (분석 결과 CTA의 ?q= 배선) */
@@ -50,7 +55,10 @@ const GENERAL_QUESTION_ICONS: Record<string, LucideIcon> = {
 };
 
 // SSE 이벤트 페이로드 — 서버(app/api/coach/stream)가 보내는 4종 이벤트
-interface CoachStreamEvent {
+interface CoachStreamEvent extends Pick<
+  CoachMessage,
+  'usedFallback' | 'confidence' | 'fallbackReason'
+> {
   type?: 'chunk' | 'replace' | 'done' | 'error';
   content?: string;
   message?: string;
@@ -77,6 +85,7 @@ export function ChatInterface({
   initialCategory,
 }: ChatInterfaceProps) {
   const t = useTranslations('coach');
+  const locale = useLocale();
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -124,6 +133,7 @@ export function ChatInterface({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: messageText,
+            locale,
             // 히스토리에서 이미지 dataURL은 제외 (본문 크기 폭증 방지 — 텍스트 맥락만)
             chatHistory: currentMessages.map(({ imageUrl: _omit, ...rest }) => rest),
             ...(imageBase64 ? { imageBase64 } : {}),
@@ -144,13 +154,16 @@ export function ChatInterface({
         const decoder = new TextDecoder();
         let accumulatedContent = '';
 
+        let pending = '';
         // SSE 이벤트 파싱 및 처리
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
+          pending += chunk;
+          const lines = pending.split('\n');
+          pending = lines.pop() ?? '';
 
           for (const line of lines) {
             if (!line.startsWith('data: ')) continue;
@@ -178,6 +191,9 @@ export function ChatInterface({
                 id: `assistant-${Date.now()}`,
                 role: 'assistant',
                 content: accumulatedContent,
+                usedFallback: data.usedFallback,
+                confidence: data.confidence,
+                fallbackReason: data.fallbackReason,
                 timestamp: new Date(),
               };
               setMessages((prev) => [...prev, assistantMessage]);
@@ -204,7 +220,7 @@ export function ChatInterface({
         throw error;
       }
     },
-    []
+    [locale]
   );
 
   // 메시지 전송
@@ -241,6 +257,7 @@ export function ChatInterface({
           const assistantMessage: CoachMessage = {
             id: `assistant-${Date.now()}`,
             role: 'assistant',
+            ...response,
             content: response.message,
             timestamp: new Date(),
           };
@@ -284,7 +301,8 @@ export function ChatInterface({
       if (!res.ok) return;
       const data = await res.json();
       const loaded: CoachMessage[] = (data.session?.messages ?? data.messages ?? []).map(
-        (m: { id: string; role: 'user' | 'assistant'; content: string; timestamp?: string }) => ({
+        (m: Omit<CoachMessage, 'timestamp'> & { timestamp?: string }) => ({
+          ...m,
           id: m.id,
           role: m.role,
           content: m.content,

@@ -4,6 +4,7 @@
  * English remains disabled for users until the complete first-user journey passes language QA.
  */
 const en = {
+  coach: { fallbackBadge: 'General guidance · Low confidence' },
   common: {
     translationUnavailable: 'We could not load this text. Please try again shortly.',
     close: 'Close',

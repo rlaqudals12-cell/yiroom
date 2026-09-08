@@ -51,6 +51,41 @@ describe('Gemini Client Adapter', () => {
   });
 
   describe('generateContent', () => {
+    it('코치 config와 abortSignal을 전달하고 실제 usage와 모델 버전을 보존한다', async () => {
+      const { generateContent } = await import('@/lib/gemini/client');
+      const signal = new AbortController().signal;
+      const usage = {
+        promptTokenCount: 120,
+        candidatesTokenCount: 35,
+        cachedContentTokenCount: 50,
+        totalTokenCount: 155,
+      };
+      mockGenerateContent.mockResolvedValue({
+        text: '답변',
+        modelVersion: 'gemini-3.5-flash-001',
+        usageMetadata: usage,
+      });
+      const result = await generateContent({
+        model: 'gemini-3.5-flash',
+        contents: '질문',
+        config: {
+          thinkingConfig: { thinkingLevel: 'minimal' },
+          maxOutputTokens: 250,
+          abortSignal: signal,
+        },
+      });
+      expect(mockGenerateContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'gemini-3.5-flash',
+          config: expect.objectContaining({
+            thinkingConfig: { thinkingLevel: 'minimal' },
+            maxOutputTokens: 250,
+            abortSignal: signal,
+          }),
+        })
+      );
+      expect(result).toEqual({ text: '답변', modelVersion: 'gemini-3.5-flash-001', usage });
+    });
     it('판정 모델 상수는 환경 오버라이드와 무관하게 버전이 고정된다', async () => {
       process.env.GEMINI_MODEL_FAST = 'latest';
       const { FAST_MODEL, PINNED_VERDICT_MODEL } = await import('@/lib/gemini/client');

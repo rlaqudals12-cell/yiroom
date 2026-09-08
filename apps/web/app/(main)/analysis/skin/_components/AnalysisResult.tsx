@@ -584,7 +584,12 @@ export default function AnalysisResult({
       {/* 12존 피부 분석 요약 (T4.5.8) */}
       {Object.keys(twelveZoneScores).length > 0 && (
         <ProgressiveDisclosure title="12존 상세 요약" summary="이마·코·볼·턱 부위별 세부 점수">
-          <TwelveZoneSummary zoneScores={twelveZoneScores} zoneMetrics={twelveZoneMetrics} />
+          {/* 분석 결과 화면은 안전 문진을 조회하지 않으므로 일반 관리만 제공한다. 문진 기반 개인 루틴은 루틴 화면에서 조립한다. */}
+          <TwelveZoneSummary
+            zoneScores={twelveZoneScores}
+            zoneMetrics={twelveZoneMetrics}
+            safetyContext={{ safetyProfile: null }}
+          />
         </ProgressiveDisclosure>
       )}
 

@@ -20,6 +20,11 @@ import { supabase } from '@/lib/supabase/client';
 import type { AffiliateProduct } from '@/types/affiliate';
 import type { SkinTypeId, SkinConcernId } from '@/lib/mock/skin-analysis';
 import type { ProductCategory } from '@/types/skincare-routine';
+import {
+  allowsActiveRecommendations,
+  isRecommendationAllowed,
+  type RecommendationSafetyContext,
+} from './recommendation-safety';
 
 // 루틴 스텝 카테고리 → cosmetic_products.category (실DB 값, 2026-07-10 검증)
 // oil/spot_treatment은 대응 DB 카테고리가 없어 미연결(빈 배열 반환 = 결손 슬롯, 정직).
@@ -35,6 +40,12 @@ const ROUTINE_CATEGORY_TO_DB: Partial<Record<ProductCategory, string>> = {
   eye_cream: 'eye_cream',
 };
 
+/**
+ * 활성 성분(레티노이드·AHA/BHA·고농도 비타민C)이 주력인 카테고리.
+ * 안전 문진 전에는 이 카테고리의 개인 추천을 보류한다.
+ */
+const ACTIVE_FIRST_CATEGORIES = new Set<ProductCategory>(['serum', 'ampoule']);
+
 /** 선별에 필요한 최소 컬럼 */
 interface CosmeticRoutineRow {
   id: string;
@@ -46,6 +57,7 @@ interface CosmeticRoutineRow {
   rating: number | null;
   skin_types: string[] | null;
   concerns: string[] | null;
+  key_ingredients?: string[] | null;
 }
 
 /** cosmetic_products Row → RoutineStep.recommendedProducts가 기대하는 AffiliateProduct 형태 */
@@ -84,15 +96,23 @@ export async function getRoutineProductsByCategory(
   category: ProductCategory,
   skinType: SkinTypeId,
   concerns: SkinConcernId[],
-  limit = 3
+  limit = 3,
+  context: RecommendationSafetyContext = {}
 ): Promise<AffiliateProduct[]> {
   const dbCategory = ROUTINE_CATEGORY_TO_DB[category];
   if (!dbCategory) return [];
+  // 문진 미완료/주의 상태에는 **활성 성분 중심 카테고리**의 개인 추천만 보류한다.
+  // 클렌저·토너·크림·선크림 같은 일반 관리 카테고리까지 비우면
+  // 문진 전 사용자에게 루틴 제품이 통째로 사라진다(H-2 정본이 금지하는 무단 축소).
+  // 성분 수준 안전은 아래 isRecommendationAllowed 필터가 개별 제품마다 다시 본다.
+  if (ACTIVE_FIRST_CATEGORIES.has(category) && !allowsActiveRecommendations(context)) return [];
 
   // 카테고리 일괄 조회(평점순 풀 확보) 후 코드에서 적합도 정렬 — 캡슐 solution-products와 동일 철학
   const { data, error } = await supabase
     .from('cosmetic_products')
-    .select('id, name, brand, category, price_krw, image_url, rating, skin_types, concerns')
+    .select(
+      'id, name, brand, category, price_krw, image_url, rating, skin_types, concerns, key_ingredients'
+    )
     .eq('is_active', true)
     .eq('category', dbCategory)
     .order('rating', { ascending: false, nullsFirst: false })
@@ -102,6 +122,9 @@ export async function getRoutineProductsByCategory(
   const rows = data as CosmeticRoutineRow[];
 
   const scored = rows
+    .filter((row) =>
+      isRecommendationAllowed([row.name, ...(row.key_ingredients ?? [])].join(' '), context)
+    )
     .map((row) => {
       // 적합도: 평점 기반 + 프로필 일치 가산 + 가격 접근성(타겟 10-30대 데일리 실행 맥락)
       let score = (row.rating ?? 0) * 10;

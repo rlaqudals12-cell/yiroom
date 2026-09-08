@@ -4,12 +4,11 @@
  */
 
 import { isFeatureEnabled } from '@yiroom/shared';
-import {
-  generateContent,
-  generateContentStream,
-  isGeminiAvailable,
-  formatImageForGemini,
-} from '@/lib/gemini/client';
+import { generateContent, isGeminiAvailable, formatImageForGemini } from '@/lib/gemini/client';
+import { reserveCoachTurn, settleCoachTurn } from '@/lib/security';
+import { PINNED_VERDICT_MODEL } from '@/lib/gemini/model-contract';
+import type { OutputLocale, GeminiResponse } from '@/lib/gemini/client';
+import { detectQuestionCategory, isHiddenCoachContent } from './intent';
 import { coachLogger } from '@/lib/utils/logger';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
 import type { UserContext } from './context';
@@ -31,6 +30,9 @@ export interface CoachMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  usedFallback?: boolean;
+  confidence?: 'normal' | 'low';
+  fallbackReason?: 'model_unavailable' | 'timeout' | 'error';
 }
 
 /**
@@ -48,6 +50,8 @@ export interface CoachChatRequest {
    * 없으면 개인 옷장 검색을 건너뛴다 (기존 요청 계약 하위호환).
    */
   userId?: string;
+  locale?: OutputLocale;
+  signal?: AbortSignal;
 }
 
 /**
@@ -56,6 +60,9 @@ export interface CoachChatRequest {
 export interface CoachChatResponse {
   message: string;
   suggestedQuestions?: string[];
+  usedFallback: boolean;
+  confidence: 'normal' | 'low';
+  fallbackReason?: 'model_unavailable' | 'timeout' | 'error';
 }
 
 // 위기 감지는 공유 모듈 사용 (Coach, Chat 공통)
@@ -63,17 +70,22 @@ import { detectCrisis, CRISIS_RESPONSE_MESSAGE } from '@/lib/safety';
 
 const CRISIS_RESPONSE: CoachChatResponse = {
   message: CRISIS_RESPONSE_MESSAGE,
+  usedFallback: false,
+  confidence: 'normal',
   suggestedQuestions: [],
 };
 
 /**
  * Fallback 응답 (AI 실패 시)
  */
+const SCOPE_MESSAGE =
+  '피부·퍼스널컬러·체형·헤어·메이크업과 스타일링을 도와드리고 있어요. 궁금한 뷰티 질문을 알려주세요.';
+
+// 숨김 모듈(W-1 운동·N-1 영양)은 폴백 본문에서도 안내하지 않는다(ADR-098).
+// 해당 화면이 존재하지 않으므로 '운동 분석을 진행해보세요' 같은 유도는 갈 곳 없는 안내가 된다.
 const FALLBACK_RESPONSES: Record<string, string> = {
-  workout:
-    '운동에 관해 궁금하시군요! 일반적으로 주 3-4회 30분 이상의 운동을 권장해요. 구체적인 조언을 위해 운동 분석을 진행해보시는 건 어떨까요?',
-  nutrition:
-    '영양에 대한 질문이시네요! 균형 잡힌 식단과 충분한 수분 섭취가 중요해요. 더 맞춤화된 조언을 위해 영양 목표를 설정해보세요.',
+  workout: SCOPE_MESSAGE,
+  nutrition: SCOPE_MESSAGE,
   skin: '피부 관련 질문이시군요! 기본적으로 클렌징, 보습, 자외선 차단이 중요해요. 피부 분석 결과를 바탕으로 더 상세한 조언을 드릴 수 있어요.',
   // Phase K: 퍼스널 컬러 상담
   personalColor:
@@ -89,316 +101,6 @@ const FALLBACK_RESPONSES: Record<string, string> = {
   default:
     '좋은 질문이에요! 정확한 답변을 드리기 어려운 상황이에요. 잠시 후 다시 시도해주시거나, 더 구체적인 질문을 해주시면 도움이 될 거예요.',
 };
-
-/**
- * 질문 카테고리 타입
- */
-type QuestionCategory =
-  | 'workout'
-  | 'nutrition'
-  | 'skin'
-  | 'personalColor'
-  | 'fashion'
-  | 'hair'
-  | 'makeup'
-  | 'default';
-
-/**
- * 질문 카테고리 감지
- */
-function detectQuestionCategory(question: string): QuestionCategory {
-  const lowerQ = question.toLowerCase();
-
-  // Phase K: 퍼스널 컬러 관련 (패션보다 우선)
-  if (
-    lowerQ.includes('퍼스널컬러') ||
-    lowerQ.includes('퍼스널 컬러') ||
-    lowerQ.includes('웜톤') ||
-    lowerQ.includes('쿨톤') ||
-    lowerQ.includes('시즌') ||
-    (lowerQ.includes('어울리는') && lowerQ.includes('색'))
-  ) {
-    return 'personalColor';
-  }
-
-  // Phase K: 패션/코디 관련
-  if (
-    lowerQ.includes('옷') ||
-    lowerQ.includes('코디') ||
-    lowerQ.includes('스타일') ||
-    lowerQ.includes('패션') ||
-    (lowerQ.includes('뭐') && lowerQ.includes('입'))
-  ) {
-    return 'fashion';
-  }
-
-  if (
-    lowerQ.includes('운동') ||
-    lowerQ.includes('헬스') ||
-    lowerQ.includes('근육') ||
-    lowerQ.includes('스트레칭')
-  ) {
-    return 'workout';
-  }
-  if (
-    lowerQ.includes('먹') ||
-    lowerQ.includes('음식') ||
-    lowerQ.includes('칼로리') ||
-    lowerQ.includes('다이어트') ||
-    lowerQ.includes('단백질')
-  ) {
-    return 'nutrition';
-  }
-  if (
-    lowerQ.includes('피부') ||
-    lowerQ.includes('화장품') ||
-    lowerQ.includes('스킨케어') ||
-    lowerQ.includes('보습')
-  ) {
-    return 'skin';
-  }
-
-  // 헤어/두피 관련
-  if (
-    lowerQ.includes('머리') ||
-    lowerQ.includes('헤어') ||
-    lowerQ.includes('두피') ||
-    lowerQ.includes('탈모') ||
-    lowerQ.includes('샴푸')
-  ) {
-    return 'hair';
-  }
-
-  // 메이크업 관련
-  if (
-    lowerQ.includes('메이크업') ||
-    lowerQ.includes('화장') ||
-    lowerQ.includes('립') ||
-    lowerQ.includes('파운데이션') ||
-    lowerQ.includes('아이섀도')
-  ) {
-    return 'makeup';
-  }
-
-  return 'default';
-}
-
-/**
- * 피부 상담 질문인지 확인 (Phase D)
- */
-function isSkinConsultationQuestion(question: string): boolean {
-  const lowerQ = question.toLowerCase();
-
-  // 피부 고민 상담 키워드
-  const skinConcernKeywords = [
-    '피부',
-    '트러블',
-    '여드름',
-    '건조',
-    '지성',
-    '민감',
-    '주름',
-    '모공',
-    '홍조',
-    '각질',
-    '잡티',
-    '다크서클',
-    '탄력',
-    '미백',
-    '보습',
-  ];
-
-  // 스킨케어/루틴 키워드
-  const routineKeywords = ['스킨케어', '루틴', '클렌징', '세안', '토너', '세럼', '크림', '선크림'];
-
-  // 성분 관련 키워드
-  const ingredientKeywords = [
-    '레티놀',
-    '비타민',
-    '나이아신',
-    '히알루론',
-    '세라마이드',
-    'aha',
-    'bha',
-  ];
-
-  return (
-    skinConcernKeywords.some((kw) => lowerQ.includes(kw)) ||
-    routineKeywords.some((kw) => lowerQ.includes(kw)) ||
-    ingredientKeywords.some((kw) => lowerQ.includes(kw))
-  );
-}
-
-/**
- * 퍼스널 컬러 상담 질문인지 확인 (Phase K)
- */
-function isPersonalColorQuestion(question: string): boolean {
-  const lowerQ = question.toLowerCase();
-
-  const personalColorKeywords = [
-    '퍼스널컬러',
-    '퍼스널 컬러',
-    '웜톤',
-    '쿨톤',
-    '시즌',
-    '어울리는 색',
-    '안 어울리는 색',
-    '립 색상',
-    '염색',
-    '헤어 컬러',
-    '색 조합',
-  ];
-
-  return personalColorKeywords.some((kw) => lowerQ.includes(kw));
-}
-
-/**
- * 패션 상담 질문인지 확인 (Phase K)
- */
-function isFashionQuestion(question: string): boolean {
-  const lowerQ = question.toLowerCase();
-
-  const fashionKeywords = [
-    '옷',
-    '코디',
-    '스타일',
-    '패션',
-    '입',
-    '면접룩',
-    '데이트룩',
-    '출근룩',
-    '옷장',
-    '상의',
-    '하의',
-    '아우터',
-  ];
-
-  return fashionKeywords.some((kw) => lowerQ.includes(kw));
-}
-
-/**
- * 영양/레시피 상담 질문인지 확인 (Phase K)
- */
-function isNutritionQuestion(question: string): boolean {
-  const lowerQ = question.toLowerCase();
-
-  const nutritionKeywords = [
-    '레시피',
-    '요리',
-    '만들',
-    '냉장고',
-    '식재료',
-    '유통기한',
-    '밥',
-    '식사',
-    '점심',
-    '저녁',
-    '아침',
-    '간식',
-    '야식',
-    '다이어트',
-    '벌크업',
-    '식단',
-    '칼로리',
-    '단백질',
-  ];
-
-  return nutritionKeywords.some((kw) => lowerQ.includes(kw));
-}
-
-/**
- * 운동 상담 질문인지 확인 (Phase K)
- */
-function isWorkoutQuestion(question: string): boolean {
-  const lowerQ = question.toLowerCase();
-
-  const workoutKeywords = [
-    '운동',
-    '헬스',
-    '근육',
-    '스트레칭',
-    '웨이트',
-    '런닝',
-    '유산소',
-    '홈트',
-    '맨몸',
-    '스쿼트',
-    '플랭크',
-    '덤벨',
-    '요가',
-    '필라테스',
-    '살빼',
-    '체력',
-  ];
-
-  return workoutKeywords.some((kw) => lowerQ.includes(kw));
-}
-
-/**
- * 헤어/두피 상담 질문인지 확인
- */
-function isHairQuestion(question: string): boolean {
-  const lowerQ = question.toLowerCase();
-
-  const hairKeywords = [
-    '헤어',
-    '머리',
-    '두피',
-    '탈모',
-    '비듬',
-    '모발',
-    '머릿결',
-    '샴푸',
-    '컨디셔너',
-    '트리트먼트',
-    '헤어팩',
-    '두피케어',
-    '염색',
-    '펌',
-    '볼륨',
-    '손상모',
-    '건조모',
-    '지성두피',
-    '비오틴',
-    '케라틴',
-  ];
-
-  return hairKeywords.some((kw) => lowerQ.includes(kw));
-}
-
-/**
- * 메이크업 상담 질문인지 확인
- */
-function isMakeupQuestion(question: string): boolean {
-  const lowerQ = question.toLowerCase();
-
-  const makeupKeywords = [
-    '메이크업',
-    '화장',
-    '립스틱',
-    '립',
-    '틴트',
-    '립글로스',
-    '파운데이션',
-    '쿠션',
-    'bb크림',
-    'cc크림',
-    '아이섀도',
-    '아이라이너',
-    '마스카라',
-    '블러셔',
-    '하이라이터',
-    '컨투어링',
-    '셰이딩',
-    '컨실러',
-    '프라이머',
-    '세팅파우더',
-    '브로우',
-    '눈썹',
-  ];
-
-  return makeupKeywords.some((kw) => lowerQ.includes(kw));
-}
 
 /**
  * 제품 추천이 필요한 질문인지 확인
@@ -553,11 +255,11 @@ async function resolveRagContext(
   userContext: UserContext | null,
   userId?: string
 ): Promise<string> {
-  if (isPersonalColorQuestion(message)) {
+  if (detectQuestionCategory(message) === 'personalColor') {
     const colorMatch = await searchByPersonalColor(userContext, message);
     return formatPersonalColorForPrompt(colorMatch);
   }
-  if (isFashionQuestion(message)) {
+  if (detectQuestionCategory(message) === 'fashion') {
     // 옷장(user_inventory)은 뷰티 — WELLNESS_PHASE2와 무관하게 항상 유지.
     // userId가 있어야 실검색 — 없으면 일반 팁만 (지어내지 않음)
     const fashionResult = await searchFashionItems(userContext, message, userId);
@@ -566,117 +268,177 @@ async function resolveRagContext(
   // W-1 운동·N-1 영양 RAG는 숨김 모듈(ADR-098). 뷰티 전속 코치라 오프차터 도메인
   // 지식을 주입하지 않는다 — 게이팅 시 해당 질문은 아래 제품추천/빈 컨텍스트로 흐른다.
   // 플래그 재활성 시 복원(하드룰: 코드 유지).
-  if (isFeatureEnabled('WELLNESS_PHASE2') && isNutritionQuestion(message)) {
+  if (isFeatureEnabled('WELLNESS_PHASE2') && detectQuestionCategory(message) === 'nutrition') {
     const nutritionResult = await searchNutritionItems(userContext, message);
     return formatNutritionForPrompt(nutritionResult);
   }
-  if (isFeatureEnabled('WELLNESS_PHASE2') && isWorkoutQuestion(message)) {
+  if (isFeatureEnabled('WELLNESS_PHASE2') && detectQuestionCategory(message) === 'workout') {
     const workoutResult = await searchWorkoutItems(userContext, message);
     return formatWorkoutForPrompt(workoutResult);
   }
-  if (isSkinConsultationQuestion(message)) {
+  if (detectQuestionCategory(message) === 'skin') {
     const skinProducts = await searchSkinProducts(userContext, message);
     return formatSkinProductsForPrompt(skinProducts);
   }
-  if (isHairQuestion(message)) {
+  if (detectQuestionCategory(message) === 'hair') {
     const hairProducts = await searchHairProducts(userContext, message);
     return formatHairProductsForPrompt(hairProducts);
   }
-  if (isMakeupQuestion(message)) {
+  if (detectQuestionCategory(message) === 'makeup') {
     const makeupProducts = await searchMakeupProducts(userContext, message);
     return formatMakeupProductsForPrompt(makeupProducts);
   }
   const productType = needsProductRecommendation(message);
+  if (productType && productType !== 'cosmetic' && !isFeatureEnabled('WELLNESS_PHASE2')) return '';
   if (productType) {
     return searchRelatedProducts(productType, userContext);
   }
   return '';
 }
 
-/**
- * AI 코치 응답 생성
- */
+/** RAG와 모델이 같은 예산을 나눠 쓰므로 타이머는 한 번만 만든다. */
+export const COACH_DEADLINE_MS = 12_000;
+const BEAUTY_QUESTIONS = [
+  '스킨케어 루틴을 알려주세요',
+  '내 퍼스널컬러에 맞는 색은?',
+  '헤어 관리 방법을 알려주세요',
+];
+
+function fallbackResponse(
+  message: string,
+  reason: NonNullable<CoachChatResponse['fallbackReason']>
+): CoachChatResponse {
+  return {
+    message: FALLBACK_RESPONSES[detectQuestionCategory(message)],
+    suggestedQuestions: BEAUTY_QUESTIONS,
+    usedFallback: true,
+    confidence: 'low',
+    fallbackReason: reason,
+  };
+}
+
 export async function generateCoachResponse(request: CoachChatRequest): Promise<CoachChatResponse> {
-  const { message, userContext, chatHistory, userId } = request;
-
-  // 위기 상황 감지 — 즉시 전문 상담 안내
-  if (detectCrisis(message)) {
-    coachLogger.warn('Crisis detected in user message');
-    return CRISIS_RESPONSE;
-  }
-
-  // AI 서비스 사용 불가 시 Fallback
-  if (!isGeminiAvailable()) {
-    coachLogger.warn('Gemini not available, using fallback');
-    const category = detectQuestionCategory(message);
+  const { message, userContext, chatHistory, userId, imageBase64, locale = 'ko' } = request;
+  if (detectCrisis(message)) return CRISIS_RESPONSE;
+  if (isHiddenCoachContent(message))
     return {
-      message: FALLBACK_RESPONSES[category],
-      suggestedQuestions: [
-        '오늘 운동 뭐하면 좋을까요?',
-        '다이어트 간식 추천해줘',
-        '물 얼마나 마셔야 해요?',
-      ],
+      message: SCOPE_MESSAGE,
+      suggestedQuestions: BEAUTY_QUESTIONS,
+      usedFallback: false,
+      confidence: 'normal',
     };
-  }
-
+  if (!isGeminiAvailable()) return fallbackResponse(message, 'model_unavailable');
+  // 인증된 서버 사용자 없이 호출 예산을 우회할 수 없도록 경계에서도 닫는다.
+  if (!userId) return fallbackResponse(message, 'error');
+  const controller = new AbortController();
+  const abort = (): void => controller.abort();
+  request.signal?.addEventListener('abort', abort, { once: true });
+  if (request.signal?.aborted) controller.abort();
+  const timer = setTimeout(abort, COACH_DEADLINE_MS);
+  let reservation: Awaited<ReturnType<typeof reserveCoachTurn>> | undefined;
+  let modelCalled = false;
+  let result: GeminiResponse | undefined;
+  let rejectDeadline: (() => void) | undefined;
+  const expired = new Promise<never>((_, reject) => {
+    rejectDeadline = () => reject(new Error('Coach deadline exceeded'));
+    controller.signal.addEventListener('abort', rejectDeadline, { once: true });
+    if (controller.signal.aborted) rejectDeadline();
+  });
   try {
-    // 시스템 프롬프트 구성
-    const systemPrompt = buildCoachSystemPrompt(userContext);
-    const questionHint = getQuestionHint(message);
-    const historySection = formatChatHistory(chatHistory || []);
-
-    // RAG: 도메인별 RAG 검색
-    const ragContext = await resolveRagContext(message, userContext, userId);
-
-    const fullPrompt = `${systemPrompt}${historySection}${ragContext}
-
-${questionHint ? `참고: ${questionHint}\n` : ''}
+    const work = async (): Promise<CoachChatResponse> => {
+      const ragContext = await resolveRagContext(message, userContext, userId);
+      if (controller.signal.aborted) throw new Error('Coach deadline exceeded');
+      const prompt = `${buildCoachSystemPrompt(userContext, locale)}${formatChatHistory(chatHistory || [])}${ragContext}
+${getQuestionHint(message)}
 ## 사용자 질문
-"${message}"
-
-위 질문에 대해 200자 이내로 친근하고 간결하게 답변해주세요.${ragContext ? ' 추천 제품 정보가 있다면 활용해서 구체적으로 추천해주세요.' : ''}`;
-
-    // Gemini 호출 (타임아웃 3초)
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), 3000);
-    });
-
-    const resultPromise = generateContent({ contents: fullPrompt });
-    const result = await Promise.race([resultPromise, timeoutPromise]);
-    const text = result.text;
-
-    // 환각/안전성 필터링
-    const filterResult = filterCoachResponse(text);
-    if (!filterResult.isClean) {
-      coachLogger.warn('Hallucination filter triggered:', filterResult.violations);
-    }
-
-    // 응답 정제 (이모지 개수 제한, 길이 제한)
-    const cleanedResponse = cleanResponse(filterResult.sanitizedText);
-
-    // 면책 조항 필요 시 추가
-    const finalMessage = needsDisclaimer(cleanedResponse)
-      ? `${cleanedResponse}\n\n${COACH_DISCLAIMER}`
-      : cleanedResponse;
-
-    // 추천 질문 생성
-    const suggestedQuestions = generateSuggestedQuestions(message, userContext);
-
-    return {
-      message: finalMessage,
-      suggestedQuestions,
+${message}
+200자 이내로 간결하게 답변해주세요. 사진이 불명확하면 추측하지 마세요.`;
+      const contents = imageBase64 ? [{ text: prompt }, formatImageForGemini(imageBase64)] : prompt;
+      if (userId) {
+        reservation = await reserveCoachTurn(userId, { signal: controller.signal });
+        if (controller.signal.aborted) {
+          await settleCoachTurn(reservation, { modelCalled: false });
+          throw new Error('Coach deadline exceeded');
+        }
+        if (!reservation.allowed) {
+          // 한도 소진과 저장소 장애를 같은 문구로 뭉개지 않는다.
+          // 전자는 의도된 정책이라 정상 안내지만, 후자는 인프라 실패라서 폴백으로 정직하게 표시한다.
+          const isPolicyLimit =
+            reservation.reason === 'daily_limit' || reservation.reason === 'monthly_limit';
+          if (!isPolicyLimit) {
+            coachLogger.error('Coach turn reservation unavailable:', reservation.reason);
+          }
+          return isPolicyLimit
+            ? {
+                message:
+                  '오늘은 기본 뷰티 안내를 이용하실 수 있어요. 루틴을 열어 현재 관리 단계를 확인해주세요.',
+                suggestedQuestions: BEAUTY_QUESTIONS,
+                usedFallback: false,
+                confidence: 'normal',
+              }
+            : {
+                message:
+                  '지금은 상담을 준비하지 못했어요. 잠시 후 다시 시도해 주세요. 그동안 루틴에서 현재 관리 단계를 확인하실 수 있어요.',
+                suggestedQuestions: BEAUTY_QUESTIONS,
+                usedFallback: true,
+                confidence: 'low',
+                fallbackReason: 'error',
+              };
+        }
+      }
+      modelCalled = true;
+      result = await generateContent({
+        model: PINNED_VERDICT_MODEL,
+        contents,
+        config: {
+          thinkingConfig: { thinkingLevel: 'minimal' },
+          maxOutputTokens: 250,
+          abortSignal: controller.signal,
+        },
+      });
+      const filtered = filterCoachResponse(result.text);
+      const cleaned = cleanResponse(filtered.sanitizedText);
+      // 안전 차단(finishReason=SAFETY)이나 출력 토큰 소진으로 본문이 비면
+      // 빈 말풍선을 배지 없이 내보내지 않는다.
+      if (!cleaned.trim()) {
+        coachLogger.error('Coach model returned empty text. usage:', result.usage);
+        return fallbackResponse(message, 'error');
+      }
+      // 범위 밖 응답은 대체하되, 모델을 이미 호출했으므로 정직하게 폴백으로 표시한다.
+      if (isHiddenCoachContent(cleaned)) {
+        return {
+          message: SCOPE_MESSAGE,
+          suggestedQuestions: BEAUTY_QUESTIONS,
+          usedFallback: true,
+          confidence: 'low',
+          fallbackReason: 'error',
+        };
+      }
+      return {
+        message: needsDisclaimer(cleaned) ? `${cleaned}\n\n${COACH_DISCLAIMER}` : cleaned,
+        suggestedQuestions: generateSuggestedQuestions(message, userContext),
+        usedFallback: false,
+        confidence: 'normal',
+      };
     };
+    return await Promise.race([work(), expired]);
   } catch (error) {
-    coachLogger.error('Gemini error, falling back to mock:', error);
-    const category = detectQuestionCategory(message);
-    return {
-      message: FALLBACK_RESPONSES[category],
-      suggestedQuestions: [
-        '오늘 운동 뭐하면 좋을까요?',
-        '다이어트 간식 추천해줘',
-        '물 얼마나 마셔야 해요?',
-      ],
-    };
+    coachLogger.error('Coach generation failed:', error);
+    return fallbackResponse(message, controller.signal.aborted ? 'timeout' : 'error');
+  } finally {
+    if (reservation) {
+      // 예약은 이미 소진 상태다. 정산 지연이 사용자 deadline을 늘리지 않게 한다.
+      const settlement = settleCoachTurn(reservation, {
+        modelCalled,
+        usage: result?.usage,
+        modelVersion: result?.modelVersion,
+      }).catch(() => undefined);
+      if (!controller.signal.aborted)
+        await Promise.race([settlement, expired]).catch(() => undefined);
+    }
+    clearTimeout(timer);
+    request.signal?.removeEventListener('abort', abort);
+    if (rejectDeadline) controller.signal.removeEventListener('abort', rejectDeadline);
   }
 }
 
@@ -686,7 +448,7 @@ ${questionHint ? `참고: ${questionHint}\n` : ''}
 function cleanResponse(text: string): string {
   let cleaned = text.trim();
 
-  // 300자 초과 시 자르기
+  // 표시용 300자 절단은 과금 상한이 아니다. 호출 토큰 상한으로 비용을 제한한다.
   if (cleaned.length > 300) {
     cleaned = cleaned.slice(0, 297) + '...';
   }
@@ -753,11 +515,7 @@ function generateSuggestedQuestions(
 
   // 기본 추천 질문 추가
   if (suggestions.length < 3) {
-    const defaults = [
-      '오늘 운동 뭐하면 좋을까요?',
-      '건강한 간식 추천해줘',
-      '수면의 질을 높이려면?',
-    ];
+    const defaults = [...BEAUTY_QUESTIONS];
     for (const q of defaults) {
       if (!suggestions.includes(q) && suggestions.length < 3) {
         suggestions.push(q);
@@ -765,7 +523,7 @@ function generateSuggestedQuestions(
     }
   }
 
-  return suggestions.slice(0, 3);
+  return suggestions.filter((q) => !isHiddenCoachContent(q)).slice(0, 3);
 }
 
 /**
@@ -779,62 +537,7 @@ function generateSuggestedQuestions(
 export async function* generateCoachResponseStream(
   request: CoachChatRequest
 ): AsyncGenerator<string, void, unknown> {
-  const { message, userContext, chatHistory, imageBase64, userId } = request;
-
-  // 위기 상황 감지 — 즉시 전문 상담 안내
-  if (detectCrisis(message)) {
-    coachLogger.warn('Crisis detected in user message (stream)');
-    yield CRISIS_RESPONSE.message;
-    return;
-  }
-
-  if (!isGeminiAvailable()) {
-    yield FALLBACK_RESPONSES[detectQuestionCategory(message)];
-    return;
-  }
-
-  try {
-    // 시스템 프롬프트 구성
-    const systemPrompt = buildCoachSystemPrompt(userContext);
-    const questionHint = getQuestionHint(message);
-    const historySection = formatChatHistory(chatHistory || []);
-
-    // RAG: 도메인별 RAG 검색
-    const ragContext = await resolveRagContext(message, userContext, userId);
-
-    const fullPrompt = `${systemPrompt}${historySection}${ragContext}
-
-${questionHint ? `참고: ${questionHint}\n` : ''}## 사용자 질문
-"${message}"
-
-위 질문에 대해 200자 이내로 친근하고 간결하게 답변해주세요.${ragContext ? ' 추천 제품 정보가 있다면 활용해서 구체적으로 추천해주세요.' : ''}`;
-
-    // 이미지 첨부 시 멀티모달 판정 모드 — 프로필(시스템 프롬프트에 이미 포함된
-    // 퍼스널컬러/체형) 기준으로 사진 속 아이템의 어울림을 판정한다.
-    const contents = imageBase64
-      ? [
-          {
-            text: `${fullPrompt}
-
-## 이미지 판정 지침 (사진 첨부됨)
-사용자가 사진을 첨부했어요. 사진 속 아이템(옷/색상/제품)을 파악하고,
-위 사용자 프로필(퍼스널컬러 시즌·체형)에 어울리는지 판정해주세요:
-1. 무엇인지 한 줄 (색상 포함)
-2. 어울림 판정 + 근거 (시즌 톤/체형 실루엣 기준)
-3. 아쉬우면 보완법 1가지 (스타일링 or 대체 색)
-사진이 흐리거나 판단이 어려우면 솔직히 말하고 추측하지 마세요.`,
-          },
-          formatImageForGemini(imageBase64),
-        ]
-      : fullPrompt;
-
-    for await (const text of generateContentStream({ contents })) {
-      if (text) {
-        yield text;
-      }
-    }
-  } catch (error) {
-    coachLogger.error('Streaming error:', error);
-    yield FALLBACK_RESPONSES[detectQuestionCategory(message)];
-  }
+  // 미검열 토큰은 회수할 수 없으므로 완성·검열한 본문만 전달한다.
+  const response = await generateCoachResponse(request);
+  yield response.message;
 }

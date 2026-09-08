@@ -1,9 +1,9 @@
+import { SupabaseClient } from '@supabase/supabase-js';
+import { encodeCoachHistory, decodeCoachHistory, type CoachResponseMetadata } from '@yiroom/shared';
 /**
  * AI 코치 채팅 히스토리 관리 (Mobile)
  * @description 채팅 기록 저장/조회 - Supabase 연동
  */
-
-import { SupabaseClient } from '@supabase/supabase-js';
 
 import { coachLogger } from '../utils/logger';
 
@@ -77,7 +77,8 @@ export async function saveCoachMessage(
   sessionId: string,
   role: 'user' | 'assistant',
   content: string,
-  suggestedQuestions?: string[]
+  suggestedQuestions?: string[],
+  metadata?: CoachResponseMetadata
 ): Promise<string | null> {
   const { data, error } = await supabase
     .from('coach_messages')
@@ -85,7 +86,7 @@ export async function saveCoachMessage(
       session_id: sessionId,
       role,
       content,
-      suggested_questions: suggestedQuestions || null,
+      suggested_questions: encodeCoachHistory(suggestedQuestions, metadata),
     })
     .select('id')
     .single();
@@ -173,6 +174,7 @@ export async function getSessionMessages(
     role: msg.role as 'user' | 'assistant',
     content: msg.content,
     timestamp: new Date(msg.created_at),
+    ...decodeCoachHistory(msg.suggested_questions),
   }));
 }
 

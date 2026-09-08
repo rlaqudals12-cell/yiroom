@@ -13,7 +13,7 @@ export {
   QUICK_QUESTIONS_BY_CATEGORY,
 } from './prompts';
 
-export { generateCoachResponse, generateCoachResponseStream } from './chat';
+export { generateCoachResponse, generateCoachResponseStream, COACH_DEADLINE_MS } from './chat';
 export type { CoachMessage, CoachChatRequest, CoachChatResponse } from './chat';
 
 // Phase K: 채팅 히스토리 관리

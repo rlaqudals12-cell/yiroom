@@ -4,6 +4,7 @@
  * 화면 단위로만 확장하며, 공용 문구의 의미 정본은 apps/web/messages/ko.json이다.
  */
 const ko = {
+  coach: { fallbackBadge: '일반 안내 · 신뢰도 낮음' },
   common: {
     close: '닫기',
     translationUnavailable: '안내 문구를 불러오지 못했어요. 잠시 후 다시 시도해주세요.',

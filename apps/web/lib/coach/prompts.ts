@@ -4,11 +4,16 @@
  */
 
 import type { UserContext } from './context';
+import type { OutputLocale } from '@/lib/gemini/client';
+import { getApprovedSkincareClaims } from '@/lib/skincare';
 
 /**
  * 코치 시스템 프롬프트 생성
  */
-export function buildCoachSystemPrompt(userContext: UserContext | null): string {
+export function buildCoachSystemPrompt(
+  userContext: UserContext | null,
+  locale: OutputLocale = 'ko'
+): string {
   const contextSection = userContext ? buildUserContextSection(userContext) : '';
   // 제품함이 있을 때만 owned-first 규칙 주입 (없으면 규칙 자체가 무의미)
   const ownedRules = userContext?.ownedProducts?.length ? buildOwnedProductRules() : '';
@@ -22,7 +27,7 @@ export function buildCoachSystemPrompt(userContext: UserContext | null): string 
 - 의료적 진단이나 처방은 피하고 전문가 상담 권유
 
 ## 응답 가이드라인
-1. 한국어로 자연스럽고 친근하게 대화
+1. 사용자 출력 언어: ${{ ko: '한국어', en: 'English', ja: '日本語', zh: '中文' }[locale]}. 이 언어로 자연스럽고 친근하게 대화
 2. 200자 이내로 간결하게 핵심만 전달
 3. 실천 가능한 구체적인 조언 제공
 4. 불확실한 내용은 솔직하게 "확실하지 않아요"라고 표현
@@ -30,6 +35,10 @@ export function buildCoachSystemPrompt(userContext: UserContext | null): string 
 
 ${contextSection}
 ${ownedRules}
+## 승인된 피부 근거
+- 다음 목록의 승인 claim ID만 인용하세요. 목록 밖의 효능·수치·흡수 시간·사용 방향을 생성하지 마세요.
+- conventional은 선택/사용 습관, established는 조건이 있는 권장, hygiene는 위생 안내입니다. 등급 상향이나 효과 보장은 금지합니다.
+${JSON.stringify(getApprovedSkincareClaims())}
 ## 주의사항
 - 의료적 조언, 약물 복용 관련 질문은 "전문의와 상담하세요"로 안내
 - 극단적인 다이어트나 위험한 운동 방법은 권장하지 않음

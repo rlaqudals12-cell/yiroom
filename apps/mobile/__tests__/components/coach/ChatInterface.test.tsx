@@ -778,3 +778,27 @@ describe('ChatInterface', () => {
     });
   });
 });
+
+it('shows the fallback confidence badge from restored metadata', () => {
+  (useCoach as jest.Mock).mockReturnValue({
+    messages: [
+      {
+        id: 'fallback',
+        role: 'assistant',
+        content: '일반 안내',
+        timestamp: new Date(),
+        usedFallback: true,
+        confidence: 'low',
+        fallbackReason: 'timeout',
+      },
+    ],
+    isLoading: false,
+    error: null,
+    suggestedQuestions: [],
+    sessions: [],
+    sendMessage: mockSendMessage,
+    clearMessages: mockClearMessages,
+  });
+  const { getByTestId } = renderWithTheme(<ChatInterface />);
+  expect(getByTestId('coach-fallback-badge')).toBeTruthy();
+});

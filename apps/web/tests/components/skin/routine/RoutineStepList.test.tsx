@@ -3,6 +3,23 @@ import { render, screen } from '@testing-library/react';
 import RoutineStepList from '@/components/skin/routine/RoutineStepList';
 import type { RoutineStep } from '@/types/skincare-routine';
 
+// 0단계 프리스텝이 승인 문구 카탈로그로 옮겨졌다.
+// tests/setup.ts 기본 목은 키를 그대로 돌려주므로 실제 ko 메시지로 오버라이드해
+// 사용자에게 보이는 한국어를 그대로 검증한다.
+vi.mock('next-intl', async () => {
+  const messages = (await import('@/messages/ko.json')).default as unknown as Record<
+    string,
+    Record<string, string>
+  >;
+  return {
+    useTranslations: (namespace?: string) => (key: string) =>
+      (namespace ? messages[namespace]?.[key] : undefined) ?? key,
+    useLocale: () => 'ko',
+    useMessages: () => messages,
+    NextIntlClientProvider: ({ children }: { children?: unknown }) => children,
+  };
+});
+
 describe('RoutineStepList', () => {
   const mockSteps: RoutineStep[] = [
     {
@@ -66,7 +83,7 @@ describe('RoutineStepList', () => {
 
     expect(screen.getByTestId('routine-step-list-empty')).toBeInTheDocument();
     // i18n 도입으로 빈 상태 문구는 번역 키로 렌더링됨 (테스트 목이 키 반환, ko: '루틴 단계가 없어요')
-    expect(screen.getByText('routineStepList0')).toBeInTheDocument();
+    expect(screen.getByText('루틴 단계가 없어요')).toBeInTheDocument();
   });
 
   it('passes showProducts prop to items', () => {

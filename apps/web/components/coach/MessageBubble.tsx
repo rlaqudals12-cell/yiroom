@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useCallback } from 'react';
 import { MessageCircle, User, Plus, Check } from 'lucide-react';
 import { ContentReportDialog } from '@/components/content-report';
@@ -32,6 +33,7 @@ function hasActionableRecommendation(content: string): boolean {
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
+  const t = useTranslations('coach');
   const isUser = message.role === 'user';
   const [addedToCapsule, setAddedToCapsule] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -66,7 +68,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const showCapsuleAction = !isUser && hasActionableRecommendation(message.content);
 
   return (
-    <div className={cn('flex gap-2', isUser ? 'flex-row-reverse' : 'flex-row')}>
+    <div
+      data-testid="coach-message"
+      className={cn('flex gap-2', isUser ? 'flex-row-reverse' : 'flex-row')}
+    >
       {/* 아바타 */}
       <div
         className={cn(
@@ -99,6 +104,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               alt="첨부 사진"
               className="rounded-lg mb-2 max-h-48 w-auto object-contain"
             />
+          )}
+          {!isUser && message.usedFallback && (
+            <p data-testid="coach-fallback-badge" className="text-xs text-muted-foreground">
+              {t('fallbackBadge')}
+            </p>
           )}
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
           <p

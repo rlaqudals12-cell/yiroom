@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { getCategoryInfo } from '@/lib/mock/skincare-routine';
 import { getStepHowTo } from '@/lib/skincare/step-howto';
+import { isApprovedStepSpec } from '@/lib/skincare/step-spec';
 import { ProgressiveDisclosure } from '@/components/common/ProgressiveDisclosure';
 import type { RoutineStep, RoutineStepItemProps } from '@/types/skincare-routine';
 import { useTranslations } from 'next-intl';
@@ -24,6 +25,7 @@ const RoutineStepItem = memo(function RoutineStepItem({
   className,
 }: RoutineStepItemProps) {
   const t = useTranslations('skinUI');
+  const claimText = useTranslations('skincareClaims');
   const [isExpanded, setIsExpanded] = useState(false);
   const categoryInfo = getCategoryInfo(step.category);
 
@@ -37,9 +39,12 @@ const RoutineStepItem = memo(function RoutineStepItem({
 
   // 초보자용 사용법(적당량·바르는 법·흡수 대기) — 카테고리별 상수 조회 (T1)
   const howTo = getStepHowTo(step.category);
+  const approvedSpec = isApprovedStepSpec(step.specClaimId, step.specEvidence, step.specSourceId);
 
   const hasProducts = step.recommendedProducts && step.recommendedProducts.length > 0;
-  const hasTips = step.tips && step.tips.length > 0;
+  // 기존 자유문자열 팁은 근거 검토를 우회하므로 승인 ID의 팁만 렌더한다.
+  const approvedTips = howTo?.claims.tips.filter((claim) => claim.evidence !== 'unsupported') ?? [];
+  const hasTips = approvedTips.length > 0;
   const hasExpandableContent = Boolean(howTo) || hasTips || (showProducts && hasProducts);
 
   return (
@@ -74,8 +79,15 @@ const RoutineStepItem = memo(function RoutineStepItem({
         {/* 정보 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            {/* U2: 상태 기반 성분 스펙명 우선("약산성 클렌저"), 없으면 일반 명칭 */}
-            <h3 className="font-medium text-foreground">{step.specName ?? step.name}</h3>
+            {/* U2: 상태 기반 성분 스펙명 우선("약산성 클렌저"·"나이트 크림"), 없으면 일반 명칭.
+                승인 claim 문구로만 렌더하면 피부 타입·시간대 변주가 사라지고 모바일과 표기가
+                갈리므로, 서버가 조립한 specName을 정본으로 두고 claim은 폴백으로 쓴다. */}
+            <h3 className="font-medium text-foreground">
+              {step.specName ??
+                (approvedSpec && step.specClaimId
+                  ? claimText('name-' + step.specClaimId)
+                  : step.name)}
+            </h3>
             {ownedProduct && (
               <Badge
                 variant="secondary"
@@ -94,9 +106,9 @@ const RoutineStepItem = memo(function RoutineStepItem({
           </div>
           <p className="text-sm text-muted-foreground truncate">{step.purpose}</p>
           {/* U2: 이 스펙이 왜 잘 맞는지 한 줄 (담백한 톤) */}
-          {step.specReason && (
+          {approvedSpec && step.specClaimId && (
             <p className="text-xs text-primary/80 truncate" data-testid="routine-step-spec-reason">
-              {step.specReason}
+              {claimText(step.specClaimId)}
             </p>
           )}
         </div>
@@ -127,42 +139,38 @@ const RoutineStepItem = memo(function RoutineStepItem({
           {/* 초보자용 사용법 — "어떻게 하나요?" 접이식 (적당량·방법·흡수 대기) */}
           {howTo && (
             <ProgressiveDisclosure
-              title="어떻게 하나요?"
+              title={claimText('title')}
               icon={<HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />}
             >
               <div className="space-y-2 text-sm" data-testid="step-howto">
                 <div className="flex gap-2">
-                  <span className="w-14 flex-shrink-0 font-medium text-foreground">적당량</span>
-                  <span className="text-muted-foreground">{howTo.amount}</span>
+                  <span className="w-14 flex-shrink-0 font-medium text-foreground">
+                    {claimText('amount')}
+                  </span>
+                  <span className="text-muted-foreground">{claimText(howTo.claims.amount.id)}</span>
                 </div>
                 <div className="flex gap-2">
-                  <span className="w-14 flex-shrink-0 font-medium text-foreground">방법</span>
-                  <span className="text-muted-foreground">{howTo.method}</span>
+                  <span className="w-14 flex-shrink-0 font-medium text-foreground">
+                    {claimText('method')}
+                  </span>
+                  <span className="text-muted-foreground">{claimText(howTo.claims.method.id)}</span>
                 </div>
-                {howTo.waitTime && (
+                {howTo.claims.waitTime && (
                   <div className="flex gap-2">
-                    <span className="w-14 flex-shrink-0 font-medium text-foreground">흡수</span>
-                    <span className="text-muted-foreground">{howTo.waitTime}</span>
+                    <span className="w-14 flex-shrink-0 font-medium text-foreground">
+                      {claimText('wait')}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {claimText(howTo.claims.waitTime.id)}
+                    </span>
                   </div>
-                )}
-                {howTo.tips && howTo.tips.length > 0 && (
-                  <ul className="space-y-1 pt-1">
-                    {howTo.tips.map((tip, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start gap-2 text-xs text-muted-foreground"
-                      >
-                        <span className="mt-1 text-primary">•</span>
-                        <span>{tip}</span>
-                      </li>
-                    ))}
-                  </ul>
                 )}
               </div>
             </ProgressiveDisclosure>
           )}
 
-          {/* 팁 */}
+          {/* 팁 — 한 번 클릭으로 보이는 정본 위치.
+              how-to 블록 안쪽 목록은 같은 승인 팁이라 제거했다(한 화면 두 번 노출 수리). */}
           {hasTips && (
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
@@ -170,10 +178,10 @@ const RoutineStepItem = memo(function RoutineStepItem({
                 <span>{t('routineStepItem0')}</span>
               </div>
               <ul className="space-y-1 text-sm text-muted-foreground">
-                {step.tips.map((tip, index) => (
+                {approvedTips.map((tip, index) => (
                   <li key={index} className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
-                    <span>{tip}</span>
+                    <span>{claimText(tip.id)}</span>
                   </li>
                 ))}
               </ul>

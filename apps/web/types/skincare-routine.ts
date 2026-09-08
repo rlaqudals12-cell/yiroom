@@ -7,6 +7,8 @@
 
 import type { SkinTypeId, SkinConcernId } from '@/lib/mock/skin-analysis';
 import type { AffiliateProduct } from './affiliate';
+import type { RoutineSafetyProfile } from '@/lib/safety/routine-guard';
+import type { ClaimEvidence } from '@/lib/skincare/step-howto';
 
 // ================================================
 // 제품 카테고리
@@ -55,6 +57,9 @@ export interface RoutineStep {
   specName?: string;
   /** specName이 왜 잘 맞는지 한 줄 (담백한 톤) */
   specReason?: string;
+  specClaimId?: string;
+  specEvidence?: ClaimEvidence;
+  specSourceId?: string;
   // 조건부 루틴 확장 필드
   conditionalBadge?: string; // "건조할 때 2회" 등 조건부 뱃지
   shelfProductId?: string; // 제품함 연동 시 제품 ID
@@ -107,6 +112,7 @@ export interface RoutineGenerationInput {
    * 미전달 시 목표 케어 기준으로 스펙 파생.
    */
   carePhase?: 'barrier' | 'goal';
+  safetyProfile?: RoutineSafetyProfile | null;
 }
 
 /** 루틴 생성 결과 */

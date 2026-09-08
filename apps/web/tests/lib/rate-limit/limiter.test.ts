@@ -69,9 +69,18 @@ describe('Rate Limiter', () => {
       expect(uploadConfig.dailyLimit).toBeGreaterThanOrEqual(100);
     });
 
-    it('should return "coach" for /api/coach/* and /api/chat/* paths', () => {
-      expect(getRateLimitCategory('/api/coach/message')).toBe('coach');
+    // 요청 제한과 모델 턴 예약은 다른 축이다.
+    // 코치 턴 경로를 요청 제한에서 통째로 빼면 인증 사용자가 RAG·DB 조회를
+    // 무제한으로 태울 수 있어, 전용 카테고리로 버스트만 막는다.
+    it('코치 턴은 전용 카테고리로 버스트를 막고 레거시 채팅·제품 Q&A 보호를 유지한다', () => {
+      expect(getRateLimitCategory('/api/coach/sessions')).toBe('default');
+      expect(getRateLimitCategory('/api/products/qa')).toBe('coach');
       expect(getRateLimitCategory('/api/chat/stream')).toBe('coach');
+      expect(getRateLimitCategory('/api/coach/chat')).toBe('coachTurn');
+      expect(getRateLimitCategory('/api/coach/stream')).toBe('coachTurn');
+      expect(isRateLimitedPath('/api/coach/chat')).toBe(true);
+      expect(isRateLimitedPath('/api/coach/stream/')).toBe(true);
+      expect(isRateLimitedPath('/api/coach/sessions')).toBe(true);
     });
 
     it('should return "feedback" for /api/feedback/* paths', () => {

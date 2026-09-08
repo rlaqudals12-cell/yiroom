@@ -250,3 +250,22 @@ describe('Coach History', () => {
     });
   });
 });
+
+// 같은 JSONB 형식을 모바일도 읽으므로 구기록 호환과 사유 보존을 함께 고정한다.
+describe('history fallback codec', () => {
+  it('reads legacy question arrays', async () => {
+    const { decodeCoachHistory } = await import('@yiroom/shared');
+    expect(decodeCoachHistory(['보습 방법'])).toEqual({ suggestedQuestions: ['보습 방법'] });
+  });
+  it.each(['model_unavailable', 'timeout', 'error'] as const)(
+    'round-trips %s',
+    async (fallbackReason) => {
+      const { encodeCoachHistory, decodeCoachHistory } = await import('@yiroom/shared');
+      const metadata = { usedFallback: true, confidence: 'low' as const, fallbackReason };
+      expect(decodeCoachHistory(encodeCoachHistory(['보습 방법'], metadata))).toEqual({
+        ...metadata,
+        suggestedQuestions: ['보습 방법'],
+      });
+    }
+  );
+});

@@ -102,7 +102,7 @@ export default function StylePage() {
 
   // 체형 분석 결과 적용
   const applyBodyData = (
-    bodyData: { body_type: string; height: number | null; concerns: unknown } | null
+    bodyData: { body_type: string; height: number | null; strengths: unknown } | null
   ) => {
     if (!bodyData) return;
     setBodyType(getBodyShapeLabel(bodyData.body_type));
@@ -111,8 +111,10 @@ export default function StylePage() {
     }
     setHeight(bodyData.height ? `${bodyData.height}cm` : null);
     setBodyHeightCm(bodyData.height ?? null);
-    const concerns = bodyData.concerns as string[] | null;
-    setFeature(concerns?.[0] || null);
+    // ⚠️ concerns 컬럼은 실재하지 않아 select 전체가 실패했다(정본은 strengths/improvements).
+    // 프로필 칩은 체형을 흠으로 부르지 않는다는 원칙에 따라 강점 문구를 쓴다.
+    const strengths = bodyData.strengths as string[] | null;
+    setFeature(strengths?.[0] || null);
   };
 
   // 퍼스널컬러 분석 결과 적용 — 실제 컬럼은 season("Spring")/undertone
@@ -147,7 +149,7 @@ export default function StylePage() {
         const [bodyResult, pcResult, closetResult] = await Promise.all([
           supabase
             .from('body_analyses')
-            .select('body_type, height, concerns')
+            .select('body_type, height, strengths')
             .eq('clerk_user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(1)

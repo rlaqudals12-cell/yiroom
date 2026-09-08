@@ -62,7 +62,7 @@ describe('lib/security/rate-limit', () => {
     it('should return coach config for /api/coach paths', () => {
       const config = getConfigForEndpoint('/api/coach/chat');
       expect(config.maxRequests).toBe(30);
-      expect(config.dailyMaxRequests).toBe(200);
+      expect(config.dailyMaxRequests).toBeUndefined();
     });
 
     it('should return auth config for /api/auth paths', () => {
@@ -253,9 +253,9 @@ describe('lib/security/rate-limit', () => {
       expect(rateLimitConfigs['/api/analyze'].dailyMaxRequests).toBe(50);
     });
 
-    it('should have coach config with daily limit', () => {
+    it('코치의 일/월 비용 정책을 별도 원자 예약에 위임한다', () => {
       expect(rateLimitConfigs['/api/coach']).toBeDefined();
-      expect(rateLimitConfigs['/api/coach'].dailyMaxRequests).toBe(200);
+      expect(rateLimitConfigs['/api/coach'].dailyMaxRequests).toBeUndefined();
     });
 
     it('should have default config', () => {

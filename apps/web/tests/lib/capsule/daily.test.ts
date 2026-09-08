@@ -566,14 +566,14 @@ describe('Daily Capsule', () => {
       const cleanser = items.find(
         (i) => i.moduleCode === 'S' && i.timeOfDay === 'morning' && i.category === 'cleanser'
       );
-      expect(cleanser?.name).toBe('약산성 폼 클렌저');
-      expect(cleanser?.reason).toContain('약산성');
+      expect(cleanser?.name).toBe('순한 클렌저');
+      expect(cleanser?.reason).toContain('pH만으로 저자극을 보장하지 않아요');
       // 일반 목적 문구(purpose)로 폴백하지 않았다
       expect(cleanser?.reason).not.toBe('밤사이 분비된 피지와 노폐물 제거');
 
       // 스펙이 없는 스텝은 기존대로 purpose 유지 (지어내지 않음)
       const essenceOrSerum = items.find((i) => i.moduleCode === 'S' && i.category === 'serum');
-      expect(essenceOrSerum?.reason).toBe('피부 고민에 맞는 집중 케어');
+      expect(essenceOrSerum?.reason).toContain('지금은 일반 보습 관리만 안내해요');
     });
 
     it('should return cached capsule if exists', async () => {

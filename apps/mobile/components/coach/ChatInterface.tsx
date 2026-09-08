@@ -27,6 +27,7 @@ import {
   type CoachMessage,
 } from '../../lib/coach';
 import { useBeautyTeamCoach, useCoach, type UseCoachResult } from '../../lib/coach/useCoach';
+import { useTranslation } from '../../lib/i18n';
 import { useNetworkStatus } from '../../lib/offline';
 import { useTheme, typography, radii, spacing } from '../../lib/theme';
 import { ContentReportModal } from '../reporting';
@@ -146,6 +147,8 @@ function ChatInterfaceContent({
     ? filterBeautyTeamSuggestedQuestions(suggestedQuestions)
     : suggestedQuestions;
 
+  const { t } = useTranslation();
+
   const renderMessage = ({ item }: { item: CoachMessage }) => {
     const isUser = item.role === 'user';
     return (
@@ -165,6 +168,11 @@ function ChatInterfaceContent({
         >
           {item.content}
         </Text>
+        {!isUser && item.usedFallback && (
+          <Text testID="coach-fallback-badge" style={{ color: colors.mutedForeground }}>
+            {t('coach.fallbackBadge')}
+          </Text>
+        )}
         {!isUser ? (
           <Pressable
             accessibilityRole="button"
